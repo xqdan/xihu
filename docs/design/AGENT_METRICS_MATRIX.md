@@ -440,3 +440,23 @@ A2 ─────┼── A5 ──┤
 - 用软件host介入次数掩盖硬件scheduler/RDMA缺口；
 - 修改generated data/reports而不更新生成脚本、输入和测试；
 - 在没有ADR和回归测试的情况下静默改变Tile IR、SRAM、MC、NoC或package topology。
+## 18. 多模型统一验收矩阵
+
+| Agent | K3必须保持 | GLM-5.2新增 | DeepSeek-V4-Pro新增 | 统一验收 |
+|---|---|---|---|---|
+| A1 | 93层DAG、KV/state、LSE m/l/O | indexer、index cache、MTP字段 | sparse attention/indexer、expert dispatch字段 | 三个`model_id`均能生成合法manifest和Tile IR |
+| A3 | L/H Core、Tensor/Vector | sparse index、MTP draft/verify | expert GEMM、FP8/FP4 dequant | 每类新增执行类型有cycle/resource模型 |
+| A4 | 96 MiB/Die、TMA、ECC | index cache、MTP branch buffer | expert staging、sparse state | buffer class、容量、eviction、epoch可追踪 |
+| A5 | 16 MC、320/640 GB/s | index miss和长上下文state | expert weight、dispatch/combine | bytes按state/index/expert/dispatch分类，raw不等于sustained |
+| A6–A8 | NoC、4×2 package fabric、TP32 RDMA | indexer/MTP QoS和rollback | all-to-all、expert home、combine | 无deadlock、lost ACK、duplicate merge和stale epoch |
+| A9 | Tile IR、persistent decode | candidate token、accept mask | expert id/capacity、overflow | 不依赖host逐token/逐expert启动 |
+| A10 | P1 MC320/640回归 | index hit、MTP acceptance | expert load balance、overflow | `3 × 2 × 2`结果矩阵，P50/P95/P99齐全 |
+| A11 | 400 mm²、250 W/Die、3,200 W/package | index miss峰值、MTP重叠 | expert热点、dequant峰值 | 三模型最坏值不得静默超预算 |
+| A12–A13 | K3 golden trace和报告 | model-specific fault/report | model-specific fault/report | 每个关键数字带model/profile/schema/seed/evidence |
+
+### 多模型G4门槛
+
+1. 三个模型各自拥有正式或明确标记为待确认的配置版本；
+2. 三个模型都能跑通至少一个端到端 decode step；
+3. 任一模型未达到其目标时，G4报告必须按 memory、compute、NoC、RDMA、scheduler、thermal 分解原因；
+4. 在GLM-5.2和DeepSeek-V4-Pro正式配置确认前，平台结论只能称为“架构兼容性基线”，不能称为最终产品性能签核。

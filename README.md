@@ -1,11 +1,11 @@
-﻿# K3 Architecture Repository
+# K3 / GLM-5.2 / DeepSeek-V4-Pro Architecture Repository
 
-K3 推理芯片架构设计、性能建模、设计空间搜索和验证的协同开发仓库。
+K3、GLM-5.2、DeepSeek-V4-Pro 多模型推理芯片架构设计、性能建模、设计空间搜索和验证的协同开发仓库。
 
 本仓库是一个适合 GitHub 协作的初始版本，目标是让架构师、模型工程师、
 RTL/IP 团队和多个 agent 可以在清晰的模块边界内并发工作。
 
-> 当前项目目标是 K3 Decode inference：B=1、Context=1M、TP32、PP=1，目标
+> 当前项目目标是统一支持 K3、GLM-5.2、DeepSeek-V4-Pro 的 Decode inference：B=1、Context=1M、TP32、PP=1，目标
 > `1000 TPS/usr`。`1050 TPS/usr` 是架构冻结门槛。当前数据和 PPA 仍包含工程
 > 假设；特别是 MC 带宽路线和精确 tile 模型尚未完成最终签核。
 
@@ -62,6 +62,8 @@ npm run report:latest
 - [架构决策记录](docs/design/DECISIONS.md)
 - [未决问题和阻塞项](docs/design/OPEN_ISSUES.md)
 - [设计文档索引](docs/design/README.md)
+- [多模型架构调整](docs/design/13_MULTI_MODEL_ARCHITECTURE.md)
+- [多模型Workload Profile](data/workload/model_profiles.json)
 
 ## Collaboration model
 
@@ -74,6 +76,10 @@ npm run report:latest
 6. 任何 TPS、带宽、面积或功耗结论都必须注明假设、数据来源和模型版本。
 
 ## Current blockers
+
+- GLM-5.2 的正式部署配置、dtype、expert/index cache参数尚未冻结；
+- DeepSeek-V4-Pro 的授权配置、权重格式、专家路由和部署参数尚未冻结；
+- 三模型的 index cache、expert dispatch、MTP 和 FP8/FP4 路径尚未进入事件级回放。
 
 - 正式 K3 layer manifest、dtype、KV/state layout 尚未完全冻结；
 - 320 GB/s/MC 参考规格与 640 GB/s/MC Stretch 结果存在一倍带宽差异；

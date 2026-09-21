@@ -17,6 +17,16 @@
 - P0 physical primary：400 mm²/Die、8 L + 8 H、96 MiB data SRAM/Die；
 - P1 compact executable：当前 4 L + 4 H、44 MiB/Die 模型，用于持续回归和对照。
 
+## 1.1 多模型扩展
+
+本计划同时服务三个模型 profile：`K3`、`GLM-5.2`、`DeepSeek-V4-Pro`。每个 Agent 的交付必须包含 `model_id` 维度，不能只验证 K3 后声称平台通用。
+
+- A1 为三个模型维护独立 manifest、DAG、state、dtype 和 routing profile；
+- A3–A9 必须支持 sparse index、MoE expert dispatch/combine、MTP 分支和 FP8/FP4 precision path 的可配置建模；
+- A10 必须生成 `3 models × 2 physical profiles × 2 MC profiles` 的结果矩阵；
+- A11 以三模型最坏功耗、热和带宽场景作为 P0 签核输入；
+- A12 为每个模型提供 golden trace、fault trace 和 P0/P1 隔离测试；
+- GLM-5.2 和 DeepSeek-V4-Pro 的正式部署配置、权重格式、dtype 和专家路由在确认前标记为 `MODEL_PENDING_CONFIG_CONFIRMATION`，不得伪造最终性能结论。
 ## 2. 并行设计原则
 
 ### 2.1 分支隔离

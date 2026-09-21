@@ -1,0 +1,434 @@
+# K3 / GLM-5.2 / DeepSeek-V4-Pro 多模型架构调整
+
+版本：2026-09-21  
+状态：`BASELINE / MULTI-MODEL EXPANSION`
+
+## 1. 调整结论
+
+原设计不再是只针对K3的专用推理架构，而调整为：
+
+```text
+一个7-reticle package物理平台
+  + 一个统一的Workload Manifest / Tile IR / Transaction IR
+  + 三类模型执行Profile
+    ├── K3 engineering preset
+    ├── GLM-5.2
+    └── DeepSeek-V4-Pro
+```
+
+K3仍然是当前主性能目标；GLM-5.2和DeepSeek-V4-Pro成为必须进入架构、存储、互联、调度、性能和验证流程的第二、第三工作负载。三者不能共享一个“平均模型参数”，必须保留逐模型的DAG、状态、路由、带宽和尾延迟结果。
+
+**重要状态说明**：GLM-5.2和DeepSeek-V4-Pro的公开资料只能作为架构输入基线，不能替代授权权重、正式配置文件、部署dtype和供应商签核。相关数字在本项目中标为`MODEL_PENDING_CONFIG_CONFIRMATION`，直到A1完成正式manifest冻结。
+
+## 2. 统一性能政策
+
+| 项目 | K3 | GLM-5.2 | DeepSeek-V4-Pro |
+|---|---:|---:|---:|
+| 初始目标TPS/usr | 1,000 | 1,000（规划目标） | 1,000（规划目标） |
+| 架构冻结门槛 | ≥1,050 | ≥1,050（待产品确认） | ≥1,050（待产品确认） |
+| Raw latency budget | ≤854.70 µs/token | ≤854.70 µs/token（待确认） | ≤854.70 µs/token（待确认） |
+| Batch | 1 | 1 | 1 |
+| Context | 1M token | 1M token | 1M token |
+| TP / PP | TP32 / PP1 | TP32 / PP1 | TP32 / PP1 |
+| 结果状态 | 当前baseline | 新增baseline | 新增baseline |
+
+如果产品最终不要求GLM-5.2或DeepSeek-V4-Pro达到1,000 TPS/usr，必须在A0的KPI ADR中显式修改，而不能通过模型专属的隐藏缩放因子规避。
+
+## 3. 新增工作负载差异
+
+### 3.1 K3
+
+K3继续使用当前仓库的93层工程preset和P0/P1架构分离。A1必须把当前代码中的隐式结构转换为正式manifest；原有的998.81 TPS/usr仍然只是P1/MC640对照结果。
+
+K3重点验证：
+
+- 异构L/H Core；
+- Linear Attention和LSE `m/l/O`；
+- MoE/Router；
+- package-local reduce和TP32 collective；
+- 1M context下的KV/state和Decode流水线。
+
+### 3.2 GLM-5.2
+
+公开模型卡给出的架构输入包括约753B参数、1M context、IndexShare长上下文机制和MTP相关信号。项目不把公开报告中的FLOP下降或接受率直接当作硬件收益，而要求分别建模：
+
+1. indexer计算；
+2. index cache容量；
+3. index cache hit/miss；
+4. token-to-index复用；
+5. MTP分支计算；
+6. 接受/拒绝后的rollback和commit；
+7. index cache与KV/state的带宽竞争。
+
+GLM新增硬件需求：
+
+- 支持可配置index cache，而不是只支持标准KV cache；
+- 支持多候选token的分支调度和提交/回滚；
+- 支持稀疏访问的TMA descriptor和非连续layout；
+- 支持indexer、attention、router在同一NoC上的QoS隔离；
+- 支持index cache P95/P99命中率和容量敏感性报告。
+
+### 3.3 DeepSeek-V4-Pro
+
+公开发布资料和配置快照给出的架构输入包括约1.6T总参数、约49B active参数、1M context、61层、384 routed experts、每token激活6个routed experts、1个shared expert，以及稀疏attention/indexer路径。项目必须把这些信号转为可执行的expert dispatch和sparse attention transaction，而不是只乘一个MoE利用率系数。
+
+DeepSeek新增硬件需求：
+
+- Expert Parallelism和Token Dispatch/Combine成为一等公民；
+- 384个routed expert的权重home、容量、热度和负载均衡可建模；
+- 6 routed experts + 1 shared expert的路径必须显式出现在DAG；
+- expert all-to-all、combine、overflow、drop/backup策略进入RDMA和package fabric；
+- FP8/FP4 expert weight路径要显式计算dequant、accumulation和格式转换成本；
+- sparse attention indexer的状态与KV/state分开计费。
+
+## 4. 物理平台不变但必须扩展的能力
+
+| 子系统 | K3已有能力 | 多模型新增要求 |
+|---|---|---|
+| Compute Die | L/H Core、Tensor、Vector | Indexer Core/Vector模式、MTP分支、FP8/FP4 dequant、Expert dispatch micro-op |
+| SRAM/TMA | Local/Shared SRAM、TMA | KV cache、index cache、expert staging buffer三种buffer class隔离 |
+| MC | 16 MC、320/640 GB/s profile | expert weight streaming、long-context state、index cache miss三类带宽预算 |
+| NoC | Data/Control/Collective | Indexer、Router、Dispatch、Combine独立QoS/VC，避免MoE all-to-all阻塞Decode |
+| Package Fabric | 8 Die 4×2 mesh候选 | expert home/NUMA、locality-aware routing和跨Die token dispatch |
+| RDMA/Collective | TP32 mailbox、reduce、LSE | all-to-all、dispatch/combine、MTP commit/rollback、expert overflow/replay |
+| Scheduler | Tile IR、persistent decode | 多分支token DAG、MTP accept/reject、expert capacity reservation |
+| Performance | K3 P1回归 | 三模型分开回放，输出bytes、FLOP、hit rate、load balance和P99 |
+| PPA/RAS | P0面积/功耗/热预算 | 最坏模型取值、expert hotspot、cache容量切换、动态功耗峰值 |
+
+## 5. Agent调整矩阵
+
+### A0：架构集成
+
+新增交付：
+
+- `docs/design/DECISIONS.md`新增多模型KPI ADR；
+- 三个model profile版本和证据等级；
+- 每个模型的blocker和产品确认项；
+- 统一报告格式：`model_id × physical_profile × mc_profile`。
+
+量化验收：
+
+- 三个模型均有独立profile；
+- 所有关键KPI能够反查到模型ID；
+- 任何报告不允许出现未标注模型的TPS；
+- GLM/DeepSeek的公开资料与正式配置差异全部进入OPEN issue。
+
+### A1：Workload / Model Manifest
+
+新增交付：
+
+```text
+data/workload/model_profiles.json
+docs/design/workload/K3_MANIFEST.md
+docs/design/workload/GLM_5_2_MANIFEST.md
+docs/design/workload/DEEPSEEK_V4_PRO_MANIFEST.md
+docs/design/workload/MULTI_MODEL_SCHEMA.md
+```
+
+量化验收：
+
+- K3：93/93层可生成DAG；
+- GLM-5.2：1M context、indexer/index cache、MTP字段完整；
+- DeepSeek-V4-Pro：61层、384 routed experts、6 active routed experts、1 shared expert、indexer字段完整；
+- 每个模型至少3个代表性trace：long-context attention、MoE dispatch、decode commit；
+- 所有模型的FLOP、bytes、state bytes、expert bytes和tile count可逐层输出。
+
+### A2：Package / Floorplan
+
+新增交付：
+
+- expert home和index cache home的坐标规划；
+- 384 expert逻辑ID到die/MC/NUMA的映射接口；
+- GLM index cache和DeepSeek indexer的带宽/PHY需求清单。
+
+量化验收：
+
+- K3、GLM、DeepSeek的最坏package traffic都能映射到8 Die/16 MC；
+- expert/indexer热点不能导致任意单一MC长期负载超过平均值1.25倍；
+- 5,248 mm²面积守恒保持不变。
+
+### A3：AI Core
+
+新增执行类型：
+
+```text
+DENSE_GEMM
+MOE_ROUTER
+EXPERT_GEMM
+SPARSE_INDEXER
+MTP_DRAFT
+MTP_VERIFY
+DEQUANT_FP8_FP4
+ROLLBACK_COMMIT
+```
+
+量化验收：
+
+- 每种执行类型都有cycle model和资源占用；
+- FP8/FP4 dequant和accumulation不得使用零成本假设；
+- MTP accept/reject的两条路径都能回放；
+- expert dispatch和combine的空载、均衡、热点三种场景都能回放。
+
+### A4：SRAM / TMA
+
+新增buffer class：
+
+```text
+KV_STATE
+SPARSE_INDEX_CACHE
+EXPERT_STAGING
+MTP_BRANCH_STATE
+```
+
+量化验收：
+
+- 96 MiB/Die物理容量不变，但四类buffer的容量、优先级、eviction、ECC和生命周期必须可配置；
+- index cache hit rate目标≥90%，实际值必须按模型报告；
+- expert staging buffer的P95等待、重用率和溢出次数必须输出；
+- MTP rollback不产生stale buffer或epoch错误。
+
+### A5：Memory Cube / MC
+
+新增带宽分解：
+
+```text
+KV/state streaming
++ index cache miss
++ expert weight streaming
++ dispatch/combine payload
++ checkpoint/rollback metadata
+```
+
+量化验收：
+
+- 每个模型输出MC320和MC640两套结果；
+- 读写、权重、state、index、dispatch五类bytes分开计账；
+- sustained payload不得直接等于raw payload；
+- 320 GB/s无法达到模型门槛时，必须给出byte reduction或替代MC路线。
+
+### A6：Die-local NoC
+
+新增网络流量类别：
+
+```text
+INDEXER
+ROUTER
+EXPERT_DISPATCH
+EXPERT_COMBINE
+MTP_CONTROL
+```
+
+量化验收：
+
+- 新增流量至少有独立VC/QoS类别；
+- Decode critical path的P99 queue wait不被MoE all-to-all拖过预算；
+- Router/dispatch/combine在最坏热点下无deadlock、credit underflow和priority inversion。
+
+### A7：Package Fabric
+
+新增路由语义：
+
+- expert home routing；
+- locality-aware token dispatch；
+- index cache home；
+- combine/reduce返回路径；
+- 单Die/单MC故障后的expert remap。
+
+量化验收：
+
+- 384 expert逻辑空间可映射到8 Die；
+- expert dispatch负载P99/平均目标≤1.25；
+- 单故障状态下不产生丢token、重复combine或stale epoch。
+
+### A8：RDMA / Collective
+
+新增协议：
+
+```text
+EXPERT_DISPATCH
+EXPERT_COMBINE
+MTP_DRAFT
+MTP_VERIFY
+MTP_COMMIT
+MTP_ROLLBACK
+```
+
+量化验收：
+
+- all-to-all、dispatch、combine、MTP commit/rollback均进入transaction trace；
+- duplicate、lost ACK、stale epoch和重复token merge为0；
+- collective效率、tail latency和replay次数按模型分别统计。
+
+### A9：Tile IR / Scheduler
+
+新增IR字段：
+
+```text
+model_id
+expert_id
+expert_capacity
+index_cache_key
+candidate_token_group
+accept_mask
+rollback_epoch
+precision_path
+```
+
+量化验收：
+
+- 三个模型都能生成合法Tile IR；
+- MTP accept/reject、expert overflow和sparse index miss均可表达；
+- 一个decode step不依赖host逐token/逐expert启动；
+- 所有未映射tile、expert和candidate token数量为0。
+
+### A10：Performance Integration
+
+新增结果矩阵：
+
+```text
+3 models × 2 physical profiles × 2 MC profiles × 5 seeds
+```
+
+至少输出：
+
+- TPS/usr；
+- raw/e2e/P50/P95/P99 latency；
+- FLOP和effective FLOP；
+- KV/state/index/expert/dispatch bytes；
+- SRAM peak和各buffer occupancy；
+- MC sustained payload；
+- expert load balance；
+- index cache hit rate；
+- MTP acceptance、rollback和收益；
+- 功耗和热峰值。
+
+量化验收：
+
+- K3 P1继续复现MC320约546.63和MC640约998.81 TPS/usr；
+- P0三模型均给出≥1,050 TPS/usr是否达标的明确结论；
+- 未达标时按memory、indexer、expert dispatch、NoC、RDMA、Core、thermal分解；
+- 经验缩放因子为0。
+
+### A11：PPA / Thermal / RAS
+
+新增最坏场景：
+
+- DeepSeek 384 expert热点；
+- GLM index cache miss峰值；
+- MTP verify与主Decode重叠；
+- FP4/FP8 dequant高峰；
+- 1M context state刷新。
+
+量化验收：
+
+- 仍满足400 mm²/Die、250 W/Die、3,200 W/package envelope；
+- expert、indexer、dequant和MTP功耗单列；
+- 至少输出三模型各自平均、P95和峰值功耗；
+- 任何模型的热/功耗超预算必须阻断G4签核。
+
+### A12：Verification
+
+新增回归：
+
+- 每模型至少3个golden trace；
+- 每模型至少1个端到端decode step；
+- DeepSeek expert dispatch热点和overflow fault；
+- GLM index cache miss和MTP rollback fault；
+- K3 LSE m/l/O和现有RDMA replay回归。
+
+量化验收：
+
+- 三模型的P0/P1隔离检查100%通过；
+- 每个公共接口至少有正向、背压、超时、重放和故障测试；
+- 需求追踪覆盖率G4达到100%。
+
+### A13：Report Publisher
+
+新增报告：
+
+```text
+reports/multi_model/model_matrix.html
+reports/multi_model/<model_id>_memory_breakdown.json
+reports/multi_model/<model_id>_expert_dispatch.json
+reports/multi_model/<model_id>_latency_p99.json
+```
+
+量化验收：
+
+- 所有表格带model_id、physical_profile、mc_profile、schema version和seed；
+- GLM和DeepSeek的公开资料、配置快照和未确认字段在报告中分栏显示；
+- 任何数字没有证据链接时自动标记OPEN。
+
+## 6. 新增测试和目录
+
+```text
+data/workload/model_profiles.json
+
+docs/design/13_MULTI_MODEL_ARCHITECTURE.md
+docs/design/workload/
+
+models/index_cache/
+models/expert_dispatch/
+models/mtp_scheduler/
+
+src/workload/
+src/scheduler/
+
+reports/multi_model/
+tests/test_multi_model_profiles.js
+```
+
+初始版本只新增schema和profile contract test，不伪造GLM或DeepSeek的完整性能结果。完整模型回放必须在取得正式配置、权重抽象或供应商部署规格后进行。
+
+## 7. 调整后的并行波次
+
+### W1：模型输入并行
+
+- A1建立三个manifest；
+- A2建立expert/index cache home映射；
+- A12建立三模型profile和字段负测试；
+- A13建立多模型报告模板。
+
+### W2：执行能力并行
+
+- A3增加SPARSE_INDEXER、EXPERT_GEMM、MTP和FP4/FP8路径；
+- A4增加KV、index cache、expert staging、MTP branch buffer；
+- A5增加expert weight、index miss、dispatch/combine byte模型；
+- A6/A7/A8增加MoE all-to-all、indexer和MTP控制流；
+- A9扩展Tile IR和多分支调度。
+
+### W3：三模型回放并行
+
+- A10执行3×2×2×5的结果矩阵；
+- A11执行三个模型的最坏PPA/thermal；
+- A12执行模型特有故障和跨模型回归；
+- A0根据结果决定共享硬件、可选硬件和软件fallback边界。
+
+## 8. 新增架构决策点
+
+在G4前必须回答：
+
+1. index cache是独立SRAM slice、共享SRAM分区，还是MC cache？
+2. 384 expert是静态home、动态home，还是两级映射？
+3. MTP是每个H Core本地执行，还是独立共享engine？
+4. FP4/FP8 dequant放在Tensor Core前、SRAM入口还是MC controller？
+5. expert all-to-all是package内优先，还是直接使用TP32 scale-out？
+6. 三模型共用一套Tile IR，还是通过model-specific lowering扩展？
+7. K3的1000 TPS/usr是否正式推广为GLM-5.2和DeepSeek-V4-Pro的同等目标？
+8. 公开模型卡与正式配置不一致时，哪个版本进入签核？
+
+任何未回答项必须进入`OPEN_ISSUES.md`，不能在性能报告中静默假设。
+
+## 9. 当前结论
+
+7-reticle、8 Compute Die、16 MC、P0/P1物理profile不需要因为增加模型而立即修改；但是计算单元、SRAM/TMA、NoC、Package Fabric、RDMA、Scheduler和验证体系必须从“K3专用”升级为“多模型可配置”。
+
+最重要的结构性变化是：
+
+```text
+从：K3 的普通 Attention + MoE + KV/state
+到：K3 + IndexShare/Indexer + DeepSeek Sparse Attention
+   + 384-expert Dispatch/Combine + MTP + FP8/FP4 Precision Path
+```
+
+在A10完成三模型事件级回放前，不能声称当前P0物理方案同时满足三个模型的1,000 TPS/usr目标。
