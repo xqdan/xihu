@@ -1,0 +1,14 @@
+﻿'use strict';
+const fs=require('fs'); const path=require('path'); const assert=require('assert');
+const root=path.resolve(__dirname,'..');
+const doc=fs.readFileSync(path.join(root,'docs/design/17_TWO_STAGE_ARCHITECTURE_OPERATING_MODEL.md'),'utf8');
+const c=JSON.parse(fs.readFileSync(path.join(root,'data/analysis/architecture_stage_operating_model.json'),'utf8').replace(/^\uFEFF/,''));
+assert(doc.includes('Stage A：方向级架构探索'));
+assert(doc.includes('Stage B：参数级架构验证'));
+assert(doc.includes('D-Gate'));
+assert(doc.includes('Q-Gate'));
+assert.deepStrictEqual(c.stages.direction.agents,['D1','D2','D3','D4','D5','D6','D7']);
+assert.deepStrictEqual(c.stages.quantification.agents,['Q1','Q2','Q3','Q4','Q5','Q6','Q7','Q8','Q9']);
+assert.strictEqual(c.stages.direction.candidateLimitAfterGate,3);
+assert(c.resultDimensions.includes('candidate_id'));
+console.log('PASS two-stage architecture operating model: direction/quantification agents, gates and provenance dimensions');

@@ -1,0 +1,25 @@
+﻿{
+  "schemaVersion": "architecture-stage-operating-model-v0.1",
+  "asOf": "2026-09-21",
+  "stages": {
+    "direction": {
+      "id": "STAGE_A_DIRECTION",
+      "agents": ["D1", "D2", "D3", "D4", "D5", "D6", "D7"],
+      "candidateLimitAfterGate": 3,
+      "requiredSensitivityDimensions": ["bandwidth", "frequency", "core_count", "collective_latency", "software_gain", "area", "power"],
+      "outputs": ["architecture_candidates", "directional_resource_envelope", "directional_tps_scorecard"]
+    },
+    "quantification": {
+      "id": "STAGE_B_QUANTIFICATION",
+      "agents": ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9"],
+      "requiredDimensions": ["operator", "tile", "memory_transaction", "noc_packet", "collective_event", "kernel_cycle", "scheduler_event", "ppa"],
+      "outputs": ["operator_ledgers", "roofline", "event_traces", "fine_tps_matrix", "ppa_report"]
+    }
+  },
+  "gates": {
+    "D_GATE": ["area_conservation", "three_model_coarse_tps", "bottleneck_classification", "sensitivity_sweep", "candidate_count_le_3"],
+    "Q_GATE": ["manifest_complete_or_blocked", "tp8_tp16_tp32_executable", "shared_manifest_across_roofline_and_replay", "p0_p1_separated", "mc320_mc640_separated", "provenance_complete"]
+  },
+  "resultDimensions": ["stage", "candidate_id", "model_id", "phase", "tp", "cp", "ep", "physical_profile", "mc_profile", "confidence", "run_id"],
+  "statusValues": ["DIRECTIONAL_ESTIMATE", "PLANNING_ESTIMATE", "MODEL_OBSERVED", "BLOCKED_CONFIG", "PENDING_MODEL_RUN", "SILICON_OBSERVED"]
+}
