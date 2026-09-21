@@ -1,0 +1,17 @@
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const root = path.resolve(__dirname, '..');
+const score = JSON.parse(fs.readFileSync(path.join(root, 'data/direction/directional_tps_scorecard.json'), 'utf8').replace(/^\uFEFF/, ''));
+const workload = JSON.parse(fs.readFileSync(path.join(root, 'data/direction/directional_workload_baseline.json'), 'utf8').replace(/^\uFEFF/, ''));
+const k3 = workload.models.find(item => item.modelId === 'K3');
+const row = score.candidates.find(item => item.modelId === 'K3' && item.candidateId === 'P0-7R-balanced-MC320-TP32');
+assert(k3 && row);
+assert.strictEqual(row.workloadUnits.flopsPerToken, k3.globalFlopsPerToken / 32);
+assert.strictEqual(row.workloadUnits.bytesPerToken, k3.globalMemoryBytesPerToken / 32);
+assert(Math.abs(row.computeTimeUs - row.workloadUnits.flopsPerToken / row.workloadUnits.effectiveFlopsPerSecond * 1e6) < 1e-9);
+assert(Math.abs(row.memoryTimeUs - row.workloadUnits.bytesPerToken / row.workloadUnits.effectiveBytesPerSecond * 1e6) < 1e-9);
+assert(Math.abs(row.workloadUnits.effectiveBytesPerSecond - 3.584e12) < 1e-3);
+assert.strictEqual(row.status, 'DIRECTIONAL_ESTIMATE');
+console.log('PASS directional unit contract: FLOP/byte demand, effective rates and latency equations conserve units');

@@ -2,28 +2,39 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const {execFileSync} = require('child_process');
+const {writeGateStatus} = require('./governance/evaluate_gates');
 
 const root = path.resolve(__dirname, '..');
-const read = relativePath => JSON.parse(
-  fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/^\uFEFF/, '')
-);
-
+const read = relativePath => JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/^\uFEFF/, ''));
+const write = (relativePath, value) => {
+  const target = path.join(root, relativePath);
+  fs.mkdirSync(path.dirname(target), {recursive: true});
+  fs.writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
+};
+const sha256 = relativePath => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, relativePath))).digest('hex');
 const score = read('data/direction/directional_tps_scorecard.json');
 const profiles = read('data/workload/model_profiles.json');
+const matrix = read('data/workload/tps_observation_matrix.json');
+const register = read('data/governance/candidate_register.json');
+const reportDate = '20260921';
+const runId = `stage-b-${reportDate}`;
+const selected = register.exploratorySweeps[0].candidateIds;
+const runMode = 'EXPLORATORY_AFTER_BLOCKED_D_GATE';
+const targetTps = profiles.policy.sharedDecodeTargetTpsPerUser;
+const utilization = 0.6;
+const dutyCycle = 0.85;
+const mc320EffectiveBandwidth = 5.12e12 * 0.7;
+const networkEffectiveBandwidth = 0.8e12;
 
-const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);
-const reportDate = timestamp.slice(0, 8);
-const runId = `stage-b-${timestamp}`;
-const selected = [
-  'P0-7R-balanced-MC320-TP8',
-  'P0-7R-balanced-MC320-TP16',
-  'P0-7R-balanced-MC320-TP32'
-];
-
-const candidateById = new Map(score.candidates.map(candidate => [
-  `${candidate.candidateId}:${candidate.modelId}`,
-  candidate
-]));
+const available = {
+  L: {scope: 'package_rank', engines: 32, peakFlops: 157.2864e12},
+  H: {scope: 'package_rank', engines: 32, peakFlops: 1258.2912e12},
+  V: {scope: 'package_rank', engines: 64, peakFlops: 78.6432e12},
+  INDEXER: {scope: 'package_rank', engines: 64, peakFlops: 78.6432e12},
+  REDUCE: {scope: 'package_rank', engines: 64, peakFlops: 78.6432e12}
+};
 
 const opTemplates = {
   K3: [
@@ -49,84 +60,40 @@ const opTemplates = {
   ]
 };
 
-const available = {
-  L: 176.9472e12,
-  H: 176.9472e12,
-  V: 9.8304e12,
-  INDEXER: 9.8304e12,
-  REDUCE: 9.8304e12
-};
-
 const rows = [];
 const blocked = [];
-
 for (const model of profiles.profiles) {
   for (const tp of [8, 16, 32]) {
-    const candidateId = `P0-7R-balanced-MC320-TP${tp}`;
-    const base = candidateById.get(`${candidateId}:${model.id}`);
-    const formal = model.id === 'K3';
-
-    if (!formal) {
-      blocked.push({
-        runId,
-        stage: 'quantification',
-        agentId: 'Q1',
-        candidateId,
-        modelId: model.id,
-        tp,
-        physicalProfile: 'P0',
-        mcProfile: 'MC320',
-        status: 'BLOCKED_CONFIG',
-        confidence: 'E0',
-        reason: 'formal layer/dtype/expert manifest is not frozen'
-      });
+    const candidateId = selected.find(id => id.endsWith(`-TP${tp}`));
+    if (model.id !== 'K3') {
+      blocked.push({runId, stage: 'quantification', agentId: 'Q1', candidateId, modelId: model.id, tp, cp: 1, ep: 1, physicalProfile: 'P0', mcProfile: 'MC320', status: 'BLOCKED_CONFIG', confidence: 'E0', reason: 'formal layer/dtype/expert/state/index manifest is not frozen'});
       continue;
     }
-
     for (const [operatorId, core, flops, bytes, byteClass] of opTemplates[model.id]) {
       const shardFlops = flops / tp;
       const shardBytes = bytes / tp;
       const intensity = shardFlops / shardBytes;
-      const bw = byteClass === 'collective' ? 0.8e12 : 3.584e12;
-      const ridge = available[core] / bw;
-      const roof = Math.min(available[core], intensity * bw);
-      const required = shardFlops * 1000;
-      const requiredPeak = required / (0.6 * 0.85);
-
+      const bandwidth = byteClass === 'collective' ? networkEffectiveBandwidth : mc320EffectiveBandwidth;
+      const peak = available[core].peakFlops;
+      const ridge = peak / bandwidth;
+      const roof = Math.min(peak, intensity * bandwidth);
+      const requiredEffectiveFlops = shardFlops * targetTps;
+      const requiredPeakFlops = requiredEffectiveFlops / (utilization * dutyCycle);
+      const requiredMemoryBandwidth = shardBytes * targetTps;
+      const availableMemoryBandwidth = bandwidth;
+      const requiredNetworkBandwidth = byteClass === 'collective' ? shardBytes * targetTps : 0;
+      const availableNetworkBandwidth = byteClass === 'collective' ? networkEffectiveBandwidth : 0;
       rows.push({
-        runId,
-        stage: 'quantification',
-        agentId: 'Q2',
-        sourceDirectionalCandidateStatus: base ? base.status : 'MISSING_DIRECTIONAL_CANDIDATE',
-        candidateId,
-        modelId: model.id,
-        phase: 'decode',
-        tp,
-        cp: 1,
-        ep: 1,
-        physicalProfile: 'P0',
-        mcProfile: 'MC320',
-        operatorId,
-        operatorClass: operatorId,
-        coreClass: core,
-        flops: shardFlops,
-        bytes: {[byteClass]: shardBytes, total: shardBytes},
-        arithmeticIntensity: intensity,
+        runId, stage: 'quantification', agentId: 'Q2', sourceDirectionalCandidateStatus: score.candidates.find(item => item.candidateId === candidateId && item.modelId === model.id)?.status || 'MISSING_DIRECTIONAL_CANDIDATE',
+        candidateId, modelId: model.id, phase: 'decode', tp, cp: 1, ep: 1, physicalProfile: 'P0', mcProfile: 'MC320',
+        operatorId, operatorClass: operatorId, coreClass: core,
+        flops: shardFlops, bytes: {[byteClass]: shardBytes, total: shardBytes}, arithmeticIntensity: intensity,
         networkIntensity: byteClass === 'collective' ? shardFlops / (shardBytes * 1.25) : intensity,
-        ridgePoint: ridge,
-        rooflineBound: roof < intensity * bw ? 'compute' : 'bandwidth',
-        rooflinePerformance: roof,
-        requiredEffectiveFlops: required,
-        requiredPeakFlops: requiredPeak,
-        availablePeakFlops: available[core],
-        requiredToAvailableRatio: requiredPeak / available[core],
-        confidence: 'E1',
-        status: 'PLANNING_ESTIMATE',
-        assumptions: [
-          'K3 operator figures are directional planning values pending formal layer manifest',
-          'MC320 sustained bandwidth is a directional baseline assumption',
-          'utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions'
-        ]
+        ridgePoint: ridge, rooflineBound: roof < intensity * bandwidth ? 'bandwidth' : 'compute', rooflinePerformance: roof,
+        requiredEffectiveFlops, requiredPeakFlops, availablePeakFlops: peak, requiredToAvailableRatio: requiredPeakFlops / peak,
+        requiredMemoryBandwidth, availableMemoryBandwidth, requiredToAvailableBandwidthRatio: requiredMemoryBandwidth / availableMemoryBandwidth,
+        requiredNetworkBandwidth, availableNetworkBandwidth, requiredToAvailableNetworkRatio: availableNetworkBandwidth ? requiredNetworkBandwidth / availableNetworkBandwidth : 0,
+        confidence: 'E1', status: 'PLANNING_ESTIMATE', assumptions: ['K3 operator values are planning ledger inputs pending formal layer manifest', 'MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s', 'utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions', 'Q3-Q7 event replay is not implemented']
       });
     }
   }
@@ -134,110 +101,45 @@ for (const model of profiles.profiles) {
 
 const byModel = {};
 for (const row of rows) (byModel[row.modelId] ??= []).push(row);
-
 const summary = Object.entries(byModel).map(([modelId, modelRows]) => {
-  const max = modelRows.reduce(
-    (worst, row) => row.requiredToAvailableRatio > worst.requiredToAvailableRatio ? row : worst,
-    modelRows[0]
-  );
-  return {
-    modelId,
-    operatorCount: modelRows.length,
-    maxRequiredToAvailableRatio: max.requiredToAvailableRatio,
-    worstOperator: max.operatorId,
-    worstCore: max.coreClass,
-    status: 'PLANNING_ESTIMATE',
-    confidence: 'E1'
-  };
+  const worstCompute = modelRows.reduce((a, b) => a.requiredToAvailableRatio > b.requiredToAvailableRatio ? a : b);
+  const worstBandwidth = modelRows.reduce((a, b) => a.requiredToAvailableBandwidthRatio > b.requiredToAvailableBandwidthRatio ? a : b);
+  return {modelId, operatorCount: modelRows.length, maxRequiredToAvailableRatio: worstCompute.requiredToAvailableRatio, worstOperator: worstCompute.operatorId, worstCore: worstCompute.coreClass, maxRequiredToAvailableBandwidthRatio: worstBandwidth.requiredToAvailableBandwidthRatio, worstBandwidthOperator: worstBandwidth.operatorId, status: 'PLANNING_ESTIMATE', confidence: 'E1'};
 });
 
-const out = {
-  schemaVersion: 'detailed-architecture-run-v0.1',
-  runId,
-  stage: 'quantification',
-  agentId: 'Q1-Q9',
-  sourceDirectionalRunId: score.runId,
-  selectedCandidates: selected,
-  manifestStatus: {
-    K3: 'PLANNING_MANIFEST',
-    'GLM-5.2': 'BLOCKED_CONFIG',
-    'DeepSeek-V4-Pro': 'BLOCKED_CONFIG'
-  },
-  operatorLedger: rows,
-  blockedCases: blocked,
-  summary,
-  sizing: {
-    availablePeakFlops: available,
-    utilizationAssumption: 0.6,
-    dutyCycleAssumption: 0.85,
-    targetTpsPerUser: 1000
-  },
-  qGate: {
-    manifestCompleteOrBlocked: true,
-    tp8Tp16Tp32Executable: true,
-    sharedManifestAcrossRooflineAndReplay: false,
-    p0P1Separated: true,
-    mc320Mc640Separated: true,
-    provenanceComplete: true,
-    decision: 'BLOCKED_BY_MANIFEST_AND_EVENT_MODEL'
-  },
-  assumptions: [
-    'This is the first detailed-stage dry run, not final silicon performance.',
-    'K3 uses a planning operator ledger because its formal layer/dtype manifest is not frozen.',
-    'GLM-5.2 and DeepSeek-V4-Pro remain blocked.',
-    'Q3-Q7 event models are not yet implemented; Q8 fine TPS is not emitted.'
-  ],
-  nextActions: [
-    'Q1 freeze formal manifests',
-    'Q3 generate tile/memory events',
-    'Q4 generate packet/collective events',
-    'Q5 generate kernel cycles',
-    'Q6 generate schedule events',
-    'Q7 generate PPA',
-    'Q8 only after Q1-Q7'
-  ]
+const agentRuns = {
+  Q1: {status: 'PARTIAL', output: 'manifest status and blocked-case ledger'},
+  Q2: {status: 'PLANNING_COMPLETE', output: 'K3 arithmetic intensity, Roofline, compute/bandwidth/network sizing ledger'},
+  Q3: {status: 'BLOCKED_UPSTREAM', output: null, blocker: 'formal manifest and tile event contract pending'},
+  Q4: {status: 'BLOCKED_UPSTREAM', output: null, blocker: 'formal manifest and packet event contract pending'},
+  Q5: {status: 'BLOCKED_UPSTREAM', output: null, blocker: 'Q3/Q4 event streams pending'},
+  Q6: {status: 'BLOCKED_UPSTREAM', output: null, blocker: 'Q5 kernel cycle model pending'},
+  Q7: {status: 'BLOCKED_UPSTREAM', output: null, blocker: 'PPA reconciliation pending'},
+  Q8: {status: 'BLOCKED_UPSTREAM', output: null, blocker: 'Q1-Q7 provenance closure pending'},
+  Q9: {status: 'Q_GATE_BLOCKED', output: 'independent validator required'}
 };
-
-function fmt(value, digits = 2) {
-  return Number(value).toFixed(digits);
-}
-
-function tf(value, digits = 1) {
-  return fmt(value / 1e12, digits);
-}
-
-function buildReport(result) {
-  const k3Rows = result.operatorLedger.filter(row => row.modelId === 'K3');
-  const summaryRows = result.summary.map(item =>
-    `| ${item.modelId} | ${item.operatorCount} | ${fmt(item.maxRequiredToAvailableRatio, 2)} | ${item.worstOperator} | ${item.worstCore} | ${item.status} | ${item.confidence} |`
-  ).join('\n');
-  const ledgerRows = k3Rows.map(row =>
-    `| TP${row.tp} | ${row.operatorId} | ${row.coreClass} | ${fmt(row.arithmeticIntensity, 2)} | ${fmt(row.ridgePoint, 2)} | ${row.rooflineBound} | ${tf(row.requiredPeakFlops)} | ${tf(row.availablePeakFlops)} | ${fmt(row.requiredToAvailableRatio, 2)} | ${row.status} |`
-  ).join('\n');
-  const blockedRows = result.blockedCases.map(item =>
-    `| ${item.modelId} | TP${item.tp} | ${item.physicalProfile} | ${item.mcProfile} | ${item.status} | ${item.confidence} | ${item.reason} |`
-  ).join('\n');
-
-  return `# Stage B Detailed Architecture Dry Run Report\n\nRun date: 2026-09-21  \\\nRun ID: \`${result.runId}\`  \\\nSource Stage A Run ID: \`${result.sourceDirectionalRunId}\`  \\\nStatus: \`QUANTIFICATION_DRY_RUN / Q-GATE BLOCKED\`\n\n## 1. Flow executed in this run\n\n\`\`\`text\nQ1 manifest status check\n  -> Q2 operator arithmetic ledger / Roofline / sizing\n  -> Q3 tile + memory event model placeholder check\n  -> Q4 packet + collective event model placeholder check\n  -> Q5 kernel cycle model placeholder check\n  -> Q6 schedule and overlap placeholder check\n  -> Q7 PPA placeholder check\n  -> Q8 fine TPS gate check\n  -> Q9 Q-Gate review\n\`\`\`\n\nThis run completes only the executable Q1/Q2 dry-run path. Q3-Q7 event-level models are not implemented yet, so Q8 does not emit a signed-off fine TPS result.\n\n## 2. Inputs and candidate scope\n\nMachine-readable inputs:\n\n\`\`\`text\ndata/direction/directional_tps_scorecard.json\ndata/workload/model_profiles.json\n\`\`\`\n\nSelected Stage A candidates for P0 + MC320 TP sweep:\n\n\`\`\`text\n${result.selectedCandidates.join('\n')}\n\`\`\`\n\nScope constraints:\n\n| Dimension | Setting | Meaning |\n|---|---|---|\n| Physical profile | P0 | 7-reticle balanced baseline; do not extrapolate from P1 compact |\n| Memory profile | MC320 | Manufacturing baseline; do not use MC640 stretch as default |\n| TP | 8 / 16 / 32 | Compare TP scaling under the same P0/MC320 envelope |\n| Target TPS/usr | ${result.sizing.targetTpsPerUser} | Q2 required peak sizing target |\n| Utilization | ${result.sizing.utilizationAssumption} | Planning assumption |\n| Duty cycle | ${result.sizing.dutyCycleAssumption} | Planning assumption |\n\n## 3. Manifest status\n\n| Model | Current status | Handling in this run |\n|---|---|---|\n| K3 | ${result.manifestStatus.K3} | Generate a planning operator ledger; do not treat it as a frozen manifest |\n| GLM-5.2 | ${result.manifestStatus['GLM-5.2']} | Keep blocked; do not emit fake operator-level conclusions |\n| DeepSeek-V4-Pro | ${result.manifestStatus['DeepSeek-V4-Pro']} | Keep blocked; do not emit fake operator-level conclusions |\n\n## 4. K3 Q2 arithmetic intensity, Roofline and compute sizing\n\n| TP | Operator | Core | AI FLOP/B | Ridge FLOP/B | Roofline bound | Required peak TFLOP/s | Available peak TFLOP/s | Req/Avail | Status |\n|---|---|---|---:|---:|---|---:|---:|---:|---|\n${ledgerRows}\n\n### Key observation\n\n| Model | Operator count | Max Req/Avail | Worst operator | Worst core | Status | Confidence |\n|---|---:|---:|---|---|---|---|\n${summaryRows}\n\nThe current K3 planning ledger has max required-to-available ratio \`${fmt(result.summary[0].maxRequiredToAvailableRatio, 2)}\`. The worst operator is \`${result.summary[0].worstOperator}\` on core class \`${result.summary[0].worstCore}\`. This indicates a sizing risk between the directional K3 routed-MoE workload constants and the P0 L-Core envelope. It is a planning risk signal, not a final silicon sign-off conclusion.\n\n## 5. GLM-5.2 / DeepSeek-V4-Pro blocked cases\n\n| Model | TP | Physical | MC | Status | Confidence | Reason |\n|---|---|---|---|---|---|---|\n${blockedRows}\n\nBlocking rule: without a formal layer/dtype/expert manifest, the flow does not invent an operator ledger and does not emit fine-grained TPS.\n\n## 6. P0/P1 and MC320/MC640 isolation status\n\n| Check | Status | Note |\n|---|---|---|\n| P0/P1 separated | ${result.qGate.p0P1Separated ? 'PASS' : 'FAIL'} | This run uses P0 only and does not extrapolate P1 compact results to P0 |\n| MC320/MC640 separated | ${result.qGate.mc320Mc640Separated ? 'PASS' : 'FAIL'} | This run uses MC320 baseline only and does not treat MC640 stretch as default |\n| TP8/TP16/TP32 executable | ${result.qGate.tp8Tp16Tp32Executable ? 'PASS' : 'FAIL'} | K3 emits Q2 ledgers for TP8, TP16 and TP32 |\n| Shared manifest for Roofline/replay | ${result.qGate.sharedManifestAcrossRooflineAndReplay ? 'PASS' : 'BLOCKED'} | Q3-Q7 do not yet share one event manifest |\n\n## 7. Q-Gate conclusion\n\nCurrent Q-Gate decision:\n\n\`\`\`text\n${result.qGate.decision}\n\`\`\`\n\nPassed checks:\n\n- P0/P1 and MC320/MC640 dimensions are explicitly isolated.\n- K3 TP8/TP16/TP32 Q2 planning ledgers are executable.\n- GLM-5.2 and DeepSeek-V4-Pro unfrozen configs are explicitly blocked.\n\nBlocking checks:\n\n- K3 formal manifest is still not frozen.\n- GLM-5.2 and DeepSeek-V4-Pro lack formal layer/dtype/expert manifests.\n- Q3 tile/memory events, Q4 collective packet events, Q5 kernel cycles, Q6 scheduler/overlap and Q7 PPA are not implemented.\n- Q8 fine TPS must not be emitted yet.\n\n## 8. Next detailed-design agent work\n\n| Agent | Next output | Unlocks |\n|---|---|---|\n| Q1 Manifest Agent | Three-model formal manifest | Full three-model Q2 ledger |\n| Q3 Memory/Event Agent | Tile, SRAM and HBM/MC event stream | Memory replay and SRAM-hit analysis |\n| Q4 Network Agent | Packet, VC, credit and collective event stream | TP/EP communication latency and overlap |\n| Q5 Kernel Agent | Per-kernel cycle model | Operator latency |\n| Q6 Scheduler Agent | Stream schedule, fusion and overlap policy | End-to-end token latency |\n| Q7 PPA Agent | Area/power/timing budget reconciliation | Implementability check |\n| Q8 TPS Agent | Fine TPS/usr scorecard | Only after Q1-Q7 provenance closure |\n| Q9 Review Agent | Q-Gate decision | Detailed sign-off or blocked state |\n\n## 9. Run artifacts\n\n\`\`\`text\nmodels/detailed_run.js\ndata/detailed/detailed_architecture_run.json\nreports/detailed/stage_b_detailed_run_${reportDate}.md\n\`\`\`\n`;
-}
-
-fs.mkdirSync(path.join(root, 'data/detailed'), {recursive: true});
-fs.writeFileSync(
-  path.join(root, 'data/detailed/detailed_architecture_run.json'),
-  `${JSON.stringify(out, null, 2)}\n`
-);
-
+const sourceCommit = (() => { try { return execFileSync('git', ['rev-parse', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim(); } catch { return 'WORKTREE'; } })();
+const inputHashes = {'directional_scorecard': sha256('data/direction/directional_tps_scorecard.json'), 'model_profiles': sha256('data/workload/model_profiles.json'), 'observation_matrix': sha256('data/workload/tps_observation_matrix.json')};
+const out = {
+  schemaVersion: 'detailed-architecture-run-v0.2', runId, stage: 'quantification', runMode, agentId: 'Q1-Q9-orchestrator', sourceDirectionalRunId: score.runId,
+  selectedCandidates: selected, candidateSelection: {source: 'data/governance/candidate_register.json', formal: false, exploratory: true, decision: register.decisionState},
+  manifestStatus: {K3: 'PLANNING_MANIFEST', 'GLM-5.2': 'BLOCKED_CONFIG', 'DeepSeek-V4-Pro': 'BLOCKED_CONFIG'},
+  operatorLedger: rows, blockedCases: blocked, summary, agentRuns,
+  observationMatrix: {requiredSlots: matrix.requiredCoverage.minimumObservations, accountedSlots: matrix.observations.length, all18SlotsAccounted: matrix.observations.length === 18, status: 'PENDING_MODEL_RUN_OR_BLOCKED_CONFIG'},
+  provenance: {sourceCommit, manifestHash: null, inputHashes, seed: null, toolVersion: 'node-18-stage-b-v0.2'},
+  sizing: {targetTpsPerUser: targetTps, utilizationAssumption: utilization, dutyCycleAssumption: dutyCycle, availablePeakFlops: Object.fromEntries(Object.entries(available).map(([key, value]) => [key, value.peakFlops])), availableResources: available, effectiveMemoryBandwidth: mc320EffectiveBandwidth, networkEffectiveBandwidth: networkEffectiveBandwidth},
+  qGate: {manifestCompleteOrBlocked: true, tp8Tp16Tp32Executable: true, sharedManifestAcrossRooflineAndReplay: false, p0P1Separated: true, mc320Mc640Separated: true, provenanceComplete: false, all18SlotsAccounted: true, observationMatrixCompleteOrBlocked: false, allSlotProvenanceValid: false, allObservedSlotsReplayable: false, decision: 'BLOCKED_BY_D_GATE_MANIFEST_EVENT_MODEL_AND_PROVENANCE'},
+  assumptions: ['This is an exploratory Stage B TP sweep after a blocked D-Gate, not formal quantification.', 'Only K3 emits a planning operator ledger; GLM-5.2 and DeepSeek-V4-Pro remain blocked.', 'Q3-Q7 event-level models and Q8 fine TPS are not emitted.', 'All sizing ratios are independently recomputable from the ledger fields.'],
+  nextActions: ['Q1 freeze formal manifests for all three models', 'Q3 generate tile/memory events', 'Q4 generate packet/collective events', 'Q5 generate kernel cycles', 'Q6 generate schedule/overlap events', 'Q7 generate PPA reconciliation', 'Q8 emit fine TPS only after Q1-Q7 provenance closure', 'Q9 rerun independent gate validator']
+};
+write('data/detailed/detailed_architecture_run.json', out);
 fs.mkdirSync(path.join(root, 'reports/detailed'), {recursive: true});
-fs.writeFileSync(
-  path.join(root, 'reports/detailed', `stage_b_detailed_run_${reportDate}.md`),
-  buildReport(out)
-);
-
-console.log(JSON.stringify({
-  runId,
-  rows: rows.length,
-  blocked: blocked.length,
-  report: `reports/detailed/stage_b_detailed_run_${reportDate}.md`,
-  summary,
-  qGate: out.qGate
-}, null, 2));
+const summaryRows = summary.map(item => `| ${item.modelId} | ${item.operatorCount} | ${item.maxRequiredToAvailableRatio.toFixed(2)} | ${item.maxRequiredToAvailableBandwidthRatio.toFixed(2)} | ${item.worstOperator} | ${item.worstBandwidthOperator} |`).join('\n');
+const ledgerRows = rows.map(row => `| TP${row.tp} | ${row.operatorId} | ${row.coreClass} | ${row.arithmeticIntensity.toFixed(2)} | ${row.ridgePoint.toFixed(2)} | ${row.rooflineBound} | ${(row.requiredPeakFlops / 1e12).toFixed(1)} | ${(row.availablePeakFlops / 1e12).toFixed(1)} | ${row.requiredToAvailableRatio.toFixed(2)} | ${(row.requiredMemoryBandwidth / 1e12).toFixed(2)} | ${(row.availableMemoryBandwidth / 1e12).toFixed(2)} | ${row.requiredToAvailableBandwidthRatio.toFixed(2)} |`).join('\n');
+const blockedRows = blocked.map(item => `| ${item.modelId} | TP${item.tp} | ${item.status} | ${item.reason} |`).join('\n');
+const report = `# Stage B Detailed Architecture Exploratory Run\n\nRun ID: \`${runId}\`\nSource Stage A Run ID: \`${out.sourceDirectionalRunId}\`\nRun mode: \`${runMode}\`\nStatus: \`Q-GATE BLOCKED\`\n\n## 1. Governance\n\nStage A D-Gate is blocked. This run is authorized only by ADR-0001 as an exploratory P0/MC320 TP8/TP16/TP32 sweep. It is not formal candidate selection and emits no fine TPS sign-off.\n\nSelected sweep source: \`data/governance/candidate_register.json\`.\n\n## 2. Agent execution\n\n| Agent | Status | Output/blocker |\n|---|---|---|\n${Object.entries(agentRuns).map(([id, item]) => `| ${id} | ${item.status} | ${item.output || item.blocker || ''} |`).join('\n')}\n\n## 3. K3 Q2 Roofline and sizing ledger\n\n| TP | Operator | Core | AI FLOP/B | Ridge FLOP/B | Bound | Req peak TFLOP/s | Available TFLOP/s | Compute ratio | Req BW TB/s | Available BW TB/s | BW ratio |\n|---|---|---|---:|---:|---|---:|---:|---:|---:|---:|---:|\n${ledgerRows}\n\n## 4. Model summary\n\n| Model | Operators | Max compute ratio | Max bandwidth ratio | Worst compute op | Worst bandwidth op |\n|---|---:|---:|---:|---|---|\n${summaryRows}\n\n## 5. Blocked models\n\n| Model | TP | Status | Reason |\n|---|---:|---|---|\n${blockedRows}\n\n## 6. Observation matrix and provenance\n\n- 18 required slots accounted: **${out.observationMatrix.all18SlotsAccounted ? 'yes' : 'no'}**.\n- Matrix is complete or explicitly blocked: **no**; the 16 pending slots are not yet terminal blocked-config observations.\n- Provenance complete: **no**; manifestHash and seed are intentionally missing.\n- Source commit: \`${sourceCommit}\`.\n\n## 7. Q-Gate\n\nThe independent validator must keep the Q-Gate blocked until D-Gate, formal manifests, shared Q3-Q7 event streams, fine TPS, provenance and matrix closure are complete.\n\n## 8. Artifacts\n\n\`\`\`text\ndata/detailed/detailed_architecture_run.json\ndata/governance/gate_status.json\nreports/detailed/stage_b_detailed_run_${reportDate}.md\n\`\`\`\n`;
+fs.writeFileSync(path.join(root, `reports/detailed/stage_b_detailed_run_${reportDate}.md`), report, 'utf8');
+const gateStatus = writeGateStatus();
+out.qGate = gateStatus.quantificationGate;
+write('data/detailed/detailed_architecture_run.json', out);
+console.log(JSON.stringify({runId, rows: rows.length, blocked: blocked.length, selected, runMode, qGate: out.qGate}, null, 2));

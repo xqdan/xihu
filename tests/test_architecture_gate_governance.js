@@ -1,0 +1,18 @@
+﻿'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const root = path.resolve(__dirname, '..');
+const status = JSON.parse(fs.readFileSync(path.join(root, 'data/governance/gate_status.json'), 'utf8').replace(/^\uFEFF/, ''));
+const register = JSON.parse(fs.readFileSync(path.join(root, 'data/governance/candidate_register.json'), 'utf8').replace(/^\uFEFF/, ''));
+assert.strictEqual(register.decisionState, 'D_GATE_BLOCKED');
+assert.strictEqual(register.formalSelectedCandidates.length, 0);
+assert.strictEqual(status.directionGate.decision, 'BLOCKED_PENDING_SENSITIVITY_SWEEP_AND_FORMAL_MANIFEST');
+assert.strictEqual(status.directionGate.threeModelRowsAccounted, true);
+assert.strictEqual(status.directionGate.threeModelComparable, false);
+assert.strictEqual(status.quantificationGate.exploratoryOnly, true);
+assert.strictEqual(status.quantificationGate.provenanceComplete, false);
+assert.strictEqual(status.quantificationGate.all18SlotsAccounted, true);
+assert.strictEqual(status.quantificationGate.observationMatrixCompleteOrBlocked, false);
+assert.strictEqual(status.quantificationGate.decision, 'BLOCKED_BY_D_GATE_MANIFEST_EVENT_MODEL_AND_PROVENANCE');
+console.log('PASS independent architecture gate validator: D-Gate and Q-Gate are recomputed and remain blocked');

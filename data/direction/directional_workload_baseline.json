@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "directional-workload-baseline-v0.2",
+  "asOf": "2026-09-21",
+  "status": "PARTIALLY_CALIBRATED",
+  "unitPolicy": {
+    "flopsPerToken": "FLOP/token, global model work before TP sharding",
+    "bytesPerToken": "byte/token, global rank-summed external-memory traffic before TP sharding",
+    "bandwidth": "byte/s, sustained or effective bandwidth only",
+    "latency": "microsecond/token",
+    "rule": "All executable equations use base SI units. TFLOP and TB/s are presentation-only units."
+  },
+  "models": [
+    {
+      "modelId": "K3",
+      "status": "CALIBRATED_DIRECTIONAL_BASELINE",
+      "confidence": "E1",
+      "globalFlopsPerToken": 1755347919872,
+      "globalMemoryBytesPerToken": 170071349043.19772,
+      "tpScaling": {
+        "compute": "globalFlopsPerToken / tp",
+        "memory": "globalMemoryBytesPerToken / tp",
+        "note": "This first-order scaling is calibrated at TP32 and is not a replacement for the Q3-Q6 event replay."
+      },
+      "collectiveReference": {
+        "tp": 32,
+        "latencyUsPerToken": 131.69435343429836,
+        "scaling": "log2(tp) / log2(referenceTp)"
+      },
+      "softwareOverheadUsPerToken": 0,
+      "calibration": {
+        "observedTp": 32,
+        "observedReadBytesPerRank": 5314729657.599929,
+        "observedRawLatencyUs": 1563.5773507534657,
+        "observedE2eLatencyUs": 1829.3855003815547,
+        "observedTpsPerUser": 546.6316420412375,
+        "source": "data/rdma/k3_rdma_final_tuning_results.json",
+        "flopDerivation": "2 * 104.2B active parameters + 1.546947919872T long-context attention/state FLOP from src/core/design_engine.js"
+      },
+      "limitations": [
+        "TP8 and TP16 byte scaling is directional, not observed.",
+        "P0 uses the same workload demand as the P1 calibration but a different resource envelope.",
+        "Operator-level byte reuse and overlap are deferred to Stage B."
+      ]
+    },
+    {
+      "modelId": "GLM-5.2",
+      "status": "BLOCKED_CONFIG",
+      "confidence": "E0",
+      "globalFlopsPerToken": null,
+      "globalMemoryBytesPerToken": null,
+      "blocker": "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "status": "BLOCKED_CONFIG",
+      "confidence": "E0",
+      "globalFlopsPerToken": null,
+      "globalMemoryBytesPerToken": null,
+      "blocker": "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
+    }
+  ]
+}

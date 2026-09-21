@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "architecture-gate-status-v0.1",
+  "evaluatedAt": "2026-09-21T12:48:24.679Z",
+  "sourceDirectionalRunId": "stage-a-20260921124431",
+  "sourceDetailedRunId": "stage-b-20260921",
+  "directionGate": {
+    "areaConservation": true,
+    "threeModelRowsAccounted": true,
+    "threeModelComparable": false,
+    "bottleneckClassification": true,
+    "sensitivitySweep": false,
+    "candidateCountLe3": true,
+    "formalSelectionRecorded": false,
+    "decision": "BLOCKED_PENDING_SENSITIVITY_SWEEP_AND_FORMAL_MANIFEST"
+  },
+  "quantificationGate": {
+    "directionGatePassed": false,
+    "exploratoryOnly": true,
+    "manifestComplete": false,
+    "tp8Tp16Tp32PlanningExecutable": true,
+    "sharedManifestAcrossRooflineAndReplay": false,
+    "p0P1Separated": true,
+    "mc320Mc640Separated": true,
+    "provenanceComplete": false,
+    "requiredSlots": 18,
+    "accountedSlots": 18,
+    "all18SlotsAccounted": true,
+    "terminalOrObservedSlots": 2,
+    "observationMatrixCompleteOrBlocked": false,
+    "observedSlots": 2,
+    "allObservedSlotsHaveProvenance": true,
+    "allObservedSlotsReplayable": true,
+    "fineTpsReady": false,
+    "decision": "BLOCKED_BY_D_GATE_MANIFEST_EVENT_MODEL_AND_PROVENANCE"
+  }
+}

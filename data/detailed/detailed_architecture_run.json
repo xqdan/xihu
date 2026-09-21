@@ -1,14 +1,21 @@
 {
-  "schemaVersion": "detailed-architecture-run-v0.1",
-  "runId": "stage-b-20260921113859",
+  "schemaVersion": "detailed-architecture-run-v0.2",
+  "runId": "stage-b-20260921",
   "stage": "quantification",
-  "agentId": "Q1-Q9",
-  "sourceDirectionalRunId": "stage-a-20260921105239",
+  "runMode": "EXPLORATORY_AFTER_BLOCKED_D_GATE",
+  "agentId": "Q1-Q9-orchestrator",
+  "sourceDirectionalRunId": "stage-a-20260921124431",
   "selectedCandidates": [
     "P0-7R-balanced-MC320-TP8",
     "P0-7R-balanced-MC320-TP16",
     "P0-7R-balanced-MC320-TP32"
   ],
+  "candidateSelection": {
+    "source": "data/governance/candidate_register.json",
+    "formal": false,
+    "exploratory": true,
+    "decision": "D_GATE_BLOCKED"
+  },
   "manifestStatus": {
     "K3": "PLANNING_MANIFEST",
     "GLM-5.2": "BLOCKED_CONFIG",
@@ -16,7 +23,7 @@
   },
   "operatorLedger": [
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -38,23 +45,30 @@
       },
       "arithmeticIntensity": 3.7383177570093458,
       "networkIntensity": 3.7383177570093458,
-      "ridgePoint": 49.371428571428574,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 43.885714285714286,
+      "rooflineBound": "compute",
       "rooflinePerformance": 13398130841121.496,
       "requiredEffectiveFlops": 500000000000000,
       "requiredPeakFlops": 980392156862745.1,
-      "availablePeakFlops": 176947200000000,
-      "requiredToAvailableRatio": 5.5405915259622365,
+      "availablePeakFlops": 157286400000000,
+      "requiredToAvailableRatio": 6.233165466707517,
+      "requiredMemoryBandwidth": 133750000000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 37.318638392857146,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -76,23 +90,30 @@
       },
       "arithmeticIntensity": 3.757828810020877,
       "networkIntensity": 3.757828810020877,
-      "ridgePoint": 49.371428571428574,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 43.885714285714286,
+      "rooflineBound": "compute",
       "rooflinePerformance": 13468058455114.822,
       "requiredEffectiveFlops": 2250000000000000,
       "requiredPeakFlops": 4411764705882353,
-      "availablePeakFlops": 176947200000000,
-      "requiredToAvailableRatio": 24.932661866830067,
+      "availablePeakFlops": 157286400000000,
+      "requiredToAvailableRatio": 28.049244600183822,
+      "requiredMemoryBandwidth": 598750000000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 167.06194196428572,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -114,23 +135,30 @@
       },
       "arithmeticIntensity": 3.1578947368421053,
       "networkIntensity": 3.1578947368421053,
-      "ridgePoint": 49.371428571428574,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 351.0857142857143,
+      "rooflineBound": "compute",
       "rooflinePerformance": 11317894736842.105,
       "requiredEffectiveFlops": 750000000000000,
       "requiredPeakFlops": 1470588235294117.5,
-      "availablePeakFlops": 176947200000000,
-      "requiredToAvailableRatio": 8.310887288943354,
+      "availablePeakFlops": 1258291200000000,
+      "requiredToAvailableRatio": 1.1687185250076593,
+      "requiredMemoryBandwidth": 237500000000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 66.26674107142857,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -152,23 +180,30 @@
       },
       "arithmeticIntensity": 2.2857142857142856,
       "networkIntensity": 2.2857142857142856,
-      "ridgePoint": 2.742857142857143,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 21.942857142857143,
+      "rooflineBound": "compute",
       "rooflinePerformance": 8192000000000,
       "requiredEffectiveFlops": 100000000000000,
       "requiredPeakFlops": 196078431372549.03,
-      "availablePeakFlops": 9830400000000,
-      "requiredToAvailableRatio": 19.946129493464053,
+      "availablePeakFlops": 78643200000000,
+      "requiredToAvailableRatio": 2.4932661866830066,
+      "requiredMemoryBandwidth": 43750000000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 12.20703125,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -190,23 +225,30 @@
       },
       "arithmeticIntensity": 2.5,
       "networkIntensity": 2,
-      "ridgePoint": 12.288,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 98.304,
+      "rooflineBound": "compute",
       "rooflinePerformance": 2000000000000,
       "requiredEffectiveFlops": 25000000000000,
       "requiredPeakFlops": 49019607843137.26,
-      "availablePeakFlops": 9830400000000,
-      "requiredToAvailableRatio": 4.986532373366013,
+      "availablePeakFlops": 78643200000000,
+      "requiredToAvailableRatio": 0.6233165466707516,
+      "requiredMemoryBandwidth": 10000000000000,
+      "availableMemoryBandwidth": 800000000000,
+      "requiredToAvailableBandwidthRatio": 12.5,
+      "requiredNetworkBandwidth": 10000000000000,
+      "availableNetworkBandwidth": 800000000000,
+      "requiredToAvailableNetworkRatio": 12.5,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -228,23 +270,30 @@
       },
       "arithmeticIntensity": 3.7383177570093458,
       "networkIntensity": 3.7383177570093458,
-      "ridgePoint": 49.371428571428574,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 43.885714285714286,
+      "rooflineBound": "compute",
       "rooflinePerformance": 13398130841121.496,
       "requiredEffectiveFlops": 250000000000000,
       "requiredPeakFlops": 490196078431372.56,
-      "availablePeakFlops": 176947200000000,
-      "requiredToAvailableRatio": 2.7702957629811182,
+      "availablePeakFlops": 157286400000000,
+      "requiredToAvailableRatio": 3.1165827333537583,
+      "requiredMemoryBandwidth": 66875000000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 18.659319196428573,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -266,23 +315,30 @@
       },
       "arithmeticIntensity": 3.757828810020877,
       "networkIntensity": 3.757828810020877,
-      "ridgePoint": 49.371428571428574,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 43.885714285714286,
+      "rooflineBound": "compute",
       "rooflinePerformance": 13468058455114.822,
       "requiredEffectiveFlops": 1125000000000000,
       "requiredPeakFlops": 2205882352941176.5,
-      "availablePeakFlops": 176947200000000,
-      "requiredToAvailableRatio": 12.466330933415033,
+      "availablePeakFlops": 157286400000000,
+      "requiredToAvailableRatio": 14.024622300091911,
+      "requiredMemoryBandwidth": 299375000000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 83.53097098214286,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -304,23 +360,30 @@
       },
       "arithmeticIntensity": 3.1578947368421053,
       "networkIntensity": 3.1578947368421053,
-      "ridgePoint": 49.371428571428574,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 351.0857142857143,
+      "rooflineBound": "compute",
       "rooflinePerformance": 11317894736842.105,
       "requiredEffectiveFlops": 375000000000000,
       "requiredPeakFlops": 735294117647058.8,
-      "availablePeakFlops": 176947200000000,
-      "requiredToAvailableRatio": 4.155443644471677,
+      "availablePeakFlops": 1258291200000000,
+      "requiredToAvailableRatio": 0.5843592625038296,
+      "requiredMemoryBandwidth": 118750000000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 33.133370535714285,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -342,23 +405,30 @@
       },
       "arithmeticIntensity": 2.2857142857142856,
       "networkIntensity": 2.2857142857142856,
-      "ridgePoint": 2.742857142857143,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 21.942857142857143,
+      "rooflineBound": "compute",
       "rooflinePerformance": 8192000000000,
       "requiredEffectiveFlops": 50000000000000,
       "requiredPeakFlops": 98039215686274.52,
-      "availablePeakFlops": 9830400000000,
-      "requiredToAvailableRatio": 9.973064746732026,
+      "availablePeakFlops": 78643200000000,
+      "requiredToAvailableRatio": 1.2466330933415033,
+      "requiredMemoryBandwidth": 21875000000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 6.103515625,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -380,23 +450,30 @@
       },
       "arithmeticIntensity": 2.5,
       "networkIntensity": 2,
-      "ridgePoint": 12.288,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 98.304,
+      "rooflineBound": "compute",
       "rooflinePerformance": 2000000000000,
       "requiredEffectiveFlops": 12500000000000,
       "requiredPeakFlops": 24509803921568.63,
-      "availablePeakFlops": 9830400000000,
-      "requiredToAvailableRatio": 2.4932661866830066,
+      "availablePeakFlops": 78643200000000,
+      "requiredToAvailableRatio": 0.3116582733353758,
+      "requiredMemoryBandwidth": 5000000000000,
+      "availableMemoryBandwidth": 800000000000,
+      "requiredToAvailableBandwidthRatio": 6.25,
+      "requiredNetworkBandwidth": 5000000000000,
+      "availableNetworkBandwidth": 800000000000,
+      "requiredToAvailableNetworkRatio": 6.25,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -418,23 +495,30 @@
       },
       "arithmeticIntensity": 3.7383177570093458,
       "networkIntensity": 3.7383177570093458,
-      "ridgePoint": 49.371428571428574,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 43.885714285714286,
+      "rooflineBound": "compute",
       "rooflinePerformance": 13398130841121.496,
       "requiredEffectiveFlops": 125000000000000,
       "requiredPeakFlops": 245098039215686.28,
-      "availablePeakFlops": 176947200000000,
-      "requiredToAvailableRatio": 1.3851478814905591,
+      "availablePeakFlops": 157286400000000,
+      "requiredToAvailableRatio": 1.5582913666768792,
+      "requiredMemoryBandwidth": 33437500000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 9.329659598214286,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -456,23 +540,30 @@
       },
       "arithmeticIntensity": 3.757828810020877,
       "networkIntensity": 3.757828810020877,
-      "ridgePoint": 49.371428571428574,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 43.885714285714286,
+      "rooflineBound": "compute",
       "rooflinePerformance": 13468058455114.822,
       "requiredEffectiveFlops": 562500000000000,
       "requiredPeakFlops": 1102941176470588.2,
-      "availablePeakFlops": 176947200000000,
-      "requiredToAvailableRatio": 6.233165466707517,
+      "availablePeakFlops": 157286400000000,
+      "requiredToAvailableRatio": 7.012311150045956,
+      "requiredMemoryBandwidth": 149687500000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 41.76548549107143,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -494,23 +585,30 @@
       },
       "arithmeticIntensity": 3.1578947368421053,
       "networkIntensity": 3.1578947368421053,
-      "ridgePoint": 49.371428571428574,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 351.0857142857143,
+      "rooflineBound": "compute",
       "rooflinePerformance": 11317894736842.105,
       "requiredEffectiveFlops": 187500000000000,
       "requiredPeakFlops": 367647058823529.4,
-      "availablePeakFlops": 176947200000000,
-      "requiredToAvailableRatio": 2.0777218222358385,
+      "availablePeakFlops": 1258291200000000,
+      "requiredToAvailableRatio": 0.2921796312519148,
+      "requiredMemoryBandwidth": 59375000000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 16.566685267857142,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -532,23 +630,30 @@
       },
       "arithmeticIntensity": 2.2857142857142856,
       "networkIntensity": 2.2857142857142856,
-      "ridgePoint": 2.742857142857143,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 21.942857142857143,
+      "rooflineBound": "compute",
       "rooflinePerformance": 8192000000000,
       "requiredEffectiveFlops": 25000000000000,
       "requiredPeakFlops": 49019607843137.26,
-      "availablePeakFlops": 9830400000000,
-      "requiredToAvailableRatio": 4.986532373366013,
+      "availablePeakFlops": 78643200000000,
+      "requiredToAvailableRatio": 0.6233165466707516,
+      "requiredMemoryBandwidth": 10937500000000,
+      "availableMemoryBandwidth": 3584000000000,
+      "requiredToAvailableBandwidthRatio": 3.0517578125,
+      "requiredNetworkBandwidth": 0,
+      "availableNetworkBandwidth": 0,
+      "requiredToAvailableNetworkRatio": 0,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q2",
       "sourceDirectionalCandidateStatus": "DIRECTIONAL_ESTIMATE",
@@ -570,147 +675,270 @@
       },
       "arithmeticIntensity": 2.5,
       "networkIntensity": 2,
-      "ridgePoint": 12.288,
-      "rooflineBound": "bandwidth",
+      "ridgePoint": 98.304,
+      "rooflineBound": "compute",
       "rooflinePerformance": 2000000000000,
       "requiredEffectiveFlops": 6250000000000,
       "requiredPeakFlops": 12254901960784.314,
-      "availablePeakFlops": 9830400000000,
-      "requiredToAvailableRatio": 1.2466330933415033,
+      "availablePeakFlops": 78643200000000,
+      "requiredToAvailableRatio": 0.1558291366676879,
+      "requiredMemoryBandwidth": 2500000000000,
+      "availableMemoryBandwidth": 800000000000,
+      "requiredToAvailableBandwidthRatio": 3.125,
+      "requiredNetworkBandwidth": 2500000000000,
+      "availableNetworkBandwidth": 800000000000,
+      "requiredToAvailableNetworkRatio": 3.125,
       "confidence": "E1",
       "status": "PLANNING_ESTIMATE",
       "assumptions": [
-        "K3 operator figures are directional planning values pending formal layer manifest",
-        "MC320 sustained bandwidth is a directional baseline assumption",
-        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions"
+        "K3 operator values are planning ledger inputs pending formal layer manifest",
+        "MC320 effective bandwidth is 5.12 TB/s raw × 0.70 sustained = 3.584 TB/s",
+        "utilization=0.6 and duty_cycle=0.85 are explicit sizing assumptions",
+        "Q3-Q7 event replay is not implemented"
       ]
     }
   ],
   "blockedCases": [
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q1",
       "candidateId": "P0-7R-balanced-MC320-TP8",
       "modelId": "GLM-5.2",
       "tp": 8,
+      "cp": 1,
+      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
       "status": "BLOCKED_CONFIG",
       "confidence": "E0",
-      "reason": "formal layer/dtype/expert manifest is not frozen"
+      "reason": "formal layer/dtype/expert/state/index manifest is not frozen"
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q1",
       "candidateId": "P0-7R-balanced-MC320-TP16",
       "modelId": "GLM-5.2",
       "tp": 16,
+      "cp": 1,
+      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
       "status": "BLOCKED_CONFIG",
       "confidence": "E0",
-      "reason": "formal layer/dtype/expert manifest is not frozen"
+      "reason": "formal layer/dtype/expert/state/index manifest is not frozen"
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q1",
       "candidateId": "P0-7R-balanced-MC320-TP32",
       "modelId": "GLM-5.2",
       "tp": 32,
+      "cp": 1,
+      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
       "status": "BLOCKED_CONFIG",
       "confidence": "E0",
-      "reason": "formal layer/dtype/expert manifest is not frozen"
+      "reason": "formal layer/dtype/expert/state/index manifest is not frozen"
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q1",
       "candidateId": "P0-7R-balanced-MC320-TP8",
       "modelId": "DeepSeek-V4-Pro",
       "tp": 8,
+      "cp": 1,
+      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
       "status": "BLOCKED_CONFIG",
       "confidence": "E0",
-      "reason": "formal layer/dtype/expert manifest is not frozen"
+      "reason": "formal layer/dtype/expert/state/index manifest is not frozen"
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q1",
       "candidateId": "P0-7R-balanced-MC320-TP16",
       "modelId": "DeepSeek-V4-Pro",
       "tp": 16,
+      "cp": 1,
+      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
       "status": "BLOCKED_CONFIG",
       "confidence": "E0",
-      "reason": "formal layer/dtype/expert manifest is not frozen"
+      "reason": "formal layer/dtype/expert/state/index manifest is not frozen"
     },
     {
-      "runId": "stage-b-20260921113859",
+      "runId": "stage-b-20260921",
       "stage": "quantification",
       "agentId": "Q1",
       "candidateId": "P0-7R-balanced-MC320-TP32",
       "modelId": "DeepSeek-V4-Pro",
       "tp": 32,
+      "cp": 1,
+      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
       "status": "BLOCKED_CONFIG",
       "confidence": "E0",
-      "reason": "formal layer/dtype/expert manifest is not frozen"
+      "reason": "formal layer/dtype/expert/state/index manifest is not frozen"
     }
   ],
   "summary": [
     {
       "modelId": "K3",
       "operatorCount": 15,
-      "maxRequiredToAvailableRatio": 24.932661866830067,
+      "maxRequiredToAvailableRatio": 28.049244600183822,
       "worstOperator": "routed_moe",
       "worstCore": "L",
+      "maxRequiredToAvailableBandwidthRatio": 167.06194196428572,
+      "worstBandwidthOperator": "routed_moe",
       "status": "PLANNING_ESTIMATE",
       "confidence": "E1"
     }
   ],
-  "sizing": {
-    "availablePeakFlops": {
-      "L": 176947200000000,
-      "H": 176947200000000,
-      "V": 9830400000000,
-      "INDEXER": 9830400000000,
-      "REDUCE": 9830400000000
+  "agentRuns": {
+    "Q1": {
+      "status": "PARTIAL",
+      "output": "manifest status and blocked-case ledger"
     },
+    "Q2": {
+      "status": "PLANNING_COMPLETE",
+      "output": "K3 arithmetic intensity, Roofline, compute/bandwidth/network sizing ledger"
+    },
+    "Q3": {
+      "status": "BLOCKED_UPSTREAM",
+      "output": null,
+      "blocker": "formal manifest and tile event contract pending"
+    },
+    "Q4": {
+      "status": "BLOCKED_UPSTREAM",
+      "output": null,
+      "blocker": "formal manifest and packet event contract pending"
+    },
+    "Q5": {
+      "status": "BLOCKED_UPSTREAM",
+      "output": null,
+      "blocker": "Q3/Q4 event streams pending"
+    },
+    "Q6": {
+      "status": "BLOCKED_UPSTREAM",
+      "output": null,
+      "blocker": "Q5 kernel cycle model pending"
+    },
+    "Q7": {
+      "status": "BLOCKED_UPSTREAM",
+      "output": null,
+      "blocker": "PPA reconciliation pending"
+    },
+    "Q8": {
+      "status": "BLOCKED_UPSTREAM",
+      "output": null,
+      "blocker": "Q1-Q7 provenance closure pending"
+    },
+    "Q9": {
+      "status": "Q_GATE_BLOCKED",
+      "output": "independent validator required"
+    }
+  },
+  "observationMatrix": {
+    "requiredSlots": 18,
+    "accountedSlots": 18,
+    "all18SlotsAccounted": true,
+    "status": "PENDING_MODEL_RUN_OR_BLOCKED_CONFIG"
+  },
+  "provenance": {
+    "sourceCommit": "a9cc13b24b70d94baddc39865cfafa7344249426",
+    "manifestHash": null,
+    "inputHashes": {
+      "directional_scorecard": "e0d920ec153d9a1d1b88744811caad7bf8e34a969b1655582bc1ad56ead0ef20",
+      "model_profiles": "ce9c6d5d6b33642cfc38a5e701400f9316f00aed2dcaab7ad557812f68d4762a",
+      "observation_matrix": "530581fa51b68692e142b47fa1ef4fec9f0c5a622ae0c31ed25d33f792621b6b"
+    },
+    "seed": null,
+    "toolVersion": "node-18-stage-b-v0.2"
+  },
+  "sizing": {
+    "targetTpsPerUser": 1000,
     "utilizationAssumption": 0.6,
     "dutyCycleAssumption": 0.85,
-    "targetTpsPerUser": 1000
+    "availablePeakFlops": {
+      "L": 157286400000000,
+      "H": 1258291200000000,
+      "V": 78643200000000,
+      "INDEXER": 78643200000000,
+      "REDUCE": 78643200000000
+    },
+    "availableResources": {
+      "L": {
+        "scope": "package_rank",
+        "engines": 32,
+        "peakFlops": 157286400000000
+      },
+      "H": {
+        "scope": "package_rank",
+        "engines": 32,
+        "peakFlops": 1258291200000000
+      },
+      "V": {
+        "scope": "package_rank",
+        "engines": 64,
+        "peakFlops": 78643200000000
+      },
+      "INDEXER": {
+        "scope": "package_rank",
+        "engines": 64,
+        "peakFlops": 78643200000000
+      },
+      "REDUCE": {
+        "scope": "package_rank",
+        "engines": 64,
+        "peakFlops": 78643200000000
+      }
+    },
+    "effectiveMemoryBandwidth": 3584000000000,
+    "networkEffectiveBandwidth": 800000000000
   },
   "qGate": {
-    "manifestCompleteOrBlocked": true,
-    "tp8Tp16Tp32Executable": true,
+    "directionGatePassed": false,
+    "exploratoryOnly": true,
+    "manifestComplete": false,
+    "tp8Tp16Tp32PlanningExecutable": true,
     "sharedManifestAcrossRooflineAndReplay": false,
     "p0P1Separated": true,
     "mc320Mc640Separated": true,
-    "provenanceComplete": true,
-    "decision": "BLOCKED_BY_MANIFEST_AND_EVENT_MODEL"
+    "provenanceComplete": false,
+    "requiredSlots": 18,
+    "accountedSlots": 18,
+    "all18SlotsAccounted": true,
+    "terminalOrObservedSlots": 2,
+    "observationMatrixCompleteOrBlocked": false,
+    "observedSlots": 2,
+    "allObservedSlotsHaveProvenance": true,
+    "allObservedSlotsReplayable": true,
+    "fineTpsReady": false,
+    "decision": "BLOCKED_BY_D_GATE_MANIFEST_EVENT_MODEL_AND_PROVENANCE"
   },
   "assumptions": [
-    "This is the first detailed-stage dry run, not final silicon performance.",
-    "K3 uses a planning operator ledger because its formal layer/dtype manifest is not frozen.",
-    "GLM-5.2 and DeepSeek-V4-Pro remain blocked.",
-    "Q3-Q7 event models are not yet implemented; Q8 fine TPS is not emitted."
+    "This is an exploratory Stage B TP sweep after a blocked D-Gate, not formal quantification.",
+    "Only K3 emits a planning operator ledger; GLM-5.2 and DeepSeek-V4-Pro remain blocked.",
+    "Q3-Q7 event-level models and Q8 fine TPS are not emitted.",
+    "All sizing ratios are independently recomputable from the ledger fields."
   ],
   "nextActions": [
-    "Q1 freeze formal manifests",
+    "Q1 freeze formal manifests for all three models",
     "Q3 generate tile/memory events",
     "Q4 generate packet/collective events",
     "Q5 generate kernel cycles",
-    "Q6 generate schedule events",
-    "Q7 generate PPA",
-    "Q8 only after Q1-Q7"
+    "Q6 generate schedule/overlap events",
+    "Q7 generate PPA reconciliation",
+    "Q8 emit fine TPS only after Q1-Q7 provenance closure",
+    "Q9 rerun independent gate validator"
   ]
 }

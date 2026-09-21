@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "candidate-register-v0.1",
+  "updatedAt": "2026-09-21T12:48:24.574Z",
+  "sourceDirectionalRunId": "stage-a-20260921124431",
+  "decisionState": "D_GATE_BLOCKED",
+  "formalSelectedCandidates": [],
+  "exploratorySweeps": [
+    {
+      "sweepId": "ADR-0001-P0-MC320-TP-SWEEP",
+      "runMode": "EXPLORATORY_AFTER_BLOCKED_D_GATE",
+      "candidateIds": [
+        "P0-7R-balanced-MC320-TP8",
+        "P0-7R-balanced-MC320-TP16",
+        "P0-7R-balanced-MC320-TP32"
+      ],
+      "allowedModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "rationale": "Expose TP scaling and Q2 sizing without treating blocked Stage A as formal sign-off.",
+      "decisionRecord": "docs/design/decisions/ADR-0001-exploratory-stage-b-tp-sweep.md"
+    }
+  ]
+}

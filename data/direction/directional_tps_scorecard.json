@@ -1,19 +1,32 @@
 {
-  "schemaVersion": "directional-tps-scorecard-v0.1",
-  "runId": "stage-a-20260921105239",
+  "schemaVersion": "directional-tps-scorecard-v0.2",
+  "runId": "stage-a-20260921124431",
   "stage": "direction",
   "agentId": "D7",
   "targetTpsPerUser": 1000,
   "architectureGateTpsPerUser": 1050,
   "candidateLimitAfterGate": 3,
   "candidateCount": 36,
-  "selectedCandidateIds": [
-    "P1-compact-MC320-TP8",
-    "P1-compact-MC640-TP8",
-    "P0-7R-balanced-MC320-TP8"
+  "selectedCandidateIds": [],
+  "exploratoryCandidateIds": [
+    "P0-7R-balanced-MC320-TP8",
+    "P0-7R-balanced-MC320-TP16",
+    "P0-7R-balanced-MC320-TP32"
   ],
   "status": "DIRECTIONAL_ESTIMATE",
   "confidence": "E0",
+  "unitContract": {
+    "flops": "FLOP/token/rank",
+    "bytes": "byte/token/rank",
+    "computeRate": "FLOP/s/package_rank",
+    "memoryRate": "byte/s/package_rank",
+    "tps": "tokens/s/user"
+  },
+  "inputHashes": {
+    "envelope": "828f34e39dc50128b46d283be16b8847ae0e53bcc0730d25a390d1428bc69f2f",
+    "workloadBaseline": "89c496d505b69fa193b507635dcd1a3ae358a19579e8b4c806ddf07d6612330e",
+    "modelProfiles": "ce9c6d5d6b33642cfc38a5e701400f9316f00aed2dcaab7ad557812f68d4762a"
+  },
   "candidates": [
     {
       "candidateId": "P1-compact-MC320-TP8",
@@ -24,21 +37,33 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.2373589409722222,
-      "memoryTimeUs": 1.046875,
-      "collectiveTimeUs": 79.2,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 219418489984,
+        "bytesPerToken": 21258918630.399715,
+        "effectiveFlopsPerSecond": 1415577600000000,
+        "effectiveBytesPerSecond": 3583999999999.9995
+      },
+      "computeTimeUs": 155.0027988462095,
+      "memoryTimeUs": 5931.617921428493,
+      "collectiveTimeUs": 79.01661206057902,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 99.2,
-      "e2eEstimateUs": 116.064,
-      "tpsPerUser": 8615.936035290875,
-      "bottleneck": "communication",
+      "rawEstimateUs": 5931.617921428493,
+      "e2eEstimateUs": 6939.992968071337,
+      "tpsPerUser": 144.09236502121496,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -50,21 +75,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.2712673611111111,
-      "memoryTimeUs": 1.15234375,
-      "collectiveTimeUs": 108,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 133,
-      "e2eEstimateUs": 155.60999999999999,
-      "tpsPerUser": 6426.322215795901,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -76,21 +105,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.3108271846064815,
-      "memoryTimeUs": 1.25,
-      "collectiveTimeUs": 138,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 168,
-      "e2eEstimateUs": 196.56,
-      "tpsPerUser": 5087.505087505087,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -102,21 +135,33 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.2373589409722222,
-      "memoryTimeUs": 1.046875,
-      "collectiveTimeUs": 105.6,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 109709244992,
+        "bytesPerToken": 10629459315.199858,
+        "effectiveFlopsPerSecond": 1415577600000000,
+        "effectiveBytesPerSecond": 3583999999999.9995
+      },
+      "computeTimeUs": 77.50139942310474,
+      "memoryTimeUs": 2965.8089607142465,
+      "collectiveTimeUs": 105.35548274743869,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 125.6,
-      "e2eEstimateUs": 146.952,
-      "tpsPerUser": 6804.943110675595,
-      "bottleneck": "communication",
+      "rawEstimateUs": 2965.8089607142465,
+      "e2eEstimateUs": 3469.9964840356683,
+      "tpsPerUser": 288.1847300424299,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -128,21 +173,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.2712673611111111,
-      "memoryTimeUs": 1.15234375,
-      "collectiveTimeUs": 144,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 169,
-      "e2eEstimateUs": 197.73,
-      "tpsPerUser": 5057.401507105649,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -154,21 +203,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.3108271846064815,
-      "memoryTimeUs": 1.25,
-      "collectiveTimeUs": 184,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 214,
-      "e2eEstimateUs": 250.38,
-      "tpsPerUser": 3993.9292275740872,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -180,21 +233,33 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.2373589409722222,
-      "memoryTimeUs": 1.046875,
-      "collectiveTimeUs": 132,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 54854622496,
+        "bytesPerToken": 5314729657.599929,
+        "effectiveFlopsPerSecond": 1415577600000000,
+        "effectiveBytesPerSecond": 3583999999999.9995
+      },
+      "computeTimeUs": 38.75069971155237,
+      "memoryTimeUs": 1482.9044803571232,
+      "collectiveTimeUs": 131.69435343429836,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 152,
-      "e2eEstimateUs": 177.83999999999997,
-      "tpsPerUser": 5623.031938821413,
-      "bottleneck": "communication",
+      "rawEstimateUs": 1482.9044803571232,
+      "e2eEstimateUs": 1734.9982420178342,
+      "tpsPerUser": 576.3694600848598,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -206,21 +271,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.2712673611111111,
-      "memoryTimeUs": 1.15234375,
-      "collectiveTimeUs": 180,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 205,
-      "e2eEstimateUs": 239.85,
-      "tpsPerUser": 4169.272461955389,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -232,21 +301,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.3108271846064815,
-      "memoryTimeUs": 1.25,
-      "collectiveTimeUs": 230,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 260,
-      "e2eEstimateUs": 304.2,
-      "tpsPerUser": 3287.3109796186723,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -258,21 +331,33 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.2373589409722222,
-      "memoryTimeUs": 0.5234375,
-      "collectiveTimeUs": 79.2,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 219418489984,
+        "bytesPerToken": 21258918630.399715,
+        "effectiveFlopsPerSecond": 1415577600000000,
+        "effectiveBytesPerSecond": 7167999999999.999
+      },
+      "computeTimeUs": 155.0027988462095,
+      "memoryTimeUs": 2965.8089607142465,
+      "collectiveTimeUs": 79.01661206057902,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 99.2,
-      "e2eEstimateUs": 116.064,
-      "tpsPerUser": 8615.936035290875,
-      "bottleneck": "communication",
+      "rawEstimateUs": 2965.8089607142465,
+      "e2eEstimateUs": 3469.9964840356683,
+      "tpsPerUser": 288.1847300424299,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -284,21 +369,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.2712673611111111,
-      "memoryTimeUs": 0.576171875,
-      "collectiveTimeUs": 108,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 133,
-      "e2eEstimateUs": 155.60999999999999,
-      "tpsPerUser": 6426.322215795901,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -310,21 +399,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.3108271846064815,
-      "memoryTimeUs": 0.625,
-      "collectiveTimeUs": 138,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 168,
-      "e2eEstimateUs": 196.56,
-      "tpsPerUser": 5087.505087505087,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -336,21 +429,33 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.2373589409722222,
-      "memoryTimeUs": 0.5234375,
-      "collectiveTimeUs": 105.6,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 109709244992,
+        "bytesPerToken": 10629459315.199858,
+        "effectiveFlopsPerSecond": 1415577600000000,
+        "effectiveBytesPerSecond": 7167999999999.999
+      },
+      "computeTimeUs": 77.50139942310474,
+      "memoryTimeUs": 1482.9044803571232,
+      "collectiveTimeUs": 105.35548274743869,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 125.6,
-      "e2eEstimateUs": 146.952,
-      "tpsPerUser": 6804.943110675595,
-      "bottleneck": "communication",
+      "rawEstimateUs": 1482.9044803571232,
+      "e2eEstimateUs": 1734.9982420178342,
+      "tpsPerUser": 576.3694600848598,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -362,21 +467,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.2712673611111111,
-      "memoryTimeUs": 0.576171875,
-      "collectiveTimeUs": 144,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 169,
-      "e2eEstimateUs": 197.73,
-      "tpsPerUser": 5057.401507105649,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -388,21 +497,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.3108271846064815,
-      "memoryTimeUs": 0.625,
-      "collectiveTimeUs": 184,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 214,
-      "e2eEstimateUs": 250.38,
-      "tpsPerUser": 3993.9292275740872,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -414,21 +527,33 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.2373589409722222,
-      "memoryTimeUs": 0.5234375,
-      "collectiveTimeUs": 132,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 54854622496,
+        "bytesPerToken": 5314729657.599929,
+        "effectiveFlopsPerSecond": 1415577600000000,
+        "effectiveBytesPerSecond": 7167999999999.999
+      },
+      "computeTimeUs": 38.75069971155237,
+      "memoryTimeUs": 741.4522401785616,
+      "collectiveTimeUs": 131.69435343429836,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 152,
-      "e2eEstimateUs": 177.83999999999997,
-      "tpsPerUser": 5623.031938821413,
-      "bottleneck": "communication",
+      "rawEstimateUs": 741.4522401785616,
+      "e2eEstimateUs": 867.4991210089171,
+      "tpsPerUser": 1152.7389201697197,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -440,21 +565,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.2712673611111111,
-      "memoryTimeUs": 0.576171875,
-      "collectiveTimeUs": 180,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 205,
-      "e2eEstimateUs": 239.85,
-      "tpsPerUser": 4169.272461955389,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -466,21 +595,25 @@
       "ep": 1,
       "physicalProfile": "P1",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.3108271846064815,
-      "memoryTimeUs": 0.625,
-      "collectiveTimeUs": 230,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 260,
-      "e2eEstimateUs": 304.2,
-      "tpsPerUser": 3287.3109796186723,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -492,21 +625,33 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.1186794704861111,
-      "memoryTimeUs": 1.046875,
-      "collectiveTimeUs": 79.2,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 219418489984,
+        "bytesPerToken": 21258918630.399715,
+        "effectiveFlopsPerSecond": 2359296000000000.5,
+        "effectiveBytesPerSecond": 3583999999999.9995
+      },
+      "computeTimeUs": 93.00167930772567,
+      "memoryTimeUs": 5931.617921428493,
+      "collectiveTimeUs": 79.01661206057902,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 99.2,
-      "e2eEstimateUs": 116.064,
-      "tpsPerUser": 8615.936035290875,
-      "bottleneck": "communication",
+      "rawEstimateUs": 5931.617921428493,
+      "e2eEstimateUs": 6939.992968071337,
+      "tpsPerUser": 144.09236502121496,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -518,21 +663,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.13563368055555555,
-      "memoryTimeUs": 1.15234375,
-      "collectiveTimeUs": 108,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 133,
-      "e2eEstimateUs": 155.60999999999999,
-      "tpsPerUser": 6426.322215795901,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -544,21 +693,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.15541359230324076,
-      "memoryTimeUs": 1.25,
-      "collectiveTimeUs": 138,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 168,
-      "e2eEstimateUs": 196.56,
-      "tpsPerUser": 5087.505087505087,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -570,21 +723,33 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.1186794704861111,
-      "memoryTimeUs": 1.046875,
-      "collectiveTimeUs": 105.6,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 109709244992,
+        "bytesPerToken": 10629459315.199858,
+        "effectiveFlopsPerSecond": 2359296000000000.5,
+        "effectiveBytesPerSecond": 3583999999999.9995
+      },
+      "computeTimeUs": 46.50083965386283,
+      "memoryTimeUs": 2965.8089607142465,
+      "collectiveTimeUs": 105.35548274743869,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 125.6,
-      "e2eEstimateUs": 146.952,
-      "tpsPerUser": 6804.943110675595,
-      "bottleneck": "communication",
+      "rawEstimateUs": 2965.8089607142465,
+      "e2eEstimateUs": 3469.9964840356683,
+      "tpsPerUser": 288.1847300424299,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -596,21 +761,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.13563368055555555,
-      "memoryTimeUs": 1.15234375,
-      "collectiveTimeUs": 144,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 169,
-      "e2eEstimateUs": 197.73,
-      "tpsPerUser": 5057.401507105649,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -622,21 +791,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.15541359230324076,
-      "memoryTimeUs": 1.25,
-      "collectiveTimeUs": 184,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 214,
-      "e2eEstimateUs": 250.38,
-      "tpsPerUser": 3993.9292275740872,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -648,21 +821,33 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.1186794704861111,
-      "memoryTimeUs": 1.046875,
-      "collectiveTimeUs": 132,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 54854622496,
+        "bytesPerToken": 5314729657.599929,
+        "effectiveFlopsPerSecond": 2359296000000000.5,
+        "effectiveBytesPerSecond": 3583999999999.9995
+      },
+      "computeTimeUs": 23.250419826931417,
+      "memoryTimeUs": 1482.9044803571232,
+      "collectiveTimeUs": 131.69435343429836,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 152,
-      "e2eEstimateUs": 177.83999999999997,
-      "tpsPerUser": 5623.031938821413,
-      "bottleneck": "communication",
+      "rawEstimateUs": 1482.9044803571232,
+      "e2eEstimateUs": 1734.9982420178342,
+      "tpsPerUser": 576.3694600848598,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -674,21 +859,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.13563368055555555,
-      "memoryTimeUs": 1.15234375,
-      "collectiveTimeUs": 180,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 205,
-      "e2eEstimateUs": 239.85,
-      "tpsPerUser": 4169.272461955389,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -700,21 +889,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "computeTimeUs": 0.15541359230324076,
-      "memoryTimeUs": 1.25,
-      "collectiveTimeUs": 230,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 260,
-      "e2eEstimateUs": 304.2,
-      "tpsPerUser": 3287.3109796186723,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -726,21 +919,33 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.1186794704861111,
-      "memoryTimeUs": 0.5234375,
-      "collectiveTimeUs": 79.2,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 219418489984,
+        "bytesPerToken": 21258918630.399715,
+        "effectiveFlopsPerSecond": 2359296000000000.5,
+        "effectiveBytesPerSecond": 7167999999999.999
+      },
+      "computeTimeUs": 93.00167930772567,
+      "memoryTimeUs": 2965.8089607142465,
+      "collectiveTimeUs": 79.01661206057902,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 99.2,
-      "e2eEstimateUs": 116.064,
-      "tpsPerUser": 8615.936035290875,
-      "bottleneck": "communication",
+      "rawEstimateUs": 2965.8089607142465,
+      "e2eEstimateUs": 3469.9964840356683,
+      "tpsPerUser": 288.1847300424299,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -752,21 +957,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.13563368055555555,
-      "memoryTimeUs": 0.576171875,
-      "collectiveTimeUs": 108,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 133,
-      "e2eEstimateUs": 155.60999999999999,
-      "tpsPerUser": 6426.322215795901,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -778,21 +987,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.15541359230324076,
-      "memoryTimeUs": 0.625,
-      "collectiveTimeUs": 138,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 168,
-      "e2eEstimateUs": 196.56,
-      "tpsPerUser": 5087.505087505087,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -804,21 +1017,33 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.1186794704861111,
-      "memoryTimeUs": 0.5234375,
-      "collectiveTimeUs": 105.6,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 109709244992,
+        "bytesPerToken": 10629459315.199858,
+        "effectiveFlopsPerSecond": 2359296000000000.5,
+        "effectiveBytesPerSecond": 7167999999999.999
+      },
+      "computeTimeUs": 46.50083965386283,
+      "memoryTimeUs": 1482.9044803571232,
+      "collectiveTimeUs": 105.35548274743869,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 125.6,
-      "e2eEstimateUs": 146.952,
-      "tpsPerUser": 6804.943110675595,
-      "bottleneck": "communication",
+      "rawEstimateUs": 1482.9044803571232,
+      "e2eEstimateUs": 1734.9982420178342,
+      "tpsPerUser": 576.3694600848598,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -830,21 +1055,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.13563368055555555,
-      "memoryTimeUs": 0.576171875,
-      "collectiveTimeUs": 144,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 169,
-      "e2eEstimateUs": 197.73,
-      "tpsPerUser": 5057.401507105649,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -856,21 +1085,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.15541359230324076,
-      "memoryTimeUs": 0.625,
-      "collectiveTimeUs": 184,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 214,
-      "e2eEstimateUs": 250.38,
-      "tpsPerUser": 3993.9292275740872,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -882,21 +1115,33 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.1186794704861111,
-      "memoryTimeUs": 0.5234375,
-      "collectiveTimeUs": 132,
-      "softwareOverheadUs": 20,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": {
+        "flopsPerToken": 54854622496,
+        "bytesPerToken": 5314729657.599929,
+        "effectiveFlopsPerSecond": 2359296000000000.5,
+        "effectiveBytesPerSecond": 7167999999999.999
+      },
+      "computeTimeUs": 23.250419826931417,
+      "memoryTimeUs": 741.4522401785616,
+      "collectiveTimeUs": 131.69435343429836,
+      "softwareOverheadUs": 0,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 152,
-      "e2eEstimateUs": 177.83999999999997,
-      "tpsPerUser": 5623.031938821413,
-      "bottleneck": "communication",
+      "rawEstimateUs": 741.4522401785616,
+      "e2eEstimateUs": 867.4991210089171,
+      "tpsPerUser": 1152.7389201697197,
+      "bottleneck": "memory",
       "status": "DIRECTIONAL_ESTIMATE",
       "confidence": "E1",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
+        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
+        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
+        "No software gain is silently applied."
       ]
     },
     {
@@ -908,21 +1153,25 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.13563368055555555,
-      "memoryTimeUs": 0.576171875,
-      "collectiveTimeUs": 180,
-      "softwareOverheadUs": 25,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 205,
-      "e2eEstimateUs": 239.85,
-      "tpsPerUser": 4169.272461955389,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     },
     {
@@ -934,40 +1183,269 @@
       "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "computeTimeUs": 0.15541359230324076,
-      "memoryTimeUs": 0.625,
-      "collectiveTimeUs": 230,
-      "softwareOverheadUs": 30,
+      "resourceScope": {
+        "compute": "package_rank",
+        "memory": "package_rank",
+        "bandwidthUnit": "byte/s"
+      },
+      "workloadUnits": null,
+      "computeTimeUs": null,
+      "memoryTimeUs": null,
+      "collectiveTimeUs": null,
+      "softwareOverheadUs": null,
       "uncoveredStallUs": 0,
-      "rawEstimateUs": 260,
-      "e2eEstimateUs": 304.2,
-      "tpsPerUser": 3287.3109796186723,
-      "bottleneck": "communication",
-      "status": "DIRECTIONAL_ESTIMATE",
+      "rawEstimateUs": null,
+      "e2eEstimateUs": null,
+      "tpsPerUser": null,
+      "bottleneck": "blocked_config",
+      "status": "BLOCKED_CONFIG",
       "confidence": "E0",
       "assumptions": [
-        "directional workload constants are placeholders pending Q1/Q2",
-        "no software gain applied",
-        "collective latency uses directional logarithmic envelope only"
+        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
       ]
     }
   ],
+  "candidateSummaries": [
+    {
+      "candidateId": "P1-compact-MC320-TP8",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 144.09236502121496,
+      "geomeanTpsPerUser": 144.09236502121496,
+      "worstModel": "K3",
+      "meetsTargetModels": [],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P1-compact-MC320-TP16",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 288.1847300424299,
+      "geomeanTpsPerUser": 288.18473004243,
+      "worstModel": "K3",
+      "meetsTargetModels": [],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P1-compact-MC320-TP32",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 576.3694600848598,
+      "geomeanTpsPerUser": 576.36946008486,
+      "worstModel": "K3",
+      "meetsTargetModels": [],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P1-compact-MC640-TP8",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 288.1847300424299,
+      "geomeanTpsPerUser": 288.18473004243,
+      "worstModel": "K3",
+      "meetsTargetModels": [],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P1-compact-MC640-TP16",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 576.3694600848598,
+      "geomeanTpsPerUser": 576.36946008486,
+      "worstModel": "K3",
+      "meetsTargetModels": [],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P1-compact-MC640-TP32",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 1152.7389201697197,
+      "geomeanTpsPerUser": 1152.7389201697201,
+      "worstModel": "K3",
+      "meetsTargetModels": [
+        "K3"
+      ],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P0-7R-balanced-MC320-TP8",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 144.09236502121496,
+      "geomeanTpsPerUser": 144.09236502121496,
+      "worstModel": "K3",
+      "meetsTargetModels": [],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P0-7R-balanced-MC320-TP16",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 288.1847300424299,
+      "geomeanTpsPerUser": 288.18473004243,
+      "worstModel": "K3",
+      "meetsTargetModels": [],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P0-7R-balanced-MC320-TP32",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 576.3694600848598,
+      "geomeanTpsPerUser": 576.36946008486,
+      "worstModel": "K3",
+      "meetsTargetModels": [],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P0-7R-balanced-MC640-TP8",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 288.1847300424299,
+      "geomeanTpsPerUser": 288.18473004243,
+      "worstModel": "K3",
+      "meetsTargetModels": [],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P0-7R-balanced-MC640-TP16",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 576.3694600848598,
+      "geomeanTpsPerUser": 576.36946008486,
+      "worstModel": "K3",
+      "meetsTargetModels": [],
+      "rankingEligible": false
+    },
+    {
+      "candidateId": "P0-7R-balanced-MC640-TP32",
+      "accountedModelCount": 3,
+      "comparableModelCount": 1,
+      "comparableModels": [
+        "K3"
+      ],
+      "blockedModels": [
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "minTpsPerUser": 1152.7389201697197,
+      "geomeanTpsPerUser": 1152.7389201697201,
+      "worstModel": "K3",
+      "meetsTargetModels": [
+        "K3"
+      ],
+      "rankingEligible": false
+    }
+  ],
+  "sensitivitySweep": {
+    "complete": false,
+    "dimensions": [
+      "bandwidth",
+      "frequency",
+      "core_count",
+      "collective_latency",
+      "software_gain",
+      "area",
+      "power"
+    ],
+    "blocker": "D2-D6 sensitivity sweep is not implemented."
+  },
   "dGate": {
     "areaConservation": true,
-    "threeModelCoverage": true,
+    "threeModelRowsAccounted": true,
+    "threeModelComparable": false,
     "bottleneckClassification": true,
     "sensitivitySweep": false,
     "candidateCountLe3": true,
+    "formalSelectionRecorded": false,
     "decision": "BLOCKED_PENDING_SENSITIVITY_SWEEP_AND_FORMAL_MANIFEST"
   },
   "blockers": [
-    "directional workload constants must be replaced by D1/Q1/Q2 artifacts",
-    "GLM-5.2 and DeepSeek-V4-Pro configs are pending",
-    "sensitivity sweep not yet implemented"
+    "GLM-5.2 and DeepSeek-V4-Pro formal manifests are blocked.",
+    "D2-D6 sensitivity sweep is not implemented.",
+    "Formal candidate selection is withheld until all three models are comparable."
   ],
   "nextActions": [
-    "implement D2/D3/D4/D5/D6 sensitivity sweep",
-    "select <=3 candidates after evidence review",
-    "start Q1 only for selected candidates"
+    "Implement D2-D6 sensitivity sweep.",
+    "Freeze three-model manifests and rerun candidate aggregation.",
+    "Only then record formalSelectedCandidates and unlock formal Stage B."
   ]
 }
