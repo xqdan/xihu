@@ -460,3 +460,13 @@ A2 ─────┼── A5 ──┤
 2. 三个模型都能跑通至少一个端到端 decode step；
 3. 任一模型未达到其目标时，G4报告必须按 memory、compute、NoC、RDMA、scheduler、thermal 分解原因；
 4. 在GLM-5.2和DeepSeek-V4-Pro正式配置确认前，平台结论只能称为“架构兼容性基线”，不能称为最终产品性能签核。
+## 19. TPS作为一级架构观测指标
+
+TPS指标定义、18个观测位置、`MODEL_OBSERVED`/`SILICON_OBSERVED`/`PENDING_MODEL_RUN`/`BLOCKED_CONFIG`状态和A0–A13责任见[`14_TPS_OBSERVATION_METRICS.md`](14_TPS_OBSERVATION_METRICS.md)及[`data/workload/tps_observation_matrix.json`](../../data/workload/tps_observation_matrix.json)。
+
+每个Agent涉及性能的改动必须至少报告：
+
+- `model_id`、TP、MC profile、physical profile、seed；
+- TPS/usr、raw/e2e latency、P50/P95/P99；
+- bytes、compute、memory、NoC、collective、power和thermal分解；
+- 结果状态和可追溯source。

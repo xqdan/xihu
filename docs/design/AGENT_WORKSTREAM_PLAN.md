@@ -19,6 +19,8 @@
 
 ## 1.1 多模型扩展
 
+- A10维护TPS观测矩阵；任何性能优化必须更新对应model×TP×MC观测项，不能只更新最高TPS。
+
 本计划同时服务三个模型 profile：`K3`、`GLM-5.2`、`DeepSeek-V4-Pro`。每个 Agent 的交付必须包含 `model_id` 维度，不能只验证 K3 后声称平台通用。
 
 - A1 为三个模型维护独立 manifest、DAG、state、dtype 和 routing profile；

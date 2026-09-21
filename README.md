@@ -64,6 +64,7 @@ npm run report:latest
 - [设计文档索引](docs/design/README.md)
 - [多模型架构调整](docs/design/13_MULTI_MODEL_ARCHITECTURE.md)
 - [多模型Workload Profile](data/workload/model_profiles.json)
+- [TPS观测指标矩阵](data/workload/tps_observation_matrix.json)
 
 ## Collaboration model
 
