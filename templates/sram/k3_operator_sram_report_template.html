@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>K3 算子级 SRAM–TPS 评估 · 固定硬件</title>
+<style>
+:root{--ink:#172033;--muted:#647083;--paper:#f3f1eb;--panel:#fffdf8;--line:#d6d8d8;--accent:#155e75;--teal:#0f766e;--orange:#b45309;--purple:#6d28d9;--red:#b91c1c}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}main{max-width:1460px;margin:auto;padding:30px 24px 60px}h1{font-size:30px;line-height:1.3;margin:6px 0 12px}h2{margin:32px 0 12px;padding-top:16px;border-top:1px solid var(--line);font-size:22px}h3{font-size:17px;margin:18px 0 8px}p{margin:8px 0}.eyebrow{font-size:12px;font-weight:700;letter-spacing:.09em;color:var(--accent)}.caption{font-size:12px;color:var(--muted)}.note{padding:12px 16px;background:#e4f2f4;border-left:4px solid var(--accent);border-radius:6px;margin:14px 0}.warn{background:#fff4d8;border-color:var(--orange)}.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0}.table-wrap{overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;margin:12px 0;max-height:620px}table{width:100%;border-collapse:collapse;font-size:12px}th,td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{position:sticky;top:0;background:#f7f5ef;text-align:left;white-space:nowrap;color:var(--muted);z-index:1}td{font-variant-numeric:tabular-nums}tr:hover td{background:#f0f7f8}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}.big{font-size:25px;font-weight:750;color:var(--accent)}select{padding:7px 10px;font:inherit;border:1px solid var(--line);border-radius:6px;background:white}label{display:inline-block;margin-right:18px}code{font-size:12px;background:#edf1f2;padding:2px 4px;border-radius:4px}.formula{white-space:pre-wrap;padding:14px;background:#172033;color:#e8eef4;border-radius:8px;font:12px/1.8 ui-monospace,monospace}svg{display:block;width:100%;height:auto}nav{display:flex;flex-wrap:wrap;gap:14px}a{color:var(--accent)}.legend{color:var(--muted);font-size:12px}.source{word-break:break-all}@media(max-width:800px){.grid{grid-template-columns:1fr}main{padding:18px 12px}h1{font-size:25px}}@media print{body{background:white}.table-wrap{max-height:none;overflow:visible}th{position:static}main{max-width:none;padding:0}.panel,.box{break-inside:avoid}nav{display:none}select{border:0}}
+</style></head><body><main>
+<header><div class="eyebrow">K3 · OPERATOR / TILE DISCRETE-EVENT MODEL · 2026-09-19</div><h1>固定算力与带宽，逐层评估 SRAM 对 TPS 的影响</h1><p>93 层、24 个 Softmax MLA 层、69 个线性 Attention 层、92 个 MoE 层；把计算、DMA、通信和 SRAM 生命周期放进同一个事件时间轴。不再用 SRAM 覆盖率插值或两个整层时间简单取 max。</p></header>
+<nav><a href="#summary">结论</a><a href="#hardware">固定硬件</a><a href="#operators">算子公式</a><a href="#schedule">调度/容量</a><a href="#curve">SRAM 曲线</a><a href="#trace">逐层与算子</a><a href="#sensitivity">敏感性</a><a href="#limits">边界与复算</a></nav>
+<div class="note warn"><b>这是更细的工程估算，不是 K3 实测或已验证芯片规格。</b>结构来自本项目 <code>../../src/core/design_engine.js / kimiK3</code>。真实 K3 的投影形状、线性 Attention kernel、层顺序和预测 trace 未确认；本报告显式补齐实现假设。精细事件时间轴不等于输入参数已经精确。TPS 是整组 TP=32 系统每用户的 decode TPS，不是单卡独立运行全模型的 TPS。</div>
+<h2 id="summary">1. 主要结果与容量建议</h2><div id="hero" class="grid"></div><div id="takeaway" class="note"></div>
+<p>“99% 点”定义为当前扫描中最佳已测 TPS 的 99%，不是无限容量理论极限。工程配置容量 = 该工作窗口 ×1.25 后按 32 MiB 取整；这只是本次固定硬件和调度下的候选。它不取代跨模型容量预算、ECC、bank 映射、物理端口与 PPA 验证。</p>
+<h2 id="hardware">2. 固定硬件与部署</h2>
+<div class="table-wrap"><table><thead><tr><th>项目</th><th>本次固定值</th><th>口径</th></tr></thead><tbody>
+<tr><td>系统</td><td>PP=1，TP=32；每卡 8 个 Compute Die</td><td>一个 TP rank 是整卡；本次按卡级聚合资源，不冒充 8 Die 周期精确映射</td></tr>
+<tr><td>矩阵峰值</td><td>L=262.144 TFLOPS/卡；H=2097.152 TFLOPS/卡</td><td>每 Die L=32.768、H=262.144；来自本地大 Die 概念基线</td></tr>
+<tr><td>矩阵有效吞吐</td><td>L/H 利用率均 60%；routed expert 额外填充系数 0.75</td><td>L=157.2864 TFLOPS；expert=117.9648；H=1258.2912；固定，不随 SRAM 人为加速</td></tr>
+<tr><td>Vector/SFU</td><td>69.632 TOP/s 峰值 ×25%=17.408 TOP/s/卡</td><td>仅作为 Norm、softmax、激活、路由的等效运算吞吐假设，非 transcendental 实测</td></tr>
+<tr><td>外部存储</td><td>16 Memory Chiplets ×8 GB=128 GB/卡；16×320 GB/s×0.7=<b>3.584 TB/s</b></td><td>这里明确把 320 视为接口名义带宽；read/write 共用一个聚合服务通道。若 320 已是有效带宽，见敏感性。</td></tr>
+<tr><td>卡内数据搬移预算</td><td>4.096 TB/s 有效聚合 fabric</td><td>补充工程假设，非旧 Mesh 任意源目的保证；DMA 与 collective 共用</td></tr>
+<tr><td>SRAM 有效端口带宽</td><td>读 64 TB/s、写 32 TB/s /卡</td><td>固定带宽目标；各容量点假设维持同样 banking。缩容后做不到此带宽则需重跑。</td></tr>
+<tr><td>跨卡 collective</td><td>200 GB/s；每次固定 τ=1.15 μs；传输字节=2×逻辑 payload</td><td>τ 已视为每次 collective 启动成本；实际算法/拓扑需校准。计算与通信串行，DMA 可重叠。</td></tr>
+<tr><td>Tile/调度</td><td>权重 tile≤8 MiB；KV tile=2048 本卡 context tokens；每次 8 query heads</td><td>每个微操作 0.01 μs 调度开销，模拟持久 kernel 内部分块，不是 CPU 每 tile 启动</td></tr>
+<tr><td>解量化</td><td>16 Tparameter/s/卡；在寄存器/阵列输入端解码</td><td>只保留压缩权重 tile；不额外常驻整块 BF16 解码副本</td></tr>
+<tr><td>延迟裕量</td><td>最终事件时间 ×1.17</td><td>与容量 25% 余量完全分开；图表同时提供未加裕量的时间分解</td></tr>
+</tbody></table></div><div id="storage" class="caption"></div>
+<h3>Attention 分片口径：本次与旧容量表不同，明确改成 context 并行</h3>
+<p>Softmax MLA：每卡负责 C/32 个历史 token，但计算所有 96 个 query heads 的局部 Attention。投影后先 all-gather Q / 新 KV；局部采用 absorbed MLA（QK 维度 576、PV 输出 latent 维度 512），最后合并 LSE 并 reduce-scatter 输出，再做 O projection。卡内用 8-head tile 执行，不能把“96/32=3 heads”同时套到 context 分片上，否则会重复除以 TP。</p>
+<p>线性 Attention：状态按 heads 切分，每卡 3 heads；128×128 状态矩阵，BF16 读/写，FP32 更新工作区。Softmax 的 96-head 局部统计与线性层的 3-head 状态不会同时运算。卡内具体 head/context tile 如何落到 8 Die 仍是后续物理映射问题。</p>
+<h2 id="operators">3. 每层算子与计算公式</h2>
+<p>符号：B=batch，H=7168，I=3584，F=3072，K=16，E=896，h=96，TP=32，c=C/TP，T=context tile。U 默认 min(E,BK)，期望并集仅作为敏感性。routed 权重每参数 17/32 byte；确定性权重和 KV 为 BF16；累加/score 为 FP32。</p>
+<div class="table-wrap"><table><thead><tr><th>算子 / 阶段</th><th>每卡 FLOPs 或等效运算</th><th>外存与 SRAM 对象</th><th>依赖 / 释放点</th></tr></thead><tbody>
+<tr><td>RMSNorm / Residual</td><td>Norm≈6BH；add≈BH</td><td>hidden 输入、norm 输出、residual</td><td>skip 输入保留到对应 add；向量资源服务</td></tr>
+<tr><td>Attention 投影</td><td>2B×P_projection/TP</td><td>确定权重按 8 MiB 分块</td><td>参数来自 residual budget，按 60% 投影 /40% O 分配；不是已知真实矩阵 shape</td></tr>
+<tr><td>Q/new-KV gather、RoPE、append</td><td>RoPE≈6Bh×64</td><td>Q 全 heads、当前 KV 写回源</td><td>gather 完成再执行 local Attention；KV 写回源等 DMA ACK 才释放</td></tr>
+<tr><td>QK（absorbed）</td><td>2B×h_tile×T×576；对本卡 c 和所有 heads 求和</td><td>读取压缩 MLA latent+rope KV tile；写 FP32 scores</td><td>KV 从 DMA 到齐才读；head tiles 共用同一 context tile</td></tr>
+<tr><td>在线 Softmax</td><td>8B×h_tile×T 等效操作</td><td>score/prob 两份；max/sum 跨 context tile 保留</td><td>依赖 QK；不保存完整 C×h attention matrix</td></tr>
+<tr><td>PV / rescale</td><td>2B×h_tile×T×512 +4B×h_tile×512</td><td>KV tile、prob、FP32 O accumulator</td><td>同一 context tile 的全部 head tiles 完成后，才释放该 KV buffer</td></tr>
+<tr><td>LSE 合并 / output reduce-scatter</td><td>τ +2×[Bh(512+2)×4]/BW_link</td><td>FP32 m/l/O；send/recv</td><td>全部本卡 context tile 完成后发起；消费者等通信完成</td></tr>
+<tr><td>线性 Attention 状态更新</td><td>7B×(h/TP)×128²</td><td>BF16 状态 read、FP32 更新、BF16 writeback</td><td>读写占同一外存服务通道；完成写回才释放输出源</td></tr>
+<tr><td>Attention O projection + reduce</td><td>2B×P_O/TP；collective payload=BH×2</td><td>O、权重 tile、归约输出</td><td>完成后才能 Residual/Norm 进入 MoE</td></tr>
+<tr><td>Latent Wdown / Router</td><td>2BHI/TP；2BHE/TP</td><td>确定性权重、latent、router logits</td><td>合并一次 Wdown+Router gather，然后 Top-k 确认</td></tr>
+<tr><td>Top-k / local dispatch</td><td>路由比较按 8BE 等效操作；dispatch 按读写带宽</td><td>expert IDs、gates、token indices、grouped activation</td><td>确认之前专家只可投机；本模型不含 EP all-to-all</td></tr>
+<tr><td>Routed gate/up</td><td>4B K I F/TP；权重=2U I F×(17/32)/TP</td><td>压缩权重、gate/up 分片输出</td><td>分 tile，MACs 按 B×K；权重字节按 U，避免把两者混用</td></tr>
+<tr><td>SiLU×up / routed down</td><td>6BKF/TP；2BKIF/TP</td><td>hidden、down 权重、expert output</td><td>最后一个读者结束释放输入权重；merge 前保留输出</td></tr>
+<tr><td>Routed latent merge / Wup</td><td>weighted sum≈2BKI；Wup=2BHI/TP</td><td>latent merge collective，Wup weights，hidden output</td><td>merge 与 Wup 各一轮 collective</td></tr>
+<tr><td>2 个 shared experts</td><td>每个总计 6BHF/TP，加激活操作</td><td>全 hidden FFN，两个分支串行复用 scratch</td><td>单独一次 shared output reduce，再与 routed/residual 合并；不默认融合不同维度归约</td></tr>
+<tr><td>最后一层以后</td><td>Final Norm、LM head=2BH×vocab/TP、sampling</td><td>LM 权重读取、distributed candidate exchange</td><td>全部计入 token step；末尾 DMA 全部排空，不截断后台传输</td></tr>
+</tbody></table></div>
+<div class="note warn">模型补全边界：Attention 参数总量按项目 activeParams 减去可知部分反推，再均分 93 层并按 60/40 切投影与 O；Softmax/线性层暂用同一投影参数预算。采用第 0、4、8…92 层为 Softmax，其余为线性。第 0 层不是 MoE，项目 denseFfnHidden=0，因此没有凭空追加 dense FFN。这些都列入不确定性，不能称为已确认的 K3 逐层网络图。</div>
+<h2 id="schedule">4. 同一事件时间轴上的 DMA、容量与计算</h2>
+<div class="formula">t_compute(tile) = max(FLOPs / effective_compute,
+                      SRAM_read_bytes / SRAM_read_BW,
+                      SRAM_write_bytes / SRAM_write_BW,
+                      weight_params / unpack_rate) + micro_launch
+
+t_collective = max(τ + 2 × payload / link_BW, SRAM port service time)
+
+DMA_rate(t) = min(external_mem_BW,
+                  fabric_BW − active_collective_fabric_rate,
+                  relevant_SRAM_port_BW − active_compute_port_rate)
+
+S_reserved(t) = fixed_scratch_arena + Σ allocated read/write/prediction objects
+S_reserved(t) ≤ configured_working_window ≤ physical_SRAM
+
+Raw step time = serial compute service + serial collective service + exposed waits
+TPS/usr = 10⁶ / (Raw step time[μs] × 1.17)
+Aggregate tok/s = B × TPS/usr</div>
+<ul>
+<li><b>真实排队：</b>聚合 DMA 是一个共享 read/write 通道；输入 DMA 完成才能启动消费者，输出源在写回完成前继续占 SRAM。计算与 collective 串行，DMA 与两者并行；不存在遗漏计算时间的“无缓冲 min 回退”。</li>
+<li><b>非抢占 DMA：</b>已发出的 tile 事务完成后才切换。队列选择为待写回/当前需求优先，再按消费者顺序预取。未来最多 D 层；KV 只预取当前 Attention 层。内存空闲也不允许超出 SRAM 预算无限读入。</li>
+<li><b>预测：</b>一个完整预测 tile 内含 p 比例正确权重与 (1−p) 错误权重；Router 之前同等占用空间。Router 后才确认，错误部分释放，缺失部分补读。正在 DMA 的预测必须等完成；p 是字节比例的流体近似，不是假装已知真实专家 trace。</li>
+<li><b>空间不足：</b>不发起可选预取；需求读可以淘汰最远期、尚未使用的 READY 对象，重读字节计入。当前 KV tile 跨 QK/Softmax/PV/head 循环保留，不能在第一次 QK 后释放。</li>
+<li><b>Scratch：</b>给算子临时对象预留全阶段最大值，作为固定 arena；报告同时记录实际活动对象峰值与已分配/预留峰值。这是偏保守、保证需求不死锁的分区实现，不是假定所有 SRAM 任意零成本复用。</li>
+<li><b>大容量不强制用满：</b>直接贪心用满时可能预取太早、浪费带宽。本报告额外测试工作窗口 W≤物理 SRAM，取已测最快的真实调度结果；剩余容量闲置。此曲线是有限候选策略搜索，不是人为修改原始 TPS，也不保证全局最优。</li>
+</ul><div id="scratch" class="table-wrap"></div>
+<h2 id="curve">5. SRAM 扫描：原始调度与预取窗口调优</h2>
+<label>Batch <select id="batch"><option value="1">B=1</option><option value="8" selected>B=8</option></select></label>
+<div id="curveFig" class="panel"></div><p class="legend">橙色虚线：直接使用全部容量的固定调度；蓝色实线：在 W≤物理容量内选择最佳已测工作窗口。点均来自事件模拟；不能比较不同 B 的 tok/s 和 TPS/usr 而混淆口径。</p>
+<div id="sweepTable" class="table-wrap"></div>
+<h2 id="trace">6. 逐层计算 / 通信 / 等待与 SRAM 生命周期</h2>
+<label>完整轨迹 <select id="traceChoice"><option value="1_96">B=1 / W=96 MiB</option><option value="8_32">B=8 / W=32 MiB</option><option value="8_64">B=8 / W=64 MiB</option><option value="8_192" selected>B=8 / W=192 MiB</option><option value="8_288">B=8 / W=288 MiB（未限额）</option><option value="8_768">B=8 / W=768 MiB（未限额）</option></select></label>
+<div id="traceSummary" class="note"></div><div id="timeFig" class="panel"></div><div id="occupancyFig" class="panel"></div>
+<p class="caption">时间图横轴为层号（包含第 0 层和第 92 层的末尾 LM/sampling）；occupancy 图横轴为实际 μs。曲线为事件点采样，精确峰值由全部事件计算。额外的 SRAM 预取配额不是单独物理池。各层 read/write 字节按请求归属层统计，可能在前层执行时发生，不能用它们除带宽当作该层暴露时间。</p>
+<div id="layerTable" class="table-wrap"></div>
+<h3>选中一层，查看所有算子累计账</h3><label>层 <select id="layerChoice"></select></label><div id="operatorTable" class="table-wrap"></div>
+<p class="caption">算子服务时间是该资源的占用时间；“暴露等待”只指其关键输入未就绪或容量分配阻塞，DMA 总时间不再重复加到服务时间上。阶段同时需要全部输入对象就绪。</p>
+<h3>代表层微操作与实际 DMA 事件</h3><label>代表层 <select id="eventLayer"><option value="0">第 0 层：Softmax，无 MoE</option><option value="1">第 1 层：Linear + MoE</option><option value="4" selected>第 4 层：Softmax + MoE</option><option value="92">第 92 层：Softmax + MoE + LM</option></select></label>
+<div id="eventTable" class="table-wrap"></div>
+<h3>容量增加后，还剩多少可消除的等待？</h3>
+<div id="serviceFloor" class="note"></div>
+<p>在本映射中，QK 与 PV 会对每个 head tile 重读 KV；因此外存只读一次的 KV tile，仍可能消耗多次片内 SRAM 读带宽。更多容量不能自动减少这些读访问，也不能消除 LSE 合并与其他跨卡归约。若要突破该平台区，应重新评估 head tile、数据复用、SRAM 端口及通信映射，而不是只增加 MiB。</p>
+<h2 id="sensitivity">7. 关键输入不确定性：B=8、物理 SRAM≤288 MiB</h2>
+<p>每行只改变表中一项，并重新搜索已测工作窗口；其他硬件相同。不是置信区间，而是说明“逐算子模型仍需正确输入”。内存有效带宽情景还受固定 4.096 TB/s fabric 上限限制。</p><div id="sensitivityTable" class="table-wrap"></div>
+<p class="caption">带宽提高后若出现轻微负收益，是固定贪心调度、不可抢占的投机 DMA 与有限工作窗口搜索共同造成的策略效应，不代表更高物理带宽天然降低性能；此处没有同时优化带宽限流和所有调度策略。</p>
+<h2 id="limits">8. 与旧文档的关系、局限与复算</h2>
+<div class="note"><b>本次结果优先用于 K3 decode 架构候选比较。</b>旧容量表的 256/288 MiB 是不同 Attention 分片和完整两层预测池的对象预算；本次 SRAM 分配由事件调度决定，不要求两层全部到齐。旧 TPS 页的算力、存储带宽、LSE 口径与通信次数也不同。因此本次不能被解释为“证实旧 TPS 值”或“推翻旧容量表的所有对象需求”。</div>
+<ol>
+<li>没有复用整个模型的整层时间 max 公式；但本模型仍是<b>卡级资源的离散事件模型</b>，不是 RTL/cycle-accurate、8 Die NoC 路由或真实 kernel trace。</li>
+<li>SRAM 总容量包含需求权重、预测权重、KV/read/write buffers、scratch 与 metadata；不额外叠加一块 288 MiB 池。物理 ECC、spare、RF 与 decoder 外围不在可用容量内。</li>
+<li>当前可达性按聚合卡级池处理。若实际 L/H 本地 SRAM 不能被对应 DMA/算子使用，必须以每 bank/Die 峰值重跑；更大总容量不能解决局部无法访问。</li>
+<li>没有硬件校准的 cache hit、prefix reuse、workspace“自动加速”；没有跨 token 常驻权重或 KV prefix 命中。每次 decode step 从空的预取缓存开始，完整计入首层启动及最后排空。</li>
+<li>层间串行、shared 串行、一个 compute/communication 关键流。真实共享分支或 L/H 并行可更快；kernel 固定开销、端口冲突、通信拓扑尾延迟也可能更慢。</li>
+<li>线性 Attention 仅按项目 128×128 状态近似，没有凭空知道 K3 实际 gating/convolution scratch。投影 residual budget 及层顺序不确定性在上方敏感性中暴露。</li>
+<li>DMA 将数据按固定有效带宽搬移，没有 DRAM row/bank、事务启动或 UCIe 包级周期模拟。预测正确率是字节比例近似；应以真实 expert route trace 校准非均匀热点。</li>
+<li>FP32 LSE gather/reduce、shared 单独归约及 Q gather 与旧页面不同，本次通信成本更完整但仍依赖部署选择。没有采纳旧页面“专家/Shared 无条件融合”的假设。</li>
+<li>所有候选 S 维持相同 SRAM 带宽；因此只能用本次结果选择需要进一步物理实现验证的候选，不能直接从 MiB 推导面积、功耗或制程承诺。</li>
+</ol>
+<h3>可复算文件</h3><ul><li><code>../../src/simulation/k3_operator_sram_sim.js</code>：算子生成器、有限 SRAM 分配、DMA/compute/collective 事件调度。</li><li><code>../../tests/test_k3_operator_sram_sim.js</code>：解析双缓冲例子、93 层结构、流量与时间守恒、60 个完整场景测试。</li><li><code>../../scripts/generate_k3_operator_sram_report.js</code>：扫描和敏感性计算；生成本 HTML 与 JSON。</li><li><code>../../data/sram/k3_operator_sram_tps_results.json</code>：数值、93 层账、代表层逐 tile 事件和 occupancy 采样。</li></ul>
+<div class="formula">node tests/test_k3_operator_sram_sim.js
+node scripts/generate_k3_operator_sram_report.js</div><p id="sourceHash" class="caption source"></p>
+</main>
+<script id="report-data" type="application/json">/*__REPORT_DATA__*/</script>
+<script>
+(()=>{'use strict';const D=JSON.parse(document.getElementById('report-data').textContent),$=id=>document.getElementById(id),M=1048576;
+const f=(v,n=2)=>Number(v).toLocaleString('en-US',{minimumFractionDigits:n,maximumFractionDigits:n});
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const tbl=(heads,rows)=>'<table><thead><tr>'+heads.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+esc(c)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
+const best=B=>D.sweeps[B].raw.filter(r=>r.feasible).reduce((a,b)=>a.tps>=b.tps?a:b);
+const knee=B=>D.sweeps[B].raw.find(r=>r.feasible&&r.tps>=best(B).tps*.99);
+function plot(series,{width=1200,height=300,xMax,yMax,xLabel,yLabel}){
+ const L=75,R=24,T=26,B=46,W=width-L-R,H=height-T-B,x=v=>L+v/xMax*W,y=v=>T+H-v/yMax*H;
+ let s=`<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(yLabel)}"><title>${esc(yLabel)}</title>`;
+ for(let i=0;i<=4;i++){let yy=T+H*i/4;s+=`<line x1="${L}" x2="${width-R}" y1="${yy}" y2="${yy}" stroke="#d6d8d8"/><text x="${L-8}" y="${yy+4}" text-anchor="end" font-size="11">${f(yMax*(1-i/4),1)}</text>`;let xx=L+W*i/4;s+=`<text x="${xx}" y="${height-25}" text-anchor="middle" font-size="11">${f(xMax*i/4,0)}</text>`;}
+ for(const a of series){s+=`<polyline fill="none" stroke="${a.color}" stroke-width="2" ${a.dash?'stroke-dasharray="6 4"':''} points="${a.pts.map(p=>x(p[0]).toFixed(2)+','+y(p[1]).toFixed(2)).join(' ')}"/>`;}
+ s+=`<text x="${L}" y="15" font-size="12">${esc(yLabel)}</text><text x="${width/2}" y="${height-4}" text-anchor="middle" font-size="12">${esc(xLabel)}</text></svg>`;return s;
+}
+function renderCurve(){const B=$('batch').value,a=D.sweeps[B];$('curveFig').innerHTML=plot([{color:'#b45309',dash:true,pts:a.raw.filter(r=>r.feasible).map(r=>[r.sramMiB,r.tps])},{color:'#155e75',pts:a.tuned.filter(r=>r.tps).map(r=>[r.physicalMiB,r.tps])}],{xMax:1056,yMax:best(B).tps*1.1,xLabel:'物理 SRAM / 卡（MiB）',yLabel:'TPS/usr'});
+ $('sweepTable').innerHTML=tbl(['物理 MiB','原始 TPS/usr','调优 TPS/usr','采用窗口 MiB','原始 compute μs','原始 comm μs','原始等待 μs','原始读 GB','错预测释放 MiB','淘汰 MiB','原始分配峰值 MiB','调优 tok/s'],a.raw.map((r,i)=>{const z=a.tuned[i];return r.feasible?[r.sramMiB,f(r.tps),f(z.tps),z.windowMiB,f(r.computeUs),f(r.commUs),f(r.waitUs),f(r.readBytes/1e9,3),f(r.wrongBytes/M),f(r.evictBytes/M),f(r.peakReservedMiB),f(z.tps*B,0)]:[r.sramMiB,'不可行：固定 tile + scratch 至少 '+f(r.minMiB)+' MiB','—','—','—','—','—','—','—','—','—','—'];}));}
+function traceData(){return D.details[$('traceChoice').value];}
+function renderLayer(){const a=traceData(),l=a.layerStats[Number($('layerChoice').value)||0];$('operatorTable').innerHTML=tbl(['算子','资源','tile/调用数','GFLOP/等效 GOP','SRAM 读 MiB','SRAM 写 MiB','服务 μs','暴露等待 μs'],Object.values(l.operators).map(o=>[o.name,o.unit,o.count,f(o.flops/1e9,4),f(o.read/M),f(o.write/M),f(o.service,3),f(o.wait,3)]));}
+function renderEvents(){const a=traceData(),l=Number($('eventLayer').value);$('eventTable').innerHTML=tbl(['类型','起点 μs','终点 μs','对象/算子','MiB','Tile 细节'],a.sampleEvents.filter(e=>e.layer===l).map(e=>e.type==='op'?['算子',f(e.start,3),f(e.end,3),e.name,'—',e.detail]:[e.type,f(e.t,3),'—',e.category,e.bytes===undefined?'—':f(e.bytes/M,4),'job '+e.job]));}
+function renderTrace(){const a=traceData();$('traceSummary').textContent=`B=${a.batch}，实际工作窗口 ${a.sramMiB} MiB：未加裕量 ${f(a.rawUs)} μs = compute ${f(a.computeUs)} + collective ${f(a.commUs)} + 暴露等待/尾部排空 ${f(a.waitUs)}。最终 TPS/usr=${f(a.tps)}；${f(a.tokensPerSecond)} tok/s。已分配峰值 ${f(a.peakReservedMiB)} MiB，活动对象峰值 ${f(a.peakLiveMiB)} MiB，固定 scratch=${f(a.scratchMiB)} MiB。`;
+ const mx=Math.max(...a.layerStats.map(l=>l.duration));$('timeFig').innerHTML=plot([{color:'#155e75',pts:a.layerStats.map(l=>[l.layer,l.compute])},{color:'#6d28d9',pts:a.layerStats.map(l=>[l.layer,l.comm])},{color:'#b45309',pts:a.layerStats.map(l=>[l.layer,l.wait])}],{xMax:92,yMax:mx*1.05,xLabel:'层号（从 0 开始）',yLabel:'每层 μs：蓝=计算，紫=通信，橙=等待'});
+ $('occupancyFig').innerHTML=plot([{color:'#155e75',pts:a.occupancy.map(p=>[p.t,p.allocatedMiB])},{color:'#0f766e',dash:true,pts:a.occupancy.map(p=>[p.t,p.liveMiB])}],{xMax:a.rawUs,yMax:a.sramMiB*1.05,xLabel:'实际事件时间 μs（未加 1.17 裕量）',yLabel:'MiB：蓝=含预留 scratch，绿=活动对象'});
+ $('layerTable').innerHTML=tbl(['层','类型','MoE','起点 μs','终点 μs','层时长 μs','compute μs','comm μs','等待 μs','归属 read MiB','归属 write MiB','活动峰值 MiB'],a.layerStats.map(l=>[l.layer,l.kind,l.moe?'是':'否',f(l.start),f(l.end),f(l.duration),f(l.compute),f(l.comm),f(l.wait),f(l.readBytes/M),f(l.writeBytes/M),f(l.peakMiB)]));
+ const selected=$('layerChoice').value||'4';$('layerChoice').innerHTML=a.layerStats.map(l=>`<option value="${l.layer}" ${String(l.layer)===selected?'selected':''}>${l.layer} · ${l.kind}${l.moe?' + MoE':''}</option>`).join('');renderLayer();renderEvents();}
+$('hero').innerHTML=[1,8].map(B=>{const b=best(B),k=knee(B);return `<div class="box"><div>B=${B} · 最佳已测窗口 ${b.sramMiB} MiB</div><div class="big">${f(b.tps)} TPS/usr</div><p>99% 点：${k.sramMiB} MiB<br>+25% /32 MiB 取整：${Math.ceil(k.sramMiB*1.25/32)*32} MiB/卡<br>聚合 ${f(b.tokensPerSecond,0)} tok/s</p></div>`;}).join('')+`<div class="box"><div>性能结论适用范围</div><div class="big">固定硬件 / 固定策略</div><p>不是每 Die 容量，也不是实际 K3 性能承诺。大 SRAM 不强制扩大投机窗口；不推荐额外叠加 288 MiB 独立池。</p></div>`;
+$('takeaway').textContent=`当前参数下 B=8 的最快已测窗口为 ${best(8).sramMiB} MiB；将物理 SRAM 增到 768/1056 MiB，可以继续使用这个窗口，但不会自动增加吞吐。若直接用满，会改变投机请求排队，出现非单调结果。容量余量应保留给局部映射与并发，而不是无条件追加未来权重。`;
+$('storage').textContent=[1,8].map(B=>`B=${B}：全权重 ${f(D.plans[B].weightGB)} GB/卡，KV+状态 ${f(D.plans[B].stateGB)} GB/卡，共 ${f(D.plans[B].backingGB)} GB/卡，低于 128 GB；${D.plans[B].ops} 个微操作、${D.plans[B].jobs} 个 DMA 对象。`).join(' ');
+$('scratch').innerHTML=tbl(['B','base MiB','softmax MiB','linear MiB','MoE MiB','collective MiB','保留最大值 MiB','最小可行窗口 MiB'],[1,8].map(B=>{const p=D.plans[B];return [B,...['base','soft','linear','moe','collective'].map(k=>f(p.scratch[k]/M,3)),f(p.scratchMiB,3),f(p.minMiB,3)];}));
+$('sensitivityTable').innerHTML=tbl(['变化项','最佳已测窗口 MiB','TPS/usr','compute μs','comm μs','等待 μs','固定 tile 最小 MiB'],D.sensitivities.map(r=>[r.name,r.windowMiB,f(r.tps),f(r.computeUs),f(r.commUs),f(r.waitUs),f(r.minMiB,3)]));
+$('serviceFloor').textContent=[1,8].map(B=>{const b=best(B),floor=b.computeUs+b.commUs,ideal=1e6/(floor*D.defaultConfig.margin);return `B=${B}：最佳窗口下 compute=${f(b.computeUs)} μs，通信=${f(b.commUs)} μs，暴露等待=${f(b.waitUs)} μs；假设所有输入及时到齐、服务时间不变，本串行映射的无等待上限为 ${f(ideal)} TPS/usr，相比当前 ${f(b.tps)} 仅高 ${f((ideal/b.tps-1)*100)}%。`;}).join(' ');
+$('sourceHash').textContent='模型输入/模拟器 SHA-256：'+D.inputHash;
+$('batch').addEventListener('change',renderCurve);$('traceChoice').addEventListener('change',renderTrace);$('layerChoice').addEventListener('change',renderLayer);$('eventLayer').addEventListener('change',renderEvents);
+renderCurve();renderTrace();})();
+</script></body></html>

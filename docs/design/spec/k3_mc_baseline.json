@@ -1,0 +1,119 @@
+{
+  "version": "2026-09-20",
+  "status": "planning-baseline",
+  "goal": {
+    "metric": "decode_tps_per_user",
+    "target": 1000,
+    "batch": 1,
+    "contextTokens": 1048576,
+    "modelLayers": 93,
+    "tpCards": 32,
+    "pp": 1,
+    "engineeringMargin": 1.17,
+    "rawLatencyBudgetUs": 854.7008547008547
+  },
+  "architectureRoute": {
+    "primary": "external-memory-cube",
+    "description": "Compute Die plus external CacheRAM-style Memory Cube; no matrix compute is assumed inside the MC.",
+    "alternativeNotInBaseline": "near-memory-compute-mc"
+  },
+  "card": {
+    "computeDies": 8,
+    "memoryCubes": 16,
+    "memoryCubesPerComputeDie": 2,
+    "networkPayloadLimitGBs": 800,
+    "powerLimitW": 2400
+  },
+  "referenceMemoryCube": {
+    "source": "../../../references/README.md",
+    "capacityOptionsGB": [
+      8,
+      16
+    ],
+    "maxUnidirectionalBandwidthGBsPerCube": 320,
+    "interface": "UCIe 1.1",
+    "logicNode": "SMIC 28 HKE+",
+    "dieAreaMm2": 102
+  },
+  "computeDieCandidate": {
+    "frequencyGHz": 1.2,
+    "lCores": 4,
+    "hCores": 4,
+    "lCore": {
+      "tensorEngines": 8,
+      "tensorShape": [
+        1,
+        256
+      ],
+      "vectorLanes": 512,
+      "localSramMiB": 1,
+      "tmaEngines": 4,
+      "tmaBytesPerCyclePerEngine": 512
+    },
+    "hCore": {
+      "tensorEngines": 8,
+      "tensorShape": [
+        16,
+        128
+      ],
+      "vectorLanes": 512,
+      "localSramMiB": 4,
+      "tmaEngines": 4,
+      "tmaBytesPerCyclePerEngine": 512
+    },
+    "sharedSramMiB": 24,
+    "sharedSramSlices": 8,
+    "physicalDataSramMiB": 44,
+    "dataNocBytesPerCyclePerDirection": 512,
+    "abstractNocMesh": [
+      5,
+      5
+    ],
+    "reduceLanes": 4096,
+    "bf16DenseTflops": 176.9472,
+    "vectorTops": 9.8304,
+    "estimatedAreaMm2": 259.56863492063496,
+    "estimatedPowerW": 237.45530871259086
+  },
+  "tilePlan": {
+    "weightTileMiB": 8,
+    "kvTileTokens": 16384,
+    "headTile": 96,
+    "prefetchDepth": 1,
+    "optimizedOverlapDepth": 4,
+    "rdmaStripeKiB": 64,
+    "partialReadyThresholds": {
+      "attention": 0.2,
+      "lse": 0.25,
+      "router": 0.18
+    }
+  },
+  "modelResults": {
+    "referenceMc320GBs": {
+      "tpsPerUser": 546.6316420412375,
+      "rawLatencyUs": 1563.5773507534657,
+      "e2eLatencyUs": 1829.3855003815547,
+      "effectiveDmaTBsPerCard": 3.4048767413886463
+    },
+    "stretchMc640GBs": {
+      "tpsPerUser": 998.8070022073217,
+      "rawLatencyUs": 855.7217288345012,
+      "e2eLatencyUs": 1001.1944227363663,
+      "effectiveDmaTBsPerCard": 6.485611765818172
+    }
+  },
+  "sramAccounting": {
+    "physicalMiBPerDie": 44,
+    "physicalMiBPerCard": 352,
+    "sharedPhysicalMiBPerCard": 192,
+    "sharedUsableWindowMiBPerCard": 122.39999999999999,
+    "simulatedPeakReservedMiBPerCard": 122.19854381930448,
+    "note": "The simulator peak and window are card-aggregate shared-SRAM values, not per-die values. Per-core local SRAM is accounted separately by tile-fit constraints."
+  },
+  "acceptance": {
+    "currentStatus": "not-met",
+    "reason": "The best stretch-MC candidate is 998.81 TPS/usr and the reference-compatible 320 GB/s MC point is about 546.63 TPS/usr.",
+    "nextGate": "Freeze an implementable MC bandwidth/topology and reproduce at least 1050 TPS/usr in the detailed tile model before microarchitecture freeze."
+  }
+}
+

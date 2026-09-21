@@ -1,0 +1,180 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SRAM 架构容量需求表：DeepSeek / GLM / Kimi K3</title><style>
+:root{--ink:#172033;--muted:#647083;--paper:#f3f1eb;--panel:#fffdf8;--line:#d6d8d8;--accent:#155e75;--warn:#b45309}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:14px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}main{max-width:1500px;margin:auto;padding:30px 26px 60px}h1{font-size:29px;margin:0 0 8px;color:var(--accent)}h2{margin-top:32px;padding-top:14px;border-top:1px solid var(--line);font-size:21px}h3{margin-top:24px}.table-wrap{overflow:auto;margin:12px 0 18px;background:var(--panel);border:1px solid var(--line);border-radius:10px}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left}th{background:#f7f5ef;color:var(--muted);font-size:12px;white-space:nowrap}td:nth-child(n+2){font-variant-numeric:tabular-nums}p{max-width:1300px}code{padding:1px 4px;border-radius:4px;background:#eef2f3}strong{color:#0f566b}ul{padding-left:24px}.note{padding:13px 16px;background:#e4f2f4;border-left:4px solid var(--accent);border-radius:7px;margin:14px 0}.warn{background:#fff4d8;border-left-color:var(--warn)}.meta{color:var(--muted);font-size:12px}pre{background:#172033;color:#e8eef4;padding:12px;overflow:auto;border-radius:8px}</style></head><body><main><div class="meta">架构设计文档 · 版本 2026-09-19</div><h1>SRAM 架构容量需求表：DeepSeek / GLM / Kimi K3</h1>
+<p>版本：2026-09-19。范围：每卡可用数据 SRAM；未含物理 ECC、spare、tag/目录等宏实现开销。</p>
+<h2>1. 决策摘要</h2>
+<ul>
+<li><strong>可重分配池：256 MiB/卡</strong>，一次部署三者中的一种；覆盖本次各模型静态分池加 25% 的预算。不代表三模型同时运行。</li>
+<li><strong>跨模型固定分区：288 MiB/卡</strong>，按逐对象跨模型上界加 25% 后取整。K3 加入后仍为此档位，但必须增加线性 Attention 状态缓冲。</li>
+<li>K3 按 <strong>线性 Attention 状态在外部存储、SRAM 流式更新</strong>计算；若 69 层状态全部常驻 SRAM，则 256 MiB 预算需要重新评估，见第 5 节。</li>
+<li>本表是架构容量账，不是实测模型规格或 TPS 保证；未关闭的硬件对象必须量化后重新签核。</li>
+<div class="note warn"><strong>2026-09-19 SRAM–TPS 联合复核更正：</strong>下方“96 MiB/Die + 独立 288 MiB 卡级池”的架构推荐撤回。288 MiB 是全卡逻辑工作集预算，不是必须额外新增的物理池；优先从 8×96=768 MiB 的分布式 SRAM 内映射，局部容量与带宽仍待验证。原 TPS 页每卡 L/H 算力是大 Die 基线的一半，远端 MC 却采用 32×480 GB/s，不能与 16×320 GB/s 方案混用性能数字。详见 <a href="./sram_tps_architecture_analysis.html">SRAM–TPS 与每 Die 架构核对报告</a>。本节之后的大 Die 参数保留为概念参考，非已通过性能验证的定版规格。</div><h2>每个计算 Die 的详细规格</h2>
+<div class="note"><strong>基线：</strong>沿用本项目已有的 400 mm²、20×20 mm、Samsung SF4X 4 nm HPC 概念 Die。单 Die 采用 8 个 L-Core、8 个 H-Core、96 MiB SRAM、4 个异构 Pod；这部分是架构预算，不是工艺实现承诺。</div>
+<div class="table-wrap"><table><thead><tr><th>模块</th><th>规格</th><th>职责</th><th>设计理由</th></tr></thead><tbody>
+<tr><td>Die 尺寸 / 工艺</td><td>400 mm²；约 20×20 mm；SF4X HPC</td><td>计算、SRAM、NoC、UCIe、管理逻辑</td><td>沿用已有 7-reticle 封装面积模型；实际需用 memory compiler、PHY 和 DFT 结果回标</td></tr>
+<tr><td>频率 / 功耗</td><td>1.0 GHz；约 250 W/Die</td><td>板级功耗和液冷预算</td><td>295 TFLOPS BF16 峰值对应约 1.18 TFLOPS/W 的芯片级目标</td></tr>
+<tr><td>L-Core</td><td>8 个；每个 16×128 BF16 MAC 阵列；32.8 TFLOPS/Die 合计</td><td>低 batch Decode、GEMV、skinny GEMM、KV scan、低 AI Expert</td><td>低算术强度场景优先保证 SRAM 带宽，减少阵列空泡</td></tr>
+<tr><td>L-Core Vector</td><td>每个 32-lane；全 Die 约 0.51 TFLOPS BF16</td><td>RMSNorm、RoPE、量化、地址和 gather/scatter</td><td>不让轻量逐元素算子占用矩阵阵列</td></tr>
+<tr><td>H-Core</td><td>8 个；每个 4×64×64 矩阵引擎；262.1 TFLOPS/Die 合计</td><td>高 batch、Prefill、Dense GEMM、QKᵀ/PV、高 AI Expert</td><td>高复用矩阵计算；本地 SRAM 读带宽需求较低但需要高吞吐</td></tr>
+<tr><td>H-Core Vector</td><td>每个 512-lane；全 Die 约 8.19 TFLOPS BF16</td><td>Softmax、归约、激活、重排、缩放</td><td>处理矩阵阵列之外的 Attention / MoE 数据流</td></tr>
+<tr><td>BF16 Dense 峰值</td><td>294.9 TFLOPS/Die</td><td>标称矩阵峰值</td><td>147,456 MAC lanes × 2 FLOP/MAC × 1 GHz</td></tr>
+<tr><td>FP8 / INT8 峰值</td><td>约 589.8 TOPS/Die</td><td>低精度权重和激活路径</td><td>按 BF16 阵列 2 倍吞吐规划；不含稀疏宣传倍率</td></tr>
+<tr><td>SRAM 总量</td><td>96 MiB/Die</td><td>本地 tile、激活、L2、DMA refill</td><td>与卡级 288 MiB 预取池分工；Die SRAM 不等于卡级 SRAM</td></tr>
+<tr><td>SRAM 分层</td><td>L-Core 64 MiB；H-Core 16 MiB；Shared L2 16 MiB</td><td>就近服务内核和跨 Pod 交换</td><td>保留本地高带宽，避免 L-Core 流量冲击全局 NoC</td></tr>
+<tr><td>SRAM 端口峰值</td><td>49.2 TB/s 读；24.6 TB/s 写</td><td>为低 AI Decode 提供数据供给</td><td>L 侧 32.8/16.4 TB/s；H 侧 8.19/4.10 TB/s；L2 8.19/4.10 TB/s</td></tr>
+<tr><td>持续验收目标</td><td>34–39 TB/s 读/Die</td><td>考虑 bank conflict、NoC 拥塞后的持续带宽</td><td>峰值端口带宽不能直接作为软件可用带宽</td></tr>
+<tr><td>异构 Pod</td><td>4 个；每 Pod 2 L-Core + 2 H-Core + 4 MiB L2</td><td>局部调度、数据亲和和故障隔离</td><td>Pod 内流量就地消化，跨 Pod 才进入全局 Mesh</td></tr>
+<tr><td>Data NoC</td><td>双平面 2048-bit Mesh；相邻 tile 约 512 GB/s/方向</td><td>激活、权重 tile、归约和 L2 交换</td><td>不把 L-Core 全部本地 SRAM 流量送入全局 NoC</td></tr>
+<tr><td>Control NoC</td><td>256-bit；约 32 GB/s/链路</td><td>任务、事件、DMA descriptor、fence</td><td>控制流与大数据流分离</td></tr>
+<tr><td>DMA / UCIe</td><td>至少需求读、预测预取、KV/激活、通信四类队列</td><td>连接卡级 SRAM、MC 和计算 Die</td><td>需求读优先；预测预取使用剩余带宽并可被抢占</td></tr>
+<tr><td>通信单元</td><td>片上 reduction tree + send/recv scratch</td><td>TP reduce、LSE merge、MoE dispatch/merge</td><td>卡内 8 Die 先做层次归约，再由卡级 endpoint 跨卡通信</td></tr>
+<tr><td>管理与安全</td><td>RISC-V 管理核、PMU、ECC/scrub、DFT、时钟和电源管理</td><td>调度遥测、故障隔离和安全启动</td><td>不占用矩阵阵列；面积预算单列</td></tr>
+</tbody></table></div>
+<h3>单 Die 内部 SRAM 建议</h3>
+<div class="table-wrap"><table><thead><tr><th>SRAM 区域</th><th>容量</th><th>组织</th><th>主要访问者</th><th>与卡级 288 MiB 的关系</th></tr></thead><tbody>
+<tr><td>L-Core local SRAM</td><td>64 MiB</td><td>8×8 MiB；每核 8×1 MiB 象限</td><td>L-Core、低 AI DMA、gather/scatter</td><td>放当前低 AI tile，不替代卡级预测专家池</td></tr>
+<tr><td>H-Core local SRAM</td><td>16 MiB</td><td>8×2 MiB；每 H-Core 独占就近 slice</td><td>H-Core、矩阵 tile、FP32/激活 scratch</td><td>放高 AI tile、QK/PV 和 Expert partial</td></tr>
+<tr><td>Shared L2</td><td>16 MiB</td><td>16×1 MiB；多 bank 分层 Mesh</td><td>MC refill、跨 Pod、通信 send/recv</td><td>作为卡级预取池的 Die-local 工作集，不重复计算为 288 MiB</td></tr>
+</tbody></table></div>
+<h3>计算 Die 到卡级 SRAM 的数据路径</h3>
+<pre><code>MC / HBM / LPDDR
+       │
+       │ UCIe：需求读 / 预测预取 / KV 写回
+       ▼
+卡级 288 MiB SRAM 池
+       │  NoC + DMA；需求读优先、预测流可抢占
+       ├── Pod 0：2 L + 2 H + 4 MiB Shared L2
+       ├── Pod 1：2 L + 2 H + 4 MiB Shared L2
+       ├── Pod 2：2 L + 2 H + 4 MiB Shared L2
+       └── Pod 3：2 L + 2 H + 4 MiB Shared L2
+
+每个 Die：96 MiB 本地 SRAM = 64 L + 16 H + 16 L2
+每张卡：8 Die = 768 MiB Die-local SRAM（本页 288 MiB 是卡级可用预取/共享池，二者必须在 RTL 中明确是否物理独立）</code></pre>
+<div class="note warn"><strong>重要架构一致性问题：</strong>现有文档同时存在“每 Die 96 MiB、8 Die 共 768 MiB”和“每卡固定 288 MiB 可用 SRAM 池”两种口径。架构冻结前必须明确：288 MiB 是独立于 Die-local SRAM 的卡级池，还是从 768 MiB 中划出的可用窗口。若后者，不能把两者相加；若前者，需额外给出卡级 SRAM 的物理位置、bank 数、NoC 带宽和面积。</div>
+
+<h2>单卡架构建议：K3 主口径，兼容 DeepSeek / GLM</h2>
+<div class="note"><strong>推荐单卡：</strong>8 个计算 Die + 16 个 MC/内存控制器 + 288 MiB 可用 SRAM（可重分配版本 256 MiB）。K3 采用 3 个 query-head 分片/卡的项目口径；DeepSeek/GLM 评估页使用 TP=32 的独立容量口径，最终需按实际卡数和 TP 映射回标。</div>
+<div class="table-wrap"><table><thead><tr><th>模块</th><th>建议数量/规模</th><th>职责</th><th>关键连接与约束</th></tr></thead><tbody>
+<tr><td>计算 Die</td><td>8 个</td><td>Norm、MLA/GQA、Router、Expert gate/up/down、Shared Expert、Residual</td><td>本地 SRAM 通过 NoC/片上 DMA 访问；矩阵阵列的寄存器/局部 scratch 不计入 288 MiB</td></tr>
+<tr><td>MC / 内存控制器</td><td>16 个起步</td><td>读取专家压缩权重、确定性权重、KV 状态；写回 KV / 结果</td><td>优先支持读写分离队列；DMA 预取不能阻塞当前算子需求读</td></tr>
+<tr><td>外部内存</td><td>按方案选择 MC / HBM / LPDDR</td><td>权重主体、完整 KV、K3 69 层线性状态主体</td><td>K3 线性状态默认 51.75 MiB/卡主体放外部存储，SRAM 只保留流式更新窗口</td></tr>
+<tr><td>SRAM 总池</td><td><strong>288 MiB 可用数据</strong></td><td>权重 A/B、专家预取、KV tile、激活、通信、metadata</td><td>以 banked unified pool 实现，逻辑配额可动态调整；物理 ECC/spare 另算</td></tr>
+<tr><td>NoC / DMA</td><td>至少 2 类独立流</td><td>需求权重流、预测预取流、KV/激活流、通信流</td><td>需求流优先级最高；预测流只能使用剩余带宽；每个对象带 generation/refcount/fence</td></tr>
+<tr><td>Collective / 通信</td><td>片上 send/recv scratch</td><td>TP reduction、LSE 合并、MoE dispatch/merge</td><td>单 outstanding collective 为本预算；多 channel / EP all-to-all 要额外扩容</td></tr>
+</tbody></table></div>
+<h3>推荐 SRAM bank 分区</h3>
+<div class="table-wrap"><table><thead><tr><th>逻辑池</th><th>可用 MiB</th><th>建议 bank</th><th>访问者</th><th>说明</th></tr></thead><tbody>
+<tr><td>需求权重 A/B</td><td>16</td><td>2 × 8 MiB</td><td>DMA + Tensor/Expert array</td><td>当前 tile 读写双缓冲；需求读优先于预取</td></tr>
+<tr><td>未来专家预取</td><td>160</td><td>2 × 80 MiB</td><td>DMA + Router/Expert scheduler</td><td>覆盖 GLM 最大 153 MiB；K3 约 133.875 MiB</td></tr>
+<tr><td>KV tile A/B</td><td>40</td><td>2 × 20 MiB</td><td>Attention + DMA</td><td>覆盖 DeepSeek/K3 36 MiB；GLM 需求更小</td></tr>
+<tr><td>激活/路由/通信/线性状态 scratch</td><td>8</td><td>至少 4 bank</td><td>Router、Dispatch、Collective、K3 linear attention</td><td>逐阶段复用；K3 流式线性状态更新约占 3 MiB</td></tr>
+<tr><td>控制/metadata</td><td>2</td><td>独立小 SRAM</td><td>DMA、allocator、fence</td><td>记录 generation、引用计数、完成事件、优先级</td></tr>
+<tr><td>工程预留</td><td>62</td><td>可重分配</td><td>系统软件</td><td>不是已确认需求；用于解量化、额外并发或 tile 调优</td></tr>
+</tbody></table></div>
+<h3>单层执行路径</h3>
+<pre><code>Layer i：
+  SRAM 权重 A  ──&gt; 计算 Die：Norm / Attention / Router / Expert
+  SRAM 权重 B  &lt;── DMA：Layer i+1 / i+2 预测专家
+  KV A/B       &lt;──&gt; Attention：QK → Softmax → PV，按 2048-token tile 循环
+  Scratch      &lt;──&gt; Dispatch / Expert hidden / TP reduce / K3 state update
+
+生命周期：
+  FREE → FILLING → READY → IN_USE → RETIRING → FREE
+  只有 DMA completion + 最后消费者 completion + 通信 fence 全部满足时才释放。
+
+优先级：
+  当前需求补读 ＞ 下一算子确定权重 ＞ 路由确认后的专家 ＞ 未来预测专家。</code></pre>
+
+<h2>2. 模型与部署假设</h2>
+</ul>
+<p>DeepSeek / GLM 沿用 ../../docs/sram/sram_frontier_model_assessment.html 中未确认的结构假设；K3 直接读取 ../../src/core/design_engine.js 的 kimiK3 预设（项目计算器口径，非官方规格认定）。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>参数</th><th>DeepSeek 结构假设</th><th>GLM 结构假设</th><th>K3 项目口径</th></tr></thead><tbody>
+<tr><td>Hidden H</td><td>8192</td><td>8192</td><td>7168</td></tr>
+<tr><td>Query heads</td><td>128</td><td>128</td><td>96</td></tr>
+<tr><td>TP / 本卡 query heads</td><td>32 / 4</td><td>32 / 4</td><td>32 / 3</td></tr>
+<tr><td>专家总数 E / Top-k</td><td>512 / 8</td><td>256 / 8</td><td>896 / 16</td></tr>
+<tr><td>专家输入 I / 中间 F</td><td>4096 / 3072</td><td>8192 / 3072</td><td>3584 / 3072</td></tr>
+<tr><td>共享专家数</td><td>1</td><td>1</td><td>2</td></tr>
+<tr><td>Attention</td><td>MLA 假设</td><td>GQA 假设</td><td>24 层 Softmax MLA + 69 层线性 Attention</td></tr>
+<tr><td>本卡 KV 元素/token</td><td>576</td><td>256</td><td>576</td></tr>
+<tr><td>B=8 专家并集上界</td><td>64</td><td>64</td><td>128</td></tr>
+<tr><td>每专家每卡 MiB</td><td>0.597656</td><td>1.195313</td><td>0.522949</td></tr>
+</tbody></table></div>
+<p>统一 B=8、TP=32、一个 rank 对应本次每卡口径；Context=1M，KV tile T=2048；当前需求权重 8 MiB × 2；未来层预取 D=2（当前层以外的两层完整预测专家集合）。容量上界取 min(E,B×Top-k)，不是平均并集；预测准确率 p 不缩减容量。激活/KV BF16；专家压缩权重 17/32 byte/参数；累加/score/logits FP32。TP=32 可同时整除 128 和 96 query heads，与旧 TP=24 曲线独立。</p>
+<p>GQA 每 rank 至少一个 KV head（允许复制），MLA latent KV 按 TP 复制。不存整段 1M KV；K3 的 24 个 Softmax 层串行，因此不能把单层 KV scratch 乘以 24。</p>
+<p>共享专家串行执行并累加到同一输出。K3 的两个共享专家不把 scratch 直接乘二；并行实现必须重算。所有层串行、单 outstanding collective、本地 TP dispatch；多 step overlap / EP 不在本预算内。</p>
+<h2>3. 对象容量详细表</h2>
+<p>每行是该对象的最大占用，不代表所有行同时存活。零表示该模型未使用此对象。</p>
+<div class="table-wrap"><table>
+<thead><tr><th>SRAM 对象</th><th>DeepSeek 结构假设 MiB/卡</th><th>GLM 结构假设 MiB/卡</th><th>K3 项目口径 MiB/卡</th><th>容量公式</th><th>用途</th><th>生命周期 / 复用</th><th>架构约束</th></tr></thead><tbody>
+<tr><td>需求权重 A/B</td><td>16.000000</td><td>16.000000</td><td>16.000000</td><td>2 × 8 MiB</td><td>投影、W_O、Router、专家、共享专家按 tile 流式消费</td><td>DMA 填充→MAC 最后读取→释放；A/B 可跨算子复用</td><td>固定双缓冲池；8 MiB/tile 是设计选择，不是推导出的带宽最优值</td></tr>
+<tr><td>未来两层预测专家</td><td>76.500000</td><td>153.000000</td><td>133.875000</td><td>D × min(E,BK) × 3IF × (17/32) / TP</td><td>当前层以外的两层完整专家集合</td><td>预测写→路由确认→消费/淘汰；DMA 未完成不可覆盖</td><td>可抢占；只缓存压缩权重，不额外保存整份解码副本</td></tr>
+<tr><td>Attention KV A/B</td><td>36.000000</td><td>16.000000</td><td>36.000000</td><td>2 × B × T × d_KV × 2 bytes</td><td>KV tile 双缓冲，不存整个 1M 上下文</td><td>当前 tile 的 QK 和 PV 都结束后复用</td><td>可与 MoE scratch 跨阶段复用；不保证跨 MC 共享</td></tr>
+<tr><td>新增 KV 写回</td><td>0.008789</td><td>0.003906</td><td>0.008789</td><td>B × d_KV × 2 bytes</td><td>新增 token KV 的持久写回源</td><td>store ACK 前保留</td><td>小型 writeback pool；未计多个未完成 step</td></tr>
+<tr><td>Query</td><td>0.011719</td><td>0.007813</td><td>0.008789</td><td>B × h_local × d_Q × 2 bytes</td><td>Attention 各 context tile 重复读取 Q</td><td>投影产生→最后一个 Attention tile 结束</td><td>可在 Attention 完成后归还 scratch</td></tr>
+<tr><td>Score / probability</td><td>0.500000</td><td>0.500000</td><td>0.375000</td><td>2 × B × h_local × T × 4 bytes</td><td>非原位 FP32 score/probability 双数组</td><td>每个 QK→softmax→PV tile 循环</td><td>两份都计；融合原位实现可降低</td></tr>
+<tr><td>O / max / sum</td><td>0.015869</td><td>0.015869</td><td>0.011902</td><td>B × h_local × (d_V+2) × 4 bytes</td><td>Attention FP32 输出累加和在线 softmax 统计</td><td>跨 KV tile 保留→LSE/O projection 消费完</td><td>与最终输出布局/重排另行核对</td></tr>
+<tr><td>Residual / norm</td><td>0.250000</td><td>0.250000</td><td>0.218750</td><td>2 × B × H × 2 bytes</td><td>两个 BF16 hidden-size 缓冲</td><td>保留 skip 输入及 norm/新 residual；add 后交换</td><td>假定原位 residual add；非原位实现可能多需一份</td></tr>
+<tr><td>Router / 路由索引</td><td>0.016602</td><td>0.008789</td><td>0.029297</td><td>B × E × 4 + BK × 16 bytes</td><td>FP32 router logits 和 Top-k 元数据</td><td>Router→dispatch→weighted merge 完成</td><td>16 byte/assignment 是描述符设计假设</td></tr>
+<tr><td>Dispatch 激活</td><td>0.500000</td><td>1.000000</td><td>0.875000</td><td>BK × I × 2 bytes</td><td>按专家整理的输入激活</td><td>打包→gate/up 最后一次读取</td><td>TP 本地打包；不是 EP all-to-all 完整预算</td></tr>
+<tr><td>Expert gate/up/hidden</td><td>0.035156</td><td>0.035156</td><td>0.070313</td><td>3 × BK × ceil(F/TP) × 2 bytes</td><td>gate、up、激活结果三份分片张量</td><td>gate/up→SiLU×up→down</td><td>串行处理；其他 TP 切分方式需重算</td></tr>
+<tr><td>Expert 输出</td><td>1.000000</td><td>2.000000</td><td>1.750000</td><td>BK × I × 4 bytes</td><td>每条 token-expert assignment 的 FP32 输出</td><td>down→加权 merge 完成</td><td>按未分片输出保守计，不与 hidden 默认 alias</td></tr>
+<tr><td>共享专家 scratch</td><td>0.254395</td><td>0.254395</td><td>0.223145</td><td>3B × ceil(F/TP) × 2 + BH × 4 bytes</td><td>共享专家三个中间张量和输出</td><td>本调度串行执行 shared 分支</td><td>与 routed scratch 可复用；并行执行需加算重叠</td></tr>
+<tr><td>通信 send/recv</td><td>0.500000</td><td>0.500000</td><td>0.437500</td><td>max(2BH × 4, 2 × S_AttnStats)</td><td>一次 TP reduction 或 LSE 合并的两个缓冲</td><td>NIC/DMA completion + 消费者结束再释放</td><td>单 outstanding collective；多通道/多请求按并发重算</td></tr>
+<tr><td>线性 Attention 状态 A/B</td><td>0.000000</td><td>0.000000</td><td>1.500000</td><td>2 × B × h_local × stateDim² × 2 bytes</td><td>当前与下一线性层 BF16 状态搬入/写回</td><td>读入→更新→store ACK 后复用</td><td>仅 K3；状态主体在外部存储，不是 69 层全部常驻</td></tr>
+<tr><td>线性 Attention FP32 更新</td><td>0.000000</td><td>0.000000</td><td>1.500000</td><td>B × h_local × stateDim² × 4 bytes</td><td>当前线性层状态更新工作区</td><td>当前层状态更新→转 BF16→写回</td><td>仅 K3；和 BF16 A/B 独立计数；实际 kernel 需回标</td></tr>
+<tr><td>控制与元数据</td><td>1.000000</td><td>1.000000</td><td>1.000000</td><td>1 MiB 固定预留</td><td>DMA 描述符、引用计数、generation、allocator 表等</td><td>池级长驻</td><td>工程预留，需按队列深度、tile 数和 ECC 状态表回标</td></tr>
+</tbody></table></div>
+<h2>4. 容量汇总与峰值时刻</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>口径</th><th>DeepSeek 结构假设</th><th>GLM 结构假设</th><th>K3 项目口径</th></tr></thead><tbody>
+<tr><td>运行 live 峰值 MiB</td><td>130.286</td><td>186.778</td><td>187.498</td></tr>
+<tr><td>静态分池合计 MiB</td><td>132.593</td><td>190.576</td><td>193.883</td></tr>
+<tr><td>live 峰值加 25% MiB</td><td>162.858</td><td>233.472</td><td>234.373</td></tr>
+<tr><td>静态分池加 25% MiB</td><td>165.741</td><td>238.220</td><td>242.354</td></tr>
+<tr><td>静态分池配置（32 MiB 取整）</td><td>192</td><td>256</td><td>256</td></tr>
+</tbody></table></div>
+<p>三个模型的运行峰值均在 Softmax Attention 的 QK→softmax→PV 阶段：需求权重 A/B、KV A/B、两层预测专家、Q/score/O 统计、residual、KV 写回及 metadata 同时存活。K3 的线性状态流式工作区与 Softmax scratch 不同时使用。</p>
+<p><strong>逐对象跨模型固定分区上界 = 213.640 MiB</strong>；加 25% = <strong>267.050 MiB</strong>；32 MiB 取整 = <strong>288 MiB/卡</strong>。可重分配预算与固定预算不同，不能把较大 KV、较大专家缓存等分别锁死后仍沿用单模型容量余量。</p>
+<h2>5. K3 线性 Attention 状态的额外选择</h2>
+<p>沿用引擎 stateDim=128，按本卡 3 heads、B=8：</p>
+<ul>
+<li>单层 BF16 状态：8×3×128²×2 bytes = <strong>0.75 MiB/卡</strong>。</li>
+<li>BF16 状态 A/B 搬入与写回缓冲：<strong>1.50 MiB</strong>。</li>
+<li>当前层 FP32 更新工作区：<strong>1.50 MiB</strong>。</li>
+<li>因此流式更新工作区共 <strong>3.00 MiB</strong>，只在当前线性 Attention 阶段存活。</li>
+<li>69 层 BF16 状态主体共 <strong>51.75 MiB/卡</strong>，默认在外部存储；不能遗漏其外部容量和读写带宽。</li>
+</ul>
+<p>若将 69 层 BF16 状态全部常驻 SRAM，同时仍保留 A/B 和 FP32 更新缓冲（保守、不做 alias 优化）：</p>
+<ul>
+<li>运行峰值 = 187.498 + 51.750 = <strong>239.248 MiB</strong>。</li>
+<li>静态分池 = 193.883 + 51.750 = <strong>245.633 MiB</strong>。</li>
+<li>静态分池加 25% 后 <strong>307.042 MiB</strong>；向上取整为 <strong>320 MiB/卡</strong>（仅 K3 单模型口径）。</li>
+<li>若状态主体为 FP32，常驻主体变为 103.50 MiB，必须再重算；不能直接沿用 BF16 状态存储预算。</li>
+<h2>6. 288 MiB 固定分池建议（三模型，K3 状态流式）</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>可用数据池</th><th>配置 MiB</th><th>组织与约束</th></tr></thead><tbody>
+<tr><td>当前需求权重 A/B</td><td>16</td><td>8+8；同时读写需独立 bank/端口</td></tr>
+<tr><td>未来两层专家预取</td><td>160</td><td>80+80；覆盖 GLM 153 MiB，K3 133.875 MiB</td></tr>
+<tr><td>KV tile A/B</td><td>40</td><td>20+20；覆盖 DS/K3 36 MiB</td></tr>
+<tr><td>激活 / 路由 / 通信 / 线性状态 scratch</td><td>8</td><td>逐对象跨模型最大值合计约 7.640 MiB；含 K3 3 MiB 线性状态工作区</td></tr>
+<tr><td>控制 / metadata</td><td>2</td><td>初始明确预算 1 MiB；队列规模需回标</td></tr>
+<tr><td>未分配 bank / 工程容量预留</td><td>62</td><td>与已分配池内余量一起形成工程裕量，不是已确认对象</td></tr>
+<tr><td>合计</td><td>288</td><td>只说明容量；布局可达性与 SRAM 带宽单独验证</td></tr>
+</tbody></table></div>
+<h2>7. 待关闭的实现问题</h2>
+</ul>
+<p>1. <strong>解量化</strong>：当前需求池与预测池均按存储字节计算。若另存 BF16 解码 tile，追加同时存活参数数×2 bytes；完整解码副本不能默认被 8 MiB tile 或 25% 余量覆盖。</p>
+<p>2. <strong>投影/重排 scratch</strong>：MLA latent down/up、RoPE、阵列 partial-sum 与输出布局转换尚未确定；核对哪些落寄存器、哪些落 SRAM。Norm/Residual 假定原位 add。</p>
+<p>3. <strong>线性 Attention kernel</strong>：目前状态形状只来自 K3 项目 stateDim；未得到实际 kernel 的门控、卷积状态与临时张量。3 MiB 是显式状态更新预算，不声称包含所有潜在 kernel 对象。</p>
+<p>4. <strong>并发</strong>：K3 两共享专家若并行、多个 collective 在途、EP all-to-all、多个 decode step overlap，需增加各自 live 对象。需求补读优先于未来层预测。</p>
+<p>5. <strong>物理池</strong>：每卡容量不得简单除以 MC 数判定可行；检查每个 Die/MC 可达池及局部峰值。验证 SRAM 读写端口、bank 冲突及 DMA 与 collective 链路竞争。</p>
+<p>6. <strong>ECC/spare/tag</strong>：表内为可用数据容量。示例每 64 数据 bit 配 8 校验 bit 时仅 bit 容量乘 1.125；未指定 ECC 实现，不含外围面积、spare 与目录。</p>
+<p>7. <strong>25% 工程余量不是带宽证明</strong>：按算子/tile deadline 检查预取是否完成，不能用整模型 compute 时间隐藏单层 DMA；未量化对象要逐项追加后重算。</p>
+<h2>8. 文档与复算</h2>
+<ul>
+<li>./sram_architecture_capacity.md：本需求文档。</li>
+<li>../../data/sram/sram_architecture_capacity.csv：17 项对象、三模型容量、公式及生命周期；UTF-8 BOM，可用 Excel 打开。</li>
+<li>../../src/core/sram_operator_peak.js：算子阶段容量计算；K3 增加线性 Attention 状态阶段。</li>
+<li>../../scripts/generate_sram_architecture_capacity.js：运行 node scripts/generate_sram_architecture_capacity.js 重建本 MD/CSV；DeepSeek/GLM 来自本地页面，K3 来自 ../../src/core/design_engine.js。</li>
+</ul></main></body></html>
