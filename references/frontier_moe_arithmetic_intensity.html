@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>V4-Pro / K3 / GLM-5.2 · 算术强度与 Roofline</title>
+  <title>V4-Pro / K3 / GLM-5.2 路 绠楁湳寮哄害涓?Roofline</title>
   <style>
     :root {
       --ink: #172033; --muted: #647083; --paper: #f3f1eb; --panel: #fffdf8; --line: #d6d8d8;
@@ -91,23 +91,19 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow">ROOFLINE · DECODE / PREFILL</div>
-    <h1>算术强度：V4-Pro / K3 / GLM-5.2</h1>
+    <div class="eyebrow">ROOFLINE 路 DECODE / PREFILL</div>
+    <h1>绠楁湳寮哄害锛歏4-Pro / K3 / GLM-5.2</h1>
     <p class="subtitle">
-      只评三颗旗舰的算子 I（FLOP/Byte）。Decode 一步、Prefill 一条序列分两张图两张表，避免对数轴被 Prefill 的 ×S 压扁。
-      脊点 = 有效峰值 / 有效 MC。精简结论见
-      <a href="./frontier_moe_arithmetic_intensity_brief.html">要点页</a>；数据流、切分、TPS 见
-      <a href="./frontier_moe_dataflow_partition.html">数据流与资源匹配</a>。
-    </p>
+      鍙瘎涓夐鏃楄埌鐨勭畻瀛?I锛團LOP/Byte锛夈€侱ecode 涓€姝ャ€丳refill 涓€鏉″簭鍒楀垎涓ゅ紶鍥句袱寮犺〃锛岄伩鍏嶅鏁拌酱琚?Prefill 鐨?脳S 鍘嬫墎銆?      鑴婄偣 = 鏈夋晥宄板€?/ 鏈夋晥 MC銆傜簿绠€缁撹瑙?      <a href="./frontier_moe_arithmetic_intensity_brief.html">瑕佺偣椤?/a>锛涙暟鎹祦銆佸垏鍒嗐€乀PS 瑙?      <a href="./frontier_moe_dataflow_partition.html">鏁版嵁娴佷笌璧勬簮鍖归厤</a>銆?    </p>
     <div class="toc">
-      <a href="#rules">I 怎么变</a>
-      <a href="#shardOps">切分与 I</a>
-      <a href="#roofDecode">Decode · B / TP</a>
-      <a href="#roofPrefill">Prefill · TP / CP</a>
-      <a href="#vector">Vector 表</a>
-      <a href="#pdVec">PD · L/H Vector</a>
-      <a href="#chipSpec">按 I 选芯片</a>
-      <a href="./frontier_moe_arithmetic_intensity_brief.html">要点页</a>
+      <a href="#rules">I 鎬庝箞鍙?/a>
+      <a href="#shardOps">鍒囧垎涓?I</a>
+      <a href="#roofDecode">Decode 路 B / TP</a>
+      <a href="#roofPrefill">Prefill 路 TP / CP</a>
+      <a href="#vector">Vector 琛?/a>
+      <a href="#pdVec">PD 路 L/H Vector</a>
+      <a href="#chipSpec">鎸?I 閫夎姱鐗?/a>
+      <a href="./frontier_moe_arithmetic_intensity_brief.html">瑕佺偣椤?/a>
     </div>
   </header>
 
@@ -121,264 +117,256 @@
           <option value="1048576" selected>1M</option>
         </select>
       </div>
-      <div class="field"><label>Prefill 长度</label>
+      <div class="field"><label>Prefill 闀垮害</label>
         <select id="inPrefill">
-          <option value="0">对照 32K</option>
+          <option value="0">瀵圭収 32K</option>
           <option value="4096">4K</option>
           <option value="32768" selected>32K</option>
           <option value="131072">128K</option>
         </select>
       </div>
-      <div class="field"><label>专家预测准确率（只影响 Decode 预取 I）</label>
+      <div class="field"><label>涓撳棰勬祴鍑嗙‘鐜囷紙鍙奖鍝?Decode 棰勫彇 I锛?/label>
         <input id="inPred" type="number" value="80" min="0" max="100" step="5">
       </div>
-      <div class="field"><label>PD 并行 · Decode 带宽份额</label>
+      <div class="field"><label>PD 骞惰 路 Decode 甯﹀浠介</label>
         <select id="inPdShare">
           <option value="0.3">Decode 30% / Prefill 70%</option>
-          <option value="0.5">各 50%</option>
+          <option value="0.5">鍚?50%</option>
           <option value="0.7">Decode 70% / Prefill 30%</option>
           <option value="0.8" selected>Decode 80% / Prefill 20%</option>
         </select>
       </div>
     </div>
     <div class="chips" id="modelChips"></div>
-    <p class="caption" id="capRidge">带宽 3.58 TB/s 在 PD 并行时按份额切开。Decode 默认挂 L，高 I 注意力临时上 H。Vector 按 L/H 分核匹配。</p>
+    <p class="caption" id="capRidge">甯﹀ 3.58 TB/s 鍦?PD 骞惰鏃舵寜浠介鍒囧紑銆侱ecode 榛樿鎸?L锛岄珮 I 娉ㄦ剰鍔涗复鏃朵笂 H銆俈ector 鎸?L/H 鍒嗘牳鍖归厤銆?/p>
   </div>
 
   <div class="stats" id="stats" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-top:14px"></div>
 
-  <h2 id="rules">I 怎么从 Decode 变到 Prefill</h2>
+  <h2 id="rules">I 鎬庝箞浠?Decode 鍙樺埌 Prefill</h2>
   <dl class="col-glossary">
     <dt>I_MC</dt>
     <dd>
-      <span class="mono">I_MC = FLOP / HBM</span>，不含网。高→算力墙，低→带宽墙。
-      定 H 用 Prefill 整模
-      <span class="mono">I_MC = [(线性+注意力)/(TP·CP)] / (权重/TP + KV/CP)</span>。
-      I+网 = <span class="mono">FLOP / (HBM + 2(TP−1)·payload·tokens + 2(CP−1)/CP·KV)</span>，更稀，不定档。
-    </dd>
-    <dt>线性 GEMM</dt>
-    <dd>Decode I = 2×参数 / 权重字节（MXFP4 Routed ≈ 3.76，BF16 = 1）。Prefill 每卡仍读一份权重、FLOP ×本地 token，所以 I ×(S/CP)。CP=1 时就是 ×S。</dd>
-    <dt>挂核</dt>
-    <dd><b>PD 同时</b>：L 跑 Decode，H 跑 Prefill。Decode 矩阵尽量挂 L；若该算子 I 高于「PD 下 L 脊点」= L脊点/Decode份额，则<b>临时上 H</b>。Prefill 矩阵始终挂 H。伴随 Vector 跟矩阵走。</dd>
-    <dt>PD 带宽</dt>
-    <dd>L 与 H 共用 3.58 TB/s，按 Decode / Prefill 份额调度，不是各吃满带宽。份额下有效脊点 = 原脊点 / 份额。Vector 匹配 TF = I × (份额×3.58) / 0.8。</dd>
-    <dt>因果稠密注意力</dt>
-    <dd>MLA / HCA / indexer：Decode I 与 L 无关，矩阵核挂 L。Prefill 因果积分 FLOP ~ S²、写出 KV ~ S，I ≈ (S/2)×Decode，矩阵核挂 H。Softmax/LSE 走 Vector。</dd>
-    <dt>MLA / MQA 怎么切</dt>
-    <dd>潜变量 KV 跨头共享（V4 还是 MQA），<b>不能按头切 KV</b>。TP 只切 Q 头：FLOP ÷TP，每卡仍读完整 KV，所以<b>算子 I ÷TP</b>。要摊 KV 容量和本步 KV 带宽只能走 CP（切序列）：Prefill FLOP 与本地 KV 同 ÷CP，MC I 不变。引擎里「MLA CP=TP」指的就是用 TP 组做 Context 分片，不是切头。</dd>
-    <dt>固定工作集</dt>
-    <dd>DSA/CSA topk、滑动窗：Prefill I ≈ Decode I，Decode 仍挂 L、Prefill 仍挂 H。KDA / RMSNorm / SiLU / RoPE / Softmax / 残差是 Vector，I 几乎不随 S、B 变，不改挂 L/H。</dd>
+      <span class="mono">I_MC = FLOP / HBM</span>锛屼笉鍚綉銆傞珮鈫掔畻鍔涘锛屼綆鈫掑甫瀹藉銆?      瀹?H 鐢?Prefill 鏁存ā
+      <span class="mono">I_MC = [(绾挎€?娉ㄦ剰鍔?/(TP路CP)] / (鏉冮噸/TP + KV/CP)</span>銆?      I+缃?= <span class="mono">FLOP / (HBM + 2(TP鈭?)路payload路tokens + 2(CP鈭?)/CP路KV)</span>锛屾洿绋€锛屼笉瀹氭。銆?    </dd>
+    <dt>绾挎€?GEMM</dt>
+    <dd>Decode I = 2脳鍙傛暟 / 鏉冮噸瀛楄妭锛圡XFP4 Routed 鈮?3.76锛孊F16 = 1锛夈€侾refill 姣忓崱浠嶈涓€浠芥潈閲嶃€丗LOP 脳鏈湴 token锛屾墍浠?I 脳(S/CP)銆侰P=1 鏃跺氨鏄?脳S銆?/dd>
+    <dt>鎸傛牳</dt>
+    <dd><b>PD 鍚屾椂</b>锛歀 璺?Decode锛孒 璺?Prefill銆侱ecode 鐭╅樀灏介噺鎸?L锛涜嫢璇ョ畻瀛?I 楂樹簬銆孭D 涓?L 鑴婄偣銆? L鑴婄偣/Decode浠介锛屽垯<b>涓存椂涓?H</b>銆侾refill 鐭╅樀濮嬬粓鎸?H銆備即闅?Vector 璺熺煩闃佃蛋銆?/dd>
+    <dt>PD 甯﹀</dt>
+    <dd>L 涓?H 鍏辩敤 3.58 TB/s锛屾寜 Decode / Prefill 浠介璋冨害锛屼笉鏄悇鍚冩弧甯﹀銆備唤棰濅笅鏈夋晥鑴婄偣 = 鍘熻剨鐐?/ 浠介銆俈ector 鍖归厤 TF = I 脳 (浠介脳3.58) / 0.8銆?/dd>
+    <dt>鍥犳灉绋犲瘑娉ㄦ剰鍔?/dt>
+    <dd>MLA / HCA / indexer锛欴ecode I 涓?L 鏃犲叧锛岀煩闃垫牳鎸?L銆侾refill 鍥犳灉绉垎 FLOP ~ S虏銆佸啓鍑?KV ~ S锛孖 鈮?(S/2)脳Decode锛岀煩闃垫牳鎸?H銆係oftmax/LSE 璧?Vector銆?/dd>
+    <dt>MLA / MQA 鎬庝箞鍒?/dt>
+    <dd>娼滃彉閲?KV 璺ㄥご鍏变韩锛圴4 杩樻槸 MQA锛夛紝<b>涓嶈兘鎸夊ご鍒?KV</b>銆俆P 鍙垏 Q 澶达細FLOP 梅TP锛屾瘡鍗′粛璇诲畬鏁?KV锛屾墍浠?b>绠楀瓙 I 梅TP</b>銆傝鎽?KV 瀹归噺鍜屾湰姝?KV 甯﹀鍙兘璧?CP锛堝垏搴忓垪锛夛細Prefill FLOP 涓庢湰鍦?KV 鍚?梅CP锛孧C I 涓嶅彉銆傚紩鎿庨噷銆孧LA CP=TP銆嶆寚鐨勫氨鏄敤 TP 缁勫仛 Context 鍒嗙墖锛屼笉鏄垏澶淬€?/dd>
+    <dt>鍥哄畾宸ヤ綔闆?/dt>
+    <dd>DSA/CSA topk銆佹粦鍔ㄧ獥锛歅refill I 鈮?Decode I锛孌ecode 浠嶆寕 L銆丳refill 浠嶆寕 H銆侹DA / RMSNorm / SiLU / RoPE / Softmax / 娈嬪樊鏄?Vector锛孖 鍑犱箮涓嶉殢 S銆丅 鍙橈紝涓嶆敼鎸?L/H銆?/dd>
     <dt>Vector</dt>
-    <dd>逐元素与非线性：RMSNorm、残差 Add、SiLU 跟线性走；RoPE、Softmax/LSE 跟注意力走；KDA 留在 Decode 的 L（I 低，不溢出）。PD 并行时 L-Vector 喂 Decode，H-Vector 喂 Prefill；注意力溢出到 H 时 Softmax/RoPE 也上 H，H-Vector 按两路叠加。相对 MC 多在带宽墙；融合进矩阵核时不另占 MC。</dd>
+    <dd>閫愬厓绱犱笌闈炵嚎鎬э細RMSNorm銆佹畫宸?Add銆丼iLU 璺熺嚎鎬ц蛋锛汻oPE銆丼oftmax/LSE 璺熸敞鎰忓姏璧帮紱KDA 鐣欏湪 Decode 鐨?L锛圛 浣庯紝涓嶆孩鍑猴級銆侾D 骞惰鏃?L-Vector 鍠?Decode锛孒-Vector 鍠?Prefill锛涙敞鎰忓姏婧㈠嚭鍒?H 鏃?Softmax/RoPE 涔熶笂 H锛孒-Vector 鎸変袱璺彔鍔犮€傜浉瀵?MC 澶氬湪甯﹀澧欙紱铻嶅悎杩涚煩闃垫牳鏃朵笉鍙﹀崰 MC銆?/dd>
     <dt>Decode batch</dt>
-    <dd>B = 同一 replica 并发序列。稠密权重读 1 份、FLOP ×B，I ×B。Routed 独特专家 ≈ E·(1−((E−k)/E)<sup>B</sup>)，字节随独特集合涨，I ≈ I₁·B·k/uniq，碰撞少时几乎不涨。注意力与 KDA：FLOP 和状态都 ×B，I 不变。</dd>
+    <dd>B = 鍚屼竴 replica 骞跺彂搴忓垪銆傜瀵嗘潈閲嶈 1 浠姐€丗LOP 脳B锛孖 脳B銆俁outed 鐙壒涓撳 鈮?E路(1鈭?(E鈭択)/E)<sup>B</sup>)锛屽瓧鑺傞殢鐙壒闆嗗悎娑紝I 鈮?I鈧伮稡路k/uniq锛岀鎾炲皯鏃跺嚑涔庝笉娑ㄣ€傛敞鎰忓姏涓?KDA锛欶LOP 鍜岀姸鎬侀兘 脳B锛孖 涓嶅彉銆?/dd>
     <dt>TP</dt>
-    <dd>稠密权重全分片：GEMM 的 FLOP 和权重同 ÷TP，<b>线性算子 I 不变</b>。MLA/MQA 核不同：只切头、KV 复制，<b>注意力 I ÷TP</b>。环 all-reduce 导线 = 2(TP−1)·payload；Decode ×B，Prefill payload ×(S/CP)。Decode TP=1 / 8 / 16；Prefill 另加 TP32。三模型头数均可整除。</dd>
+    <dd>绋犲瘑鏉冮噸鍏ㄥ垎鐗囷細GEMM 鐨?FLOP 鍜屾潈閲嶅悓 梅TP锛?b>绾挎€х畻瀛?I 涓嶅彉</b>銆侻LA/MQA 鏍镐笉鍚岋細鍙垏澶淬€並V 澶嶅埗锛?b>娉ㄦ剰鍔?I 梅TP</b>銆傜幆 all-reduce 瀵肩嚎 = 2(TP鈭?)路payload锛汥ecode 脳B锛孭refill payload 脳(S/CP)銆侱ecode TP=1 / 8 / 16锛汸refill 鍙﹀姞 TP32銆備笁妯″瀷澶存暟鍧囧彲鏁撮櫎銆?/dd>
     <dt>CP</dt>
-    <dd>切序列 / KV。每卡 s=S/CP：线性 I ×s；MLA 注意力 I 不随 CP。导线 2(CP−1)/CP · KV。Prefill CP=1 / 8 / 16 / 32。</dd>
-    <dt>预取 (2−p)</dt>
-    <dd>只放大 Decode Routed 分母。Prefill 按 p=1 读一份专家。</dd>
+    <dd>鍒囧簭鍒?/ KV銆傛瘡鍗?s=S/CP锛氱嚎鎬?I 脳s锛汳LA 娉ㄦ剰鍔?I 涓嶉殢 CP銆傚绾?2(CP鈭?)/CP 路 KV銆侾refill CP=1 / 8 / 16 / 32銆?/dd>
+    <dt>棰勫彇 (2鈭抪)</dt>
+    <dd>鍙斁澶?Decode Routed 鍒嗘瘝銆侾refill 鎸?p=1 璇讳竴浠戒笓瀹躲€?/dd>
   </dl>
 
-  <h2 id="shardOps">各算子怎么切，I 怎么变</h2>
+  <h2 id="shardOps">鍚勭畻瀛愭€庝箞鍒囷紝I 鎬庝箞鍙?/h2>
   <p class="subtitle">
-    三条轴：<b>TP</b> 切张量（头或列），<b>CP</b> 切序列 / KV，<b>EP</b> 放专家。
-    强度只在「FLOP 和字节不同步 ÷」时才变。下面公式是<b>算子 MC I</b>；计入导线后的整模 I+网更稀，见 Prefill / Decode 表。
-  </p>
+    涓夋潯杞达細<b>TP</b> 鍒囧紶閲忥紙澶存垨鍒楋級锛?b>CP</b> 鍒囧簭鍒?/ KV锛?b>EP</b> 鏀句笓瀹躲€?    寮哄害鍙湪銆孎LOP 鍜屽瓧鑺備笉鍚屾 梅銆嶆椂鎵嶅彉銆備笅闈㈠叕寮忔槸<b>绠楀瓙 MC I</b>锛涜鍏ュ绾垮悗鐨勬暣妯?I+缃戞洿绋€锛岃 Prefill / Decode 琛ㄣ€?  </p>
   <div class="callout">
-    <strong>I 随切分怎么走</strong>
-    <p><b>线性 GEMM</b>：FLOP 与权重同 ÷TP，<span class="mono">I(TP)=I₁</span> 不变。Prefill 每卡读一份权重、本地 s=S/CP，<span class="mono">I(CP)=I₁·S/CP</span>。Decode 稠密 <span class="mono">I(B)=I₁·B</span>；Routed 按独特专家，B 增大时 I 几乎不涨。</p>
-    <p><b>MLA / MQA 核</b>：KV 不按头切。TP 切 Q 头，<span class="mono">I(TP)=I₁/TP</span>。CP 切序列，FLOP 与本地 KV 同 ÷CP，<span class="mono">MC I(CP)=I₁</span>。Prefill 因果核再乘长度：<span class="mono">I=I₁·S/(2·TP)</span>（topk/窗不乘 S）。</p>
-    <p><b>Vector</b>：<span class="mono">I(TP,CP,B,S)≈I₁</span>。KDA 状态不随 L，CP 摊不掉。</p>
-    <p><b>I_MC vs I+网</b>：<span class="mono">I_MC = [(线性+注意力)/(TP·CP)] / (权重/TP + KV/CP)</span>。
-      <span class="mono">I+网 = FLOP / (HBM + 2(TP−1)·payload·tokens + 2(CP−1)/CP·KV)</span>，不定档。</p>
+    <strong>I 闅忓垏鍒嗘€庝箞璧?/strong>
+    <p><b>绾挎€?GEMM</b>锛欶LOP 涓庢潈閲嶅悓 梅TP锛?span class="mono">I(TP)=I鈧?/span> 涓嶅彉銆侾refill 姣忓崱璇讳竴浠芥潈閲嶃€佹湰鍦?s=S/CP锛?span class="mono">I(CP)=I鈧伮稴/CP</span>銆侱ecode 绋犲瘑 <span class="mono">I(B)=I鈧伮稡</span>锛汻outed 鎸夌嫭鐗逛笓瀹讹紝B 澧炲ぇ鏃?I 鍑犱箮涓嶆定銆?/p>
+    <p><b>MLA / MQA 鏍?/b>锛欿V 涓嶆寜澶村垏銆俆P 鍒?Q 澶达紝<span class="mono">I(TP)=I鈧?TP</span>銆侰P 鍒囧簭鍒楋紝FLOP 涓庢湰鍦?KV 鍚?梅CP锛?span class="mono">MC I(CP)=I鈧?/span>銆侾refill 鍥犳灉鏍稿啀涔橀暱搴︼細<span class="mono">I=I鈧伮稴/(2路TP)</span>锛坱opk/绐椾笉涔?S锛夈€?/p>
+    <p><b>Vector</b>锛?span class="mono">I(TP,CP,B,S)鈮圛鈧?/span>銆侹DA 鐘舵€佷笉闅?L锛孋P 鎽婁笉鎺夈€?/p>
+    <p><b>I_MC vs I+缃?/b>锛?span class="mono">I_MC = [(绾挎€?娉ㄦ剰鍔?/(TP路CP)] / (鏉冮噸/TP + KV/CP)</span>銆?      <span class="mono">I+缃?= FLOP / (HBM + 2(TP鈭?)路payload路tokens + 2(CP鈭?)/CP路KV)</span>锛屼笉瀹氭。銆?/p>
   </div>
   <div class="panel" style="overflow:auto">
     <table>
       <thead>
         <tr>
-          <th>算子</th>
-          <th>核</th>
-          <th>切什么</th>
-          <th>TP → I</th>
-          <th>CP → I</th>
+          <th>绠楀瓙</th>
+          <th>鏍?/th>
+          <th>鍒囦粈涔?/th>
+          <th>TP 鈫?I</th>
+          <th>CP 鈫?I</th>
           <th>Decode I</th>
           <th>Prefill I</th>
         </tr>
       </thead>
       <tbody>
-        <tr class="hi"><td colspan="7">线性 GEMM · Decode 挂 L，Prefill 挂 H</td></tr>
+        <tr class="hi"><td colspan="7">绾挎€?GEMM 路 Decode 鎸?L锛孭refill 鎸?H</td></tr>
         <tr>
-          <td>Attn 投影 Wq / Wkv / Wo</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>按列 / 按头分权重；输出 AR</td>
-          <td>I(TP)=I₁</td>
-          <td>I(CP)=I₁·S/CP</td>
-          <td>I(B)=I₁·B</td>
-          <td>I=I₁·S/CP · 不随 TP</td>
+          <td>Attn 鎶曞奖 Wq / Wkv / Wo</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>鎸夊垪 / 鎸夊ご鍒嗘潈閲嶏紱杈撳嚭 AR</td>
+          <td>I(TP)=I鈧?/td>
+          <td>I(CP)=I鈧伮稴/CP</td>
+          <td>I(B)=I鈧伮稡</td>
+          <td>I=I鈧伮稴/CP 路 涓嶉殢 TP</td>
         </tr>
         <tr>
-          <td>Routed 专家</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>EP Owner 整放，可再切列；token 找专家</td>
-          <td>切列则 I(TP)=I₁</td>
-          <td>I(CP)=I₁·S/CP</td>
-          <td>I≈I₁·B·k/uniq，碰撞少时几乎不涨</td>
-          <td>I=I₁·S/CP · 不随 TP</td>
+          <td>Routed 涓撳</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>EP Owner 鏁存斁锛屽彲鍐嶅垏鍒楋紱token 鎵句笓瀹?/td>
+          <td>鍒囧垪鍒?I(TP)=I鈧?/td>
+          <td>I(CP)=I鈧伮稴/CP</td>
+          <td>I鈮圛鈧伮稡路k/uniq锛岀鎾炲皯鏃跺嚑涔庝笉娑?/td>
+          <td>I=I鈧伮稴/CP 路 涓嶉殢 TP</td>
         </tr>
         <tr>
           <td>Shared experts</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>与稠密一样按列切；输出 AR</td>
-          <td>I(TP)=I₁</td>
-          <td>I(CP)=I₁·S/CP</td>
-          <td>I(B)=I₁·B</td>
-          <td>I=I₁·S/CP · 不随 TP</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>涓庣瀵嗕竴鏍锋寜鍒楀垏锛涜緭鍑?AR</td>
+          <td>I(TP)=I鈧?/td>
+          <td>I(CP)=I鈧伮稴/CP</td>
+          <td>I(B)=I鈧伮稡</td>
+          <td>I=I鈧伮稴/CP 路 涓嶉殢 TP</td>
         </tr>
         <tr>
           <td>Wdown / Wup</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>K3 Latent 边界按列切；AG / AR</td>
-          <td>I(TP)=I₁</td>
-          <td>I(CP)=I₁·S/CP</td>
-          <td>I(B)=I₁·B</td>
-          <td>I=I₁·S/CP · 不随 TP</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>K3 Latent 杈圭晫鎸夊垪鍒囷紱AG / AR</td>
+          <td>I(TP)=I鈧?/td>
+          <td>I(CP)=I鈧伮稴/CP</td>
+          <td>I(B)=I鈧伮稡</td>
+          <td>I=I鈧伮稴/CP 路 涓嶉殢 TP</td>
         </tr>
         <tr>
           <td>Router</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>按列切 logits；AG 完整 logits</td>
-          <td>I(TP)=I₁</td>
-          <td>I(CP)=I₁·S/CP</td>
-          <td>I(B)=I₁·B</td>
-          <td>I=I₁·S/CP · 不随 TP</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>鎸夊垪鍒?logits锛汚G 瀹屾暣 logits</td>
+          <td>I(TP)=I鈧?/td>
+          <td>I(CP)=I鈧伮稴/CP</td>
+          <td>I(B)=I鈧伮稡</td>
+          <td>I=I鈧伮稴/CP 路 涓嶉殢 TP</td>
         </tr>
         <tr>
-          <td>稠密 FFN</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>按列切；输出 AR</td>
-          <td>I(TP)=I₁</td>
-          <td>I(CP)=I₁·S/CP</td>
-          <td>I(B)=I₁·B</td>
-          <td>I=I₁·S/CP · 不随 TP</td>
+          <td>绋犲瘑 FFN</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>鎸夊垪鍒囷紱杈撳嚭 AR</td>
+          <td>I(TP)=I鈧?/td>
+          <td>I(CP)=I鈧伮稴/CP</td>
+          <td>I(B)=I鈧伮稡</td>
+          <td>I=I鈧伮稴/CP 路 涓嶉殢 TP</td>
         </tr>
         <tr>
           <td>LM Head</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>按词表切，只在最后 Stage</td>
-          <td>I(TP)=I₁</td>
-          <td>I(CP)=I₁·S/CP</td>
-          <td>I(B)=I₁·B</td>
-          <td>I=I₁·S/CP · 不随 TP</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>鎸夎瘝琛ㄥ垏锛屽彧鍦ㄦ渶鍚?Stage</td>
+          <td>I(TP)=I鈧?/td>
+          <td>I(CP)=I鈧伮稴/CP</td>
+          <td>I(B)=I鈧伮稡</td>
+          <td>I=I鈧伮稴/CP 路 涓嶉殢 TP</td>
         </tr>
-        <tr class="hi"><td colspan="7">注意力核 · Decode 也挂 L，Prefill 挂 H；KV 都不能按头切</td></tr>
+        <tr class="hi"><td colspan="7">娉ㄦ剰鍔涙牳 路 Decode 涔熸寕 L锛孭refill 鎸?H锛汯V 閮戒笉鑳芥寜澶村垏</td></tr>
         <tr>
-          <td>MLA（吸收后）· K3 / GLM 的 MLA 部分</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>TP 切 Q 头；CP 切序列。潜变量不切头</td>
-          <td><b>I(TP)=I₁/TP</b></td>
-          <td>MC I(CP)=I₁</td>
-          <td>I=I₁/TP · 不随 B</td>
-          <td>因果 I=I₁·S/(2·TP) · 不随 CP</td>
-        </tr>
-        <tr>
-          <td>DSA indexer · GLM</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>可切 index 头；index-K 走序列轴</td>
-          <td>I(TP)=I₁/TP</td>
-          <td>MC I(CP)=I₁</td>
-          <td>I=I₁/TP · 不随 B</td>
-          <td>I=I₁·S/(2·TP) · 不随 CP</td>
+          <td>MLA锛堝惛鏀跺悗锛壜?K3 / GLM 鐨?MLA 閮ㄥ垎</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>TP 鍒?Q 澶达紱CP 鍒囧簭鍒椼€傛綔鍙橀噺涓嶅垏澶?/td>
+          <td><b>I(TP)=I鈧?TP</b></td>
+          <td>MC I(CP)=I鈧?/td>
+          <td>I=I鈧?TP 路 涓嶉殢 B</td>
+          <td>鍥犳灉 I=I鈧伮稴/(2路TP) 路 涓嶉殢 CP</td>
         </tr>
         <tr>
-          <td>DSA topk 核 · GLM</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>TP 切 Q 头；每查询只搬 topk 份 MLA KV</td>
-          <td>I(TP)=I₁/TP</td>
-          <td>I(CP)=I₁（工作集固定）</td>
-          <td>I=I₁/TP · 不随 B</td>
-          <td>I=I₁/TP · 不随 S、CP</td>
+          <td>DSA indexer 路 GLM</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>鍙垏 index 澶达紱index-K 璧板簭鍒楄酱</td>
+          <td>I(TP)=I鈧?TP</td>
+          <td>MC I(CP)=I鈧?/td>
+          <td>I=I鈧?TP 路 涓嶉殢 B</td>
+          <td>I=I鈧伮稴/(2路TP) 路 涓嶉殢 CP</td>
         </tr>
         <tr>
-          <td>CSA indexer · V4</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>切 index 头；压缩位走序列</td>
-          <td>I(TP)=I₁/TP</td>
-          <td>MC I(CP)=I₁</td>
-          <td>I=I₁/TP · 不随 B</td>
-          <td>I=I₁·S/(2·TP) · 不随 CP</td>
+          <td>DSA topk 鏍?路 GLM</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>TP 鍒?Q 澶达紱姣忔煡璇㈠彧鎼?topk 浠?MLA KV</td>
+          <td>I(TP)=I鈧?TP</td>
+          <td>I(CP)=I鈧侊紙宸ヤ綔闆嗗浐瀹氾級</td>
+          <td>I=I鈧?TP 路 涓嶉殢 B</td>
+          <td>I=I鈧?TP 路 涓嶉殢 S銆丆P</td>
         </tr>
         <tr>
-          <td>CSA topk / 窗 · V4</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>MQA：一套 KV，TP 只切 Q 头</td>
-          <td>I(TP)=I₁/TP</td>
-          <td>I(CP)=I₁（窗/topk 固定）</td>
-          <td>I=I₁/TP · 不随 B</td>
-          <td>I=I₁/TP · 不随 S、CP</td>
+          <td>CSA indexer 路 V4</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>鍒?index 澶达紱鍘嬬缉浣嶈蛋搴忓垪</td>
+          <td>I(TP)=I鈧?TP</td>
+          <td>MC I(CP)=I鈧?/td>
+          <td>I=I鈧?TP 路 涓嶉殢 B</td>
+          <td>I=I鈧伮稴/(2路TP) 路 涓嶉殢 CP</td>
         </tr>
         <tr>
-          <td>HCA 压缩序列 · V4</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>MQA；压缩序列可走 CP</td>
-          <td>I(TP)=I₁/TP</td>
-          <td>MC I(CP)=I₁</td>
-          <td>I=I₁/TP · 不随 B</td>
-          <td>I=I₁·S/(2·TP) · 不随 CP</td>
+          <td>CSA topk / 绐?路 V4</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>MQA锛氫竴濂?KV锛孴P 鍙垏 Q 澶?/td>
+          <td>I(TP)=I鈧?TP</td>
+          <td>I(CP)=I鈧侊紙绐?topk 鍥哄畾锛?/td>
+          <td>I=I鈧?TP 路 涓嶉殢 B</td>
+          <td>I=I鈧?TP 路 涓嶉殢 S銆丆P</td>
         </tr>
         <tr>
-          <td>Sliding window · V4</td>
-          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
-          <td>窗长 128，复制到每卡；CP 摊不掉</td>
-          <td>I(TP)=I₁/TP</td>
-          <td>I(CP)=I₁</td>
-          <td>I=I₁/TP · 不随 B</td>
-          <td>I=I₁/TP · 不随 S、CP</td>
+          <td>HCA 鍘嬬缉搴忓垪 路 V4</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>MQA锛涘帇缂╁簭鍒楀彲璧?CP</td>
+          <td>I(TP)=I鈧?TP</td>
+          <td>MC I(CP)=I鈧?/td>
+          <td>I=I鈧?TP 路 涓嶉殢 B</td>
+          <td>I=I鈧伮稴/(2路TP) 路 涓嶉殢 CP</td>
         </tr>
-        <tr class="hi"><td colspan="7">Vector · 不进 L/H Roofline</td></tr>
         <tr>
-          <td>RMSNorm / 残差 Add / SiLU</td>
+          <td>Sliding window 路 V4</td>
+          <td><span class="tag info">D路L</span> <span class="tag purple">P路H</span></td>
+          <td>绐楅暱 128锛屽鍒跺埌姣忓崱锛汣P 鎽婁笉鎺?/td>
+          <td>I(TP)=I鈧?TP</td>
+          <td>I(CP)=I鈧?/td>
+          <td>I=I鈧?TP 路 涓嶉殢 B</td>
+          <td>I=I鈧?TP 路 涓嶉殢 S銆丆P</td>
+        </tr>
+        <tr class="hi"><td colspan="7">Vector 路 涓嶈繘 L/H Roofline</td></tr>
+        <tr>
+          <td>RMSNorm / 娈嬪樊 Add / SiLU</td>
           <td><span class="tag vec">V</span></td>
-          <td>跟 hidden 激活走，常融合进 GEMM</td>
-          <td>I(TP)≈I₁</td>
-          <td>I(CP)≈I₁</td>
-          <td>I≈I₁</td>
-          <td>I≈I₁</td>
+          <td>璺?hidden 婵€娲昏蛋锛屽父铻嶅悎杩?GEMM</td>
+          <td>I(TP)鈮圛鈧?/td>
+          <td>I(CP)鈮圛鈧?/td>
+          <td>I鈮圛鈧?/td>
+          <td>I鈮圛鈧?/td>
         </tr>
         <tr>
           <td>RoPE</td>
           <td><span class="tag vec">V</span></td>
-          <td>跟 Q/K 头走，可随 TP 切头</td>
-          <td>I(TP)≈I₁</td>
-          <td>I(CP)≈I₁</td>
-          <td>I≈I₁</td>
-          <td>I≈I₁</td>
+          <td>璺?Q/K 澶磋蛋锛屽彲闅?TP 鍒囧ご</td>
+          <td>I(TP)鈮圛鈧?/td>
+          <td>I(CP)鈮圛鈧?/td>
+          <td>I鈮圛鈧?/td>
+          <td>I鈮圛鈧?/td>
         </tr>
         <tr>
           <td>Softmax / LSE</td>
           <td><span class="tag vec">V</span></td>
-          <td>跟分数走；MLA Context 分片要 LSE 合并</td>
-          <td>I(TP)≈I₁</td>
-          <td>I(CP)≈I₁</td>
-          <td>I≈I₁</td>
-          <td>I≈I₁</td>
+          <td>璺熷垎鏁拌蛋锛汳LA Context 鍒嗙墖瑕?LSE 鍚堝苟</td>
+          <td>I(TP)鈮圛鈧?/td>
+          <td>I(CP)鈮圛鈧?/td>
+          <td>I鈮圛鈧?/td>
+          <td>I鈮圛鈧?/td>
         </tr>
         <tr>
-          <td>KDA 状态 · 仅 K3</td>
+          <td>KDA 鐘舵€?路 浠?K3</td>
           <td><span class="tag vec">V</span></td>
-          <td>每头一份固定状态，不随 L</td>
-          <td>切头则状态÷TP，I 仍≈I₁</td>
-          <td>不随序列，CP 摊不掉</td>
-          <td>I≈I₁ · 不随 B</td>
-          <td>I≈I₁ · 不随 S</td>
+          <td>姣忓ご涓€浠藉浐瀹氱姸鎬侊紝涓嶉殢 L</td>
+          <td>鍒囧ご鍒欑姸鎬伱稵P锛孖 浠嶁増I鈧?/td>
+          <td>涓嶉殢搴忓垪锛孋P 鎽婁笉鎺?/td>
+          <td>I鈮圛鈧?路 涓嶉殢 B</td>
+          <td>I鈮圛鈧?路 涓嶉殢 S</td>
         </tr>
       </tbody>
     </table>
   </div>
   <p class="caption">
-    上表是公式。下表把本页算子套进去：Decode 扫 B 或 TP，Prefill 线性扫 CP、H 核扫 TP。改 Prefill 长度控件会重算。
-    Prefill 图：线性用空心形状标 CP；MLA/MQA 用实心形状标 TP（I÷TP）。
-  </p>
+    涓婅〃鏄叕寮忋€備笅琛ㄦ妸鏈〉绠楀瓙濂楄繘鍘伙細Decode 鎵?B 鎴?TP锛孭refill 绾挎€ф壂 CP銆丠 鏍告壂 TP銆傛敼 Prefill 闀垮害鎺т欢浼氶噸绠椼€?    Prefill 鍥撅細绾挎€х敤绌哄績褰㈢姸鏍?CP锛汳LA/MQA 鐢ㄥ疄蹇冨舰鐘舵爣 TP锛圛梅TP锛夈€?  </p>
   <div class="panel" style="overflow:auto;margin-top:10px">
     <table id="tblShardI"></table>
   </div>
@@ -386,104 +374,84 @@
 
   <h2 id="roofDecode">Decode Roofline</h2>
   <p class="subtitle" style="margin-bottom:10px">
-    一步 Decode，并发序列 <b>B=1 / 16 / 32</b>，切分 <b>TP=1 / 8 / 16</b>。<b>矩阵核默认挂 L</b>；I 高于 PD 下 L 脊点时<b>临时上 H</b>（H 同时在跑 Prefill）。
-    MLA/MQA 核 I÷TP。圆 = B=1，方 = B=16，菱 = B=32。注意力 I 不随 B。
-    Vector 见 <a href="#vector">算子表</a> 与 <a href="#pdVec">L/H 分核需求</a>。下表另给计入集合通信导线后的整模 I。
-  </p>
+    涓€姝?Decode锛屽苟鍙戝簭鍒?<b>B=1 / 16 / 32</b>锛屽垏鍒?<b>TP=1 / 8 / 16</b>銆?b>鐭╅樀鏍搁粯璁ゆ寕 L</b>锛汭 楂樹簬 PD 涓?L 鑴婄偣鏃?b>涓存椂涓?H</b>锛圚 鍚屾椂鍦ㄨ窇 Prefill锛夈€?    MLA/MQA 鏍?I梅TP銆傚渾 = B=1锛屾柟 = B=16锛岃彵 = B=32銆傛敞鎰忓姏 I 涓嶉殢 B銆?    Vector 瑙?<a href="#vector">绠楀瓙琛?/a> 涓?<a href="#pdVec">L/H 鍒嗘牳闇€姹?/a>銆備笅琛ㄥ彟缁欒鍏ラ泦鍚堥€氫俊瀵肩嚎鍚庣殑鏁存ā I銆?  </p>
   <div class="grid-2">
     <div>
       <h3>L-Core</h3>
       <div class="panel" id="figRoofDL"></div>
-      <p class="caption">Decode 留在 L 的矩阵。线性：圆 B=1，方 B=16，菱 B=32。注意力 I≤PD 下 L 脊点才出现（加大 TP 常回到 L）。</p>
+      <p class="caption">Decode 鐣欏湪 L 鐨勭煩闃点€傜嚎鎬э細鍦?B=1锛屾柟 B=16锛岃彵 B=32銆傛敞鎰忓姏 I鈮D 涓?L 鑴婄偣鎵嶅嚭鐜帮紙鍔犲ぇ TP 甯稿洖鍒?L锛夈€?/p>
     </div>
     <div>
       <h3>H-Core</h3>
       <div class="panel" id="figRoofDH"></div>
-      <p class="caption">Decode 溢出到 H 的注意力（I 高于 PD 下 L 脊点）。H 同时跑 Prefill，矩阵峰值不叠加两份，是抢占/分时。Softmax 见 Vector。</p>
+      <p class="caption">Decode 婧㈠嚭鍒?H 鐨勬敞鎰忓姏锛圛 楂樹簬 PD 涓?L 鑴婄偣锛夈€侶 鍚屾椂璺?Prefill锛岀煩闃靛嘲鍊间笉鍙犲姞涓や唤锛屾槸鎶㈠崰/鍒嗘椂銆係oftmax 瑙?Vector銆?/p>
     </div>
   </div>
   <div class="panel" style="overflow:auto;margin-top:14px"><table id="tblDecode"></table></div>
   <p class="caption" id="capDecode"></p>
-  <h3>Decode 整模 I × TP（MC vs 计入导线）</h3>
+  <h3>Decode 鏁存ā I 脳 TP锛圡C vs 璁″叆瀵肩嚎锛?/h3>
   <div class="panel" style="overflow:auto"><table id="tblDecodeTp"></table></div>
   <p class="caption" id="capDecodeTp"></p>
   <div class="callout warn" id="calloutDecode"></div>
 
   <h2 id="roofPrefill">Prefill Roofline</h2>
   <p class="subtitle" style="margin-bottom:10px">
-    一条 Prefill 序列，切分 <b>TP=1 / 8 / 16 / 32</b> 与 <b>CP=1 / 8 / 16 / 32</b>。<b>矩阵核（线性 + 注意力）都挂 H-Core</b>，L 图空。
-    线性算子 I ×(S/CP)，空心方/菱/倒三角 = CP8/16/32。
-    MLA/MQA 实心圆/方/菱/倒三角 = TP1/8/16/32：切头则 I÷TP，KV 不切；CP 不改变这些核的 MC I。
-    整模 I+网：实心=纯 TP（CP=1），空心同形=纯 CP（TP=1），五边形=TP=CP。Vector 见独立表。
-  </p>
+    涓€鏉?Prefill 搴忓垪锛屽垏鍒?<b>TP=1 / 8 / 16 / 32</b> 涓?<b>CP=1 / 8 / 16 / 32</b>銆?b>鐭╅樀鏍革紙绾挎€?+ 娉ㄦ剰鍔涳級閮芥寕 H-Core</b>锛孡 鍥剧┖銆?    绾挎€х畻瀛?I 脳(S/CP)锛岀┖蹇冩柟/鑿?鍊掍笁瑙?= CP8/16/32銆?    MLA/MQA 瀹炲績鍦?鏂?鑿?鍊掍笁瑙?= TP1/8/16/32锛氬垏澶村垯 I梅TP锛孠V 涓嶅垏锛汣P 涓嶆敼鍙樿繖浜涙牳鐨?MC I銆?    鏁存ā I+缃戯細瀹炲績=绾?TP锛圕P=1锛夛紝绌哄績鍚屽舰=绾?CP锛圱P=1锛夛紝浜旇竟褰?TP=CP銆俈ector 瑙佺嫭绔嬭〃銆?  </p>
   <div class="grid-2">
     <div>
       <h3>L-Core</h3>
       <div class="panel" id="figRoofPL"></div>
-      <p class="caption">Prefill 不挂 L。本图空。L 留给 Decode。</p>
+      <p class="caption">Prefill 涓嶆寕 L銆傛湰鍥剧┖銆侺 鐣欑粰 Decode銆?/p>
     </div>
     <div>
       <h3>H-Core</h3>
       <div class="panel" id="figRoofPH"></div>
-      <p class="caption">Prefill 全部矩阵核。线性：实心圆 CP1，空心方/菱/倒三角 CP8/16/32（I×S/CP）。MLA/MQA：实心圆/方/菱/倒三角 = TP1/8/16/32（I÷TP）。整模 I+网：空心同形 = 纯 CP；五边形 = TP=CP。</p>
+      <p class="caption">Prefill 鍏ㄩ儴鐭╅樀鏍搞€傜嚎鎬э細瀹炲績鍦?CP1锛岀┖蹇冩柟/鑿?鍊掍笁瑙?CP8/16/32锛圛脳S/CP锛夈€侻LA/MQA锛氬疄蹇冨渾/鏂?鑿?鍊掍笁瑙?= TP1/8/16/32锛圛梅TP锛夈€傛暣妯?I+缃戯細绌哄績鍚屽舰 = 绾?CP锛涗簲杈瑰舰 = TP=CP銆?/p>
     </div>
   </div>
   <div class="panel" style="overflow:auto;margin-top:14px"><table id="tblPrefill"></table></div>
   <p class="caption" id="capPrefill"></p>
-  <h3>Prefill 整模 I × TP × CP</h3>
+  <h3>Prefill 鏁存ā I 脳 TP 脳 CP</h3>
   <div class="panel" style="overflow:auto"><table id="tblPrefillTp"></table></div>
   <p class="caption" id="capPrefillTp"></p>
   <div class="callout" id="calloutPrefill"></div>
 
-  <h2 id="vector">Vector 算子</h2>
+  <h2 id="vector">Vector 绠楀瓙</h2>
   <p class="subtitle">
-    RMSNorm、残差、SiLU 跟线性；RoPE、Softmax/LSE 跟注意力；KDA 留在 Decode 的 L。
-    I 几乎不随 B、S。墙相对各核自己的 Vector 脊点（用该核分到的带宽），见 <a href="#pdVec">PD 分核表</a>。
-  </p>
+    RMSNorm銆佹畫宸€丼iLU 璺熺嚎鎬э紱RoPE銆丼oftmax/LSE 璺熸敞鎰忓姏锛汯DA 鐣欏湪 Decode 鐨?L銆?    I 鍑犱箮涓嶉殢 B銆丼銆傚鐩稿鍚勬牳鑷繁鐨?Vector 鑴婄偣锛堢敤璇ユ牳鍒嗗埌鐨勫甫瀹斤級锛岃 <a href="#pdVec">PD 鍒嗘牳琛?/a>銆?  </p>
   <div class="panel" style="overflow:auto"><table id="tblVector"></table></div>
   <p class="caption" id="capVector"></p>
 
-  <h2 id="pdVec">PD 并行 · L / H 各自的 Vector</h2>
+  <h2 id="pdVec">PD 骞惰 路 L / H 鍚勮嚜鐨?Vector</h2>
   <p class="subtitle">
-    L 跑 Decode、H 跑 Prefill，MC 按上面的 Decode 份额切开。
-    Vector 匹配 TF = I × (份额 × 3.58 TB/s) / 0.8。
-    Decode 注意力 I 高于「L 脊点 / 份额」时临时上 H，RoPE / Softmax 跟着走；H-Vector 按 Prefill 路 + 溢出 Decode 路<b>叠加</b>（同核 ALU 同时伺候两路）。
-    矩阵峰值仍不叠加：溢出时 H 在 Prefill 上抢占一段时间给 Decode。
-  </p>
+    L 璺?Decode銆丠 璺?Prefill锛孧C 鎸変笂闈㈢殑 Decode 浠介鍒囧紑銆?    Vector 鍖归厤 TF = I 脳 (浠介 脳 3.58 TB/s) / 0.8銆?    Decode 娉ㄦ剰鍔?I 楂樹簬銆孡 鑴婄偣 / 浠介銆嶆椂涓存椂涓?H锛孯oPE / Softmax 璺熺潃璧帮紱H-Vector 鎸?Prefill 璺?+ 婧㈠嚭 Decode 璺?b>鍙犲姞</b>锛堝悓鏍?ALU 鍚屾椂浼哄€欎袱璺級銆?    鐭╅樀宄板€间粛涓嶅彔鍔狅細婧㈠嚭鏃?H 鍦?Prefill 涓婃姠鍗犱竴娈垫椂闂寸粰 Decode銆?  </p>
   <div class="panel" style="overflow:auto"><table id="tblPdVec"></table></div>
   <p class="caption" id="capPdVec"></p>
   <div class="callout" id="calloutPdVec"></div>
   <div class="panel" style="overflow:auto;margin-top:12px"><table id="tblPdVecOps"></table></div>
   <p class="caption" id="capPdVecOps"></p>
 
-  <h2 id="chipSpec">按算术强度重定 L / H 算力</h2>
+  <h2 id="chipSpec">鎸夌畻鏈己搴﹂噸瀹?L / H 绠楀姏</h2>
   <p class="subtitle">
-    带宽不动：16×320 GB/s×0.7 = 3.58 TB/s，利用率 0.8。
-    <span class="mono">F_match = I × 3.58 / 0.8</span>，再上取到 Tensor 档。
-    L：Decode 稠密 I×B（B≤32）。H：max(Decode 注意力, Prefill 32×32 整模 I_MC)，能大尽量大 → 8388 TF。
-    I+网 / 8×8 / 注意力÷TP 只对照。
-  </p>
+    甯﹀涓嶅姩锛?6脳320 GB/s脳0.7 = 3.58 TB/s锛屽埄鐢ㄧ巼 0.8銆?    <span class="mono">F_match = I 脳 3.58 / 0.8</span>锛屽啀涓婂彇鍒?Tensor 妗ｃ€?    L锛欴ecode 绋犲瘑 I脳B锛圔鈮?2锛夈€侶锛歮ax(Decode 娉ㄦ剰鍔? Prefill 32脳32 鏁存ā I_MC)锛岃兘澶у敖閲忓ぇ 鈫?8388 TF銆?    I+缃?/ 8脳8 / 娉ㄦ剰鍔浢稵P 鍙鐓с€?  </p>
   <div class="callout" style="margin-bottom:14px">
-    <strong>I_MC 要点</strong>
-    <p><b>1. 定义</b>　<span class="mono">I_MC = FLOP / HBM</span>。不含网。高→算力墙，低→带宽墙。</p>
-    <p><b>2. 定 H 用整模</b>　<span class="mono">I_MC = [(线性+注意力)/(TP·CP)] / (权重/TP + KV/CP)</span>。不是算子 I×S。</p>
-    <p><b>3. TP 摊不掉线性 I</b>　FLOP 和权重同 ÷TP。只有 CP 摊：每卡 s=S/CP，线性 I ×s。</p>
-    <p><b>4. 所以 32×32 仍 ~2k</b>　s=32K/32=1024，I_MC≈2k，<span class="mono">F = I_MC × 3.58 / 0.8</span> → <b>8388 TF</b>。
-      <span class="mono">I+网 = FLOP / (HBM + 2(TP−1)·payload·s + 2(CP−1)/CP·KV)</span>，更稀，不定档。</p>
+    <strong>I_MC 瑕佺偣</strong>
+    <p><b>1. 瀹氫箟</b>銆€<span class="mono">I_MC = FLOP / HBM</span>銆備笉鍚綉銆傞珮鈫掔畻鍔涘锛屼綆鈫掑甫瀹藉銆?/p>
+    <p><b>2. 瀹?H 鐢ㄦ暣妯?/b>銆€<span class="mono">I_MC = [(绾挎€?娉ㄦ剰鍔?/(TP路CP)] / (鏉冮噸/TP + KV/CP)</span>銆備笉鏄畻瀛?I脳S銆?/p>
+    <p><b>3. TP 鎽婁笉鎺夌嚎鎬?I</b>銆€FLOP 鍜屾潈閲嶅悓 梅TP銆傚彧鏈?CP 鎽婏細姣忓崱 s=S/CP锛岀嚎鎬?I 脳s銆?/p>
+    <p><b>4. 鎵€浠?32脳32 浠?~2k</b>銆€s=32K/32=1024锛孖_MC鈮?k锛?span class="mono">F = I_MC 脳 3.58 / 0.8</span> 鈫?<b>8388 TF</b>銆?      <span class="mono">I+缃?= FLOP / (HBM + 2(TP鈭?)路payload路s + 2(CP鈭?)/CP路KV)</span>锛屾洿绋€锛屼笉瀹氭。銆?/p>
   </div>
   <div class="grid-4" id="chipRecCards"></div>
   <div class="panel" style="overflow:auto;margin-top:14px"><table id="tblChipSpec"></table></div>
-  <p class="caption">旧 CHIP_DEFAULT 对照本页规格。Roofline 脊点已改用新 L / H / V。</p>
+  <p class="caption">鏃?CHIP_DEFAULT 瀵圭収鏈〉瑙勬牸銆俁oofline 鑴婄偣宸叉敼鐢ㄦ柊 L / H / V銆?/p>
   <div class="panel" style="overflow:auto;margin-top:14px"><table id="tblChipMatch"></table></div>
   <p class="caption" id="capChipMatch"></p>
   <div class="callout good" id="calloutChipSpec"></div>
 
   <footer>
-    模型口径与 <a href="./frontier_moe_dataflow_partition.html">数据流页</a> 相同。引擎：<a href="../../src/core/design_engine.js">../../src/core/design_engine.js</a>。
-    V4 注意力 FLOP 为结构估算。
-  </footer>
+    妯″瀷鍙ｅ緞涓?<a href="./frontier_moe_dataflow_partition.html">鏁版嵁娴侀〉</a> 鐩稿悓銆傚紩鎿庯細<a href="../src/core/design_engine.js">../../src/core/design_engine.js</a>銆?    V4 娉ㄦ剰鍔?FLOP 涓虹粨鏋勪及绠椼€?  </footer>
 </main>
-<script src="../../src/core/design_engine.js"></script>
+<script src="../src/core/design_engine.js"></script>
 <script>
 (function () {
   "use strict";
@@ -500,7 +468,7 @@
 
   const EXTRA = {
     deepseekV4pro: {
-      name: "DeepSeek-V4-Pro（1.6T-A49B）",
+      name: "DeepSeek-V4-Pro锛?.6T-A49B锛?,
       totalParams: 1.6e12, activeParams: 49e9, layers: 61, moeLayers: 61,
       hidden: 7168, vocab: 129280, denseFfnHidden: 0,
       moe: { totalExperts: 384, activeExperts: 6, sharedExperts: 1, expertHidden: 3072, expertInput: "hidden", latent: 0 },
@@ -509,7 +477,7 @@
       dtype: { routed: MXFP4, dense: 2 }
     },
     glm52: {
-      name: "GLM-5.2 / 5.3（744B-A40B · MLA+DSA）",
+      name: "GLM-5.2 / 5.3锛?44B-A40B 路 MLA+DSA锛?,
       totalParams: 744e9, activeParams: 40e9, layers: 78, moeLayers: 75,
       hidden: 6144, vocab: 154880, denseFfnHidden: 12288,
       moe: { totalExperts: 256, activeExperts: 8, sharedExperts: 1, expertHidden: 2048, expertInput: "hidden", latent: 0 },
@@ -526,9 +494,9 @@
   const GLM_DSA = { topk: 2048, indexHeads: 32, indexHeadDim: 128, indexShare: 4 };
 
   const META = {
-    kimiK3: { short: "K3", family: "Kimi", flow: "latent", attn: "MLA + 69×KDA", src: "仓库计算器口径" },
-    deepseekV4pro: { short: "V4-Pro", family: "DeepSeek", flow: "dsmoe", attn: "CSA/HCA 混合", src: "HF V4-Pro-Base + 论文" },
-    glm52: { short: "GLM-5.2", family: "GLM", flow: "dsmoe", attn: "MLA + DSA + IndexShare", src: "zai-org/GLM-5.2；5.3 同结构" }
+    kimiK3: { short: "K3", family: "Kimi", flow: "latent", attn: "MLA + 69脳KDA", src: "浠撳簱璁＄畻鍣ㄥ彛寰? },
+    deepseekV4pro: { short: "V4-Pro", family: "DeepSeek", flow: "dsmoe", attn: "CSA/HCA 娣峰悎", src: "HF V4-Pro-Base + 璁烘枃" },
+    glm52: { short: "GLM-5.2", family: "GLM", flow: "dsmoe", attn: "MLA + DSA + IndexShare", src: "zai-org/GLM-5.2锛?.3 鍚岀粨鏋? }
   };
 
   const ALL_IDS = ["deepseekV4pro", "kimiK3", "glm52"];
@@ -583,7 +551,7 @@
       const hcaB = v.nHca * hcaKeys * v.headDim * v.dtype;
       const slB = v.nSlide * v.window * v.headDim * v.dtype;
       const traffic = ixB + csaB + hcaB + slB;
-      return { flop, traffic, store: storeKv, note: "indexer 扫压缩位 + 只搬 CSA topk/窗与 HCA 压缩序列" };
+      return { flop, traffic, store: storeKv, note: "indexer 鎵帇缂╀綅 + 鍙惉 CSA topk/绐椾笌 HCA 鍘嬬缉搴忓垪" };
     }
     if (m.dsa) {
       const flop = glmAttnFlops(m, L, m.dsa);
@@ -592,10 +560,10 @@
       const topk = Math.min(L, m.dsa.topk);
       const kvTok = (a.kvLatent + (a.ropeDim || 0)) * dense;
       const traffic = ixB + m.softmaxLayers * topk * kvTok;
-      return { flop, traffic, store: storeKv, note: "indexer 读 index-K + 只搬 topk 份 MLA KV（存量仍是全长）" };
+      return { flop, traffic, store: storeKv, note: "indexer 璇?index-K + 鍙惉 topk 浠?MLA KV锛堝瓨閲忎粛鏄叏闀匡級" };
     }
     const flop = k3AttnFlopsAbsorbed(m, L);
-    return { flop, traffic: storeKv, store: storeKv, note: "MLA 按吸收后 2·h·L·(2dc+dr)；Decode 扫全长 KV。KDA 不计入 H，走 Vector" };
+    return { flop, traffic: storeKv, store: storeKv, note: "MLA 鎸夊惛鏀跺悗 2路h路L路(2dc+dr)锛汥ecode 鎵叏闀?KV銆侹DA 涓嶈鍏?H锛岃蛋 Vector" };
   }
 
   function partIntensities(m, ctx, pred) {
@@ -608,14 +576,14 @@
       if (core === "V") vk = vecKind || "lin";
       rows.push({ name, flop, bytes, I: flop / bytes, core, note, pf: pf || "S", bat: bat || "B", vecKind: vk });
     };
-    add("Routed 专家（读 1 份）", 2 * p.routedActive, b.routedActive, "L", "MXFP4：I = 2 / (17/32) ≈ 3.76；Prefill I×S。Decode batch 按独特专家", "S", "uniq");
-    add("Routed ×(2−p) 预取", 2 * p.routedActive, b.routedActive * (2 - pred), "L", "只在 Decode；Prefill 按读 1 份。独特专家同样 ×(2−p)", "skip", "uniq");
-    add("Shared experts", 2 * p.shared, b.shared, "L", "BF16 GEMM，Decode I=1，Prefill I×S；Decode batch I×B", "S", "B");
-    add("Wdown / Wup", 2 * (p.wdown + p.wup), b.wdown + b.wup, "L", "K3 Latent 边界，BF16；Decode batch I×B", "S", "B");
-    add("Router", 2 * p.router, b.router, "L", "BF16；Decode batch I×B", "S", "B");
-    add("Attn 投影 Wq/Wkv/Wo", 2 * p.attn, b.attn, "L", "BF16，不含 QKᵀ/AV；Decode batch I×B", "S", "B");
-    add("稠密 FFN", 2 * p.denseFfn, b.denseFfn, "L", "BF16；Decode batch I×B", "S", "B");
-    add("LM Head", 2 * p.lmHead, b.lmHead, "L", "BF16；Decode batch I×B", "S", "B");
+    add("Routed 涓撳锛堣 1 浠斤級", 2 * p.routedActive, b.routedActive, "L", "MXFP4锛欼 = 2 / (17/32) 鈮?3.76锛汸refill I脳S銆侱ecode batch 鎸夌嫭鐗逛笓瀹?, "S", "uniq");
+    add("Routed 脳(2鈭抪) 棰勫彇", 2 * p.routedActive, b.routedActive * (2 - pred), "L", "鍙湪 Decode锛汸refill 鎸夎 1 浠姐€傜嫭鐗逛笓瀹跺悓鏍?脳(2鈭抪)", "skip", "uniq");
+    add("Shared experts", 2 * p.shared, b.shared, "L", "BF16 GEMM锛孌ecode I=1锛孭refill I脳S锛汥ecode batch I脳B", "S", "B");
+    add("Wdown / Wup", 2 * (p.wdown + p.wup), b.wdown + b.wup, "L", "K3 Latent 杈圭晫锛孊F16锛汥ecode batch I脳B", "S", "B");
+    add("Router", 2 * p.router, b.router, "L", "BF16锛汥ecode batch I脳B", "S", "B");
+    add("Attn 鎶曞奖 Wq/Wkv/Wo", 2 * p.attn, b.attn, "L", "BF16锛屼笉鍚?QK岬€/AV锛汥ecode batch I脳B", "S", "B");
+    add("绋犲瘑 FFN", 2 * p.denseFfn, b.denseFfn, "L", "BF16锛汥ecode batch I脳B", "S", "B");
+    add("LM Head", 2 * p.lmHead, b.lmHead, "L", "BF16锛汥ecode batch I脳B", "S", "B");
     const a = m.spec.attention;
     const dense = m.spec.dtype.dense;
     if (m.hybrid === "csa-hca") {
@@ -623,42 +591,42 @@
       const csaKeys = Math.min(v.topk, Math.floor(L / v.mCsa)) + v.window;
       const hcaKeys = Math.floor(L / v.mHca) + v.window;
       add("CSA indexer", v.nCsa * 2 * (L / v.mCsa) * v.indexHeads * v.indexHeadDim,
-        v.nCsa * (L / v.mCsa) * v.indexHeadDim * v.dtype, "H", "Decode I = indexHeads = 64；Prefill 扫前缀 ≈(S/2)×I。Decode batch I 不变", "S2", "hold");
-      add("CSA topk / 窗", v.nCsa * 2 * v.heads * (v.headDim + v.headDim) * csaKeys,
-        v.nCsa * csaKeys * v.headDim * v.dtype, "H", "每查询 topk+窗，Prefill I ≈ Decode。Decode batch I 不变", "hold", "hold");
-      add("HCA 压缩序列", v.nHca * 2 * v.heads * (v.headDim + v.headDim) * hcaKeys,
-        v.nHca * hcaKeys * v.headDim * v.dtype, "H", "keys 随 L 涨，Prefill 因果 ≈(S/2)×I。Decode batch I 不变", "S2", "hold");
+        v.nCsa * (L / v.mCsa) * v.indexHeadDim * v.dtype, "H", "Decode I = indexHeads = 64锛汸refill 鎵墠缂€ 鈮?S/2)脳I銆侱ecode batch I 涓嶅彉", "S2", "hold");
+      add("CSA topk / 绐?, v.nCsa * 2 * v.heads * (v.headDim + v.headDim) * csaKeys,
+        v.nCsa * csaKeys * v.headDim * v.dtype, "H", "姣忔煡璇?topk+绐楋紝Prefill I 鈮?Decode銆侱ecode batch I 涓嶅彉", "hold", "hold");
+      add("HCA 鍘嬬缉搴忓垪", v.nHca * 2 * v.heads * (v.headDim + v.headDim) * hcaKeys,
+        v.nHca * hcaKeys * v.headDim * v.dtype, "H", "keys 闅?L 娑紝Prefill 鍥犳灉 鈮?S/2)脳I銆侱ecode batch I 涓嶅彉", "S2", "hold");
       add("Sliding window", v.nSlide * 2 * v.heads * (v.headDim + v.headDim) * v.window,
-        v.nSlide * v.window * v.headDim * v.dtype, "H", "窗固定，Prefill I ≈ Decode。Decode batch I 不变", "hold", "hold");
+        v.nSlide * v.window * v.headDim * v.dtype, "H", "绐楀浐瀹氾紝Prefill I 鈮?Decode銆侱ecode batch I 涓嶅彉", "hold", "hold");
     } else if (m.dsa) {
       const share = m.dsa.indexShare || 1;
       const topk = Math.min(L, m.dsa.topk);
       const kvTok = (a.kvLatent + (a.ropeDim || 0)) * dense;
       add("DSA indexer", (m.softmaxLayers / share) * 2 * L * m.dsa.indexHeads * m.dsa.indexHeadDim,
-        (m.softmaxLayers / share) * L * m.dsa.indexHeadDim * dense, "H", "Decode I = 32；Prefill 扫前缀 ≈(S/2)×I。Decode batch I 不变", "S2", "hold");
-      add("DSA topk 核", m.softmaxLayers * 2 * topk * a.heads * (a.qkHeadDim + a.vHeadDim),
-        m.softmaxLayers * topk * kvTok, "H", "每查询 topk，Prefill I ≈ Decode。Decode batch I 不变", "hold", "hold");
+        (m.softmaxLayers / share) * L * m.dsa.indexHeadDim * dense, "H", "Decode I = 32锛汸refill 鎵墠缂€ 鈮?S/2)脳I銆侱ecode batch I 涓嶅彉", "S2", "hold");
+      add("DSA topk 鏍?, m.softmaxLayers * 2 * topk * a.heads * (a.qkHeadDim + a.vHeadDim),
+        m.softmaxLayers * topk * kvTok, "H", "姣忔煡璇?topk锛孭refill I 鈮?Decode銆侱ecode batch I 涓嶅彉", "hold", "hold");
     } else {
-      add("MLA（吸收后）", m.softmaxLayers * 2 * L * a.heads * (2 * (a.kvLatent || 0) + (a.ropeDim || 0)),
+      add("MLA锛堝惛鏀跺悗锛?, m.softmaxLayers * 2 * L * a.heads * (2 * (a.kvLatent || 0) + (a.ropeDim || 0)),
         m.softmaxLayers * L * (a.kvLatent + (a.ropeDim || 0)) * dense, "H",
-        "潜变量跨头共享，TP 只切 Q 头：I÷TP。CP 切序列则 MC I 不变。Prefill 因果 ≈(S/2)×I。KDA 不在此核", "S2", "hold");
+        "娼滃彉閲忚法澶村叡浜紝TP 鍙垏 Q 澶达細I梅TP銆侰P 鍒囧簭鍒楀垯 MC I 涓嶅彉銆侾refill 鍥犳灉 鈮?S/2)脳I銆侹DA 涓嶅湪姝ゆ牳", "S2", "hold");
     }
     const h = m.spec.hidden;
     const moe = m.spec.moe;
     add("RMSNorm", m.spec.layers * 2 * 5 * h, m.spec.layers * 2 * 2 * h * dense, "V",
-      "pre-attn + pre-FFN。I≈1.25。跟线性走：Decode→L，Prefill→H", "hold", "hold", "lin");
-    add("残差 Add", m.spec.layers * 2 * h, m.spec.layers * 2 * 3 * h * dense, "V",
-      "读 2 写 1。I≈0.17。跟线性走", "hold", "hold", "lin");
+      "pre-attn + pre-FFN銆侷鈮?.25銆傝窡绾挎€ц蛋锛欴ecode鈫扡锛孭refill鈫扝", "hold", "hold", "lin");
+    add("娈嬪樊 Add", m.spec.layers * 2 * h, m.spec.layers * 2 * 3 * h * dense, "V",
+      "璇?2 鍐?1銆侷鈮?.17銆傝窡绾挎€ц蛋", "hold", "hold", "lin");
     const siluE = m.spec.moeLayers * ((moe.activeExperts || 0) + (moe.sharedExperts || 0)) * (moe.expertHidden || 0)
       + (m.denseLayers || 0) * (m.spec.denseFfnHidden || 0);
     if (siluE > 0) {
-      add("SiLU / 门控", 4 * siluE, 2 * siluE * dense, "V",
-        "SwiGLU 门。I≈1。跟线性走", "hold", "hold", "lin");
+      add("SiLU / 闂ㄦ帶", 4 * siluE, 2 * siluE * dense, "V",
+        "SwiGLU 闂ㄣ€侷鈮?銆傝窡绾挎€ц蛋", "hold", "hold", "lin");
     }
     const rope = a.ropeDim || 0;
     if (rope > 0 && m.softmaxLayers > 0) {
       add("RoPE", m.softmaxLayers * a.heads * rope * 6, m.softmaxLayers * a.heads * rope * 2 * dense, "V",
-        "Q/K 旋转。跟注意力走：Decode 默认 L，注意力溢出则上 H", "hold", "hold", "attn");
+        "Q/K 鏃嬭浆銆傝窡娉ㄦ剰鍔涜蛋锛欴ecode 榛樿 L锛屾敞鎰忓姏婧㈠嚭鍒欎笂 H", "hold", "hold", "attn");
     }
     let scores = 0;
     if (m.hybrid === "csa-hca") {
@@ -673,13 +641,13 @@
     }
     if (scores > 0) {
       add("Softmax / LSE", scores * 5, scores * 4, "V",
-        "非线性。KDA 层没有。Flash 时分数不落 MC；I≈1.25 且不随 S。跟注意力走",
+        "闈炵嚎鎬с€侹DA 灞傛病鏈夈€侳lash 鏃跺垎鏁颁笉钀?MC锛汭鈮?.25 涓斾笉闅?S銆傝窡娉ㄦ剰鍔涜蛋",
         "hold", "hold", "attn");
     }
     const kdaF = kdaFlopsPerToken(m);
     if (kdaF > 0) {
-      add("KDA 状态", kdaF, 2 * m.kdaStateStore, "V",
-        "线性注意力状态更新；无 Softmax。I≈1.75。Decode 留在 L（不溢出），Prefill 走 H", "hold", "hold", "lin");
+      add("KDA 鐘舵€?, kdaF, 2 * m.kdaStateStore, "V",
+        "绾挎€ф敞鎰忓姏鐘舵€佹洿鏂帮紱鏃?Softmax銆侷鈮?.75銆侱ecode 鐣欏湪 L锛堜笉婧㈠嚭锛夛紝Prefill 璧?H", "hold", "hold", "lin");
     }
     return rows;
   }
@@ -726,12 +694,12 @@
   ALL_IDS.forEach(id => { MODELS[id] = loadModel(id); });
 
   function fmt(x, d) {
-    if (!Number.isFinite(x)) return "—";
+    if (!Number.isFinite(x)) return "鈥?;
     const n = d === undefined ? (Math.abs(x) >= 100 ? 0 : Math.abs(x) >= 10 ? 1 : 2) : d;
     return Number(x).toLocaleString("en-US", { maximumFractionDigits: n, minimumFractionDigits: n });
   }
   function fmtI(x) {
-    if (!(x > 0) || !Number.isFinite(x)) return "—";
+    if (!(x > 0) || !Number.isFinite(x)) return "鈥?;
     if (x >= 1e6) return fmt(x / 1e6, 1) + "M";
     if (x >= 1000) return fmt(x / 1000, x >= 10000 ? 0 : 1) + "k";
     return fmt(x, x >= 10 ? 0 : 1);
@@ -971,25 +939,25 @@
 
   function partShort(name) {
     const map = {
-      "Routed 专家（读 1 份）": "Routed",
-      "Routed ×(2−p) 预取": "Routed预取",
+      "Routed 涓撳锛堣 1 浠斤級": "Routed",
+      "Routed 脳(2鈭抪) 棰勫彇": "Routed棰勫彇",
       "Shared experts": "Shared",
       "Wdown / Wup": "Wdown/Wup",
       "Router": "Router",
-      "Attn 投影 Wq/Wkv/Wo": "Attn投影",
-      "稠密 FFN": "稠密FFN",
+      "Attn 鎶曞奖 Wq/Wkv/Wo": "Attn鎶曞奖",
+      "绋犲瘑 FFN": "绋犲瘑FFN",
       "LM Head": "LM Head",
       "CSA indexer": "CSA ix",
-      "CSA topk / 窗": "CSA topk",
-      "HCA 压缩序列": "HCA",
-      "Sliding window": "滑动窗",
+      "CSA topk / 绐?: "CSA topk",
+      "HCA 鍘嬬缉搴忓垪": "HCA",
+      "Sliding window": "婊戝姩绐?,
       "DSA indexer": "DSA ix",
-      "DSA topk 核": "DSA topk",
-      "MLA（吸收后）": "MLA",
-      "KDA 状态": "KDA",
+      "DSA topk 鏍?: "DSA topk",
+      "MLA锛堝惛鏀跺悗锛?: "MLA",
+      "KDA 鐘舵€?: "KDA",
       "RMSNorm": "RMSNorm",
-      "残差 Add": "残差",
-      "SiLU / 门控": "SiLU",
+      "娈嬪樊 Add": "娈嬪樊",
+      "SiLU / 闂ㄦ帶": "SiLU",
       "RoPE": "RoPE",
       "Softmax / LSE": "Softmax"
     };
@@ -1010,7 +978,7 @@
     partIRows.forEach((row, mi) => {
       row.parts.forEach(p => {
         if (!(p.I > 0)) return;
-        const prefetch = p.pf === "skip" || /预取|2−p|2-p/.test(p.name);
+        const prefetch = p.pf === "skip" || /棰勫彇|2鈭抪|2-p/.test(p.name);
         if (phase === "prefill") {
           const mapped = placeCore(p, phase);
           if (mapped !== core) return;
@@ -1023,7 +991,7 @@
                 I,
                 kind: cp === 1 ? "op" : prefillCpKind(cp),
                 color: COLORS[mi % COLORS.length],
-                label: partShort(p.name) + "·CP" + cp,
+                label: partShort(p.name) + "路CP" + cp,
                 model: row.x.m.meta.short, name: p.name
               });
             });
@@ -1036,7 +1004,7 @@
               out.push({
                 I, kind: prefillTpKind(tp),
                 color: COLORS[mi % COLORS.length],
-                label: partShort(p.name) + "·TP" + tp,
+                label: partShort(p.name) + "路TP" + tp,
                 model: row.x.m.meta.short, name: p.name
               });
             });
@@ -1063,7 +1031,7 @@
             out.push({
               I, kind: prefillTpKind(tp),
               color: COLORS[mi % COLORS.length],
-              label: partShort(p.name) + "·TP" + tp,
+              label: partShort(p.name) + "路TP" + tp,
               model: row.x.m.meta.short, name: p.name
             });
           });
@@ -1079,7 +1047,7 @@
           out.push({
             I, kind,
             color: COLORS[mi % COLORS.length],
-            label: partShort(p.name) + (B > 1 ? "·" + B : ""),
+            label: partShort(p.name) + (B > 1 ? "路" + B : ""),
             model: row.x.m.meta.short, name: p.name
           });
         });
@@ -1118,7 +1086,7 @@
 
   function partTableHtml(partIRows, roofRows, phase, ridge, ridgeAttn, S, pfTag, ridgePd) {
     const isPf = phase === "prefill";
-    const skipPred = p => p.pf === "skip" || /2−p|2-p|预取/.test(p.name);
+    const skipPred = p => p.pf === "skip" || /2鈭抪|2-p|棰勫彇/.test(p.name);
     const partNames = [];
     partIRows.forEach(row => {
       row.parts.forEach(p => {
@@ -1137,7 +1105,7 @@
           throw new Error("unknown core " + _x);
         }
       }
-      return I < r ? tag("warn", "带宽") : tag("ok", "算力");
+      return I < r ? tag("warn", "甯﹀") : tag("ok", "绠楀姏");
     };
     const coreTag = mapped => {
       switch (mapped) {
@@ -1149,7 +1117,7 @@
         }
       }
     };
-    const summary = `<tr class="hi"><td>整模</td><td>—</td>` +
+    const summary = `<tr class="hi"><td>鏁存ā</td><td>鈥?/td>` +
       roofRows.map(r => {
         if (isPf) {
           const mcs = PREFILL_CP.map(cp => {
@@ -1161,7 +1129,7 @@
             const tp = pair[0], cp = pair[1];
             const t = r.pfSplit && r.pfSplit[splitKey(tp, cp)];
             const I = t ? t.Inet : 0;
-            const lab = cp === 1 ? "TP" + tp : (tp === 1 ? "CP" + cp : "TP" + tp + "×CP" + cp);
+            const lab = cp === 1 ? "TP" + tp : (tp === 1 ? "CP" + cp : "TP" + tp + "脳CP" + cp);
             return `<span class="caption">${lab} </span><b>${fmtI(I)}</b> ${wall(I, "H")}`;
           }).join("<br>");
           return `<td class="num">${mcs}<br>${nets}<br><span class="caption">${fmt(r.linP / 1e18, 2)}+${fmt(r.atP / 1e18, 2)} EF / ${gb(r.wOnce + r.kvW)}</span></td>`;
@@ -1171,8 +1139,8 @@
           return `<span class="caption">B${B} </span><b>${fmtI(b.modelI)}</b> ${wall(b.moeI, "L")} ${wall(b.attnI, b.attnI > ridgePd ? "H" : "L")}`;
         }).join("<br>") + `</td>`;
       }).join("") +
-      `<td class="caption">${isPf ? "每卡：FLOP÷CP，HBM=权重+KV/CP。I+网再加 TP 导线×(S/CP) 与 CP 导线 2(CP−1)/CP·KV。不含 Vector" : "一步 FLOP / 本步搬移。Routed 字节按独特专家，KV×B。不含 Vector"}</td></tr>` +
-      `<tr><td>MoE 线性</td><td>${isPf ? tag("purple", "H-Core") : tag("info", "L-Core")}</td>` +
+      `<td class="caption">${isPf ? "姣忓崱锛欶LOP梅CP锛孒BM=鏉冮噸+KV/CP銆侷+缃戝啀鍔?TP 瀵肩嚎脳(S/CP) 涓?CP 瀵肩嚎 2(CP鈭?)/CP路KV銆備笉鍚?Vector" : "涓€姝?FLOP / 鏈鎼Щ銆俁outed 瀛楄妭鎸夌嫭鐗逛笓瀹讹紝KV脳B銆備笉鍚?Vector"}</td></tr>` +
+      `<tr><td>MoE 绾挎€?/td><td>${isPf ? tag("purple", "H-Core") : tag("info", "L-Core")}</td>` +
       roofRows.map(r => {
         if (isPf) {
           return `<td class="num">` + PREFILL_CP.map(cp => {
@@ -1185,8 +1153,8 @@
           return `<span class="caption">B${B} </span><b>${fmtI(I)}</b> ${wall(I, "L")}`;
         }).join("<br>") + `</td>`;
       }).join("") +
-      `<td class="caption">${isPf ? "权重每卡读一份，I ×(S/CP)；不随 TP" : "线性 FLOP×B / (稠密 1 份 + 独特专家×(2−p))"}</td></tr>` +
-      `<tr><td>注意力合计</td><td>${isPf ? tag("purple", "H-Core") : tag("info", "L-Core")}</td>` +
+      `<td class="caption">${isPf ? "鏉冮噸姣忓崱璇讳竴浠斤紝I 脳(S/CP)锛涗笉闅?TP" : "绾挎€?FLOP脳B / (绋犲瘑 1 浠?+ 鐙壒涓撳脳(2鈭抪))"}</td></tr>` +
+      `<tr><td>娉ㄦ剰鍔涘悎璁?/td><td>${isPf ? tag("purple", "H-Core") : tag("info", "L-Core")}</td>` +
       roofRows.map(r => {
         if (isPf) {
           return `<td class="num">` + PREFILL_TP.map(tp => {
@@ -1197,17 +1165,17 @@
         return `<td class="num">` + DECODE_TP.map(tp => {
           const I = r.attnI / tp;
           const ov = I > ridgePd;
-          return `<span class="caption">TP${tp} </span><b>${fmtI(I)}</b> ${wall(I, ov ? "H" : "L")} <span class="caption">${ov ? "溢出→H" : "挂 L"}</span>`;
-        }).join("<br>") + `<br><span class="caption">I÷TP · 不随 B</span></td>`;
+          return `<span class="caption">TP${tp} </span><b>${fmtI(I)}</b> ${wall(I, ov ? "H" : "L")} <span class="caption">${ov ? "婧㈠嚭鈫扝" : "鎸?L"}</span>`;
+        }).join("<br>") + `<br><span class="caption">I梅TP 路 涓嶉殢 B</span></td>`;
       }).join("") +
-      `<td class="caption">${isPf ? "矩阵积分 / 写 KV。挂 H。MLA/MQA：TP 切头则 I÷TP（KV 不切）；CP 切序列则 MC I 不变。不含 Softmax/KDA" : (roofRows[0] ? roofRows[0].note : "")}</td></tr>`;
+      `<td class="caption">${isPf ? "鐭╅樀绉垎 / 鍐?KV銆傛寕 H銆侻LA/MQA锛歍P 鍒囧ご鍒?I梅TP锛圞V 涓嶅垏锛夛紱CP 鍒囧簭鍒楀垯 MC I 涓嶅彉銆備笉鍚?Softmax/KDA" : (roofRows[0] ? roofRows[0].note : "")}</td></tr>`;
     const body = partNames.map(name => {
       const sample = partIRows.map(row => row.parts.find(p => p.name === name)).find(Boolean);
       const mapped = placeCore(sample, isPf ? "prefill" : "decode");
       const core = coreTag(mapped);
       const cells = partIRows.map(row => {
         const p = row.parts.find(q => q.name === name);
-        if (!p) return `<td class="num">—</td>`;
+        if (!p) return `<td class="num">鈥?/td>`;
         if (isPf) {
           if (p.pf === "S") {
             return `<td class="num">` + PREFILL_CP.map(cp => {
@@ -1219,7 +1187,7 @@
             return `<td class="num">` + PREFILL_TP.map(tp => {
               const I = prefillIOf(p, S, 1, tp);
               return `<span class="caption">TP${tp} </span><b>${fmtI(I)}</b> ${wall(I, "H")}`;
-            }).join("<br>") + `<br><span class="caption">I÷TP · KV 不切头</span></td>`;
+            }).join("<br>") + `<br><span class="caption">I梅TP 路 KV 涓嶅垏澶?/span></td>`;
           }
           const I = prefillIOf(p, S, 1, 1);
           return `<td class="num"><b>${fmtI(I)}</b> ${wall(I, "H")}</td>`;
@@ -1228,24 +1196,24 @@
           return `<td class="num">` + DECODE_TP.map(tp => {
             const I = decodeAttnI(p, 1, row.x.m, tp);
             const ov = decodePlaceMat(p, row.x.m, ridgePd, tp) === "H";
-            return `<span class="caption">TP${tp} </span><b>${fmtI(I)}</b> ${wall(I, ov ? "H" : "L")} <span class="caption">${ov ? "溢出→H" : "挂 L"}</span>`;
-          }).join("<br>") + `<br><span class="caption">I÷TP · 不随 B · 墙对 PD 下挂核</span></td>`;
+            return `<span class="caption">TP${tp} </span><b>${fmtI(I)}</b> ${wall(I, ov ? "H" : "L")} <span class="caption">${ov ? "婧㈠嚭鈫扝" : "鎸?L"}</span>`;
+          }).join("<br>") + `<br><span class="caption">I梅TP 路 涓嶉殢 B 路 澧欏 PD 涓嬫寕鏍?/span></td>`;
         }
         if (p.bat === "hold") {
-          return `<td class="num"><b>${fmtI(p.I)}</b> ${wall(p.I, "L")}<br><span class="caption">不随 B</span></td>`;
+          return `<td class="num"><b>${fmtI(p.I)}</b> ${wall(p.I, "L")}<br><span class="caption">涓嶉殢 B</span></td>`;
         }
         return `<td class="num">` + DECODE_B.map(B => {
           const I = decodeIOf(p, B, row.x.m);
           return `<span class="caption">B${B} </span><b>${fmtI(I)}</b> ${wall(I, "L")}`;
         }).join("<br>") + `</td>`;
       }).join("");
-      const how = sample.pf === "S" ? "Prefill ×S/CP，不随 TP · 挂 H" : sample.pf === "S2" ? "Prefill ×S/2；TP 切头 I÷TP；挂 H" : sample.pf === "hold" ? (sample.core === "H" ? "Prefill I 不变；TP 切头 I÷TP；挂 H" : "Prefill I 不变 · 挂 H") : "仅 Decode";
-      const batHow = sample.bat === "uniq" ? "Decode 挂 L · 按独特专家" : sample.core === "H" ? "Decode 挂 L · I÷TP，不随 B" : sample.bat === "hold" ? "Decode 挂 L · I 不随 B" : "Decode 挂 L · I×B";
+      const how = sample.pf === "S" ? "Prefill 脳S/CP锛屼笉闅?TP 路 鎸?H" : sample.pf === "S2" ? "Prefill 脳S/2锛汿P 鍒囧ご I梅TP锛涙寕 H" : sample.pf === "hold" ? (sample.core === "H" ? "Prefill I 涓嶅彉锛汿P 鍒囧ご I梅TP锛涙寕 H" : "Prefill I 涓嶅彉 路 鎸?H") : "浠?Decode";
+      const batHow = sample.bat === "uniq" ? "Decode 鎸?L 路 鎸夌嫭鐗逛笓瀹? : sample.core === "H" ? "Decode 鎸?L 路 I梅TP锛屼笉闅?B" : sample.bat === "hold" ? "Decode 鎸?L 路 I 涓嶉殢 B" : "Decode 鎸?L 路 I脳B";
       let dest = "";
       if (isPf) {
         switch (mapped) {
-          case "H": dest = " → H-Core"; break;
-          case "L": dest = " → L-Core"; break;
+          case "H": dest = " 鈫?H-Core"; break;
+          case "L": dest = " 鈫?L-Core"; break;
           default: {
             const _x = mapped;
             throw new Error("unknown core " + _x);
@@ -1255,10 +1223,10 @@
       return `<tr><td>${name}<br><span class="caption">${isPf ? how + dest : batHow}</span></td><td>${core}</td>${cells}<td class="caption">${sample.note}</td></tr>`;
     }).join("");
     return `<thead><tr>
-      <th>块</th>
-      <th>核</th>` +
-      partIRows.map(row => `<th class="num">${row.x.m.meta.short}${isPf ? "<br><span class=\"caption\">线性随 CP · 整模 TP/CP</span>" : "<br><span class=\"caption\">B=1 / 16 / 32</span>"}</th>`).join("") +
-      `<th>说明</th></tr></thead><tbody>` + summary + body + "</tbody>";
+      <th>鍧?/th>
+      <th>鏍?/th>` +
+      partIRows.map(row => `<th class="num">${row.x.m.meta.short}${isPf ? "<br><span class=\"caption\">绾挎€ч殢 CP 路 鏁存ā TP/CP</span>" : "<br><span class=\"caption\">B=1 / 16 / 32</span>"}</th>`).join("") +
+      `<th>璇存槑</th></tr></thead><tbody>` + summary + body + "</tbody>";
   }
 
   function vecTableHtml(partIRows, ridgeVec, S, pfTag) {
@@ -1269,34 +1237,34 @@
         if (names.indexOf(p.name) < 0) names.push(p.name);
       });
     });
-    const wall = I => I < ridgeVec ? tag("warn", "带宽") : tag("ok", "算力");
+    const wall = I => I < ridgeVec ? tag("warn", "甯﹀") : tag("ok", "绠楀姏");
     const sumI = (row, pf) => {
       const vs = row.parts.filter(p => p.core === "V");
       const bytes = vs.reduce((a, p) => a + p.bytes, 0);
       const flop = vs.reduce((a, p) => a + (pf ? prefillIOf(p, S) * p.bytes : p.flop), 0);
       return intensity(flop, bytes);
     };
-    const summary = `<tr class="hi"><td>合计</td>` +
+    const summary = `<tr class="hi"><td>鍚堣</td>` +
       partIRows.map(row => {
         const Id = sumI(row, false);
         const Ip = sumI(row, true);
         return `<td class="num"><b>${fmtI(Id)}</b> ${wall(Id)}<br><span class="caption">P ${fmtI(Ip)} ${wall(Ip)}</span></td>`;
       }).join("") +
-      `<td class="caption">相对 Vector 脊点 ${fmt(ridgeVec, 0)}。融合进矩阵核时不另占 MC</td></tr>`;
+      `<td class="caption">鐩稿 Vector 鑴婄偣 ${fmt(ridgeVec, 0)}銆傝瀺鍚堣繘鐭╅樀鏍告椂涓嶅彟鍗?MC</td></tr>`;
     const body = names.map(name => {
       const sample = partIRows.map(row => row.parts.find(p => p.name === name)).find(Boolean);
       const cells = partIRows.map(row => {
         const p = row.parts.find(q => q.name === name);
-        if (!p) return `<td class="num">—</td>`;
+        if (!p) return `<td class="num">鈥?/td>`;
         const Ip = prefillIOf(p, S);
         return `<td class="num"><b>${fmtI(p.I)}</b> ${wall(p.I)}<br><span class="caption">P ${fmtI(Ip)} ${wall(Ip)}</span></td>`;
       }).join("");
       return `<tr><td>${name}</td>${cells}<td class="caption">${sample.note}</td></tr>`;
     }).join("");
     return `<thead><tr>
-      <th>算子</th>` +
+      <th>绠楀瓙</th>` +
       partIRows.map(row => `<th class="num">${row.x.m.meta.short}<br><span class="caption">D / P ${pfTag}</span></th>`).join("") +
-      `<th>说明</th></tr></thead><tbody>` + summary + body + "</tbody>";
+      `<th>璇存槑</th></tr></thead><tbody>` + summary + body + "</tbody>";
   }
 
   function maxVecOp(parts, kind, phase, S) {
@@ -1309,7 +1277,7 @@
         throw new Error("unknown phase " + _x);
       }
     }
-    let best = { name: "—", I: 0 };
+    let best = { name: "鈥?, I: 0 };
     parts.forEach(p => {
       if (p.core !== "V") return;
       if (kind && vecKindOf(p) !== kind) return;
@@ -1320,7 +1288,7 @@
   }
 
   function pdVecModelRows(partIRows, ridgePd, shareD, shareP, matchShare, S) {
-    const skipPred = p => p.pf === "skip" || /2−p|2-p|预取/.test(p.name);
+    const skipPred = p => p.pf === "skip" || /2鈭抪|2-p|棰勫彇/.test(p.name);
     return partIRows.map(row => {
       const parts = row.parts.filter(p => !skipPred(p));
       const linD = maxVecOp(parts, "lin", "decode", S);
@@ -1339,7 +1307,7 @@
         return {
           tp, ov, ovNames: ovOps.map(p => p.name),
           iL, nL, tfL,
-          tfHpf, iHov: ov ? attnD.I : 0, nHov: ov ? attnD.name : "—", tfHov,
+          tfHpf, iHov: ov ? attnD.I : 0, nHov: ov ? attnD.name : "鈥?, tfHov,
           tfH: tfHpf + tfHov
         };
       });
@@ -1349,7 +1317,7 @@
 
   function pdVecTableHtml(rows, snapV) {
     const body = rows.flatMap(r => r.byTp.map((t, i) => {
-      const place = t.ov ? "溢出→H：" + t.ovNames.map(partShort).join("、") : "注意力留 L";
+      const place = t.ov ? "婧㈠嚭鈫扝锛? + t.ovNames.map(partShort).join("銆?) : "娉ㄦ剰鍔涚暀 L";
       return `<tr${i === 0 ? " class=\"hi\"" : ""}>
         <td>${i === 0 ? r.short : ""}</td>
         <td class="num">${t.tp}</td>
@@ -1360,18 +1328,18 @@
         <td>${fmt(snapV(t.tfL), 1)}</td>
         <td>${r.allP.name} ${fmtI(r.allP.I)}</td>
         <td class="num">${fmt(t.tfHpf, 1)}</td>
-        <td>${t.ov ? t.nHov + " " + fmtI(t.iHov) : "—"}</td>
-        <td class="num">${t.ov ? fmt(t.tfHov, 1) : "—"}</td>
+        <td>${t.ov ? t.nHov + " " + fmtI(t.iHov) : "鈥?}</td>
+        <td class="num">${t.ov ? fmt(t.tfHov, 1) : "鈥?}</td>
         <td class="num"><b>${fmt(t.tfH, 1)}</b></td>
         <td>${fmt(snapV(t.tfH), 1)}</td>
       </tr>`;
     })).join("");
     return `<thead><tr>
-      <th>模型</th><th class="num">TP</th><th>Decode 矩阵</th>
-      <th>L 上 Vector</th><th class="num">L-V I</th><th class="num">L-V TF</th><th>档 L-V</th>
-      <th>H · Prefill Vector</th><th class="num">H-V_P TF</th>
-      <th>溢出伴随</th><th class="num">H-V_溢 TF</th>
-      <th class="num">H-V 合计</th><th>档 H-V</th>
+      <th>妯″瀷</th><th class="num">TP</th><th>Decode 鐭╅樀</th>
+      <th>L 涓?Vector</th><th class="num">L-V I</th><th class="num">L-V TF</th><th>妗?L-V</th>
+      <th>H 路 Prefill Vector</th><th class="num">H-V_P TF</th>
+      <th>婧㈠嚭浼撮殢</th><th class="num">H-V_婧?TF</th>
+      <th class="num">H-V 鍚堣</th><th>妗?H-V</th>
     </tr></thead><tbody>` + body + "</tbody>";
   }
 
@@ -1388,8 +1356,8 @@
       const kind = vecKindOf(sample);
       let follow;
       switch (kind) {
-        case "lin": follow = "线性 · D→L / P→H"; break;
-        case "attn": follow = "注意力 · 溢出则 D→H"; break;
+        case "lin": follow = "绾挎€?路 D鈫扡 / P鈫扝"; break;
+        case "attn": follow = "娉ㄦ剰鍔?路 婧㈠嚭鍒?D鈫扝"; break;
         default: {
           const _x = kind;
           throw new Error("unknown vecKind " + _x);
@@ -1397,29 +1365,29 @@
       }
       const cells = partIRows.map(row => {
         const p = row.parts.find(q => q.name === name);
-        if (!p) return `<td class="num">—</td>`;
+        if (!p) return `<td class="num">鈥?/td>`;
         const homes = DECODE_TP.map(tp => {
           const ov = row.parts.some(q => q.core === "H" && decodePlaceMat(q, row.x.m, ridgePd, tp) === "H");
           let home = "L";
           if (kind === "attn" && ov) home = "H";
           return `<span class="caption">TP${tp}</span> ${home}`;
-        }).join(" · ");
-        return `<td class="num"><b>${fmtI(p.I)}</b><br><span class="caption">D ${homes}</span><br><span class="caption">P ${pfTag} → H ${fmtI(prefillIOf(p, S, 1, 1))}</span></td>`;
+        }).join(" 路 ");
+        return `<td class="num"><b>${fmtI(p.I)}</b><br><span class="caption">D ${homes}</span><br><span class="caption">P ${pfTag} 鈫?H ${fmtI(prefillIOf(p, S, 1, 1))}</span></td>`;
       }).join("");
       return `<tr><td>${name}<br><span class="caption">${follow}</span></td>${cells}</tr>`;
     }).join("");
     return `<thead><tr>
-      <th>Vector 算子</th>` +
+      <th>Vector 绠楀瓙</th>` +
       partIRows.map(row => `<th class="num">${row.x.m.meta.short}</th>`).join("") +
       `</tr></thead><tbody>${body}</tbody>`;
   }
 
   function shardITableHtml(partIRows, S, pfTag) {
-    const skipPred = p => p.pf === "skip" || /2−p|2-p|预取/.test(p.name);
+    const skipPred = p => p.pf === "skip" || /2鈭抪|2-p|棰勫彇/.test(p.name);
     const groups = [
-      { key: "L", title: "线性 GEMM · Decode 挂 L（扫 B），Prefill 挂 H（扫 CP）；I 不随 TP" },
-      { key: "H", title: "注意力核 · Decode 挂 L / Prefill 挂 H，都扫 TP（I÷TP）；CP 不改 MC I" },
-      { key: "V", title: "Vector · I 几乎不随 TP / CP / B / S" }
+      { key: "L", title: "绾挎€?GEMM 路 Decode 鎸?L锛堟壂 B锛夛紝Prefill 鎸?H锛堟壂 CP锛夛紱I 涓嶉殢 TP" },
+      { key: "H", title: "娉ㄦ剰鍔涙牳 路 Decode 鎸?L / Prefill 鎸?H锛岄兘鎵?TP锛圛梅TP锛夛紱CP 涓嶆敼 MC I" },
+      { key: "V", title: "Vector 路 I 鍑犱箮涓嶉殢 TP / CP / B / S" }
     ];
     const namesBy = { L: [], H: [], V: [] };
     partIRows.forEach(row => {
@@ -1441,18 +1409,18 @@
     const line = (lab, items) =>
       `<span class="caption">${lab}</span> ` + items.map(it =>
         `<span class="caption">${it.k}</span> <b>${fmtI(it.I)}</b>`
-      ).join(" · ");
+      ).join(" 路 ");
     const formulaOf = p => {
       switch (p.core) {
         case "V":
-          return "I(TP,CP,B,S)≈I₁";
+          return "I(TP,CP,B,S)鈮圛鈧?;
         case "H":
-          if (p.pf === "S2") return "D I₁/TP；P I₁·S/(2·TP)";
-          if (p.pf === "hold") return "D/P I₁/TP · 不随 S、CP";
-          return "D I₁/TP";
+          if (p.pf === "S2") return "D I鈧?TP锛汸 I鈧伮稴/(2路TP)";
+          if (p.pf === "hold") return "D/P I鈧?TP 路 涓嶉殢 S銆丆P";
+          return "D I鈧?TP";
         case "L":
-          if (p.bat === "uniq") return "D ≈I₁·B·k/uniq；P I₁·S/CP";
-          return "D I₁·B；P I₁·S/CP";
+          if (p.bat === "uniq") return "D 鈮圛鈧伮稡路k/uniq锛汸 I鈧伮稴/CP";
+          return "D I鈧伮稡锛汸 I鈧伮稴/CP";
         default: {
           const _x = p.core;
           throw new Error("unknown core " + _x);
@@ -1460,14 +1428,14 @@
       }
     };
     const cellOf = (p, m) => {
-      if (!p) return `<td class="num">—</td>`;
+      if (!p) return `<td class="num">鈥?/td>`;
       switch (p.core) {
         case "V":
-          return `<td class="num">${line("D", [{ k: "I₁", I: p.I }])}<br>${line("P", [{ k: pfTag, I: prefillIOf(p, S, 1, 1) }])}<br><span class="caption">不随切分</span></td>`;
+          return `<td class="num">${line("D", [{ k: "I鈧?, I: p.I }])}<br>${line("P", [{ k: pfTag, I: prefillIOf(p, S, 1, 1) }])}<br><span class="caption">涓嶉殢鍒囧垎</span></td>`;
         case "H":
-          return `<td class="num">${line("D", DECODE_TP.map(tp => ({ k: "TP" + tp, I: decodeAttnI(p, 1, m, tp) })))}<br>${line("P", PREFILL_TP.map(tp => ({ k: "TP" + tp, I: prefillIOf(p, S, 1, tp) })))}<br><span class="caption">÷TP · CP 不改 MC I</span></td>`;
+          return `<td class="num">${line("D", DECODE_TP.map(tp => ({ k: "TP" + tp, I: decodeAttnI(p, 1, m, tp) })))}<br>${line("P", PREFILL_TP.map(tp => ({ k: "TP" + tp, I: prefillIOf(p, S, 1, tp) })))}<br><span class="caption">梅TP 路 CP 涓嶆敼 MC I</span></td>`;
         case "L":
-          return `<td class="num">${line("D", DECODE_B.map(B => ({ k: "B" + B, I: decodeIOf(p, B, m) })))}<br>${line("P", PREFILL_CP.map(cp => ({ k: "CP" + cp, I: prefillIOf(p, S, cp, 1) })))}<br><span class="caption">不随 TP</span></td>`;
+          return `<td class="num">${line("D", DECODE_B.map(B => ({ k: "B" + B, I: decodeIOf(p, B, m) })))}<br>${line("P", PREFILL_CP.map(cp => ({ k: "CP" + cp, I: prefillIOf(p, S, cp, 1) })))}<br><span class="caption">涓嶉殢 TP</span></td>`;
         default: {
           const _x = p.core;
           throw new Error("unknown core " + _x);
@@ -1497,9 +1465,9 @@
       return head + rows;
     }).join("");
     return `<thead><tr>
-      <th>算子</th>
-      <th>公式</th>` +
-      partIRows.map(row => `<th class="num">${row.x.m.meta.short}<br><span class="caption">D B/TP · P ${pfTag}</span></th>`).join("") +
+      <th>绠楀瓙</th>
+      <th>鍏紡</th>` +
+      partIRows.map(row => `<th class="num">${row.x.m.meta.short}<br><span class="caption">D B/TP 路 P ${pfTag}</span></th>`).join("") +
       `</tr></thead><tbody>${body}</tbody>`;
   }
 
@@ -1541,9 +1509,9 @@
     const roofLine = `<path d="M${xSlope0} ${ySlope0} L${xRidge} ${yPeak} L${xEnd} ${yPeak}" fill="none" stroke="${roofColor}" stroke-width="2.4"/>`
       + `<line x1="${xRidge}" x2="${xRidge}" y1="${padT}" y2="${yBot}" stroke="${roofColor}" stroke-width="1.2" stroke-dasharray="5 3" opacity="0.85"/>`
       + `<circle cx="${xRidge}" cy="${yPeak}" r="3.5" fill="${roofColor}"/>`;
-    const region = `<text x="${(xSlope0 + xRidge) / 2}" y="${yBot - 8}" font-size="11" font-weight="700" fill="${C.accent}" text-anchor="middle">带宽墙</text>`
-      + `<text x="${(xRidge + xEnd) / 2}" y="${yBot - 8}" font-size="11" font-weight="700" fill="${C.good}" text-anchor="middle">算力墙</text>`
-      + `<text x="${Math.min(xRidge + 10, xEnd - 78)}" y="${yPeak + 16}" font-size="11" font-weight="700" fill="${roofColor}">脊点 ${fmt(ridge, 0)}</text>`;
+    const region = `<text x="${(xSlope0 + xRidge) / 2}" y="${yBot - 8}" font-size="11" font-weight="700" fill="${C.accent}" text-anchor="middle">甯﹀澧?/text>`
+      + `<text x="${(xRidge + xEnd) / 2}" y="${yBot - 8}" font-size="11" font-weight="700" fill="${C.good}" text-anchor="middle">绠楀姏澧?/text>`
+      + `<text x="${Math.min(xRidge + 10, xEnd - 78)}" y="${yPeak + 16}" font-size="11" font-weight="700" fill="${roofColor}">鑴婄偣 ${fmt(ridge, 0)}</text>`;
 
     const items = points.map((p, i) => {
       const I = Math.max(xMin * 1.02, p.I);
@@ -1611,16 +1579,16 @@
       const pts = items.filter(it => it.name === name);
       const iMin = Math.min.apply(null, pts.map(p => p.I));
       const iMax = Math.max.apply(null, pts.map(p => p.I));
-      const iLab = (iMax - iMin) / Math.max(iMax, 0.01) < 0.08 ? fmtI(iMin) : fmtI(iMin) + "–" + fmtI(iMax);
+      const iLab = (iMax - iMin) / Math.max(iMax, 0.01) < 0.08 ? fmtI(iMin) : fmtI(iMin) + "鈥? + fmtI(iMax);
       return `<button type="button" class="roof-leg" data-op="${escAttr(name)}" title="${escAttr(name)}">
         <span class="n">${i + 1}</span>${partShort(name)} <span class="i">${iLab}</span>
       </button>`;
     }).join("");
 
     return `<div class="roof-wrap">
-      <svg viewBox="0 0 ${W} ${H}">${grid}${roofFill}${roofLine}${region}${markers}${points.length ? "" : `<text x="${(padL + xEnd) / 2}" y="${(padT + yBot) / 2}" text-anchor="middle" fill="${C.muted}" font-size="13">本核无算子</text>`}
-        <text x="${padL - 40}" y="${padT + 100}" font-size="10" fill="${C.muted}" transform="rotate(-90 ${padL - 40} ${padT + 100})">有效 TFLOPS / 卡</text>
-        <text x="${(padL + xEnd) / 2}" y="${H - 8}" font-size="11" fill="${C.muted}" text-anchor="middle">算术强度 FLOP / Byte（对数）</text>
+      <svg viewBox="0 0 ${W} ${H}">${grid}${roofFill}${roofLine}${region}${markers}${points.length ? "" : `<text x="${(padL + xEnd) / 2}" y="${(padT + yBot) / 2}" text-anchor="middle" fill="${C.muted}" font-size="13">鏈牳鏃犵畻瀛?/text>`}
+        <text x="${padL - 40}" y="${padT + 100}" font-size="10" fill="${C.muted}" transform="rotate(-90 ${padL - 40} ${padT + 100})">鏈夋晥 TFLOPS / 鍗?/text>
+        <text x="${(padL + xEnd) / 2}" y="${H - 8}" font-size="11" fill="${C.muted}" text-anchor="middle">绠楁湳寮哄害 FLOP / Byte锛堝鏁帮級</text>
       </svg>
       <div class="roof-key">${keys}</div>
     </div>`;
@@ -1672,7 +1640,7 @@
     $("modelChips").innerHTML = ALL_IDS.map(id => {
       const m = MODELS[id];
       const on = enabled.has(id) ? " on" : "";
-      return `<button class="chip${on}" data-id="${id}">${m.meta.short} · ${m.meta.family}</button>`;
+      return `<button class="chip${on}" data-id="${id}">${m.meta.short} 路 ${m.meta.family}</button>`;
     }).join("");
     $("modelChips").onclick = e => {
       const btn = e.target.closest("[data-id]");
@@ -1703,7 +1671,7 @@
     const ridgeVec = peakVec / bwTBs;
     const prefillL = Number($("inPrefill").value) || 0;
     const S = prefillL > 0 ? prefillL : 32768;
-    const pfTag = (prefillL > 0 ? "" : "对照 ") + (S >= 1024 ? fmt(S / 1024, 0) + "K" : String(S));
+    const pfTag = (prefillL > 0 ? "" : "瀵圭収 ") + (S >= 1024 ? fmt(S / 1024, 0) + "K" : String(S));
     const shareD = Number($("inPdShare").value) || 0.8;
     const shareP = Math.max(0.05, 1 - shareD);
     const ridgePd = ridgePdOf(ridge, shareD);
@@ -1766,13 +1734,13 @@
       };
     });
     const partIRows = inventories.map(x => ({ x, parts: partIntensities(x.m, ctx, pred) }));
-    const skipH = p => p.pf === "skip" || /2−p|2-p|预取/.test(p.name);
+    const skipH = p => p.pf === "skip" || /2鈭抪|2-p|棰勫彇/.test(p.name);
     const hDecI = Math.max(0, ...partIRows.flatMap(row =>
       row.parts.filter(p => p.core === "H" && !skipH(p)).map(p => p.I)));
     const hDecTf = matchTf(hDecI);
     let hPfMcI = 0;
     let hPfNetI = 0;
-    let hPfShort = "—";
+    let hPfShort = "鈥?;
     roofRows.forEach(r => {
       const t = r.pfSplit && r.pfSplit[splitKey(H_PF_WORK.tp, H_PF_WORK.cp)];
       if (t && t.I > hPfMcI) {
@@ -1815,8 +1783,8 @@
         pH.push({
           I: t.Inet, kind: prefillTpKind(tp),
           color: COLORS[mi % COLORS.length],
-          label: r.short + "·TP" + tp,
-          model: r.short, name: "整模 I+网"
+          label: r.short + "路TP" + tp,
+          model: r.short, name: "鏁存ā I+缃?
         });
       });
       PREFILL_CP.filter(cp => cp > 1).forEach(cp => {
@@ -1825,8 +1793,8 @@
         pH.push({
           I: t.Inet, kind: prefillCpKind(cp),
           color: COLORS[mi % COLORS.length],
-          label: r.short + "·CP" + cp,
-          model: r.short, name: "整模 I+网"
+          label: r.short + "路CP" + cp,
+          model: r.short, name: "鏁存ā I+缃?
         });
       });
       [8, 16, 32].forEach(n => {
@@ -1835,8 +1803,8 @@
         pH.push({
           I: t.Inet, kind: "tpcp",
           color: COLORS[mi % COLORS.length],
-          label: r.short + "·TP" + n + "×CP" + n,
-          model: r.short, name: "整模 I+网"
+          label: r.short + "路TP" + n + "脳CP" + n,
+          model: r.short, name: "鏁存ā I+缃?
         });
       });
     });
@@ -1846,19 +1814,19 @@
     $("figRoofPH").innerHTML = roofPanel(roofOpts("H", pH, ridgeAttn, peakAttn, bwTBs, [ridgeAttn, 181, 256, 3.76 * S / 32, 3.76 * S / 8, 181 * S / 2]));
 
     $("tblShardI").innerHTML = shardITableHtml(partIRows, S, pfTag);
-    $("capShardI").textContent = "算子 MC I。Decode：线性扫 B=1/16/32，MLA/MQA 扫 TP=1/8/16（B=1，I 不随 B）。Prefill " + pfTag + "：线性扫 CP=1/8/16/32（I×S/CP，不随 TP）；H 核扫 TP=1/8/16/32（因果 ×S/2 后再 ÷TP；topk/窗不乘 S）。计入导线后的整模 I+网见 Decode / Prefill 表。";
+    $("capShardI").textContent = "绠楀瓙 MC I銆侱ecode锛氱嚎鎬ф壂 B=1/16/32锛孧LA/MQA 鎵?TP=1/8/16锛圔=1锛孖 涓嶉殢 B锛夈€侾refill " + pfTag + "锛氱嚎鎬ф壂 CP=1/8/16/32锛圛脳S/CP锛屼笉闅?TP锛夛紱H 鏍告壂 TP=1/8/16/32锛堝洜鏋?脳S/2 鍚庡啀 梅TP锛泃opk/绐椾笉涔?S锛夈€傝鍏ュ绾垮悗鐨勬暣妯?I+缃戣 Decode / Prefill 琛ㄣ€?;
     $("tblDecode").innerHTML = partTableHtml(partIRows, roofRows, "decode", ridge, ridgeAttn, S, pfTag, ridgePd);
     $("tblPrefill").innerHTML = partTableHtml(partIRows, roofRows, "prefill", ridge, ridgeAttn, S, pfTag, ridgePd);
     $("tblVector").innerHTML = vecTableHtml(partIRows, ridgeVec, S, pfTag);
-    $("capDecode").textContent = "Decode 默认挂 L。PD 并行时 Decode 分到 " + fmt(shareD * 100, 0) + "% 带宽，L 脊点变成 " + fmt(ridgePd, 0) + "（原 " + fmt(ridge, 0) + " / 份额）。注意力 I 高于此值则临时上 H（H 同时跑 Prefill，矩阵算力抢占）。MLA/MQA I÷TP。B=1/16/32。H 脊点 " + fmt(ridgeAttn, 0) + "。Vector 分核见 PD 表。";
-    $("capPrefill").textContent = "Prefill " + pfTag + " 矩阵核都挂 H。PD 并行 Prefill 分到 " + fmt(shareP * 100, 0) + "% 带宽，H 脊点变成 " + fmt(ridgePdH, 0) + "。线性按 CP；MLA/MQA 按 TP。L 图空。Vector 分核见 PD 表。";
-    $("capVector").textContent = "上行 Decode I，下行 Prefill " + pfTag + "。I 几乎不随 B、S、TP。匹配 TF 不用满带宽，见 PD 分核表（份额 × 3.58 TB/s）。";
+    $("capDecode").textContent = "Decode 榛樿鎸?L銆侾D 骞惰鏃?Decode 鍒嗗埌 " + fmt(shareD * 100, 0) + "% 甯﹀锛孡 鑴婄偣鍙樻垚 " + fmt(ridgePd, 0) + "锛堝師 " + fmt(ridge, 0) + " / 浠介锛夈€傛敞鎰忓姏 I 楂樹簬姝ゅ€煎垯涓存椂涓?H锛圚 鍚屾椂璺?Prefill锛岀煩闃电畻鍔涙姠鍗狅級銆侻LA/MQA I梅TP銆侭=1/16/32銆侶 鑴婄偣 " + fmt(ridgeAttn, 0) + "銆俈ector 鍒嗘牳瑙?PD 琛ㄣ€?;
+    $("capPrefill").textContent = "Prefill " + pfTag + " 鐭╅樀鏍搁兘鎸?H銆侾D 骞惰 Prefill 鍒嗗埌 " + fmt(shareP * 100, 0) + "% 甯﹀锛孒 鑴婄偣鍙樻垚 " + fmt(ridgePdH, 0) + "銆傜嚎鎬ф寜 CP锛汳LA/MQA 鎸?TP銆侺 鍥剧┖銆俈ector 鍒嗘牳瑙?PD 琛ㄣ€?;
+    $("capVector").textContent = "涓婅 Decode I锛屼笅琛?Prefill " + pfTag + "銆侷 鍑犱箮涓嶉殢 B銆丼銆乀P銆傚尮閰?TF 涓嶇敤婊″甫瀹斤紝瑙?PD 鍒嗘牳琛紙浠介 脳 3.58 TB/s锛夈€?;
 
     $("tblDecodeTp").innerHTML = `<thead><tr>
-      <th>模型</th><th class="num">B</th>
+      <th>妯″瀷</th><th class="num">B</th>
       <th class="num">I_MC</th>` +
-      DECODE_TP.map(tp => `<th class="num">I+网 TP${tp}</th>`).join("") +
-      `<th class="num">网 TP8</th><th class="num">网 TP16</th><th class="num">AR/MoE层</th>
+      DECODE_TP.map(tp => `<th class="num">I+缃?TP${tp}</th>`).join("") +
+      `<th class="num">缃?TP8</th><th class="num">缃?TP16</th><th class="num">AR/MoE灞?/th>
     </tr></thead><tbody>` +
       roofRows.flatMap(r => DECODE_B.map(B => {
         const b = r.byB[B];
@@ -1874,18 +1842,18 @@
         return `<tr${B === 1 ? " class=\"hi\"" : ""}><td>${r.short}</td>
           <td class="num">${B}</td>
           <td class="num"><b>${fmtI(b.modelI)}</b></td>` +
-          nets.map(n => `<td class="num">${fmtI(n.I)} ${n.I < ridge ? tag("warn", "BW") : tag("ok", "算力")}</td>`).join("") +
+          nets.map(n => `<td class="num">${fmtI(n.I)} ${n.I < ridge ? tag("warn", "BW") : tag("ok", "绠楀姏")}</td>`).join("") +
           `<td class="num">${gb(w8.wire)}</td><td class="num">${gb(w16.wire)}</td>
           <td class="num">${nMoe}</td></tr>`;
       })).join("") + "</tbody>";
-    $("capDecodeTp").textContent = "I_MC = 一步 FLOP / MC 字节（权重分片+独特专家+KV×B），不随 TP。I+网把环 all-reduce 导线 2(TP−1)·payload·B 加进分母。TP=1 无导线，与 I_MC 相同。融合开：约 4 次/MoE 层。";
+    $("capDecodeTp").textContent = "I_MC = 涓€姝?FLOP / MC 瀛楄妭锛堟潈閲嶅垎鐗?鐙壒涓撳+KV脳B锛夛紝涓嶉殢 TP銆侷+缃戞妸鐜?all-reduce 瀵肩嚎 2(TP鈭?)路payload路B 鍔犺繘鍒嗘瘝銆俆P=1 鏃犲绾匡紝涓?I_MC 鐩稿悓銆傝瀺鍚堝紑锛氱害 4 娆?MoE 灞傘€?;
 
-    const wallH = I => I < ridgeAttn ? tag("warn", "BW") : tag("ok", "算力");
+    const wallH = I => I < ridgeAttn ? tag("warn", "BW") : tag("ok", "绠楀姏");
     $("tblPrefillTp").innerHTML = `<thead><tr>
-      <th>模型</th><th class="num">S</th><th class="num">CP</th><th class="num">s</th>
-      <th class="num">线性 I</th><th class="num">Attn I</th><th class="num">I_MC</th>` +
-      PREFILL_TP.map(tp => `<th class="num">I+网 TP${tp}</th>`).join("") +
-      `<th class="num">CP网</th><th class="num">TP8网</th><th class="num">AR/MoE层</th>
+      <th>妯″瀷</th><th class="num">S</th><th class="num">CP</th><th class="num">s</th>
+      <th class="num">绾挎€?I</th><th class="num">Attn I</th><th class="num">I_MC</th>` +
+      PREFILL_TP.map(tp => `<th class="num">I+缃?TP${tp}</th>`).join("") +
+      `<th class="num">CP缃?/th><th class="num">TP8缃?/th><th class="num">AR/MoE灞?/th>
     </tr></thead><tbody>` +
       roofRows.flatMap(r => {
         const m = inventories.find(x => x.m.meta.short === r.short).m;
@@ -1908,32 +1876,32 @@
             <td class="num">${nMoe}</td></tr>`;
         });
       }).join("") + "</tbody>";
-    $("capPrefillTp").textContent = "每卡 s=S/CP。线性 I×s（不随 TP）。MLA/MQA 注意力 I÷TP（KV 不切头），不随 CP。整模 I_MC = (线性+注意力) / (CP·权重/TP + KV/CP)。I+网再加 TP 导线 2(TP−1)·payload·s 与 CP 导线 2(CP−1)/CP·KV。墙对 H 脊点 " + fmt(ridgeAttn, 0) + "。";
+    $("capPrefillTp").textContent = "姣忓崱 s=S/CP銆傜嚎鎬?I脳s锛堜笉闅?TP锛夈€侻LA/MQA 娉ㄦ剰鍔?I梅TP锛圞V 涓嶅垏澶达級锛屼笉闅?CP銆傛暣妯?I_MC = (绾挎€?娉ㄦ剰鍔? / (CP路鏉冮噸/TP + KV/CP)銆侷+缃戝啀鍔?TP 瀵肩嚎 2(TP鈭?)路payload路s 涓?CP 瀵肩嚎 2(CP鈭?)/CP路KV銆傚瀵?H 鑴婄偣 " + fmt(ridgeAttn, 0) + "銆?;
 
     const moeAllBw = roofRows.every(r => r.moeI < ridge * 0.2);
-    $("calloutDecode").innerHTML = `<strong>Decode：默认挂 L；算力不够则临时上 H</strong>` +
-      `<p>B=1 整模 I：` +
-      roofRows.map(r => `${r.short} ${fmtI(r.byB[1].modelI)}`).join("、") +
-      `。B=16：` +
-      roofRows.map(r => `${r.short} ${fmtI(r.byB[16].modelI)}`).join("、") +
-      `。B=32：` +
-      roofRows.map(r => `${r.short} ${fmtI(r.byB[32].modelI)}`).join("、") +
-      `。${moeAllBw ? "B=1 时专家 GEMM 在带宽墙上。" : ""}</p>` +
-      `<p>独特专家（均匀路由）` +
+    $("calloutDecode").innerHTML = `<strong>Decode锛氶粯璁ゆ寕 L锛涚畻鍔涗笉澶熷垯涓存椂涓?H</strong>` +
+      `<p>B=1 鏁存ā I锛歚 +
+      roofRows.map(r => `${r.short} ${fmtI(r.byB[1].modelI)}`).join("銆?) +
+      `銆侭=16锛歚 +
+      roofRows.map(r => `${r.short} ${fmtI(r.byB[16].modelI)}`).join("銆?) +
+      `銆侭=32锛歚 +
+      roofRows.map(r => `${r.short} ${fmtI(r.byB[32].modelI)}`).join("銆?) +
+      `銆?{moeAllBw ? "B=1 鏃朵笓瀹?GEMM 鍦ㄥ甫瀹藉涓娿€? : ""}</p>` +
+      `<p>鐙壒涓撳锛堝潎鍖€璺敱锛塦 +
       roofRows.map(r => {
         const b16 = r.byB[16], b32 = r.byB[32];
-        return `${r.short} E=${b16.E} k=${b16.k}：B16→${fmt(b16.uniq, 0)}，B32→${fmt(b32.uniq, 0)}`;
-      }).join("；") +
-      `。Routed I 从 ≈3.76 只升到约 ` +
+        return `${r.short} E=${b16.E} k=${b16.k}锛欱16鈫?{fmt(b16.uniq, 0)}锛孊32鈫?{fmt(b32.uniq, 0)}`;
+      }).join("锛?) +
+      `銆俁outed I 浠?鈮?.76 鍙崌鍒扮害 ` +
       roofRows.map(r => {
         const p = partIRows.find(row => row.x.m.meta.short === r.short);
         const routed = p && p.parts.find(q => q.bat === "uniq" && q.pf !== "skip");
         if (!routed) return r.short;
         return `${r.short} ${fmtI(decodeIOf(routed, 16, p.x.m))}/${fmtI(decodeIOf(routed, 32, p.x.m))}`;
-      }).join("、") +
-      `，仍远低于 L 脊点 ${fmt(ridge, 0)}。BF16 线性 B=16 时 I=16、B=32 时 I=32，仍在脊点左侧。注意力 I 不随 B：PD 下 L 脊点 ${fmt(ridgePd, 0)}，TP=1 时常溢出到 H；加大 TP（I÷TP）回到 L。</p>` +
-      `<p>所以 replica 上加大 Decode batch，换不来「专家也进算力墙」。要抬系统吞吐，优先加副本、保持小 B。</p>` +
-      `<p><b>TP=1 / 8 / 16</b>：线性 GEMM 的 MC I 不变；MLA/MQA 核 I÷TP。计入导线后 B=1 整模 I 变成 ` +
+      }).join("銆?) +
+      `锛屼粛杩滀綆浜?L 鑴婄偣 ${fmt(ridge, 0)}銆侭F16 绾挎€?B=16 鏃?I=16銆丅=32 鏃?I=32锛屼粛鍦ㄨ剨鐐瑰乏渚с€傛敞鎰忓姏 I 涓嶉殢 B锛歅D 涓?L 鑴婄偣 ${fmt(ridgePd, 0)}锛孴P=1 鏃跺父婧㈠嚭鍒?H锛涘姞澶?TP锛圛梅TP锛夊洖鍒?L銆?/p>` +
+      `<p>鎵€浠?replica 涓婂姞澶?Decode batch锛屾崲涓嶆潵銆屼笓瀹朵篃杩涚畻鍔涘銆嶃€傝鎶郴缁熷悶鍚愶紝浼樺厛鍔犲壇鏈€佷繚鎸佸皬 B銆?/p>` +
+      `<p><b>TP=1 / 8 / 16</b>锛氱嚎鎬?GEMM 鐨?MC I 涓嶅彉锛汳LA/MQA 鏍?I梅TP銆傝鍏ュ绾垮悗 B=1 鏁存ā I 鍙樻垚 ` +
       roofRows.map(r => {
         const m = inventories.find(x => x.m.meta.short === r.short).m;
         const b = r.byB[1];
@@ -1941,25 +1909,25 @@
           const wire = (tpMeta[m.id][tp].wire || 0);
           return `TP${tp} ${fmtI(intensity(b.flop, b.hbm + wire))}`;
         }).join(" / ");
-      }).join("；") +
-      `。TP 越大分母里通信越多，有效 I 越稀，更不可能靠加卡把 Decode 推进算力墙。</p>`;
-    $("calloutPrefill").innerHTML = `<strong>Prefill ${pfTag}：矩阵核都走 H-Core</strong>` +
-      `<p>权重复用把线性 I 抬到 ` +
-      roofRows.map(r => `${r.short} CP1 ${fmtI(r.moeIpf)} / CP8 ${fmtI(r.moeIpf / 8)} / CP32 ${fmtI(r.moeIpf / 32)}`).join("；") +
-      `。<b>线性 GEMM 挂 H-Core</b> 吃 ${fmt(chip.attnTflops, 0)} TF 峰值，不要再用 Decode 的 L 去喂这段。</p>` +
-      `<p>注意力 Prefill I（TP=1）：` +
-      roofRows.map(r => `${r.short} ${fmtI(r.attnIpf)}（${r.attnIpf < ridgeAttn ? "相对 H 仍偏 BW" : "H 算力墙"}）`).join("；") +
-      `。MLA/MQA <b>不能按头切 KV</b>：TP 只切 Q 头，I÷TP（K3 MLA 181→TP16≈11）。CP 切序列时 FLOP 与本地 KV 同 ÷CP，MC I 不变。因果扫前缀 I ≈ ×S/2，挂 H。DSA/CSA topk 与窗同样挂 H、I÷TP。<b>RMSNorm / SiLU / RoPE / Softmax / KDA 走 Vector</b>。</p>` +
-      `<p><b>TP × CP</b>：线性 GEMM 的 MC I 不随 TP；MLA 核随 TP 变稀。CP 降低线性 I 与整模 I_MC。计入导线后 ` +
+      }).join("锛?) +
+      `銆俆P 瓒婂ぇ鍒嗘瘝閲岄€氫俊瓒婂锛屾湁鏁?I 瓒婄█锛屾洿涓嶅彲鑳介潬鍔犲崱鎶?Decode 鎺ㄨ繘绠楀姏澧欍€?/p>`;
+    $("calloutPrefill").innerHTML = `<strong>Prefill ${pfTag}锛氱煩闃垫牳閮借蛋 H-Core</strong>` +
+      `<p>鏉冮噸澶嶇敤鎶婄嚎鎬?I 鎶埌 ` +
+      roofRows.map(r => `${r.short} CP1 ${fmtI(r.moeIpf)} / CP8 ${fmtI(r.moeIpf / 8)} / CP32 ${fmtI(r.moeIpf / 32)}`).join("锛?) +
+      `銆?b>绾挎€?GEMM 鎸?H-Core</b> 鍚?${fmt(chip.attnTflops, 0)} TF 宄板€硷紝涓嶈鍐嶇敤 Decode 鐨?L 鍘诲杺杩欐銆?/p>` +
+      `<p>娉ㄦ剰鍔?Prefill I锛圱P=1锛夛細` +
+      roofRows.map(r => `${r.short} ${fmtI(r.attnIpf)}锛?{r.attnIpf < ridgeAttn ? "鐩稿 H 浠嶅亸 BW" : "H 绠楀姏澧?}锛塦).join("锛?) +
+      `銆侻LA/MQA <b>涓嶈兘鎸夊ご鍒?KV</b>锛歍P 鍙垏 Q 澶达紝I梅TP锛圞3 MLA 181鈫扵P16鈮?1锛夈€侰P 鍒囧簭鍒楁椂 FLOP 涓庢湰鍦?KV 鍚?梅CP锛孧C I 涓嶅彉銆傚洜鏋滄壂鍓嶇紑 I 鈮?脳S/2锛屾寕 H銆侱SA/CSA topk 涓庣獥鍚屾牱鎸?H銆両梅TP銆?b>RMSNorm / SiLU / RoPE / Softmax / KDA 璧?Vector</b>銆?/p>` +
+      `<p><b>TP 脳 CP</b>锛氱嚎鎬?GEMM 鐨?MC I 涓嶉殢 TP锛汳LA 鏍搁殢 TP 鍙樼█銆侰P 闄嶄綆绾挎€?I 涓庢暣妯?I_MC銆傝鍏ュ绾垮悗 ` +
       roofRows.map(r => {
         const a = r.pfSplit[splitKey(1, 1)];
         const b = r.pfSplit[splitKey(32, 1)];
         const c = r.pfSplit[splitKey(1, 32)];
         const d = r.pfSplit[splitKey(32, 32)];
-        return `${r.short} TP1CP1 ${fmtI(a.Inet)} / TP32 ${fmtI(b.Inet)} / CP32 ${fmtI(c.Inet)} / TP32×CP32 ${fmtI(d.Inet)}`;
-      }).join("；") +
-      `。若 I+网仍高于 H 脊点 ${fmt(ridgeAttn, 0)} 则仍是算力墙；CP 把 V4/GLM 更容易推到网墙，因为 KV 导线随序列涨。</p>` +
-      `<p>同一颗芯片：L 跑 Decode、H 跑 Prefill 同时在线。带宽按份额共享。Decode 注意力 I 高于 PD 下 L 脊点则抢占 H 矩阵一段时间；H 矩阵峰值不叠加。Vector 必须 L/H 各配，溢出时 H-V 按两路相加。</p>`;
+        return `${r.short} TP1CP1 ${fmtI(a.Inet)} / TP32 ${fmtI(b.Inet)} / CP32 ${fmtI(c.Inet)} / TP32脳CP32 ${fmtI(d.Inet)}`;
+      }).join("锛?) +
+      `銆傝嫢 I+缃戜粛楂樹簬 H 鑴婄偣 ${fmt(ridgeAttn, 0)} 鍒欎粛鏄畻鍔涘锛汣P 鎶?V4/GLM 鏇村鏄撴帹鍒扮綉澧欙紝鍥犱负 KV 瀵肩嚎闅忓簭鍒楁定銆?/p>` +
+      `<p>鍚屼竴棰楄姱鐗囷細L 璺?Decode銆丠 璺?Prefill 鍚屾椂鍦ㄧ嚎銆傚甫瀹芥寜浠介鍏变韩銆侱ecode 娉ㄦ剰鍔?I 楂樹簬 PD 涓?L 鑴婄偣鍒欐姠鍗?H 鐭╅樀涓€娈垫椂闂达紱H 鐭╅樀宄板€间笉鍙犲姞銆俈ector 蹇呴』 L/H 鍚勯厤锛屾孩鍑烘椂 H-V 鎸変袱璺浉鍔犮€?/p>`;
 
     const pdRows = pdVecModelRows(partIRows, ridgePd, shareD, shareP, matchShare, S);
     const snapV = x => snapUp(x, VGRID);
@@ -1971,19 +1939,19 @@
     const hVrec = snapV(hVneed);
     const ovTp1 = pdRows.map(r => {
       const t = r.byTp[0];
-      return r.short + (t.ov ? " TP1→H（" + t.ovNames.map(partShort).join("/") + "）" : " TP1 留 L");
-    }).join("；");
-    $("capPdVec").textContent = "PD 并行 Decode " + fmt(shareD * 100, 0) + "% / Prefill " + fmt(shareP * 100, 0) +
-      "% 带宽。L-V = Decode 留在 L 的 Vector 最大 I × Decode 份额带宽 / 0.8。H-V = Prefill Vector（Prefill 份额）+ 溢出伴随 Softmax/RoPE（Decode 份额），同核 ALU 叠加。建议档 L-V " +
-      fmt(lVrec, 1) + " TF、H-V " + fmt(hVrec, 1) + " TF。";
-    $("capPdVecOps").textContent = "RMSNorm / 残差 / SiLU / KDA 跟线性：Decode 始终 L，Prefill 始终 H。RoPE / Softmax 跟注意力：该 TP 下注意力溢出则 Decode 路改挂 H。";
-    $("calloutPdVec").innerHTML = `<strong>L-V ${fmt(lVneed, 1)} TF → 档 ${fmt(lVrec, 1)}；H-V ${fmt(hVneed, 1)} TF → 档 ${fmt(hVrec, 1)}</strong>` +
-      `<p>满带宽时 Vector 按 KDA I=1.75 只需 ${fmt(matchTf(1.75), 1)} TF。PD 切开后每路带宽变少，匹配 TF 按份额缩小；但 H 要同时伺候 Prefill Vector 和溢出 Decode Vector，ALU 按两路 TF <b>相加</b>。</p>` +
-      `<p>溢出（I &gt; PD 下 L 脊点 ${fmt(ridgePd, 0)}）：${ovTp1}。加大 TP 后 I÷TP，多数模型回到 L，H-V 不再叠加 Decode 路。</p>` +
-      `<p>矩阵峰值不叠加：溢出时 H 正在跑 Prefill（算力墙），Decode 注意力是抢占/分时，H 矩阵规格仍按原 ${fmt(chip.attnTflops, 0)} TF，不把 Prefill 与 Decode 注意力 TF 加在一起。</p>`;
-    const skipPred = p => p.pf === "skip" || /2−p|2-p|预取/.test(p.name);
+      return r.short + (t.ov ? " TP1鈫扝锛? + t.ovNames.map(partShort).join("/") + "锛? : " TP1 鐣?L");
+    }).join("锛?);
+    $("capPdVec").textContent = "PD 骞惰 Decode " + fmt(shareD * 100, 0) + "% / Prefill " + fmt(shareP * 100, 0) +
+      "% 甯﹀銆侺-V = Decode 鐣欏湪 L 鐨?Vector 鏈€澶?I 脳 Decode 浠介甯﹀ / 0.8銆侶-V = Prefill Vector锛圥refill 浠介锛? 婧㈠嚭浼撮殢 Softmax/RoPE锛圖ecode 浠介锛夛紝鍚屾牳 ALU 鍙犲姞銆傚缓璁。 L-V " +
+      fmt(lVrec, 1) + " TF銆丠-V " + fmt(hVrec, 1) + " TF銆?;
+    $("capPdVecOps").textContent = "RMSNorm / 娈嬪樊 / SiLU / KDA 璺熺嚎鎬э細Decode 濮嬬粓 L锛孭refill 濮嬬粓 H銆俁oPE / Softmax 璺熸敞鎰忓姏锛氳 TP 涓嬫敞鎰忓姏婧㈠嚭鍒?Decode 璺敼鎸?H銆?;
+    $("calloutPdVec").innerHTML = `<strong>L-V ${fmt(lVneed, 1)} TF 鈫?妗?${fmt(lVrec, 1)}锛汬-V ${fmt(hVneed, 1)} TF 鈫?妗?${fmt(hVrec, 1)}</strong>` +
+      `<p>婊″甫瀹芥椂 Vector 鎸?KDA I=1.75 鍙渶 ${fmt(matchTf(1.75), 1)} TF銆侾D 鍒囧紑鍚庢瘡璺甫瀹藉彉灏戯紝鍖归厤 TF 鎸変唤棰濈缉灏忥紱浣?H 瑕佸悓鏃朵己鍊?Prefill Vector 鍜屾孩鍑?Decode Vector锛孉LU 鎸変袱璺?TF <b>鐩稿姞</b>銆?/p>` +
+      `<p>婧㈠嚭锛圛 &gt; PD 涓?L 鑴婄偣 ${fmt(ridgePd, 0)}锛夛細${ovTp1}銆傚姞澶?TP 鍚?I梅TP锛屽鏁版ā鍨嬪洖鍒?L锛孒-V 涓嶅啀鍙犲姞 Decode 璺€?/p>` +
+      `<p>鐭╅樀宄板€间笉鍙犲姞锛氭孩鍑烘椂 H 姝ｅ湪璺?Prefill锛堢畻鍔涘锛夛紝Decode 娉ㄦ剰鍔涙槸鎶㈠崰/鍒嗘椂锛孒 鐭╅樀瑙勬牸浠嶆寜鍘?${fmt(chip.attnTflops, 0)} TF锛屼笉鎶?Prefill 涓?Decode 娉ㄦ剰鍔?TF 鍔犲湪涓€璧枫€?/p>`;
+    const skipPred = p => p.pf === "skip" || /2鈭抪|2-p|棰勫彇/.test(p.name);
     const maxLOp = (parts, m) => {
-      let best = { name: "—", I: 0, B: 1 };
+      let best = { name: "鈥?, I: 0, B: 1 };
       parts.forEach(p => {
         if (p.core !== "L" || skipPred(p)) return;
         DECODE_B.forEach(B => {
@@ -1994,7 +1962,7 @@
       return best;
     };
     const lAtB = (parts, m, B) => {
-      let best = { name: "—", I: 0, B };
+      let best = { name: "鈥?, I: 0, B };
       parts.forEach(p => {
         if (p.core !== "L" || skipPred(p)) return;
         const I = decodeIOf(p, B, m);
@@ -2026,7 +1994,7 @@
       const l1 = lAtB(row.parts, row.x.m, 1);
       const l16 = lAtB(row.parts, row.x.m, 16);
       const l32 = lAtB(row.parts, row.x.m, 32);
-      const hMax = hp.length ? hp.reduce((a, p) => p.I > a.I ? p : a, hp[0]) : { name: "—", I: 0 };
+      const hMax = hp.length ? hp.reduce((a, p) => p.I > a.I ? p : a, hp[0]) : { name: "鈥?, I: 0 };
       const lMaxPf = lpPf.length ? lpPf.reduce((a, p) => prefillIOf(p, S) > prefillIOf(a, S) ? p : a, lpPf[0]) : null;
       const hMaxPf = hpPf.length ? hpPf.reduce((a, p) => prefillIOf(p, S) > prefillIOf(a, S) ? p : a, hpPf[0]) : null;
       const pfNet = roofRows.find(r => r.short === row.x.m.meta.short);
@@ -2038,7 +2006,7 @@
       const pfWorkTf = matchTf(pfWorkI);
       const pfAttnI = hMax.I / Math.max(1, H_PF_WORK.tp);
       const pfAttnTf = matchTf(pfAttnI);
-      const hTake = pfWorkTf > matchTf(hMax.I) ? "Prefill I_MC 32×32" : hMax.name;
+      const hTake = pfWorkTf > matchTf(hMax.I) ? "Prefill I_MC 32脳32" : hMax.name;
       return {
         short: row.x.m.meta.short,
         lMax, l1, l16, l32, hMax, lMaxPf, hMaxPf,
@@ -2053,50 +2021,50 @@
         pfByTp: pfNet ? pfNet.pfByTp : {}
       };
     });
-    $("capRidge").textContent = "带宽 3.58 TB/s 在 PD 并行时按份额切开，不是 L/H 各吃满。Decode " +
-      fmt(shareD * 100, 0) + "% → L 脊点 " + fmt(ridgePd, 0) + "；Prefill " + fmt(shareP * 100, 0) +
-      "% → H 脊点 " + fmt(ridgePdH, 0) + "。规格 L=" + fmt(chip.linearTflops, 1) +
-      " / H=" + fmt(chip.attnTflops, 1) + "。Vector 拆 L-V " + fmt(lVrec, 1) + " / H-V " + fmt(hVrec, 1) + " TF。";
+    $("capRidge").textContent = "甯﹀ 3.58 TB/s 鍦?PD 骞惰鏃舵寜浠介鍒囧紑锛屼笉鏄?L/H 鍚勫悆婊°€侱ecode " +
+      fmt(shareD * 100, 0) + "% 鈫?L 鑴婄偣 " + fmt(ridgePd, 0) + "锛汸refill " + fmt(shareP * 100, 0) +
+      "% 鈫?H 鑴婄偣 " + fmt(ridgePdH, 0) + "銆傝鏍?L=" + fmt(chip.linearTflops, 1) +
+      " / H=" + fmt(chip.attnTflops, 1) + "銆俈ector 鎷?L-V " + fmt(lVrec, 1) + " / H-V " + fmt(hVrec, 1) + " TF銆?;
     $("chipRecCards").innerHTML = [
-      ["L 矩阵", fmt(chip.linearTflops, 1) + " TF",
-        "Decode 默认挂 L。B=32 稠密 I=32 需 " + fmt(matchTf(32), 0) + " TF。注意力 I&gt;" + fmt(ridgePd, 0) + " 时上 H，不抬 L。"],
+      ["L 鐭╅樀", fmt(chip.linearTflops, 1) + " TF",
+        "Decode 榛樿鎸?L銆侭=32 绋犲瘑 I=32 闇€ " + fmt(matchTf(32), 0) + " TF銆傛敞鎰忓姏 I&gt;" + fmt(ridgePd, 0) + " 鏃朵笂 H锛屼笉鎶?L銆?],
       ["L-Vector", fmt(lVrec, 1) + " TF",
-        "Decode 留在 L 的 Vector（线性侧；未溢出时含 Softmax/RoPE）。匹配 " + fmt(lVneed, 1) + " TF（× Decode " + fmt(shareD * 100, 0) + "% 带宽）。"],
-      ["H 矩阵", fmt(chip.attnTflops, 1) + " TF",
-        "Prefill 32×32 I_MC " + fmtI(hPfMcI) + "（" + hPfShort + "）满带宽 " + fmt(hPfMcTf, 0) + " TF，取最高档。Decode 注意力最坏 TP " + fmt(hDecTf, 0) + " TF。该值只作对照。"],
+        "Decode 鐣欏湪 L 鐨?Vector锛堢嚎鎬т晶锛涙湭婧㈠嚭鏃跺惈 Softmax/RoPE锛夈€傚尮閰?" + fmt(lVneed, 1) + " TF锛埫?Decode " + fmt(shareD * 100, 0) + "% 甯﹀锛夈€?],
+      ["H 鐭╅樀", fmt(chip.attnTflops, 1) + " TF",
+        "Prefill 32脳32 I_MC " + fmtI(hPfMcI) + "锛? + hPfShort + "锛夋弧甯﹀ " + fmt(hPfMcTf, 0) + " TF锛屽彇鏈€楂樻。銆侱ecode 娉ㄦ剰鍔涙渶鍧?TP " + fmt(hDecTf, 0) + " TF銆傝鍊煎彧浣滃鐓с€?],
       ["H-Vector", fmt(hVrec, 1) + " TF",
-        "Prefill Vector × Prefill 份额，加上溢出伴随 Softmax/RoPE。匹配 " + fmt(hVneed, 1) + " TF，同核叠加。"]
+        "Prefill Vector 脳 Prefill 浠介锛屽姞涓婃孩鍑轰即闅?Softmax/RoPE銆傚尮閰?" + fmt(hVneed, 1) + " TF锛屽悓鏍稿彔鍔犮€?]
     ].map(([t, v, d]) => `<div class="stat"><div class="l">${t}</div><div class="v">${v}</div><p class="caption">${d}</p></div>`).join("");
 
     const oldChip = E.CHIP_DEFAULT;
     const oldRidge = (tf) => tf * oldChip.utilization / bwTBs;
     $("tblChipSpec").innerHTML = `<thead><tr>
-      <th>规格</th><th class="num">L 矩阵</th><th class="num">H 矩阵</th><th class="num">L-V</th><th class="num">H-V</th>
-      <th class="num">PD 下 L 脊点</th><th class="num">PD 下 H 脊点</th><th>依据</th>
+      <th>瑙勬牸</th><th class="num">L 鐭╅樀</th><th class="num">H 鐭╅樀</th><th class="num">L-V</th><th class="num">H-V</th>
+      <th class="num">PD 涓?L 鑴婄偣</th><th class="num">PD 涓?H 鑴婄偣</th><th>渚濇嵁</th>
     </tr></thead><tbody>
-      <tr><td>旧 CHIP_DEFAULT</td>
+      <tr><td>鏃?CHIP_DEFAULT</td>
         <td class="num">${fmt(oldChip.linearTflops, 1)}</td>
         <td class="num">${fmt(oldChip.attnTflops, 1)}</td>
         <td class="num">${fmt(oldChip.linearTflops / 64, 1)}</td>
         <td class="num">${fmt(oldChip.attnTflops / 32, 1)}</td>
         <td class="num">${fmt(oldRidge(oldChip.linearTflops), 0)}</td>
         <td class="num">${fmt(oldRidge(oldChip.attnTflops), 0)}</td>
-        <td class="caption">V=H/32+L/64 捆成一颗；利用率 0.6；带宽未按 PD 切开。</td></tr>
-      <tr class="hi"><td>本页 PD 分核</td>
+        <td class="caption">V=H/32+L/64 鎹嗘垚涓€棰楋紱鍒╃敤鐜?0.6锛涘甫瀹芥湭鎸?PD 鍒囧紑銆?/td></tr>
+      <tr class="hi"><td>鏈〉 PD 鍒嗘牳</td>
         <td class="num"><b>${fmt(chip.linearTflops, 1)}</b></td>
         <td class="num"><b>${fmt(chip.attnTflops, 1)}</b></td>
         <td class="num"><b>${fmt(lVrec, 1)}</b></td>
         <td class="num"><b>${fmt(hVrec, 1)}</b></td>
         <td class="num">${fmt(ridgePd, 0)}</td>
         <td class="num">${fmt(ridgePdH, 0)}</td>
-        <td class="caption">H = max(Decode 溢出, Prefill 32×32 I_MC) 满带宽，能大尽量大。本档由 ${hBindLabel} 定。</td></tr>
+        <td class="caption">H = max(Decode 婧㈠嚭, Prefill 32脳32 I_MC) 婊″甫瀹斤紝鑳藉ぇ灏介噺澶с€傛湰妗ｇ敱 ${hBindLabel} 瀹氥€?/td></tr>
     </tbody>`;
 
     $("tblChipMatch").innerHTML = `<thead><tr>
-      <th>模型</th><th>定 L 的块</th><th class="num">B</th><th class="num">I</th><th class="num">匹配 L</th><th>档 L</th>
-      <th>Decode 定 H</th><th class="num">D I</th><th class="num">D 匹配</th>
-      <th class="num">P I_MC 32×32</th><th class="num">P 匹配</th>
-      <th class="num">注意力÷TP / I+网</th><th>取</th><th>档 H</th>
+      <th>妯″瀷</th><th>瀹?L 鐨勫潡</th><th class="num">B</th><th class="num">I</th><th class="num">鍖归厤 L</th><th>妗?L</th>
+      <th>Decode 瀹?H</th><th class="num">D I</th><th class="num">D 鍖归厤</th>
+      <th class="num">P I_MC 32脳32</th><th class="num">P 鍖归厤</th>
+      <th class="num">娉ㄦ剰鍔浢稵P / I+缃?/th><th>鍙?/th><th>妗?H</th>
     </tr></thead><tbody>` +
       perModelNeed.map(r => `<tr>
         <td>${r.short}</td>
@@ -2108,46 +2076,46 @@
         <td>${r.hMax.name}</td>
         <td class="num">${fmtI(r.hMax.I)}</td>
         <td class="num">${fmt(r.hTf, 0)}</td>
-        <td class="num">${fmtI(r.pfWorkI)} ${r.pfWorkI < ridgeAttn ? tag("warn", "带宽") : tag("ok", "算力")}</td>
+        <td class="num">${fmtI(r.pfWorkI)} ${r.pfWorkI < ridgeAttn ? tag("warn", "甯﹀") : tag("ok", "绠楀姏")}</td>
         <td class="num">${fmt(r.pfWorkTf, 0)}</td>
         <td class="num">${fmtI(r.pfAttnI)} / ${fmtI(r.pfWorkNet)}</td>
         <td>${r.hTake}</td>
         <td>${fmt(r.hSnap, 1)}</td>
       </tr>`).join("") +
-      `<tr class="hi"><td>三模型取最大</td><td>稠密 GEMM ×B</td><td class="num">32</td>
+      `<tr class="hi"><td>涓夋ā鍨嬪彇鏈€澶?/td><td>绋犲瘑 GEMM 脳B</td><td class="num">32</td>
         <td class="num">${fmtI(lNeed * chip.utilization / bwTBs)}</td>
         <td class="num"><b>${fmt(lNeed, 0)} TF</b></td><td>${fmt(lRec, 1)}</td>
-        <td>Decode 溢出 I=${fmtI(hDecI)}</td>
+        <td>Decode 婧㈠嚭 I=${fmtI(hDecI)}</td>
         <td class="num">${fmtI(hDecI)}</td>
         <td class="num">${fmt(hDecTf, 0)}</td>
-        <td class="num">${fmtI(hPfMcI)}（${hPfShort}）</td>
+        <td class="num">${fmtI(hPfMcI)}锛?{hPfShort}锛?/td>
         <td class="num"><b>${fmt(hPfMcTf, 0)}</b></td>
-        <td class="caption">Decode 注意力最坏 TP ${fmtI(hPfAttnI)} → ${fmt(hPfAttnTf, 0)} TF · I+网 ${fmtI(hPfNetI)}</td>
+        <td class="caption">Decode 娉ㄦ剰鍔涙渶鍧?TP ${fmtI(hPfAttnI)} 鈫?${fmt(hPfAttnTf, 0)} TF 路 I+缃?${fmtI(hPfNetI)}</td>
         <td>${hBindLabel}</td>
         <td><b>${fmt(hRec, 1)}</b></td></tr>` +
       "</tbody>";
-    $("capChipMatch").textContent = "L / H 满带宽 I×3.58/0.8。H = max(Decode 注意力最坏 TP, Prefill TP32×CP32 整模 I_MC)，能大尽量大，顶到 8388 档。I+网只作通信敏感性对照。Prefill " + pfTag + "。";
+    $("capChipMatch").textContent = "L / H 婊″甫瀹?I脳3.58/0.8銆侶 = max(Decode 娉ㄦ剰鍔涙渶鍧?TP, Prefill TP32脳CP32 鏁存ā I_MC)锛岃兘澶у敖閲忓ぇ锛岄《鍒?8388 妗ｃ€侷+缃戝彧浣滈€氫俊鏁忔劅鎬у鐓с€侾refill " + pfTag + "銆?;
 
     const pfNetLine = roofRows.map(r => {
       const tWork = r.pfSplit[splitKey(H_PF_WORK.tp, H_PF_WORK.cp)];
       const t88 = r.pfSplit[splitKey(8, 8)];
       const t1616 = r.pfSplit[splitKey(16, 16)];
-      return `${r.short} 32×32 I_MC ${fmtI(tWork.I)}（I+网 ${fmtI(tWork.Inet)}）/ 对照 8×8 ${fmtI(t88.I)} / 16×16 ${fmtI(t1616.I)}`;
-    }).join("；");
-    $("calloutChipSpec").innerHTML = `<strong>建议规格：L 矩阵 ${fmt(SPEC_L, 1)} / H 矩阵 ${fmt(chip.attnTflops, 1)} / L-V ${fmt(lVrec, 1)} / H-V ${fmt(hVrec, 1)} TF</strong>` +
-      `<p>MC 仍是 16×320 GB/s×0.7 = <b>3.58 TB/s</b>，PD 并行 Decode ${fmt(shareD * 100, 0)}% / Prefill ${fmt(shareP * 100, 0)}%。PD 下脊点 L ${fmt(ridgePd, 0)}、H ${fmt(ridgePdH, 0)}。</p>` +
-      `<p><b>L 矩阵 ${fmt(SPEC_L, 1)} TF</b>：Decode 线性默认挂 L。B=32 稠密 I=32 匹配 ${fmt(matchTf(32), 0)} TF。注意力 I 高于 ${fmt(ridgePd, 0)} 时临时上 H。</p>` +
-      `<p><b>H ${fmt(chip.attnTflops, 1)} TF</b>：32×32 整模 I_MC ${fmtI(hPfMcI)}（${hPfShort}）→ ${fmt(hPfMcTf, 0)} TF，取最高档。Decode 注意力只需 ${fmt(hDecTf, 0)}。I+网 ${fmtI(hPfNetI)} 不定档。</p>` +
-      `<p>对照切分：${pfNetLine}。</p>` +
-      `<p><b>L-Vector ${fmt(lVrec, 1)} TF</b> / <b>H-Vector ${fmt(hVrec, 1)} TF</b>：按份额匹配；溢出时 H-V 两路叠加。</p>`;
+      return `${r.short} 32脳32 I_MC ${fmtI(tWork.I)}锛圛+缃?${fmtI(tWork.Inet)}锛? 瀵圭収 8脳8 ${fmtI(t88.I)} / 16脳16 ${fmtI(t1616.I)}`;
+    }).join("锛?);
+    $("calloutChipSpec").innerHTML = `<strong>寤鸿瑙勬牸锛歀 鐭╅樀 ${fmt(SPEC_L, 1)} / H 鐭╅樀 ${fmt(chip.attnTflops, 1)} / L-V ${fmt(lVrec, 1)} / H-V ${fmt(hVrec, 1)} TF</strong>` +
+      `<p>MC 浠嶆槸 16脳320 GB/s脳0.7 = <b>3.58 TB/s</b>锛孭D 骞惰 Decode ${fmt(shareD * 100, 0)}% / Prefill ${fmt(shareP * 100, 0)}%銆侾D 涓嬭剨鐐?L ${fmt(ridgePd, 0)}銆丠 ${fmt(ridgePdH, 0)}銆?/p>` +
+      `<p><b>L 鐭╅樀 ${fmt(SPEC_L, 1)} TF</b>锛欴ecode 绾挎€ч粯璁ゆ寕 L銆侭=32 绋犲瘑 I=32 鍖归厤 ${fmt(matchTf(32), 0)} TF銆傛敞鎰忓姏 I 楂樹簬 ${fmt(ridgePd, 0)} 鏃朵复鏃朵笂 H銆?/p>` +
+      `<p><b>H ${fmt(chip.attnTflops, 1)} TF</b>锛?2脳32 鏁存ā I_MC ${fmtI(hPfMcI)}锛?{hPfShort}锛夆啋 ${fmt(hPfMcTf, 0)} TF锛屽彇鏈€楂樻。銆侱ecode 娉ㄦ剰鍔涘彧闇€ ${fmt(hDecTf, 0)}銆侷+缃?${fmtI(hPfNetI)} 涓嶅畾妗ｃ€?/p>` +
+      `<p>瀵圭収鍒囧垎锛?{pfNetLine}銆?/p>` +
+      `<p><b>L-Vector ${fmt(lVrec, 1)} TF</b> / <b>H-Vector ${fmt(hVrec, 1)} TF</b>锛氭寜浠介鍖归厤锛涙孩鍑烘椂 H-V 涓よ矾鍙犲姞銆?/p>`;
 
     $("stats").innerHTML = [
-      [inventories.length, "对比模型"],
+      [inventories.length, "瀵规瘮妯″瀷"],
       [pfTag, "Prefill"],
-      [fmt(shareD * 100, 0) + "/" + fmt(shareP * 100, 0), "D/P 带宽%"],
-      [fmt(chip.attnTflops, 0), "建议 H TF"],
-      [hBind === "prefill" ? "Prefill 32×32" : "Decode 注意力", "H 由谁定"],
-      [fmt(hVrec, 1), "建议 H-V TF"]
+      [fmt(shareD * 100, 0) + "/" + fmt(shareP * 100, 0), "D/P 甯﹀%"],
+      [fmt(chip.attnTflops, 0), "寤鸿 H TF"],
+      [hBind === "prefill" ? "Prefill 32脳32" : "Decode 娉ㄦ剰鍔?, "H 鐢辫皝瀹?],
+      [fmt(hVrec, 1), "寤鸿 H-V TF"]
     ].map(([v, l]) => "<div class=\"stat\"><div class=\"v\">" + v + "</div><div class=\"l\">" + l + "</div></div>").join("");
   }
 

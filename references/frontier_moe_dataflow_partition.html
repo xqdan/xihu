@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>V4-Pro / K3 / GLM-5.2 · 数据流与资源匹配</title>
+  <title>V4-Pro / K3 / GLM-5.2 路 鏁版嵁娴佷笌璧勬簮鍖归厤</title>
   <style>
     :root {
       --ink: #172033; --muted: #647083; --paper: #f3f1eb; --panel: #fffdf8; --line: #d6d8d8;
@@ -78,29 +78,25 @@
 <body>
 <main>
   <header>
-    <div class="eyebrow">DATAFLOW · PARTITION · RESOURCE MATCH</div>
-    <h1>DeepSeek-V4-Pro / Kimi K3 / GLM-5.2：数据流、切分与资源匹配</h1>
+    <div class="eyebrow">DATAFLOW 路 PARTITION 路 RESOURCE MATCH</div>
+    <h1>DeepSeek-V4-Pro / Kimi K3 / GLM-5.2锛氭暟鎹祦銆佸垏鍒嗕笌璧勬簮鍖归厤</h1>
     <p class="subtitle">
-      只评三颗旗舰：DeepSeek-V4-Pro（1.6T-A49B · CSA/HCA）、Kimi K3（仓库口径）、GLM-5.2（与 5.3 同架构，差在后训练）。
-      拆「一层张量怎么走、跨卡怎么切、每 token 要搬多少字节 / 做多少运算 / 占多少容量」。
-      Decode 默认按 <b>PP1×TP32</b>（32 张基线卡；K3 96 头、V4 128 头、GLM 64 头均可整除）。页内可扫 batch。数字是架构量级对照。
-      Decode / Prefill 算术强度与按 I 选芯片见 <a href="./frontier_moe_arithmetic_intensity.html">算术强度与 Roofline</a>。
-    </p>
+      鍙瘎涓夐鏃楄埌锛欴eepSeek-V4-Pro锛?.6T-A49B 路 CSA/HCA锛夈€並imi K3锛堜粨搴撳彛寰勶級銆丟LM-5.2锛堜笌 5.3 鍚屾灦鏋勶紝宸湪鍚庤缁冿級銆?      鎷嗐€屼竴灞傚紶閲忔€庝箞璧般€佽法鍗℃€庝箞鍒囥€佹瘡 token 瑕佹惉澶氬皯瀛楄妭 / 鍋氬灏戣繍绠?/ 鍗犲灏戝閲忋€嶃€?      Decode 榛樿鎸?<b>PP1脳TP32</b>锛?2 寮犲熀绾垮崱锛汯3 96 澶淬€乂4 128 澶淬€丟LM 64 澶村潎鍙暣闄わ級銆傞〉鍐呭彲鎵?batch銆傛暟瀛楁槸鏋舵瀯閲忕骇瀵圭収銆?      Decode / Prefill 绠楁湳寮哄害涓庢寜 I 閫夎姱鐗囪 <a href="./frontier_moe_arithmetic_intensity.html">绠楁湳寮哄害涓?Roofline</a>銆?    </p>
     <div class="toc">
-      <a href="#family">家族对照</a>
-      <a href="#flow">一层数据流</a>
-      <a href="#blocks">各块拆解</a>
-      <a href="./frontier_moe_arithmetic_intensity.html">算术强度 / Roofline</a>
-      <a href="#cap">容量</a>
+      <a href="#family">瀹舵棌瀵圭収</a>
+      <a href="#flow">涓€灞傛暟鎹祦</a>
+      <a href="#blocks">鍚勫潡鎷嗚В</a>
+      <a href="./frontier_moe_arithmetic_intensity.html">绠楁湳寮哄害 / Roofline</a>
+      <a href="#cap">瀹归噺</a>
       <a href="#part">Partition</a>
-      <a href="#match">同芯片匹配</a>
-      <a href="#need">朴素需求</a>
-      <a href="#overlap">重叠怎么盖</a>
-      <a href="#needFull">计入 SRAM / 重叠 / 互联</a>
-      <a href="#needCols">列怎么读</a>
-      <a href="#batch">Batch 变大</a>
-      <a href="#keepTps">稳住 TPS/usr</a>
-      <a href="#hideTp">TP 无限能否盖住搬移</a>
+      <a href="#match">鍚岃姱鐗囧尮閰?/a>
+      <a href="#need">鏈寸礌闇€姹?/a>
+      <a href="#overlap">閲嶅彔鎬庝箞鐩?/a>
+      <a href="#needFull">璁″叆 SRAM / 閲嶅彔 / 浜掕仈</a>
+      <a href="#needCols">鍒楁€庝箞璇?/a>
+      <a href="#batch">Batch 鍙樺ぇ</a>
+      <a href="#keepTps">绋充綇 TPS/usr</a>
+      <a href="#hideTp">TP 鏃犻檺鑳藉惁鐩栦綇鎼Щ</a>
     </div>
   </header>
 
@@ -114,268 +110,247 @@
           <option value="1048576" selected>1M</option>
         </select>
       </div>
-      <div class="field"><label>目标 TPS/usr</label><input id="inTps" type="number" value="1000" step="50"></div>
-      <div class="field"><label>卡数（PP1×TP）</label>
+      <div class="field"><label>鐩爣 TPS/usr</label><input id="inTps" type="number" value="1000" step="50"></div>
+      <div class="field"><label>鍗℃暟锛圥P1脳TP锛?/label>
         <select id="inCards">
           <option>8</option><option>16</option><option selected>32</option><option>64</option>
         </select>
       </div>
-      <div class="field"><label>专家预测准确率</label><input id="inPred" type="number" value="80" min="0" max="100" step="5"></div>
-      <div class="field"><label>归约缩放</label>
-        <select id="inScale"><option value="flat" selected>flat（内存语义）</option><option value="log2">log2（消息语义）</option></select>
+      <div class="field"><label>涓撳棰勬祴鍑嗙‘鐜?/label><input id="inPred" type="number" value="80" min="0" max="100" step="5"></div>
+      <div class="field"><label>褰掔害缂╂斁</label>
+        <select id="inScale"><option value="flat" selected>flat锛堝唴瀛樿涔夛級</option><option value="log2">log2锛堟秷鎭涔夛級</option></select>
       </div>
-      <div class="field"><label>集合通信融合</label>
-        <select id="inFusion"><option value="1" selected>开：4 次/MoE 层</option><option value="0">关：5 次</option></select>
+      <div class="field"><label>闆嗗悎閫氫俊铻嶅悎</label>
+        <select id="inFusion"><option value="1" selected>寮€锛? 娆?MoE 灞?/option><option value="0">鍏筹細5 娆?/option></select>
       </div>
     </div>
     <div class="controls" style="margin-top:10px">
-      <div class="field"><label>并发用户（同一 replica，batch）</label><input id="inUsers" type="number" value="1" min="1" step="1"></div>
-      <div class="field"><label>SRAM / 卡（MiB）</label><input id="inSram" type="number" value="768" min="0" step="64"></div>
-      <div class="field"><label>Prefill 长度</label>
+      <div class="field"><label>骞跺彂鐢ㄦ埛锛堝悓涓€ replica锛宐atch锛?/label><input id="inUsers" type="number" value="1" min="1" step="1"></div>
+      <div class="field"><label>SRAM / 鍗★紙MiB锛?/label><input id="inSram" type="number" value="768" min="0" step="64"></div>
+      <div class="field"><label>Prefill 闀垮害</label>
         <select id="inPrefill">
-          <option value="0">不计 Prefill</option>
+          <option value="0">涓嶈 Prefill</option>
           <option value="4096">4K</option>
           <option value="32768" selected>32K</option>
           <option value="131072">128K</option>
         </select>
       </div>
-      <div class="field"><label>基线卡互联 GB/s</label><input id="inLink" type="number" value="200" step="50"></div>
+      <div class="field"><label>鍩虹嚎鍗′簰鑱?GB/s</label><input id="inLink" type="number" value="200" step="50"></div>
     </div>
     <div class="chips" id="modelChips"></div>
-    <p class="caption">三模型默认同开。下排「并发用户」= 当前快照的 Decode batch；「Batch 变大」一节会按 1→64 扫描。Routed 按 MXFP4/FP4，其余按 BF16。</p>
+    <p class="caption">涓夋ā鍨嬮粯璁ゅ悓寮€銆備笅鎺掋€屽苟鍙戠敤鎴枫€? 褰撳墠蹇収鐨?Decode batch锛涖€孊atch 鍙樺ぇ銆嶄竴鑺備細鎸?1鈫?4 鎵弿銆俁outed 鎸?MXFP4/FP4锛屽叾浣欐寜 BF16銆?/p>
   </div>
 
-  <h2 id="family">模型家族：宽而浅 vs 窄而深，MLA vs GQA</h2>
+  <h2 id="family">妯″瀷瀹舵棌锛氬鑰屾祬 vs 绐勮€屾繁锛孧LA vs GQA</h2>
   <div class="panel" style="overflow:auto"><table id="tblFamily"></table></div>
   <div class="callout" id="calloutFamily"></div>
 
-  <h2 id="flow">一层数据流：两条 MoE 主干 × 三种注意力</h2>
+  <h2 id="flow">涓€灞傛暟鎹祦锛氫袱鏉?MoE 涓诲共 脳 涓夌娉ㄦ剰鍔?/h2>
   <div class="grid-2">
     <div class="panel" id="figMoe"></div>
     <div class="panel" id="figAttn"></div>
   </div>
   <p class="caption">
-    左：权重怎么被读、激活怎么被切。K3 多了 Latent MoE 的 Wdown / Wup，专家吃 3584 维而不是 7168。
-    右：注意力状态怎么切——这决定长序列时容量和 KV 带宽跟不跟得上 TP。
-  </p>
+    宸︼細鏉冮噸鎬庝箞琚銆佹縺娲绘€庝箞琚垏銆侹3 澶氫簡 Latent MoE 鐨?Wdown / Wup锛屼笓瀹跺悆 3584 缁磋€屼笉鏄?7168銆?    鍙筹細娉ㄦ剰鍔涚姸鎬佹€庝箞鍒団€斺€旇繖鍐冲畾闀垮簭鍒楁椂瀹归噺鍜?KV 甯﹀璺熶笉璺熷緱涓?TP銆?  </p>
 
-  <h2 id="blocks">每 token 各块：字节、算力、算术强度</h2>
+  <h2 id="blocks">姣?token 鍚勫潡锛氬瓧鑺傘€佺畻鍔涖€佺畻鏈己搴?/h2>
   <div class="stats" id="stats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px"></div>
   <div class="grid-2" style="margin-top:14px">
     <div>
-      <h3>每 token 权重+状态读取（GB，含预测多读）</h3>
+      <h3>姣?token 鏉冮噸+鐘舵€佽鍙栵紙GB锛屽惈棰勬祴澶氳锛?/h3>
       <div class="panel" id="figBytes"></div>
     </div>
     <div>
-      <h3>每 token FLOPs（线性 vs 注意力）</h3>
+      <h3>姣?token FLOPs锛堢嚎鎬?vs 娉ㄦ剰鍔涳級</h3>
       <div class="panel" id="figFlops"></div>
     </div>
   </div>
   <div class="panel" style="overflow:auto;margin-top:14px"><table id="tblBlocks"></table></div>
   <p class="caption" id="capBlocks"></p>
 
-  <h2 id="roofline">匹配度 ① 算力 vs 带宽（Roofline）</h2>
+  <h2 id="roofline">鍖归厤搴?鈶?绠楀姏 vs 甯﹀锛圧oofline锛?/h2>
   <div class="callout">
-    <strong>算术强度已单独成页</strong>
-    <p>Decode / Prefill Roofline、各块固有 I、按 I 选芯片规格见
-    <a href="./frontier_moe_arithmetic_intensity.html">算术强度与 Roofline</a>。
-    本页继续讲数据流、切分、容量、重叠和 batch。各块表里的 MoE / Attn 强度仍是 Decode 一步的摘要。</p>
+    <strong>绠楁湳寮哄害宸插崟鐙垚椤?/strong>
+    <p>Decode / Prefill Roofline銆佸悇鍧楀浐鏈?I銆佹寜 I 閫夎姱鐗囪鏍艰
+    <a href="./frontier_moe_arithmetic_intensity.html">绠楁湳寮哄害涓?Roofline</a>銆?    鏈〉缁х画璁叉暟鎹祦銆佸垏鍒嗐€佸閲忋€侀噸鍙犲拰 batch銆傚悇鍧楄〃閲岀殑 MoE / Attn 寮哄害浠嶆槸 Decode 涓€姝ョ殑鎽樿銆?/p>
   </div>
 
-  <h2 id="cap">匹配度 ② 容量：权重常驻 vs KV 随 Context 涨</h2>
+  <h2 id="cap">鍖归厤搴?鈶?瀹归噺锛氭潈閲嶅父椹?vs KV 闅?Context 娑?/h2>
   <div class="grid-2">
     <div class="panel" id="figKv"></div>
     <div class="panel" style="overflow:auto"><table id="tblCap"></table></div>
   </div>
   <div class="callout" id="calloutCap"></div>
 
-  <h2 id="part">匹配度 ③ Partition：TP / EP / CP 各切什么</h2>
+  <h2 id="part">鍖归厤搴?鈶?Partition锛歍P / EP / CP 鍚勫垏浠€涔?/h2>
   <div class="panel" id="figPart"></div>
   <div class="grid-2" style="margin-top:14px">
     <div class="panel" style="overflow:auto"><table id="tblPart"></table></div>
     <div>
-      <h3>同卡数下 PP1×TP 的时间分解</h3>
+      <h3>鍚屽崱鏁颁笅 PP1脳TP 鐨勬椂闂村垎瑙?/h3>
       <div class="panel" id="figTime"></div>
-      <p class="caption">MC 净读取、计算、归约都已含建模裕量 1.17。分项之和不等于 E2E（重叠后取大）。</p>
+      <p class="caption">MC 鍑€璇诲彇銆佽绠椼€佸綊绾﹂兘宸插惈寤烘ā瑁曢噺 1.17銆傚垎椤逛箣鍜屼笉绛変簬 E2E锛堥噸鍙犲悗鍙栧ぇ锛夈€?/p>
     </div>
   </div>
   <div class="callout" id="calloutPart"></div>
 
-  <h2 id="match">同一张基线卡：谁卡在哪</h2>
+  <h2 id="match">鍚屼竴寮犲熀绾垮崱锛氳皝鍗″湪鍝?/h2>
   <div class="panel" style="overflow:auto"><table id="tblMatch"></table></div>
   <div class="callout good" id="calloutMatch"></div>
 
-  <h2 id="need">朴素需求：每 token 读满 × TPS</h2>
-  <p class="subtitle">不计 SRAM、重叠、互联、LM Head、多用户。系统带宽 = 每 token 字节 × 目标 TPS。用来对照「最狠要多少 MC」。</p>
+  <h2 id="need">鏈寸礌闇€姹傦細姣?token 璇绘弧 脳 TPS</h2>
+  <p class="subtitle">涓嶈 SRAM銆侀噸鍙犮€佷簰鑱斻€丩M Head銆佸鐢ㄦ埛銆傜郴缁熷甫瀹?= 姣?token 瀛楄妭 脳 鐩爣 TPS銆傜敤鏉ュ鐓с€屾渶鐙犺澶氬皯 MC銆嶃€?/p>
   <div class="panel" style="overflow:auto"><table id="tblNeed"></table></div>
   <div class="callout warn" id="calloutNeed"></div>
 
-  <h2 id="overlap">重叠：读取如何被计算和归约盖住</h2>
+  <h2 id="overlap">閲嶅彔锛氳鍙栧浣曡璁＄畻鍜屽綊绾︾洊浣?/h2>
   <p class="subtitle">
-    暴露 MC 不是「还要再读多少字节」，而是：计算和归约已经把时间占满之后，读取还有没有多出来。
-    重叠发生在一张卡、一个 Stage 里，两条时间线并行。引擎（有预取缓冲时）取大：
-    <span class="mono">T_stage = max(T_net, T_compute + T_AR + T_补读)</span>。
-  </p>
+    鏆撮湶 MC 涓嶆槸銆岃繕瑕佸啀璇诲灏戝瓧鑺傘€嶏紝鑰屾槸锛氳绠楀拰褰掔害宸茬粡鎶婃椂闂村崰婊′箣鍚庯紝璇诲彇杩樻湁娌℃湁澶氬嚭鏉ャ€?    閲嶅彔鍙戠敓鍦ㄤ竴寮犲崱銆佷竴涓?Stage 閲岋紝涓ゆ潯鏃堕棿绾垮苟琛屻€傚紩鎿庯紙鏈夐鍙栫紦鍐叉椂锛夊彇澶э細
+    <span class="mono">T_stage = max(T_net, T_compute + T_AR + T_琛ヨ)</span>銆?  </p>
   <div class="panel" id="figOverlapHow"></div>
   <div class="grid-2" style="margin-top:14px">
     <div>
-      <h3>当前部署下每模型的两条时间线（ms / 步）</h3>
+      <h3>褰撳墠閮ㄧ讲涓嬫瘡妯″瀷鐨勪袱鏉℃椂闂寸嚎锛坢s / 姝ワ級</h3>
       <div class="panel" id="figOverlapLive"></div>
       <p class="caption" id="capOverlapLive"></p>
     </div>
     <div>
-      <h3>消耗 vs 暴露</h3>
+      <h3>娑堣€?vs 鏆撮湶</h3>
       <div class="panel" style="overflow:auto"><table id="tblOverlap"></table></div>
       <div class="callout" id="calloutOverlap"></div>
     </div>
   </div>
 
-  <h2 id="needFull">计入版：SRAM、重叠、互联、多用户、Prefill</h2>
+  <h2 id="needFull">璁″叆鐗堬細SRAM銆侀噸鍙犮€佷簰鑱斻€佸鐢ㄦ埛銆丳refill</h2>
   <p class="subtitle">
-    用引擎的分片部署（当前卡数、全分片、专家切 TP 份）。
-    <b>消耗 MC</b> = SRAM 扣掉常驻之后每步仍要从 MC 搬的字节 × 步频（目标 TPS/usr）；确定性权重读 1 份，MoE 独特专家随 batch 变多，KV/算力/集合通信 payload × 并发用户。
-    <b>暴露 MC</b> = 重叠后仍露在关键路径上的读取（已被计算+归约盖住的不算缺带宽）。
-    互联按 all-reduce 体积 2·(TP−1)·payload 计。Prefill 按「权重读一次 + 写满 KV + 前缀注意力积分」。
-  </p>
+    鐢ㄥ紩鎿庣殑鍒嗙墖閮ㄧ讲锛堝綋鍓嶅崱鏁般€佸叏鍒嗙墖銆佷笓瀹跺垏 TP 浠斤級銆?    <b>娑堣€?MC</b> = SRAM 鎵ｆ帀甯搁┗涔嬪悗姣忔浠嶈浠?MC 鎼殑瀛楄妭 脳 姝ラ锛堢洰鏍?TPS/usr锛夛紱纭畾鎬ф潈閲嶈 1 浠斤紝MoE 鐙壒涓撳闅?batch 鍙樺锛孠V/绠楀姏/闆嗗悎閫氫俊 payload 脳 骞跺彂鐢ㄦ埛銆?    <b>鏆撮湶 MC</b> = 閲嶅彔鍚庝粛闇插湪鍏抽敭璺緞涓婄殑璇诲彇锛堝凡琚绠?褰掔害鐩栦綇鐨勪笉绠楃己甯﹀锛夈€?    浜掕仈鎸?all-reduce 浣撶Н 2路(TP鈭?)路payload 璁°€侾refill 鎸夈€屾潈閲嶈涓€娆?+ 鍐欐弧 KV + 鍓嶇紑娉ㄦ剰鍔涚Н鍒嗐€嶃€?  </p>
   <div class="panel" id="needCols" style="margin:10px 0 8px">
-    <h3 style="margin-top:0">表头各列是什么</h3>
-    <p class="caption" style="margin-top:0">步频 = 页首目标 TPS/usr。前两列是 <b>MC/HBM</b>，中间是 SRAM 少搬了多少，后两列是 <b>片间互联</b>（不是内存带宽）。卡数下限取这几项里最大的。</p>
+    <h3 style="margin-top:0">琛ㄥご鍚勫垪鏄粈涔?/h3>
+    <p class="caption" style="margin-top:0">姝ラ = 椤甸鐩爣 TPS/usr銆傚墠涓ゅ垪鏄?<b>MC/HBM</b>锛屼腑闂存槸 SRAM 灏戞惉浜嗗灏戯紝鍚庝袱鍒楁槸 <b>鐗囬棿浜掕仈</b>锛堜笉鏄唴瀛樺甫瀹斤級銆傚崱鏁颁笅闄愬彇杩欏嚑椤归噷鏈€澶х殑銆?/p>
     <dl class="col-glossary">
       <div>
-        <dt>SRAM 后消耗</dt>
-        <dd>SRAM 常驻扣掉之后，每步仍要从 MC 搬走的字节 × 步频。下面「净 xx/步」是一步的字节，「x 卡」按每卡有效 MC 折算。<span class="ask">问的是：MC 总线有多忙。</span> 读取就算被计算盖住，这列也不会变小——字节还是搬了。</dd>
+        <dt>SRAM 鍚庢秷鑰?/dt>
+        <dd>SRAM 甯搁┗鎵ｆ帀涔嬪悗锛屾瘡姝ヤ粛瑕佷粠 MC 鎼蛋鐨勫瓧鑺?脳 姝ラ銆備笅闈€屽噣 xx/姝ャ€嶆槸涓€姝ョ殑瀛楄妭锛屻€寈 鍗°€嶆寜姣忓崱鏈夋晥 MC 鎶樼畻銆?span class="ask">闂殑鏄細MC 鎬荤嚎鏈夊蹇欍€?/span> 璇诲彇灏辩畻琚绠楃洊浣忥紝杩欏垪涔熶笉浼氬彉灏忊€斺€斿瓧鑺傝繕鏄惉浜嗐€?/dd>
       </div>
       <div>
-        <dt>重叠后暴露</dt>
-        <dd>步时取 <span class="mono">max(T_net, 计算+归约+补读)</span>。忙碌更长 → <b>已掩盖</b>：再加 MC 换不来 TPS。读取更长 → 红尾换成 TB/s，才是露在关键路径上的带宽。<span class="ask">问的是：步时还缺不缺 MC。</span> 消耗是「搬了多少」，暴露是「有多少还在拖步时」。</dd>
+        <dt>閲嶅彔鍚庢毚闇?/dt>
+        <dd>姝ユ椂鍙?<span class="mono">max(T_net, 璁＄畻+褰掔害+琛ヨ)</span>銆傚繖纰屾洿闀?鈫?<b>宸叉帺鐩?/b>锛氬啀鍔?MC 鎹笉鏉?TPS銆傝鍙栨洿闀?鈫?绾㈠熬鎹㈡垚 TB/s锛屾墠鏄湶鍦ㄥ叧閿矾寰勪笂鐨勫甫瀹姐€?span class="ask">闂殑鏄細姝ユ椂杩樼己涓嶇己 MC銆?/span> 娑堣€楁槸銆屾惉浜嗗灏戙€嶏紝鏆撮湶鏄€屾湁澶氬皯杩樺湪鎷栨鏃躲€嶃€?/dd>
       </div>
       <div>
-        <dt>SRAM 省/步</dt>
-        <dd>因为片上 SRAM 已常驻一部分权重，每步少从 MC 读的字节（全系统）。SRAM 先留作预取缓冲，剩下优先扣确定性权重，再按命中率扣 routed。所以消耗一定低于朴素 MC。重叠不进这一列——重叠不省字节，只省关键路径上的时间。</dd>
+        <dt>SRAM 鐪?姝?/dt>
+        <dd>鍥犱负鐗囦笂 SRAM 宸插父椹讳竴閮ㄥ垎鏉冮噸锛屾瘡姝ュ皯浠?MC 璇荤殑瀛楄妭锛堝叏绯荤粺锛夈€係RAM 鍏堢暀浣滈鍙栫紦鍐诧紝鍓╀笅浼樺厛鎵ｇ‘瀹氭€ф潈閲嶏紝鍐嶆寜鍛戒腑鐜囨墸 routed銆傛墍浠ユ秷鑰椾竴瀹氫綆浜庢湸绱?MC銆傞噸鍙犱笉杩涜繖涓€鍒椻€斺€旈噸鍙犱笉鐪佸瓧鑺傦紝鍙渷鍏抽敭璺緞涓婄殑鏃堕棿銆?/dd>
       </div>
       <div>
-        <dt>互联 2(TP−1)·payload</dt>
-        <dd>片间链路，不是 MC。环 all-reduce：reduce-scatter 走 (TP−1)·payload，all-gather 再走一遍，导线总字节 = 2(TP−1)·payload。payload 是这一步要归约的向量（随 batch 放大）。TB/s = 每步导线字节 × 步频；「x 卡」按每卡链路带宽折。</dd>
+        <dt>浜掕仈 2(TP鈭?)路payload</dt>
+        <dd>鐗囬棿閾捐矾锛屼笉鏄?MC銆傜幆 all-reduce锛歳educe-scatter 璧?(TP鈭?)路payload锛宎ll-gather 鍐嶈蛋涓€閬嶏紝瀵肩嚎鎬诲瓧鑺?= 2(TP鈭?)路payload銆俻ayload 鏄繖涓€姝ヨ褰掔害鐨勫悜閲忥紙闅?batch 鏀惧ぇ锛夈€俆B/s = 姣忔瀵肩嚎瀛楄妭 脳 姝ラ锛涖€寈 鍗°€嶆寜姣忓崱閾捐矾甯﹀鎶樸€?/dd>
       </div>
       <div>
-        <dt>归约 ms/步</dt>
-        <dd>集合通信在时间上要占多久：次数 × 启动延迟 + payload 传输（延迟几乎不随 batch 涨，体积会涨）。表里写成 μs。1000 TPS 的预算是 1000 μs。超了不能靠加 TP 摊薄层数带来的次数。<span class="ask">上一列是链路上有多少字节，这一列是 1 ms 窗口通不通过。</span></dd>
+        <dt>褰掔害 ms/姝?/dt>
+        <dd>闆嗗悎閫氫俊鍦ㄦ椂闂翠笂瑕佸崰澶氫箙锛氭鏁?脳 鍚姩寤惰繜 + payload 浼犺緭锛堝欢杩熷嚑涔庝笉闅?batch 娑紝浣撶Н浼氭定锛夈€傝〃閲屽啓鎴?渭s銆?000 TPS 鐨勯绠楁槸 1000 渭s銆傝秴浜嗕笉鑳介潬鍔?TP 鎽婅杽灞傛暟甯︽潵鐨勬鏁般€?span class="ask">涓婁竴鍒楁槸閾捐矾涓婃湁澶氬皯瀛楄妭锛岃繖涓€鍒楁槸 1 ms 绐楀彛閫氫笉閫氳繃銆?/span></dd>
       </div>
       <div>
-        <dt>对照</dt>
-        <dd>配多少 HBM/MC → 先看消耗，已掩盖则加 MC 无 TPS 收益。步时缺不缺带宽 → 暴露。SRAM 值不值 → 省/步。配多少片间链路 → 互联 TB/s。目标步频通不通过 → 归约时间。</dd>
+        <dt>瀵圭収</dt>
+        <dd>閰嶅灏?HBM/MC 鈫?鍏堢湅娑堣€楋紝宸叉帺鐩栧垯鍔?MC 鏃?TPS 鏀剁泭銆傛鏃剁己涓嶇己甯﹀ 鈫?鏆撮湶銆係RAM 鍊间笉鍊?鈫?鐪?姝ャ€傞厤澶氬皯鐗囬棿閾捐矾 鈫?浜掕仈 TB/s銆傜洰鏍囨棰戦€氫笉閫氳繃 鈫?褰掔害鏃堕棿銆?/dd>
       </div>
     </dl>
   </div>
   <div class="panel" style="overflow:auto;margin-top:8px"><table id="tblNeedFull"></table></div>
-  <p class="caption">步频 = 目标 TPS/usr。系统 token/s = 步频 × 用户数。卡数下限取 Decode 消耗 MC / 暴露 MC / 互联 / 容量 / 归约时间 的最大者。</p>
+  <p class="caption">姝ラ = 鐩爣 TPS/usr銆傜郴缁?token/s = 姝ラ 脳 鐢ㄦ埛鏁般€傚崱鏁颁笅闄愬彇 Decode 娑堣€?MC / 鏆撮湶 MC / 浜掕仈 / 瀹归噺 / 褰掔害鏃堕棿 鐨勬渶澶ц€呫€?/p>
   <div class="grid-2" style="margin-top:14px">
     <div>
-      <h3>朴素 MC vs SRAM 后消耗 vs 重叠后暴露（TB/s）</h3>
+      <h3>鏈寸礌 MC vs SRAM 鍚庢秷鑰?vs 閲嶅彔鍚庢毚闇诧紙TB/s锛?/h3>
       <div class="panel" id="figNeedFull"></div>
     </div>
     <div class="panel" style="overflow:auto"><table id="tblPrefill"></table></div>
   </div>
   <div class="callout" id="calloutNeedFull"></div>
 
-  <h2 id="batch">Batch 变大：权重摊销 vs 独特专家涨流量</h2>
+  <h2 id="batch">Batch 鍙樺ぇ锛氭潈閲嶆憡閿€ vs 鐙壒涓撳娑ㄦ祦閲?/h2>
   <p class="subtitle">
-    同一 replica、Decode、步频仍按「每用户 TPS」。batch = 并发序列数。
-    稠密层权重确实只读 1 份，算术强度随 batch 上升；MoE 不是：每个新 token 可能点到还没读过的专家，
-    独特专家数 ≈ <span class="mono">E · (1 − ((E−k)/E)<sup>B</sup>)</span>，专家权重流量先涨、饱和后才像稠密。
-    算力与 KV、归约 payload 仍 ×B；归约延迟几乎不涨。
-  </p>
+    鍚屼竴 replica銆丏ecode銆佹棰戜粛鎸夈€屾瘡鐢ㄦ埛 TPS銆嶃€俠atch = 骞跺彂搴忓垪鏁般€?    绋犲瘑灞傛潈閲嶇‘瀹炲彧璇?1 浠斤紝绠楁湳寮哄害闅?batch 涓婂崌锛汳oE 涓嶆槸锛氭瘡涓柊 token 鍙兘鐐瑰埌杩樻病璇昏繃鐨勪笓瀹讹紝
+    鐙壒涓撳鏁?鈮?<span class="mono">E 路 (1 鈭?((E鈭択)/E)<sup>B</sup>)</span>锛屼笓瀹舵潈閲嶆祦閲忓厛娑ㄣ€侀ケ鍜屽悗鎵嶅儚绋犲瘑銆?    绠楀姏涓?KV銆佸綊绾?payload 浠?脳B锛涘綊绾﹀欢杩熷嚑涔庝笉娑ㄣ€?  </p>
   <div class="grid-2">
     <div>
-      <h3>每用户 TPS（随 batch 下降）</h3>
+      <h3>姣忕敤鎴?TPS锛堥殢 batch 涓嬮檷锛?/h3>
       <div class="panel" id="figBatchTps"></div>
     </div>
     <div>
-      <h3>系统 token/s = TPS/usr × batch（先升后饱和）</h3>
+      <h3>绯荤粺 token/s = TPS/usr 脳 batch锛堝厛鍗囧悗楗卞拰锛?/h3>
       <div class="panel" id="figBatchSys"></div>
     </div>
   </div>
   <div class="grid-2" style="margin-top:14px">
     <div>
-      <h3>独特专家数（饱和于 E）</h3>
+      <h3>鐙壒涓撳鏁帮紙楗卞拰浜?E锛?/h3>
       <div class="panel" id="figBatchUniq"></div>
       <p class="caption" id="capBatchUniq"></p>
     </div>
     <div>
-      <h3>掩盖倍数 = 忙碌 / T_net（&gt;1 则读取被盖住）</h3>
+      <h3>鎺╃洊鍊嶆暟 = 蹇欑 / T_net锛?gt;1 鍒欒鍙栬鐩栦綇锛?/h3>
       <div class="panel" id="figBatchCover"></div>
     </div>
   </div>
   <div class="panel" style="overflow:auto;margin-top:14px"><table id="tblBatch"></table></div>
-  <p class="caption">高亮行 = 页首「并发用户」。步时 = max(T_net, 忙碌)×1.17。容量超了仍给出时间线上的可达 TPS，表示「若装得下会跑多快」。</p>
+  <p class="caption">楂樹寒琛?= 椤甸銆屽苟鍙戠敤鎴枫€嶃€傛鏃?= max(T_net, 蹇欑)脳1.17銆傚閲忚秴浜嗕粛缁欏嚭鏃堕棿绾夸笂鐨勫彲杈?TPS锛岃〃绀恒€岃嫢瑁呭緱涓嬩細璺戝蹇€嶃€?/p>
   <div class="callout" id="calloutBatch"></div>
 
-  <h2 id="keepTps">怎么保证 batch 变大时每用户 TPS 不掉很多</h2>
+  <h2 id="keepTps">鎬庝箞淇濊瘉 batch 鍙樺ぇ鏃舵瘡鐢ㄦ埛 TPS 涓嶆帀寰堝</h2>
   <p class="subtitle">
-    同一 replica 上，一步 Decode 给 batch 里每个人各吐 1 个 token。每用户 TPS = 1 / 步时，步时 =
-    <span class="mono">max(T_net(B), T_busy(B))</span>。
-    B 涨则独特专家、KV、算力、归约 payload 都涨，步时变长，TPS/usr 必然掉——除非把「多出来的 B」从这条关键路径上拿掉，或让增量小到仍被盖住。
-  </p>
+    鍚屼竴 replica 涓婏紝涓€姝?Decode 缁?batch 閲屾瘡涓汉鍚勫悙 1 涓?token銆傛瘡鐢ㄦ埛 TPS = 1 / 姝ユ椂锛屾鏃?=
+    <span class="mono">max(T_net(B), T_busy(B))</span>銆?    B 娑ㄥ垯鐙壒涓撳銆並V銆佺畻鍔涖€佸綊绾?payload 閮芥定锛屾鏃跺彉闀匡紝TPS/usr 蹇呯劧鎺夆€斺€旈櫎闈炴妸銆屽鍑烘潵鐨?B銆嶄粠杩欐潯鍏抽敭璺緞涓婃嬁鎺夛紝鎴栬澧為噺灏忓埌浠嶈鐩栦綇銆?  </p>
   <div class="panel">
     <dl class="col-glossary">
       <div>
-        <dt>1. 副本扩出去，replica 上保持小 batch（主手段）</dt>
-        <dd>要 1000 TPS/usr，优先 <b>N 份 replica × B=1～2</b>，不要 1 份 replica × B=8。总并发 = N×B，每人看到的仍是 T_step(小 B)。Decode 与 Prefill 拆开，Decode 舱专跑小 batch。系统吞吐用加副本换，不拿单用户时延去换。</dd>
+        <dt>1. 鍓湰鎵╁嚭鍘伙紝replica 涓婁繚鎸佸皬 batch锛堜富鎵嬫锛?/dt>
+        <dd>瑕?1000 TPS/usr锛屼紭鍏?<b>N 浠?replica 脳 B=1锝?</b>锛屼笉瑕?1 浠?replica 脳 B=8銆傛€诲苟鍙?= N脳B锛屾瘡浜虹湅鍒扮殑浠嶆槸 T_step(灏?B)銆侱ecode 涓?Prefill 鎷嗗紑锛孌ecode 鑸变笓璺戝皬 batch銆傜郴缁熷悶鍚愮敤鍔犲壇鏈崲锛屼笉鎷垮崟鐢ㄦ埛鏃跺欢鍘绘崲銆?/dd>
       </div>
       <div>
-        <dt>2. 压住 T_net 随 B 涨：独特专家 + KV</dt>
-        <dd>K3/V4 的增量主要是新专家权重；GLM-5.2 在 1M 上 KV 比权重大，B=2 就接近腰斩。杠杆：路由粘性/热点专家（独特集合远小于均匀假设）；SRAM/热专家缓存按 <span class="mono">unique(E,k,B)</span> 而不是按 top-k 来配；真 EP 让每卡只读自己的专家分片（本页默认是专家切列，每卡仍看到全部独特专家）；V4 这类压缩 KV 才能在长上下文上 batch。</dd>
+        <dt>2. 鍘嬩綇 T_net 闅?B 娑細鐙壒涓撳 + KV</dt>
+        <dd>K3/V4 鐨勫閲忎富瑕佹槸鏂颁笓瀹舵潈閲嶏紱GLM-5.2 鍦?1M 涓?KV 姣旀潈閲嶅ぇ锛孊=2 灏辨帴杩戣叞鏂┿€傛潬鏉嗭細璺敱绮樻€?鐑偣涓撳锛堢嫭鐗归泦鍚堣繙灏忎簬鍧囧寑鍋囪锛夛紱SRAM/鐑笓瀹剁紦瀛樻寜 <span class="mono">unique(E,k,B)</span> 鑰屼笉鏄寜 top-k 鏉ラ厤锛涚湡 EP 璁╂瘡鍗″彧璇昏嚜宸辩殑涓撳鍒嗙墖锛堟湰椤甸粯璁ゆ槸涓撳鍒囧垪锛屾瘡鍗′粛鐪嬪埌鍏ㄩ儴鐙壒涓撳锛夛紱V4 杩欑被鍘嬬缉 KV 鎵嶈兘鍦ㄩ暱涓婁笅鏂囦笂 batch銆?/dd>
       </div>
       <div>
-        <dt>3. 压住 T_busy 随 B 涨：算力与归约</dt>
-        <dd>V4-Pro 在 TP32、B=1 已是归约墙，再加 B，payload×B 直接拉长步时。杠杆：降 TP、加副本（通信次数按层走，不按用户摊）；集合通信融合；降启动延迟；链路带宽只缩短 payload 段。算力墙则要更多 L-Core 或把 batch 拆到更多 replica，单卡算力不够时加大 B 只会更慢。</dd>
+        <dt>3. 鍘嬩綇 T_busy 闅?B 娑細绠楀姏涓庡綊绾?/dt>
+        <dd>V4-Pro 鍦?TP32銆丅=1 宸叉槸褰掔害澧欙紝鍐嶅姞 B锛宲ayload脳B 鐩存帴鎷夐暱姝ユ椂銆傛潬鏉嗭細闄?TP銆佸姞鍓湰锛堥€氫俊娆℃暟鎸夊眰璧帮紝涓嶆寜鐢ㄦ埛鎽婏級锛涢泦鍚堥€氫俊铻嶅悎锛涢檷鍚姩寤惰繜锛涢摼璺甫瀹藉彧缂╃煭 payload 娈点€傜畻鍔涘鍒欒鏇村 L-Core 鎴栨妸 batch 鎷嗗埌鏇村 replica锛屽崟鍗＄畻鍔涗笉澶熸椂鍔犲ぇ B 鍙細鏇存參銆?/dd>
       </div>
       <div>
-        <dt>4. 让增量仍落在重叠窗里</dt>
-        <dd>若 B=1 时 T_net 已被忙碌盖住，且新增 KV/专家读仍短于忙碌增量，TPS/usr 掉得慢。这要求：B=1 就要有余量（掩盖倍数明显 &gt;1），并且增量主要是可重叠的 MC，而不是归约延迟。K3/GLM 在 TP32 上 B=1 仍露尾，加大 B 会先把露尾加长，没有「免费窗」。</dd>
+        <dt>4. 璁╁閲忎粛钀藉湪閲嶅彔绐楅噷</dt>
+        <dd>鑻?B=1 鏃?T_net 宸茶蹇欑鐩栦綇锛屼笖鏂板 KV/涓撳璇讳粛鐭簬蹇欑澧為噺锛孴PS/usr 鎺夊緱鎱€傝繖瑕佹眰锛欱=1 灏辫鏈変綑閲忥紙鎺╃洊鍊嶆暟鏄庢樉 &gt;1锛夛紝骞朵笖澧為噺涓昏鏄彲閲嶅彔鐨?MC锛岃€屼笉鏄綊绾﹀欢杩熴€侹3/GLM 鍦?TP32 涓?B=1 浠嶉湶灏撅紝鍔犲ぇ B 浼氬厛鎶婇湶灏惧姞闀匡紝娌℃湁銆屽厤璐圭獥銆嶃€?/dd>
       </div>
     </dl>
-    <p class="caption" style="margin:8px 0 0">TP32、1M、预测 80% 量级：B=2 时 K3 ≈73%、V4 ≈76%、GLM ≈53%（GLM 被 1M KV 打穿）。要「掉得不多」（例如仍 ≥80%），这套卡上 Decode batch 宜停在 1，最多 2；更多用户用加 replica。芯片侧则是更大 SRAM（装独特专家）或更小 KV（压缩注意力）或真 EP。</p>
+    <p class="caption" style="margin:8px 0 0">TP32銆?M銆侀娴?80% 閲忕骇锛欱=2 鏃?K3 鈮?3%銆乂4 鈮?6%銆丟LM 鈮?3%锛圙LM 琚?1M KV 鎵撶┛锛夈€傝銆屾帀寰椾笉澶氥€嶏紙渚嬪浠?鈮?0%锛夛紝杩欏鍗′笂 Decode batch 瀹滃仠鍦?1锛屾渶澶?2锛涙洿澶氱敤鎴风敤鍔?replica銆傝姱鐗囦晶鍒欐槸鏇村ぇ SRAM锛堣鐙壒涓撳锛夋垨鏇村皬 KV锛堝帇缂╂敞鎰忓姏锛夋垨鐪?EP銆?/p>
   </div>
 
-  <h2 id="hideTp">重叠 + SRAM 常驻之后，TP 不受限能否保证盖住搬移？</h2>
+  <h2 id="hideTp">閲嶅彔 + SRAM 甯搁┗涔嬪悗锛孴P 涓嶅彈闄愯兘鍚︿繚璇佺洊浣忔惉绉伙紵</h2>
   <p class="subtitle">
-    能盖住，但<b>盖在归约上，不是盖在算力上</b>。重叠取
-    <span class="mono">max(T_net, T_compute + T_AR + T_补读)</span>。
-    全分片时 T_net 和 T_compute 都随 1/TP 掉；SRAM 常驻让每卡工作集一旦小于 768 MiB，T_net 掉得更快。
-    T_AR 几乎不掉：次数按层走，启动延迟与 payload（模型里按完整 hidden，不随 TP 摊）是地板。
-    所以存在某个 TP*，之后 T_AR &gt; T_net，读取被掩盖。
-  </p>
+    鑳界洊浣忥紝浣?b>鐩栧湪褰掔害涓婏紝涓嶆槸鐩栧湪绠楀姏涓?/b>銆傞噸鍙犲彇
+    <span class="mono">max(T_net, T_compute + T_AR + T_琛ヨ)</span>銆?    鍏ㄥ垎鐗囨椂 T_net 鍜?T_compute 閮介殢 1/TP 鎺夛紱SRAM 甯搁┗璁╂瘡鍗″伐浣滈泦涓€鏃﹀皬浜?768 MiB锛孴_net 鎺夊緱鏇村揩銆?    T_AR 鍑犱箮涓嶆帀锛氭鏁版寜灞傝蛋锛屽惎鍔ㄥ欢杩熶笌 payload锛堟ā鍨嬮噷鎸夊畬鏁?hidden锛屼笉闅?TP 鎽婏級鏄湴鏉裤€?    鎵€浠ュ瓨鍦ㄦ煇涓?TP*锛屼箣鍚?T_AR &gt; T_net锛岃鍙栬鎺╃洊銆?  </p>
   <div class="panel">
     <dl class="col-glossary">
       <div>
-        <dt>不能保证：用算力把 MC 盖住</dt>
-        <dd>Decode MoE 算术强度远低于脊点。TP 把 FLOP 和字节按同样比例切开，T_compute / T_net 几乎不变。没有归约、只靠重叠+SRAM 时，在小 TP 上永远是带宽墙。SRAM 只在「每卡切片已经装得进片上」的极大 TP 才可能让 T_net 掉过 T_compute。</dd>
+        <dt>涓嶈兘淇濊瘉锛氱敤绠楀姏鎶?MC 鐩栦綇</dt>
+        <dd>Decode MoE 绠楁湳寮哄害杩滀綆浜庤剨鐐广€俆P 鎶?FLOP 鍜屽瓧鑺傛寜鍚屾牱姣斾緥鍒囧紑锛孴_compute / T_net 鍑犱箮涓嶅彉銆傛病鏈夊綊绾︺€佸彧闈犻噸鍙?SRAM 鏃讹紝鍦ㄥ皬 TP 涓婃案杩滄槸甯﹀澧欍€係RAM 鍙湪銆屾瘡鍗″垏鐗囧凡缁忚寰楄繘鐗囦笂銆嶇殑鏋佸ぇ TP 鎵嶅彲鑳借 T_net 鎺夎繃 T_compute銆?/dd>
       </div>
       <div>
-        <dt>能保证（渐近）：用归约地板把 MC 盖住</dt>
-        <dd>1M、B=1、预测 80%、flat 归约：V4-Pro 在 <b>TP32</b> 已掩盖；K3、GLM-5.2 约 <b>TP64</b> 起掩盖。再加大 TP，掩盖倍数继续升，但 TPS/usr 锁在 1/T_AR 附近：K3 ≈940–1000，V4 ≈1420–1550，GLM ≈1230–1270。再加卡换不来单用户时延——已经是通信墙。</dd>
+        <dt>鑳戒繚璇侊紙娓愯繎锛夛細鐢ㄥ綊绾﹀湴鏉挎妸 MC 鐩栦綇</dt>
+        <dd>1M銆丅=1銆侀娴?80%銆乫lat 褰掔害锛歏4-Pro 鍦?<b>TP32</b> 宸叉帺鐩栵紱K3銆丟LM-5.2 绾?<b>TP64</b> 璧锋帺鐩栥€傚啀鍔犲ぇ TP锛屾帺鐩栧€嶆暟缁х画鍗囷紝浣?TPS/usr 閿佸湪 1/T_AR 闄勮繎锛欿3 鈮?40鈥?000锛孷4 鈮?420鈥?550锛孏LM 鈮?230鈥?270銆傚啀鍔犲崱鎹笉鏉ュ崟鐢ㄦ埛鏃跺欢鈥斺€斿凡缁忔槸閫氫俊澧欍€?/dd>
       </div>
       <div>
-        <dt>这不是免费午餐</dt>
-        <dd>头数上限：K3 96、V4 128、GLM 64。GLM 刚好卡在 64 头才盖住。专家切成 TP 份后列宽 expertHidden/TP 变窄，L-Core 利用率掉，算力更短、更依赖归约去盖。Batch&gt;1 时独特专家和 KV 抬高 T_net，掩盖所需的 TP* 会更大。复制张量省归约会让 T_net 不再按 1/TP 掉，掩盖更没了。</dd>
+        <dt>杩欎笉鏄厤璐瑰崍椁?/dt>
+        <dd>澶存暟涓婇檺锛欿3 96銆乂4 128銆丟LM 64銆侴LM 鍒氬ソ鍗″湪 64 澶存墠鐩栦綇銆備笓瀹跺垏鎴?TP 浠藉悗鍒楀 expertHidden/TP 鍙樼獎锛孡-Core 鍒╃敤鐜囨帀锛岀畻鍔涙洿鐭€佹洿渚濊禆褰掔害鍘荤洊銆侭atch&gt;1 鏃剁嫭鐗逛笓瀹跺拰 KV 鎶珮 T_net锛屾帺鐩栨墍闇€鐨?TP* 浼氭洿澶с€傚鍒跺紶閲忕渷褰掔害浼氳 T_net 涓嶅啀鎸?1/TP 鎺夛紝鎺╃洊鏇存病浜嗐€?/dd>
       </div>
       <div>
-        <dt>若目标是 1000 TPS/usr</dt>
-        <dd>掩盖 ≠ 达标。K3 盖住时已经贴着归约天花板；要再快只能降每层 AR 次数/延迟，不能靠无限 TP。V4 在 TP32 就既掩盖又超过 1000。无限加卡是在用通信时间当遮羞布，把带宽问题变成延迟问题。</dd>
+        <dt>鑻ョ洰鏍囨槸 1000 TPS/usr</dt>
+        <dd>鎺╃洊 鈮?杈炬爣銆侹3 鐩栦綇鏃跺凡缁忚创鐫€褰掔害澶╄姳鏉匡紱瑕佸啀蹇彧鑳介檷姣忓眰 AR 娆℃暟/寤惰繜锛屼笉鑳介潬鏃犻檺 TP銆俈4 鍦?TP32 灏辨棦鎺╃洊鍙堣秴杩?1000銆傛棤闄愬姞鍗℃槸鍦ㄧ敤閫氫俊鏃堕棿褰撻伄缇炲竷锛屾妸甯﹀闂鍙樻垚寤惰繜闂銆?/dd>
       </div>
     </dl>
   </div>
 
   <footer>
-    模型来源：Kimi K3 = 本仓库计算器口径；DeepSeek-V4-Pro = arXiv:2606.19348 + deepseek-ai/DeepSeek-V4-Pro-Base（CSA m=4、HCA m′=128、topk=1024）；
-    GLM-5.2 = zai-org/GLM-5.2（MLA+DSA、IndexShare 每 4 层；GLM-5.3 同结构）。
-    V4 的 KV/注意力 FLOPs 为结构估算；论文 1M 对照为相对 V3.2 的 10% KV / 27% 总 FLOPs。
-    Prefill / 多用户 / SRAM / 互联 / batch 扫描见页内对应节。算术强度与 Roofline 见 <a href="./frontier_moe_arithmetic_intensity.html">独立页</a>。真实 EP all-to-all 拥塞仍未建模。引擎：<a href="../../src/core/design_engine.js">../../src/core/design_engine.js</a>。
-  </footer>
+    妯″瀷鏉ユ簮锛欿imi K3 = 鏈粨搴撹绠楀櫒鍙ｅ緞锛汥eepSeek-V4-Pro = arXiv:2606.19348 + deepseek-ai/DeepSeek-V4-Pro-Base锛圕SA m=4銆丠CA m鈥?128銆乼opk=1024锛夛紱
+    GLM-5.2 = zai-org/GLM-5.2锛圡LA+DSA銆両ndexShare 姣?4 灞傦紱GLM-5.3 鍚岀粨鏋勶級銆?    V4 鐨?KV/娉ㄦ剰鍔?FLOPs 涓虹粨鏋勪及绠楋紱璁烘枃 1M 瀵圭収涓虹浉瀵?V3.2 鐨?10% KV / 27% 鎬?FLOPs銆?    Prefill / 澶氱敤鎴?/ SRAM / 浜掕仈 / batch 鎵弿瑙侀〉鍐呭搴旇妭銆傜畻鏈己搴︿笌 Roofline 瑙?<a href="./frontier_moe_arithmetic_intensity.html">鐙珛椤?/a>銆傜湡瀹?EP all-to-all 鎷ュ浠嶆湭寤烘ā銆傚紩鎿庯細<a href="../src/core/design_engine.js">../../src/core/design_engine.js</a>銆?  </footer>
 </main>
 
-<script src="../../src/core/design_engine.js"></script>
+<script src="../src/core/design_engine.js"></script>
 <script>
 (function () {
   "use strict";
@@ -392,7 +367,7 @@
 
   const EXTRA = {
     deepseekV4pro: {
-      name: "DeepSeek-V4-Pro（1.6T-A49B）",
+      name: "DeepSeek-V4-Pro锛?.6T-A49B锛?,
       totalParams: 1.6e12, activeParams: 49e9, layers: 61, moeLayers: 61,
       hidden: 7168, vocab: 129280, denseFfnHidden: 0,
       moe: { totalExperts: 384, activeExperts: 6, sharedExperts: 1, expertHidden: 3072, expertInput: "hidden", latent: 0 },
@@ -401,7 +376,7 @@
       dtype: { routed: MXFP4, dense: 2 }
     },
     glm52: {
-      name: "GLM-5.2 / 5.3（744B-A40B · MLA+DSA）",
+      name: "GLM-5.2 / 5.3锛?44B-A40B 路 MLA+DSA锛?,
       totalParams: 744e9, activeParams: 40e9, layers: 78, moeLayers: 75,
       hidden: 6144, vocab: 154880, denseFfnHidden: 12288,
       moe: { totalExperts: 256, activeExperts: 8, sharedExperts: 1, expertHidden: 2048, expertInput: "hidden", latent: 0 },
@@ -418,9 +393,9 @@
   const GLM_DSA = { topk: 2048, indexHeads: 32, indexHeadDim: 128, indexShare: 4 };
 
   const META = {
-    kimiK3: { short: "K3", family: "Kimi", flow: "latent", attn: "MLA + 69×KDA", src: "仓库计算器口径" },
-    deepseekV4pro: { short: "V4-Pro", family: "DeepSeek", flow: "dsmoe", attn: "CSA/HCA 混合", src: "HF V4-Pro-Base + 论文" },
-    glm52: { short: "GLM-5.2", family: "GLM", flow: "dsmoe", attn: "MLA + DSA + IndexShare", src: "zai-org/GLM-5.2；5.3 同结构" }
+    kimiK3: { short: "K3", family: "Kimi", flow: "latent", attn: "MLA + 69脳KDA", src: "浠撳簱璁＄畻鍣ㄥ彛寰? },
+    deepseekV4pro: { short: "V4-Pro", family: "DeepSeek", flow: "dsmoe", attn: "CSA/HCA 娣峰悎", src: "HF V4-Pro-Base + 璁烘枃" },
+    glm52: { short: "GLM-5.2", family: "GLM", flow: "dsmoe", attn: "MLA + DSA + IndexShare", src: "zai-org/GLM-5.2锛?.3 鍚岀粨鏋? }
   };
 
   const ALL_IDS = ["deepseekV4pro", "kimiK3", "glm52"];
@@ -474,7 +449,7 @@
       const hcaB = v.nHca * hcaKeys * v.headDim * v.dtype;
       const slB = v.nSlide * v.window * v.headDim * v.dtype;
       const traffic = ixB + csaB + hcaB + slB;
-      return { flop, traffic, store: storeKv, note: "indexer 扫压缩位 + 只搬 CSA topk/窗与 HCA 压缩序列" };
+      return { flop, traffic, store: storeKv, note: "indexer 鎵帇缂╀綅 + 鍙惉 CSA topk/绐椾笌 HCA 鍘嬬缉搴忓垪" };
     }
     if (m.dsa) {
       const flop = glmAttnFlops(m, L, m.dsa);
@@ -483,11 +458,11 @@
       const topk = Math.min(L, m.dsa.topk);
       const kvTok = (a.kvLatent + (a.ropeDim || 0)) * dense;
       const traffic = ixB + m.softmaxLayers * topk * kvTok;
-      return { flop, traffic, store: storeKv, note: "indexer 读 index-K + 只搬 topk 份 MLA KV（存量仍是全长）" };
+      return { flop, traffic, store: storeKv, note: "indexer 璇?index-K + 鍙惉 topk 浠?MLA KV锛堝瓨閲忎粛鏄叏闀匡級" };
     }
     const flop = k3AttnFlopsAbsorbed(m, L);
     const traffic = storeKv + kdaT;
-    return { flop, traffic, store: storeKv + kdaT, note: "MLA 按吸收后 2·h·L·(2dc+dr)；Decode 扫全长 KV。KDA 读写状态" };
+    return { flop, traffic, store: storeKv + kdaT, note: "MLA 鎸夊惛鏀跺悗 2路h路L路(2dc+dr)锛汥ecode 鎵叏闀?KV銆侹DA 璇诲啓鐘舵€? };
   }
 
   function partIntensities(m, ctx, pred) {
@@ -498,13 +473,13 @@
       if (!(flop > 0) || !(bytes > 0)) return;
       rows.push({ name, flop, bytes, I: flop / bytes, core, note, pf: pf || "S" });
     };
-    add("Routed 专家（读 1 份）", 2 * p.routedActive, b.routedActive, "L", "MXFP4：I = 2 / (17/32) ≈ 3.76；Prefill I×S", "S");
-    add("Routed ×(2−p) 预取", 2 * p.routedActive, b.routedActive * (2 - pred), "L", "只在 Decode；Prefill 按读 1 份", "skip");
-    add("Shared experts", 2 * p.shared, b.shared, "L", "BF16 GEMM，Decode I=1，Prefill I×S", "S");
-    add("Wdown / Wup", 2 * (p.wdown + p.wup), b.wdown + b.wup, "L", "K3 Latent 边界，BF16", "S");
+    add("Routed 涓撳锛堣 1 浠斤級", 2 * p.routedActive, b.routedActive, "L", "MXFP4锛欼 = 2 / (17/32) 鈮?3.76锛汸refill I脳S", "S");
+    add("Routed 脳(2鈭抪) 棰勫彇", 2 * p.routedActive, b.routedActive * (2 - pred), "L", "鍙湪 Decode锛汸refill 鎸夎 1 浠?, "skip");
+    add("Shared experts", 2 * p.shared, b.shared, "L", "BF16 GEMM锛孌ecode I=1锛孭refill I脳S", "S");
+    add("Wdown / Wup", 2 * (p.wdown + p.wup), b.wdown + b.wup, "L", "K3 Latent 杈圭晫锛孊F16", "S");
     add("Router", 2 * p.router, b.router, "L", "BF16", "S");
-    add("Attn 投影 Wq/Wkv/Wo", 2 * p.attn, b.attn, "L", "BF16，不含 QKᵀ/AV", "S");
-    add("稠密 FFN", 2 * p.denseFfn, b.denseFfn, "L", "BF16", "S");
+    add("Attn 鎶曞奖 Wq/Wkv/Wo", 2 * p.attn, b.attn, "L", "BF16锛屼笉鍚?QK岬€/AV", "S");
+    add("绋犲瘑 FFN", 2 * p.denseFfn, b.denseFfn, "L", "BF16", "S");
     add("LM Head", 2 * p.lmHead, b.lmHead, "L", "BF16", "S");
     const a = m.spec.attention;
     const dense = m.spec.dtype.dense;
@@ -513,27 +488,27 @@
       const csaKeys = Math.min(v.topk, Math.floor(L / v.mCsa)) + v.window;
       const hcaKeys = Math.floor(L / v.mHca) + v.window;
       add("CSA indexer", v.nCsa * 2 * (L / v.mCsa) * v.indexHeads * v.indexHeadDim,
-        v.nCsa * (L / v.mCsa) * v.indexHeadDim * v.dtype, "H", "Decode I = indexHeads = 64；Prefill 扫前缀 ≈(S/2)×I", "S2");
-      add("CSA topk / 窗", v.nCsa * 2 * v.heads * (v.headDim + v.headDim) * csaKeys,
-        v.nCsa * csaKeys * v.headDim * v.dtype, "H", "每查询 topk+窗，Prefill I ≈ Decode", "hold");
-      add("HCA 压缩序列", v.nHca * 2 * v.heads * (v.headDim + v.headDim) * hcaKeys,
-        v.nHca * hcaKeys * v.headDim * v.dtype, "H", "keys 随 L 涨，Prefill 因果 ≈(S/2)×I", "S2");
+        v.nCsa * (L / v.mCsa) * v.indexHeadDim * v.dtype, "H", "Decode I = indexHeads = 64锛汸refill 鎵墠缂€ 鈮?S/2)脳I", "S2");
+      add("CSA topk / 绐?, v.nCsa * 2 * v.heads * (v.headDim + v.headDim) * csaKeys,
+        v.nCsa * csaKeys * v.headDim * v.dtype, "H", "姣忔煡璇?topk+绐楋紝Prefill I 鈮?Decode", "hold");
+      add("HCA 鍘嬬缉搴忓垪", v.nHca * 2 * v.heads * (v.headDim + v.headDim) * hcaKeys,
+        v.nHca * hcaKeys * v.headDim * v.dtype, "H", "keys 闅?L 娑紝Prefill 鍥犳灉 鈮?S/2)脳I", "S2");
       add("Sliding window", v.nSlide * 2 * v.heads * (v.headDim + v.headDim) * v.window,
-        v.nSlide * v.window * v.headDim * v.dtype, "H", "窗固定，Prefill I ≈ Decode", "hold");
+        v.nSlide * v.window * v.headDim * v.dtype, "H", "绐楀浐瀹氾紝Prefill I 鈮?Decode", "hold");
     } else if (m.dsa) {
       const share = m.dsa.indexShare || 1;
       const topk = Math.min(L, m.dsa.topk);
       const kvTok = (a.kvLatent + (a.ropeDim || 0)) * dense;
       add("DSA indexer", (m.softmaxLayers / share) * 2 * L * m.dsa.indexHeads * m.dsa.indexHeadDim,
-        (m.softmaxLayers / share) * L * m.dsa.indexHeadDim * dense, "H", "Decode I = 32；Prefill 扫前缀 ≈(S/2)×I", "S2");
-      add("DSA topk 核", m.softmaxLayers * 2 * topk * a.heads * (a.qkHeadDim + a.vHeadDim),
-        m.softmaxLayers * topk * kvTok, "H", "每查询 topk，Prefill I ≈ Decode", "hold");
+        (m.softmaxLayers / share) * L * m.dsa.indexHeadDim * dense, "H", "Decode I = 32锛汸refill 鎵墠缂€ 鈮?S/2)脳I", "S2");
+      add("DSA topk 鏍?, m.softmaxLayers * 2 * topk * a.heads * (a.qkHeadDim + a.vHeadDim),
+        m.softmaxLayers * topk * kvTok, "H", "姣忔煡璇?topk锛孭refill I 鈮?Decode", "hold");
     } else {
       const la = m.spec.linearAttention || { layers: 0, stateDim: 0 };
-      add("MLA（吸收后）", m.softmaxLayers * 2 * L * a.heads * (2 * (a.kvLatent || 0) + (a.ropeDim || 0)),
-        m.softmaxLayers * L * (a.kvLatent + (a.ropeDim || 0)) * dense, "H", "Decode I 与 L 无关；Prefill 因果 ≈(S/2)×I", "S2");
-      add("KDA 状态", la.layers * a.heads * la.stateDim * la.stateDim * 7,
-        2 * m.kdaStateStore, "L", "无 Softmax/LSE；I ≈ 1.75。Prefill 每 token 仍读写状态，I 不变", "hold");
+      add("MLA锛堝惛鏀跺悗锛?, m.softmaxLayers * 2 * L * a.heads * (2 * (a.kvLatent || 0) + (a.ropeDim || 0)),
+        m.softmaxLayers * L * (a.kvLatent + (a.ropeDim || 0)) * dense, "H", "Decode I 涓?L 鏃犲叧锛汸refill 鍥犳灉 鈮?S/2)脳I", "S2");
+      add("KDA 鐘舵€?, la.layers * a.heads * la.stateDim * la.stateDim * 7,
+        2 * m.kdaStateStore, "L", "鏃?Softmax/LSE锛汭 鈮?1.75銆侾refill 姣?token 浠嶈鍐欑姸鎬侊紝I 涓嶅彉", "hold");
     }
     return rows;
   }
@@ -576,12 +551,12 @@
   ALL_IDS.forEach(id => { MODELS[id] = loadModel(id); });
 
   function fmt(x, d) {
-    if (!Number.isFinite(x)) return "—";
+    if (!Number.isFinite(x)) return "鈥?;
     const n = d === undefined ? (Math.abs(x) >= 100 ? 0 : Math.abs(x) >= 10 ? 1 : 2) : d;
     return Number(x).toLocaleString("en-US", { maximumFractionDigits: n, minimumFractionDigits: n });
   }
   function fmtI(x) {
-    if (!(x > 0) || !Number.isFinite(x)) return "—";
+    if (!(x > 0) || !Number.isFinite(x)) return "鈥?;
     if (x >= 1e6) return fmt(x / 1e6, 1) + "M";
     if (x >= 1000) return fmt(x / 1000, x >= 10000 ? 0 : 1) + "k";
     return fmt(x, x >= 10 ? 0 : 1);
@@ -598,10 +573,10 @@
     return `<span class="tag ${k}">${text}</span>`;
   }
   function matchTag(ratio) {
-    if (ratio >= 1.15) return tag("ok", "富余 " + fmt(ratio, 2) + "×");
-    if (ratio >= 0.85) return tag("ok", "匹配 " + fmt(ratio, 2) + "×");
-    if (ratio >= 0.4) return tag("warn", "紧 " + fmt(ratio, 2) + "×");
-    return tag("bad", "缺口 " + fmt(ratio, 2) + "×");
+    if (ratio >= 1.15) return tag("ok", "瀵屼綑 " + fmt(ratio, 2) + "脳");
+    if (ratio >= 0.85) return tag("ok", "鍖归厤 " + fmt(ratio, 2) + "脳");
+    if (ratio >= 0.4) return tag("warn", "绱?" + fmt(ratio, 2) + "脳");
+    return tag("bad", "缂哄彛 " + fmt(ratio, 2) + "脳");
   }
   function bar(frac, color) {
     const w = Math.max(0, Math.min(100, frac * 100));
@@ -741,15 +716,15 @@
     const nLink = linkSupply > 0 ? linkNeed / (chip.linkBandwidthGBs * 1e9) : 0;
     const nCap = capNeed / capCard;
     const nColl = collNeedCards;
-    const names = ["消耗MC", "暴露MC", "互联", "容量", "归约时间"];
+    const names = ["娑堣€桵C", "鏆撮湶MC", "浜掕仈", "瀹归噺", "褰掔害鏃堕棿"];
     const vals = [nMc, nExp, nLink, nCap, nColl];
     let im = 0;
     vals.forEach((v, i) => { if (v > vals[im]) im = i; });
     const collStageMs = collU / r.pp;
-    let stepBot = "算力";
+    let stepBot = "绠楀姏";
     if (netMcMs >= busyU) stepBot = "MC";
-    else if (misfetchU >= computeU && misfetchU >= collStageMs) stepBot = "补读";
-    else if (collStageMs >= computeU) stepBot = "归约";
+    else if (misfetchU >= computeU && misfetchU >= collStageMs) stepBot = "琛ヨ";
+    else if (collStageMs >= computeU) stepBot = "褰掔害";
     const stageMs = Math.max(netMcMs, busyU) * optsMargin();
     const tpsUsr = 1000 / Math.max(stageMs, 1e-9);
     return {
@@ -857,90 +832,90 @@
       `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c || "#94a3b8"}" stroke-width="1.4" marker-end="url(#ar)"/>`;
     return `<svg viewBox="0 0 640 430">
       <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#94a3b8"/></marker></defs>
-      <text x="8" y="18" font-size="12" font-weight="700" fill="${C.ink}">A · V4-Pro / GLM-5.2：hidden 直接进专家</text>
+      <text x="8" y="18" font-size="12" font-weight="700" fill="${C.ink}">A 路 V4-Pro / GLM-5.2锛歨idden 鐩存帴杩涗笓瀹?/text>
       ${box(8, 28, 70, 44, "#e9edf1", "#94a3b8", "h", "hidden")}
       ${arr(78, 50, 96, 50)}
       ${box(96, 28, 86, 44, "#ede9fe", "#6d28d9", "RMSNorm", "pre-norm")}
       ${arr(182, 50, 198, 50)}
       ${box(198, 28, 90, 44, "#fff4d8", "#b45309", "Router", "V4:384 / GLM:256")}
       ${arr(288, 50, 306, 50)}
-      ${box(306, 28, 118, 44, "#fff4d8", "#b45309", "top-k 专家", "V4 k=6 · GLM k=8")}
+      ${box(306, 28, 118, 44, "#fff4d8", "#b45309", "top-k 涓撳", "V4 k=6 路 GLM k=8")}
       ${arr(424, 50, 440, 50)}
-      ${box(440, 28, 86, 44, "#e6f4ea", "#166534", "+ Shared", "每 token")}
+      ${box(440, 28, 86, 44, "#e6f4ea", "#166534", "+ Shared", "姣?token")}
       ${arr(526, 50, 542, 50)}
-      ${box(542, 28, 90, 44, "#ede9fe", "#6d28d9", "★ merge AR", "→ hidden")}
-      <text x="8" y="98" font-size="12" font-weight="700" fill="${C.ink}">B · Kimi K3 Latent MoE：先压到 3584，专家更胖、激活更省</text>
+      ${box(542, 28, 90, 44, "#ede9fe", "#6d28d9", "鈽?merge AR", "鈫?hidden")}
+      <text x="8" y="98" font-size="12" font-weight="700" fill="${C.ink}">B 路 Kimi K3 Latent MoE锛氬厛鍘嬪埌 3584锛屼笓瀹舵洿鑳栥€佹縺娲绘洿鐪?/text>
       ${box(8, 108, 70, 44, "#e9edf1", "#94a3b8", "h", "7168")}
       ${arr(78, 130, 96, 130)}
-      ${box(96, 108, 86, 44, "#dbeafe", "#1d4ed8", "Wdown", "7168→3584")}
+      ${box(96, 108, 86, 44, "#dbeafe", "#1d4ed8", "Wdown", "7168鈫?584")}
       ${arr(182, 130, 198, 130)}
       ${box(198, 108, 90, 44, "#fff4d8", "#b45309", "Router", "896 logits")}
       ${arr(288, 130, 306, 130)}
-      ${box(306, 108, 118, 44, "#fff4d8", "#b45309", "16 / 896 专家", "in=3584 · 3072")}
+      ${box(306, 108, 118, 44, "#fff4d8", "#b45309", "16 / 896 涓撳", "in=3584 路 3072")}
       ${arr(424, 130, 440, 130)}
-      ${box(440, 108, 86, 44, "#dbeafe", "#1d4ed8", "Wup", "3584→7168")}
+      ${box(440, 108, 86, 44, "#dbeafe", "#1d4ed8", "Wup", "3584鈫?168")}
       ${arr(526, 130, 542, 130)}
-      ${box(542, 108, 90, 44, "#ede9fe", "#6d28d9", "★ Wup AR", "完整 hidden")}
-      <text x="8" y="178" font-size="11" fill="${C.muted}">K3 每 MoE 层多 2 次边界（Wdown all-gather、Wup all-reduce），但专家矩阵是 3584×3072 而不是 7168×2048，激活专家还从 8 加到 16。</text>
-      <text x="8" y="210" font-size="12" font-weight="700" fill="${C.ink}">跨卡切分（4 卡示意）</text>
+      ${box(542, 108, 90, 44, "#ede9fe", "#6d28d9", "鈽?Wup AR", "瀹屾暣 hidden")}
+      <text x="8" y="178" font-size="11" fill="${C.muted}">K3 姣?MoE 灞傚 2 娆¤竟鐣岋紙Wdown all-gather銆乄up all-reduce锛夛紝浣嗕笓瀹剁煩闃垫槸 3584脳3072 鑰屼笉鏄?7168脳2048锛屾縺娲讳笓瀹惰繕浠?8 鍔犲埌 16銆?/text>
+      <text x="8" y="210" font-size="12" font-weight="700" fill="${C.ink}">璺ㄥ崱鍒囧垎锛? 鍗＄ず鎰忥級</text>
       <rect x="8" y="220" width="624" height="196" rx="8" fill="#f7f5ef" stroke="${C.line}"/>
-      <text x="20" y="242" font-size="11" font-weight="700" fill="${C.accent}">TP 切稠密张量</text>
-      <text x="20" y="260" font-size="11" fill="${C.ink}">Attention / Wdown / Wup / Shared / Dense FFN 按列或按头切开，边界上 all-reduce / all-gather。</text>
-      <text x="20" y="286" font-size="11" font-weight="700" fill="${C.warn}">EP / Owner 放专家</text>
-      <text x="20" y="304" font-size="11" fill="${C.ink}">Routed 专家整块放在某张卡（或再切 g 份）。没有权重 all-to-all；token 去找专家，最忙卡决定时间。</text>
-      <text x="20" y="330" font-size="11" font-weight="700" fill="${C.purple}">CP 切 KV</text>
-      <text x="20" y="348" font-size="11" fill="${C.ink}">MLA 的潜变量对所有头共享，不能切头，只能切 Context；GQA 按 KV 头切，头数用尽后容量不再随 TP 下降。</text>
-      <text x="20" y="374" font-size="11" font-weight="700" fill="${C.good}">PP 切层</text>
-      <text x="20" y="392" font-size="11" fill="${C.ink}">单用户延迟下 PP 只是把同样的字节串起来读，不增加并行带宽。1000 TPS/usr 几乎总是「尽量 TP」。</text>
+      <text x="20" y="242" font-size="11" font-weight="700" fill="${C.accent}">TP 鍒囩瀵嗗紶閲?/text>
+      <text x="20" y="260" font-size="11" fill="${C.ink}">Attention / Wdown / Wup / Shared / Dense FFN 鎸夊垪鎴栨寜澶村垏寮€锛岃竟鐣屼笂 all-reduce / all-gather銆?/text>
+      <text x="20" y="286" font-size="11" font-weight="700" fill="${C.warn}">EP / Owner 鏀句笓瀹?/text>
+      <text x="20" y="304" font-size="11" fill="${C.ink}">Routed 涓撳鏁村潡鏀惧湪鏌愬紶鍗★紙鎴栧啀鍒?g 浠斤級銆傛病鏈夋潈閲?all-to-all锛泃oken 鍘绘壘涓撳锛屾渶蹇欏崱鍐冲畾鏃堕棿銆?/text>
+      <text x="20" y="330" font-size="11" font-weight="700" fill="${C.purple}">CP 鍒?KV</text>
+      <text x="20" y="348" font-size="11" fill="${C.ink}">MLA 鐨勬綔鍙橀噺瀵规墍鏈夊ご鍏变韩锛屼笉鑳藉垏澶达紝鍙兘鍒?Context锛汫QA 鎸?KV 澶村垏锛屽ご鏁扮敤灏藉悗瀹归噺涓嶅啀闅?TP 涓嬮檷銆?/text>
+      <text x="20" y="374" font-size="11" font-weight="700" fill="${C.good}">PP 鍒囧眰</text>
+      <text x="20" y="392" font-size="11" fill="${C.ink}">鍗曠敤鎴峰欢杩熶笅 PP 鍙槸鎶婂悓鏍风殑瀛楄妭涓茶捣鏉ヨ锛屼笉澧炲姞骞惰甯﹀銆?000 TPS/usr 鍑犱箮鎬绘槸銆屽敖閲?TP銆嶃€?/text>
     </svg>`;
   }
 
   function attnSvg() {
     return `<svg viewBox="0 0 640 430">
-      <text x="8" y="18" font-size="12" font-weight="700" fill="${C.ink}">三套注意力：长序列差在压缩什么</text>
+      <text x="8" y="18" font-size="12" font-weight="700" fill="${C.ink}">涓夊娉ㄦ剰鍔涳細闀垮簭鍒楀樊鍦ㄥ帇缂╀粈涔?/text>
       <rect x="8" y="28" width="306" height="128" rx="8" fill="#e4f2f4" stroke="${C.accent}"/>
-      <text x="20" y="50" font-size="12" font-weight="700" fill="${C.accent}">K3 · MLA + KDA</text>
-      <text x="20" y="70" font-size="11" fill="${C.ink}">24 层 MLA：KV 压成 576 元 · 1152 B/tok/层</text>
-      <text x="20" y="88" font-size="11" fill="${C.ink}">69 层 KDA：128² 状态/头，不随 L 涨</text>
-      <text x="20" y="106" font-size="11" fill="${C.muted}">长序列容量几乎被 MLA 层数锁死</text>
-      <text x="20" y="138" font-size="11" fill="${C.accent}">1M 系统 KV ≈ 29 GB，主容量是 1.56 TB 权重</text>
+      <text x="20" y="50" font-size="12" font-weight="700" fill="${C.accent}">K3 路 MLA + KDA</text>
+      <text x="20" y="70" font-size="11" fill="${C.ink}">24 灞?MLA锛欿V 鍘嬫垚 576 鍏?路 1152 B/tok/灞?/text>
+      <text x="20" y="88" font-size="11" fill="${C.ink}">69 灞?KDA锛?28虏 鐘舵€?澶达紝涓嶉殢 L 娑?/text>
+      <text x="20" y="106" font-size="11" fill="${C.muted}">闀垮簭鍒楀閲忓嚑涔庤 MLA 灞傛暟閿佹</text>
+      <text x="20" y="138" font-size="11" fill="${C.accent}">1M 绯荤粺 KV 鈮?29 GB锛屼富瀹归噺鏄?1.56 TB 鏉冮噸</text>
       <rect x="326" y="28" width="306" height="128" rx="8" fill="#fff4d8" stroke="${C.warn}"/>
-      <text x="338" y="50" font-size="12" font-weight="700" fill="${C.warn}">V4-Pro · CSA / HCA</text>
-      <text x="338" y="70" font-size="11" fill="${C.ink}">MQA head_dim=512 · 已换掉 MLA</text>
-      <text x="338" y="88" font-size="11" fill="${C.ink}">CSA：m=4 压缩 + indexer topk=1024</text>
-      <text x="338" y="106" font-size="11" fill="${C.ink}">HCA：m′=128 重压 + 稠密注意；窗=128</text>
-      <text x="338" y="138" font-size="11" fill="${C.warn}">论文：1M 时 KV 约 V3.2 的 10%</text>
+      <text x="338" y="50" font-size="12" font-weight="700" fill="${C.warn}">V4-Pro 路 CSA / HCA</text>
+      <text x="338" y="70" font-size="11" fill="${C.ink}">MQA head_dim=512 路 宸叉崲鎺?MLA</text>
+      <text x="338" y="88" font-size="11" fill="${C.ink}">CSA锛歮=4 鍘嬬缉 + indexer topk=1024</text>
+      <text x="338" y="106" font-size="11" fill="${C.ink}">HCA锛歮鈥?128 閲嶅帇 + 绋犲瘑娉ㄦ剰锛涚獥=128</text>
+      <text x="338" y="138" font-size="11" fill="${C.warn}">璁烘枃锛?M 鏃?KV 绾?V3.2 鐨?10%</text>
       <rect x="8" y="168" width="624" height="100" rx="8" fill="#e6f4ea" stroke="${C.good}"/>
-      <text x="20" y="190" font-size="12" font-weight="700" fill="${C.good}">GLM-5.2 / 5.3 · MLA + DSA + IndexShare</text>
-      <text x="20" y="210" font-size="11" fill="${C.ink}">KV 仍是 MLA 潜变量（512+64）× 78 层，1M ≈ 94 GB —— DSA 砍算力，几乎不砍容量。</text>
-      <text x="20" y="228" font-size="11" fill="${C.ink}">Indexer 每 4 层共享一次（index_topk=2048）。5.3 与 5.2 同结构，差在后训练；5.2 起原生 1M。</text>
-      <text x="20" y="252" font-size="11" fill="${C.good}">1M 注意力是 indexer 带宽件，不是 dense softmax 算力墙。</text>
-      <text x="8" y="292" font-size="12" font-weight="700" fill="${C.ink}">Partition 含义</text>
-      <text x="8" y="312" font-size="11" fill="${C.ink}">三套都能按 Context 切：K3/GLM 的 MLA 潜变量跨头共享；V4 的压缩 KV 也是序列轴，加 TP = 摊 KV。</text>
-      <text x="8" y="330" font-size="11" fill="${C.ink}">V4 还多一条不随 L 涨的 sliding window（128 tok × 512-d MQA），这部分不能靠加 Context 并行摊掉。</text>
-      <text x="8" y="348" font-size="11" fill="${C.ink}">K3 激活 16 专家，同样 TP 下 Owner 不均比 V4 的 top-6、GLM 的 top-8 更重。</text>
-      <text x="8" y="378" font-size="11" fill="${C.muted}">V4 KV 按 CSA 29 层 + HCA 31 层 + 1 层 sliding、BF16 估算；论文给的 10% vs V3.2 可能含 FP8 存储，表内会略偏保守。</text>
+      <text x="20" y="190" font-size="12" font-weight="700" fill="${C.good}">GLM-5.2 / 5.3 路 MLA + DSA + IndexShare</text>
+      <text x="20" y="210" font-size="11" fill="${C.ink}">KV 浠嶆槸 MLA 娼滃彉閲忥紙512+64锛壝?78 灞傦紝1M 鈮?94 GB 鈥斺€?DSA 鐮嶇畻鍔涳紝鍑犱箮涓嶇爫瀹归噺銆?/text>
+      <text x="20" y="228" font-size="11" fill="${C.ink}">Indexer 姣?4 灞傚叡浜竴娆★紙index_topk=2048锛夈€?.3 涓?5.2 鍚岀粨鏋勶紝宸湪鍚庤缁冿紱5.2 璧峰師鐢?1M銆?/text>
+      <text x="20" y="252" font-size="11" fill="${C.good}">1M 娉ㄦ剰鍔涙槸 indexer 甯﹀浠讹紝涓嶆槸 dense softmax 绠楀姏澧欍€?/text>
+      <text x="8" y="292" font-size="12" font-weight="700" fill="${C.ink}">Partition 鍚箟</text>
+      <text x="8" y="312" font-size="11" fill="${C.ink}">涓夊閮借兘鎸?Context 鍒囷細K3/GLM 鐨?MLA 娼滃彉閲忚法澶村叡浜紱V4 鐨勫帇缂?KV 涔熸槸搴忓垪杞达紝鍔?TP = 鎽?KV銆?/text>
+      <text x="8" y="330" font-size="11" fill="${C.ink}">V4 杩樺涓€鏉′笉闅?L 娑ㄧ殑 sliding window锛?28 tok 脳 512-d MQA锛夛紝杩欓儴鍒嗕笉鑳介潬鍔?Context 骞惰鎽婃帀銆?/text>
+      <text x="8" y="348" font-size="11" fill="${C.ink}">K3 婵€娲?16 涓撳锛屽悓鏍?TP 涓?Owner 涓嶅潎姣?V4 鐨?top-6銆丟LM 鐨?top-8 鏇撮噸銆?/text>
+      <text x="8" y="378" font-size="11" fill="${C.muted}">V4 KV 鎸?CSA 29 灞?+ HCA 31 灞?+ 1 灞?sliding銆丅F16 浼扮畻锛涜鏂囩粰鐨?10% vs V3.2 鍙兘鍚?FP8 瀛樺偍锛岃〃鍐呬細鐣ュ亸淇濆畧銆?/text>
     </svg>`;
   }
 
   function partShort(name) {
     const map = {
-      "Routed 专家（读 1 份）": "Routed",
-      "Routed ×(2−p) 预取": "Routed预取",
+      "Routed 涓撳锛堣 1 浠斤級": "Routed",
+      "Routed 脳(2鈭抪) 棰勫彇": "Routed棰勫彇",
       "Shared experts": "Shared",
       "Wdown / Wup": "Wdown/Wup",
       "Router": "Router",
-      "Attn 投影 Wq/Wkv/Wo": "Attn投影",
-      "稠密 FFN": "稠密FFN",
+      "Attn 鎶曞奖 Wq/Wkv/Wo": "Attn鎶曞奖",
+      "绋犲瘑 FFN": "绋犲瘑FFN",
       "LM Head": "LM Head",
       "CSA indexer": "CSA ix",
-      "CSA topk / 窗": "CSA topk",
-      "HCA 压缩序列": "HCA",
-      "Sliding window": "滑动窗",
+      "CSA topk / 绐?: "CSA topk",
+      "HCA 鍘嬬缉搴忓垪": "HCA",
+      "Sliding window": "婊戝姩绐?,
       "DSA indexer": "DSA ix",
-      "DSA topk 核": "DSA topk",
-      "MLA（吸收后）": "MLA",
-      "KDA 状态": "KDA"
+      "DSA topk 鏍?: "DSA topk",
+      "MLA锛堝惛鏀跺悗锛?: "MLA",
+      "KDA 鐘舵€?: "KDA"
     };
     return map[name] || name;
   }
@@ -950,7 +925,7 @@
     partIRows.forEach((row, mi) => {
       row.parts.forEach(p => {
         if (p.core !== core || !(p.I > 0)) return;
-        const prefetch = p.pf === "skip" || /预取|2−p|2-p/.test(p.name);
+        const prefetch = p.pf === "skip" || /棰勫彇|2鈭抪|2-p/.test(p.name);
         const color = COLORS[mi % COLORS.length];
         const short = partShort(p.name);
         out.push({
@@ -1004,9 +979,9 @@
     const roofLine = `<path d="M${xSlope0} ${ySlope0} L${xRidge} ${yPeak} L${xEnd} ${yPeak}" fill="none" stroke="${roofColor}" stroke-width="2.4"/>`
       + `<line x1="${xRidge}" x2="${xRidge}" y1="${padT}" y2="${yBot}" stroke="${roofColor}" stroke-width="1.2" stroke-dasharray="5 3" opacity="0.85"/>`
       + `<circle cx="${xRidge}" cy="${yPeak}" r="3.5" fill="${roofColor}"/>`;
-    const region = `<text x="${(xSlope0 + xRidge) / 2}" y="${yBot - 8}" font-size="11" font-weight="700" fill="${C.accent}" text-anchor="middle">带宽墙</text>`
-      + `<text x="${(xRidge + xEnd) / 2}" y="${yBot - 8}" font-size="11" font-weight="700" fill="${C.good}" text-anchor="middle">算力墙</text>`
-      + `<text x="${Math.min(xRidge + 10, xEnd - 78)}" y="${yPeak + 16}" font-size="11" font-weight="700" fill="${roofColor}">脊点 ${fmt(ridge, 0)}</text>`;
+    const region = `<text x="${(xSlope0 + xRidge) / 2}" y="${yBot - 8}" font-size="11" font-weight="700" fill="${C.accent}" text-anchor="middle">甯﹀澧?/text>`
+      + `<text x="${(xRidge + xEnd) / 2}" y="${yBot - 8}" font-size="11" font-weight="700" fill="${C.good}" text-anchor="middle">绠楀姏澧?/text>`
+      + `<text x="${Math.min(xRidge + 10, xEnd - 78)}" y="${yPeak + 16}" font-size="11" font-weight="700" fill="${roofColor}">鑴婄偣 ${fmt(ridge, 0)}</text>`;
 
     const items = points.map((p, i) => {
       const I = Math.max(xMin * 1.02, p.I);
@@ -1084,7 +1059,7 @@
         });
         const h = 20 + lines.length * 16;
         labels += `<rect x="${boxX}" y="${boxY}" width="${boxW}" height="${h}" rx="6" fill="#fff" stroke="${C.line}"/>`;
-        labels += `<text x="${boxX + 8}" y="${boxY + 13}" font-size="10" fill="${C.muted}">I ≈ ${fmtI(g.I)}</text>`;
+        labels += `<text x="${boxX + 8}" y="${boxY + 13}" font-size="10" fill="${C.muted}">I 鈮?${fmtI(g.I)}</text>`;
         lines.forEach((ln, i) => {
           const cy = boxY + 28 + i * 16;
           ln.colors.forEach((col, k) => {
@@ -1107,12 +1082,12 @@
 
     const keys = items.map(it => {
       const dash = it.kind === "prefetch" ? "dashed" : "solid";
-      return `<span style="color:${it.color};border-style:${dash}">${it.model ? it.model + " · " : ""}${it.label} ${fmtI(it.I)}</span>`;
+      return `<span style="color:${it.color};border-style:${dash}">${it.model ? it.model + " 路 " : ""}${it.label} ${fmtI(it.I)}</span>`;
     }).join("");
 
     return `<svg viewBox="0 0 ${W} ${H}">${grid}${roofFill}${roofLine}${region}${labels}${markers}
-      <text x="${padL - 40}" y="${padT + 100}" font-size="10" fill="${C.muted}" transform="rotate(-90 ${padL - 40} ${padT + 100})">有效 TFLOPS / 卡</text>
-      <text x="${(padL + xEnd) / 2}" y="${H - 8}" font-size="11" fill="${C.muted}" text-anchor="middle">算术强度 FLOP / Byte（对数）</text>
+      <text x="${padL - 40}" y="${padT + 100}" font-size="10" fill="${C.muted}" transform="rotate(-90 ${padL - 40} ${padT + 100})">鏈夋晥 TFLOPS / 鍗?/text>
+      <text x="${(padL + xEnd) / 2}" y="${H - 8}" font-size="11" fill="${C.muted}" text-anchor="middle">绠楁湳寮哄害 FLOP / Byte锛堝鏁帮級</text>
     </svg><div class="roof-key">${keys}</div>`;
   }
 
@@ -1126,48 +1101,48 @@
       return s;
     };
     return `<svg viewBox="0 0 1120 430">
-      <text x="8" y="18" font-size="12" font-weight="700" fill="${C.ink}">有预取缓冲：MC 与计算/归约并行，Stage 取 max(净读取, 忙碌+补读)</text>
-      ${lane(28, "MC 读取", [
-        { x: 88, w: 620, fill: "#155e75", stroke: "#155e75", t: "净读取 T_net = 读本 Stage − SRAM 常驻（预取期间 MC 不停）" }
+      <text x="8" y="18" font-size="12" font-weight="700" fill="${C.ink}">鏈夐鍙栫紦鍐诧細MC 涓庤绠?褰掔害骞惰锛孲tage 鍙?max(鍑€璇诲彇, 蹇欑+琛ヨ)</text>
+      ${lane(28, "MC 璇诲彇", [
+        { x: 88, w: 620, fill: "#155e75", stroke: "#155e75", t: "鍑€璇诲彇 T_net = 璇绘湰 Stage 鈭?SRAM 甯搁┗锛堥鍙栨湡闂?MC 涓嶅仠锛? }
       ])}
-      ${lane(58, "计算", [
+      ${lane(58, "璁＄畻", [
         { x: 88, w: 160, fill: "#166534", stroke: "#166534", t: "Attn / GEMM" },
-        { x: 368, w: 200, fill: "#166534", stroke: "#166534", t: "专家 GEMM" }
+        { x: 368, w: 200, fill: "#166534", stroke: "#166534", t: "涓撳 GEMM" }
       ])}
-      ${lane(88, "归约", [
+      ${lane(88, "褰掔害", [
         { x: 248, w: 120, fill: "#b45309", stroke: "#b45309", t: "all-reduce" },
         { x: 568, w: 100, fill: "#b45309", stroke: "#b45309", t: "AR" }
       ])}
-      ${lane(118, "补读", [
-        { x: 368, w: 70, fill: "#b91c1c", stroke: "#b91c1c", t: "未命中" }
+      ${lane(118, "琛ヨ", [
+        { x: 368, w: 70, fill: "#b91c1c", stroke: "#b91c1c", t: "鏈懡涓? }
       ])}
-      <text x="88" y="158" font-size="11" fill="${C.muted}">归约空窗里 MC 继续读下一层 → SRAM 缓冲要装得下「预测专家 + 空窗读满量」。未命中补读在 Router 之后，不能和前面的计算重叠。</text>
-      <text x="88" y="176" font-size="11" fill="${C.accent}">上图 T_net 若短于「绿+橙+红」，读取被盖住，暴露 = 0。若 MC 条更长，多出来的红尾才是暴露 MC。</text>
+      <text x="88" y="158" font-size="11" fill="${C.muted}">褰掔害绌虹獥閲?MC 缁х画璇讳笅涓€灞?鈫?SRAM 缂撳啿瑕佽寰椾笅銆岄娴嬩笓瀹?+ 绌虹獥璇绘弧閲忋€嶃€傛湭鍛戒腑琛ヨ鍦?Router 涔嬪悗锛屼笉鑳藉拰鍓嶉潰鐨勮绠楅噸鍙犮€?/text>
+      <text x="88" y="176" font-size="11" fill="${C.accent}">涓婂浘 T_net 鑻ョ煭浜庛€岀豢+姗?绾€嶏紝璇诲彇琚洊浣忥紝鏆撮湶 = 0銆傝嫢 MC 鏉℃洿闀匡紝澶氬嚭鏉ョ殑绾㈠熬鎵嶆槸鏆撮湶 MC銆?/text>
 
-      <text x="8" y="208" font-size="12" font-weight="700" fill="${C.ink}">两种结果</text>
+      <text x="8" y="208" font-size="12" font-weight="700" fill="${C.ink}">涓ょ缁撴灉</text>
       <rect x="8" y="218" width="544" height="88" rx="8" fill="#e6f4ea" stroke="${C.good}"/>
-      <text x="20" y="240" font-size="12" font-weight="700" fill="${C.good}">已掩盖 · 暴露 = 0</text>
+      <text x="20" y="240" font-size="12" font-weight="700" fill="${C.good}">宸叉帺鐩?路 鏆撮湶 = 0</text>
       <rect x="20" y="252" width="320" height="14" rx="2" fill="#155e75"/>
       <rect x="20" y="270" width="400" height="14" rx="2" fill="#166534"/>
       <text x="430" y="264" font-size="10" fill="${C.muted}">MC</text>
-      <text x="430" y="282" font-size="10" fill="${C.muted}">忙碌更长 → 步时=忙碌</text>
+      <text x="430" y="282" font-size="10" fill="${C.muted}">蹇欑鏇撮暱 鈫?姝ユ椂=蹇欑</text>
       <rect x="564" y="218" width="548" height="88" rx="8" fill="#fff4d8" stroke="${C.warn}"/>
-      <text x="576" y="240" font-size="12" font-weight="700" fill="${C.warn}">露在关键路径 · 暴露 &gt; 0</text>
+      <text x="576" y="240" font-size="12" font-weight="700" fill="${C.warn}">闇插湪鍏抽敭璺緞 路 鏆撮湶 &gt; 0</text>
       <rect x="576" y="252" width="420" height="14" rx="2" fill="#155e75"/>
       <rect x="996" y="252" width="80" height="14" rx="2" fill="#b91c1c"/>
       <rect x="576" y="270" width="280" height="14" rx="2" fill="#166534"/>
-      <text x="8" y="330" font-size="11" fill="${C.ink}">红尾 = T_net − (T_compute + T_AR + T_补读)。暴露带宽 = 红尾 × 每卡有效 MC 带宽 × 卡数 × 目标 TPS。</text>
+      <text x="8" y="330" font-size="11" fill="${C.ink}">绾㈠熬 = T_net 鈭?(T_compute + T_AR + T_琛ヨ)銆傛毚闇插甫瀹?= 绾㈠熬 脳 姣忓崱鏈夋晥 MC 甯﹀ 脳 鍗℃暟 脳 鐩爣 TPS銆?/text>
 
-      <text x="8" y="356" font-size="12" font-weight="700" fill="${C.ink}">SRAM 两层 / 无缓冲时重叠变差</text>
-      <text x="8" y="376" font-size="11" fill="${C.ink}">① 预取缓冲：让重叠成立（预测专家必须 Router 前到齐；归约空窗读满量）。装不满则 prefetchRatio&lt;1，在「有缓冲取 max / 无缓冲读+归约相加」之间插值。</text>
-      <text x="8" y="394" font-size="11" fill="${C.ink}">② 常驻：缓冲之外的容量扣掉确定性权重，只缩短 T_net，不创造新并行窗。无缓冲时归约期间 MC 空转，专家读退回 Router 之后。</text>
-      <text x="8" y="418" font-size="11" fill="${C.muted}">模型按 Stage 整段 max()，不是逐算子流水；真实气泡只会让暴露更大。消耗 MC 仍是实际搬动的字节，即使已被掩盖。</text>
+      <text x="8" y="356" font-size="12" font-weight="700" fill="${C.ink}">SRAM 涓ゅ眰 / 鏃犵紦鍐叉椂閲嶅彔鍙樺樊</text>
+      <text x="8" y="376" font-size="11" fill="${C.ink}">鈶?棰勫彇缂撳啿锛氳閲嶅彔鎴愮珛锛堥娴嬩笓瀹跺繀椤?Router 鍓嶅埌榻愶紱褰掔害绌虹獥璇绘弧閲忥級銆傝涓嶆弧鍒?prefetchRatio&lt;1锛屽湪銆屾湁缂撳啿鍙?max / 鏃犵紦鍐茶+褰掔害鐩稿姞銆嶄箣闂存彃鍊笺€?/text>
+      <text x="8" y="394" font-size="11" fill="${C.ink}">鈶?甯搁┗锛氱紦鍐蹭箣澶栫殑瀹归噺鎵ｆ帀纭畾鎬ф潈閲嶏紝鍙缉鐭?T_net锛屼笉鍒涢€犳柊骞惰绐椼€傛棤缂撳啿鏃跺綊绾︽湡闂?MC 绌鸿浆锛屼笓瀹惰閫€鍥?Router 涔嬪悗銆?/text>
+      <text x="8" y="418" font-size="11" fill="${C.muted}">妯″瀷鎸?Stage 鏁存 max()锛屼笉鏄€愮畻瀛愭祦姘达紱鐪熷疄姘旀场鍙細璁╂毚闇叉洿澶с€傛秷鑰?MC 浠嶆槸瀹為檯鎼姩鐨勫瓧鑺傦紝鍗充娇宸茶鎺╃洊銆?/text>
     </svg>`;
   }
 
   function overlapLiveSvg(rows) {
     const ok = rows.filter(row => row.f);
-    if (!ok.length) return `<p class="caption">无可行部署点。</p>`;
+    if (!ok.length) return `<p class="caption">鏃犲彲琛岄儴缃茬偣銆?/p>`;
     const W = 720, rowH = 72, padL = 8, padR = 12, padT = 8, padB = 36, barL = 8, barR = 12;
     const H = padT + ok.length * rowH + padB;
     const innerW = W - barL - barR;
@@ -1178,9 +1153,9 @@
       const y = padT + i * rowH;
       const net = row.f.netMcMs, busy = row.f.busyU;
       const exp = Math.max(0, net - busy);
-      const note = exp <= 1e-9 ? "已掩盖" : `红尾 ${exp.toFixed(3)} ms`;
+      const note = exp <= 1e-9 ? "宸叉帺鐩? : `绾㈠熬 ${exp.toFixed(3)} ms`;
       body += `<text x="${padL}" y="${y + 14}" font-size="12" font-weight="700" fill="${C.ink}">${row.x.m.meta.short}</text>`;
-      body += `<text x="${W - padR}" y="${y + 14}" font-size="10" fill="${C.muted}" text-anchor="end">T_net ${net.toFixed(3)} · 忙碌 ${busy.toFixed(3)} · ${note}</text>`;
+      body += `<text x="${W - padR}" y="${y + 14}" font-size="10" fill="${C.muted}" text-anchor="end">T_net ${net.toFixed(3)} 路 蹇欑 ${busy.toFixed(3)} 路 ${note}</text>`;
       body += `<rect x="${barL}" y="${y + 20}" width="${Math.max(1, xOf(net) - barL)}" height="16" rx="2" fill="${C.accent}"/>`;
       if (exp > 1e-6) {
         body += `<rect x="${xOf(busy)}" y="${y + 20}" width="${Math.max(1, xOf(net) - xOf(busy))}" height="16" rx="2" fill="${C.bad}"/>`;
@@ -1193,37 +1168,37 @@
       axis += `<line x1="${x}" x2="${x}" y1="${padT}" y2="${H - padB}" stroke="${C.grid}"/><text x="${x}" y="${H - 22}" font-size="10" fill="${C.muted}" text-anchor="middle">${v.toFixed(2)} ms</text>`;
     }
     return `<svg viewBox="0 0 ${W} ${H}">${axis}${body}
-      <rect x="${barL}" y="${H - 14}" width="10" height="8" fill="${C.accent}"/><text x="${barL + 14}" y="${H - 7}" font-size="10" fill="${C.ink}">净读取</text>
-      <rect x="${barL + 70}" y="${H - 14}" width="10" height="8" fill="${C.good}"/><text x="${barL + 84}" y="${H - 7}" font-size="10" fill="${C.ink}">计算+归约+补读</text>
-      <rect x="${barL + 200}" y="${H - 14}" width="10" height="8" fill="${C.bad}"/><text x="${barL + 214}" y="${H - 7}" font-size="10" fill="${C.ink}">暴露（红尾）</text>
+      <rect x="${barL}" y="${H - 14}" width="10" height="8" fill="${C.accent}"/><text x="${barL + 14}" y="${H - 7}" font-size="10" fill="${C.ink}">鍑€璇诲彇</text>
+      <rect x="${barL + 70}" y="${H - 14}" width="10" height="8" fill="${C.good}"/><text x="${barL + 84}" y="${H - 7}" font-size="10" fill="${C.ink}">璁＄畻+褰掔害+琛ヨ</text>
+      <rect x="${barL + 200}" y="${H - 14}" width="10" height="8" fill="${C.bad}"/><text x="${barL + 214}" y="${H - 7}" font-size="10" fill="${C.ink}">鏆撮湶锛堢孩灏撅級</text>
     </svg>`;
   }
 
   function partSvg() {
     return `<svg viewBox="0 0 1120 220">
       <rect x="8" y="16" width="180" height="70" rx="8" fill="#e4f2f4" stroke="${C.accent}"/>
-      <text x="98" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.accent}">Attention 权重</text>
-      <text x="98" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">TP 切头 / 切列</text>
+      <text x="98" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.accent}">Attention 鏉冮噸</text>
+      <text x="98" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">TP 鍒囧ご / 鍒囧垪</text>
       <rect x="210" y="16" width="180" height="70" rx="8" fill="#ede9fe" stroke="${C.purple}"/>
-      <text x="300" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.purple}">KV / KDA 状态</text>
-      <text x="300" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">按 Context 切（三套都行）</text>
+      <text x="300" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.purple}">KV / KDA 鐘舵€?/text>
+      <text x="300" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">鎸?Context 鍒囷紙涓夊閮借锛?/text>
       <rect x="412" y="16" width="180" height="70" rx="8" fill="#dbeafe" stroke="${C.blue}"/>
-      <text x="502" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.blue}">Wdown · Router · Wup</text>
-      <text x="502" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">分片则集合通信</text>
+      <text x="502" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.blue}">Wdown 路 Router 路 Wup</text>
+      <text x="502" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">鍒嗙墖鍒欓泦鍚堥€氫俊</text>
       <rect x="614" y="16" width="180" height="70" rx="8" fill="#fff4d8" stroke="${C.warn}"/>
       <text x="704" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.warn}">Routed Experts</text>
-      <text x="704" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">EP Owner · 可再切 g</text>
+      <text x="704" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">EP Owner 路 鍙啀鍒?g</text>
       <rect x="816" y="16" width="140" height="70" rx="8" fill="#e6f4ea" stroke="${C.good}"/>
       <text x="886" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.good}">Shared / Dense</text>
-      <text x="886" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">跟 TP 走</text>
+      <text x="886" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">璺?TP 璧?/text>
       <rect x="972" y="16" width="140" height="70" rx="8" fill="#f3f1eb" stroke="${C.line}"/>
       <text x="1042" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.ink}">LM Head</text>
-      <text x="1042" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">末 Stage × vocab</text>
-      <text x="20" y="112" font-size="11" fill="${C.ink}">★ 集合通信只出现在「分片 → 需要完整向量」的边界：attn 出、Wdown/Router 入、专家合并、Wup 出；MLA 另加 LSE。复制张量省 1 次通信，但每卡多读 TP 倍字节，Decode 上几乎从不划算。</text>
-      <text x="20" y="132" font-size="11" fill="${C.ink}">专家切 g 份：不均系数从 balls-in-bins 的「最忙卡 / 均值」降下来，但每片列宽变窄，L-Core 阵列利用率可能掉。K3 激活 16 个专家，同样 TP 下比 top-8 模型更吃不均。</text>
-      <text x="20" y="158" font-size="11" fill="${C.muted}">推荐默认：稠密张量全分片 + 专家切成 TP 份（≈ 纯 TP，无真实 all-to-all）。这是下面时间分解用的策略。</text>
-      <text x="20" y="188" font-size="12" font-weight="700" fill="${C.accent}">匹配口诀</text>
-      <text x="20" y="208" font-size="11" fill="${C.ink}">带宽不够 → 加 TP 或 SRAM 常驻；容量不够 → K3/V4 看权重，GLM-5.2 的 1M 还要看 MLA KV；归约不够 → 降延迟，K3 93 层最吃亏；H-Core 按 V4/GLM 的稀疏注意力配，不要按 dense 1M MLA。</text>
+      <text x="1042" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">鏈?Stage 脳 vocab</text>
+      <text x="20" y="112" font-size="11" fill="${C.ink}">鈽?闆嗗悎閫氫俊鍙嚭鐜板湪銆屽垎鐗?鈫?闇€瑕佸畬鏁村悜閲忋€嶇殑杈圭晫锛歛ttn 鍑恒€乄down/Router 鍏ャ€佷笓瀹跺悎骞躲€乄up 鍑猴紱MLA 鍙﹀姞 LSE銆傚鍒跺紶閲忕渷 1 娆￠€氫俊锛屼絾姣忓崱澶氳 TP 鍊嶅瓧鑺傦紝Decode 涓婂嚑涔庝粠涓嶅垝绠椼€?/text>
+      <text x="20" y="132" font-size="11" fill="${C.ink}">涓撳鍒?g 浠斤細涓嶅潎绯绘暟浠?balls-in-bins 鐨勩€屾渶蹇欏崱 / 鍧囧€笺€嶉檷涓嬫潵锛屼絾姣忕墖鍒楀鍙樼獎锛孡-Core 闃靛垪鍒╃敤鐜囧彲鑳芥帀銆侹3 婵€娲?16 涓笓瀹讹紝鍚屾牱 TP 涓嬫瘮 top-8 妯″瀷鏇村悆涓嶅潎銆?/text>
+      <text x="20" y="158" font-size="11" fill="${C.muted}">鎺ㄨ崘榛樿锛氱瀵嗗紶閲忓叏鍒嗙墖 + 涓撳鍒囨垚 TP 浠斤紙鈮?绾?TP锛屾棤鐪熷疄 all-to-all锛夈€傝繖鏄笅闈㈡椂闂村垎瑙ｇ敤鐨勭瓥鐣ャ€?/text>
+      <text x="20" y="188" font-size="12" font-weight="700" fill="${C.accent}">鍖归厤鍙ｈ瘈</text>
+      <text x="20" y="208" font-size="11" fill="${C.ink}">甯﹀涓嶅 鈫?鍔?TP 鎴?SRAM 甯搁┗锛涘閲忎笉澶?鈫?K3/V4 鐪嬫潈閲嶏紝GLM-5.2 鐨?1M 杩樿鐪?MLA KV锛涘綊绾︿笉澶?鈫?闄嶅欢杩燂紝K3 93 灞傛渶鍚冧簭锛汬-Core 鎸?V4/GLM 鐨勭█鐤忔敞鎰忓姏閰嶏紝涓嶈鎸?dense 1M MLA銆?/text>
     </svg>`;
   }
 
@@ -1231,7 +1206,7 @@
     $("modelChips").innerHTML = ALL_IDS.map(id => {
       const m = MODELS[id];
       const on = enabled.has(id) ? " on" : "";
-      return `<button class="chip${on}" data-id="${id}">${m.meta.short} · ${m.meta.family}</button>`;
+      return `<button class="chip${on}" data-id="${id}">${m.meta.short} 路 ${m.meta.family}</button>`;
     }).join("");
     $("modelChips").onclick = e => {
       const btn = e.target.closest("[data-id]");
@@ -1263,35 +1238,35 @@
     const ridgeAttn = peakAttn / bwTBs;
     const prefillL = Number($("inPrefill").value) || 0;
     const S = prefillL > 0 ? prefillL : 32768;
-    const pfTag = (prefillL > 0 ? "" : "对照 ") + (S >= 1024 ? fmt(S / 1024, 0) + "K" : String(S));
+    const pfTag = (prefillL > 0 ? "" : "瀵圭収 ") + (S >= 1024 ? fmt(S / 1024, 0) + "K" : String(S));
 
     // family table
     $("tblFamily").innerHTML = `<thead><tr>
-      <th>模型</th><th>家族</th><th>注意力</th><th>MoE 形态</th>
-      <th class="num">总参 / 激活</th><th class="num">层（稠密+MoE）</th>
-      <th class="num">hidden</th><th class="num">专家</th><th class="num">头 / KV</th>
-      <th class="num">推导总参偏差</th></tr></thead><tbody>` +
+      <th>妯″瀷</th><th>瀹舵棌</th><th>娉ㄦ剰鍔?/th><th>MoE 褰㈡€?/th>
+      <th class="num">鎬诲弬 / 婵€娲?/th><th class="num">灞傦紙绋犲瘑+MoE锛?/th>
+      <th class="num">hidden</th><th class="num">涓撳</th><th class="num">澶?/ KV</th>
+      <th class="num">鎺ㄥ鎬诲弬鍋忓樊</th></tr></thead><tbody>` +
       models.map(m => {
         const a = m.spec.attention;
         const moe = m.spec.moe;
-        const kvH = m.hybrid === "csa-hca" ? "MQA 压缩 KV" : (a.kind === "mla" ? "MLA 共享" : a.kvHeads + " KV");
-        const flow = m.spec.moe.expertInput === "latent" ? "Latent MoE" : (m.spec.moeLayers === m.spec.layers ? "全层 MoE（前 3 层 Hash）" : "hidden 进专家");
+        const kvH = m.hybrid === "csa-hca" ? "MQA 鍘嬬缉 KV" : (a.kind === "mla" ? "MLA 鍏变韩" : a.kvHeads + " KV");
+        const flow = m.spec.moe.expertInput === "latent" ? "Latent MoE" : (m.spec.moeLayers === m.spec.layers ? "鍏ㄥ眰 MoE锛堝墠 3 灞?Hash锛? : "hidden 杩涗笓瀹?);
         const attn = m.meta.attn;
         const gap = m.check.totalGap / 1e9;
         return `<tr><td><b>${m.spec.name}</b><br><span class="caption">${m.meta.src}</span></td>
           <td>${m.meta.family}</td><td>${attn}</td><td>${flow}</td>
           <td class="num">${fmt(m.spec.totalParams / 1e9, 0)} / ${fmt(m.spec.activeParams / 1e9, 1)} B</td>
-          <td class="num">${m.spec.layers}（${m.denseLayers}+${m.spec.moeLayers}）</td>
+          <td class="num">${m.spec.layers}锛?{m.denseLayers}+${m.spec.moeLayers}锛?/td>
           <td class="num">${m.spec.hidden}</td>
-          <td class="num">${moe.activeExperts}/${moe.totalExperts} +${moe.sharedExperts}s · ${moe.expertHidden}</td>
+          <td class="num">${moe.activeExperts}/${moe.totalExperts} +${moe.sharedExperts}s 路 ${moe.expertHidden}</td>
           <td class="num">${a.heads} / ${kvH}</td>
           <td class="num">${gap >= 0 ? "+" : ""}${fmt(gap, 1)} B</td></tr>`;
       }).join("") + "</tbody>";
 
     $("calloutFamily").innerHTML =
-      `<strong>三旗舰差在哪</strong><p><b>V4-Pro</b> 把 V3 的 MLA 换成 CSA/HCA 混合注意力（2 层 HCA 打底，之后 CSA/HCA 交错，末层 sliding），MoE 加宽到 384 专家、每次只激活 6 个、中间维 3072；前 3 层用 Hash-MoE 而不是稠密 FFN。mHC（hc_mult=4）加在残差上，几乎不改 Decode 字节账。</p>` +
-      `<p><b>K3</b> 仍是「最重的权重、最轻的长序列 KV」：Latent MoE（3584 进专家）+ 16/896 + 69 层线性注意力。单用户 1000 TPS 时容量墙在 1.56 TB 专家权重，不在 KV。</p>` +
-      `<p><b>GLM-5.2 / 5.3</b> 同骨架：MLA+DSA、6144×78 层、8/256 专家。DSA 把 1M 注意力算力打成 indexer+topk；KV 仍按 MLA 存，所以 1M 容量远重于 V4，也重于 K3。5.3 是同基座后训练。</p>`;
+      `<strong>涓夋棗鑸板樊鍦ㄥ摢</strong><p><b>V4-Pro</b> 鎶?V3 鐨?MLA 鎹㈡垚 CSA/HCA 娣峰悎娉ㄦ剰鍔涳紙2 灞?HCA 鎵撳簳锛屼箣鍚?CSA/HCA 浜ら敊锛屾湯灞?sliding锛夛紝MoE 鍔犲鍒?384 涓撳銆佹瘡娆″彧婵€娲?6 涓€佷腑闂寸淮 3072锛涘墠 3 灞傜敤 Hash-MoE 鑰屼笉鏄瀵?FFN銆俶HC锛坔c_mult=4锛夊姞鍦ㄦ畫宸笂锛屽嚑涔庝笉鏀?Decode 瀛楄妭璐︺€?/p>` +
+      `<p><b>K3</b> 浠嶆槸銆屾渶閲嶇殑鏉冮噸銆佹渶杞荤殑闀垮簭鍒?KV銆嶏細Latent MoE锛?584 杩涗笓瀹讹級+ 16/896 + 69 灞傜嚎鎬ф敞鎰忓姏銆傚崟鐢ㄦ埛 1000 TPS 鏃跺閲忓鍦?1.56 TB 涓撳鏉冮噸锛屼笉鍦?KV銆?/p>` +
+      `<p><b>GLM-5.2 / 5.3</b> 鍚岄鏋讹細MLA+DSA銆?144脳78 灞傘€?/256 涓撳銆侱SA 鎶?1M 娉ㄦ剰鍔涚畻鍔涙墦鎴?indexer+topk锛汯V 浠嶆寜 MLA 瀛橈紝鎵€浠?1M 瀹归噺杩滈噸浜?V4锛屼篃閲嶄簬 K3銆?.3 鏄悓鍩哄骇鍚庤缁冦€?/p>`;
 
     $("figMoe").innerHTML = moeSvg();
     $("figAttn").innerHTML = attnSvg();
@@ -1308,41 +1283,41 @@
     });
 
     $("stats").innerHTML = [
-      [inventories.length, "对比模型"],
+      [inventories.length, "瀵规瘮妯″瀷"],
       [fmt(ctx / 1024, 0) + "K", "Context"],
-      [cards + " 卡", "部署（尽量 TP）"],
-      [target, "目标 TPS/usr"],
-      [fmt(ridge, 0), "L-Core 脊点 FLOP/B"]
+      [cards + " 鍗?, "閮ㄧ讲锛堝敖閲?TP锛?],
+      [target, "鐩爣 TPS/usr"],
+      [fmt(ridge, 0), "L-Core 鑴婄偣 FLOP/B"]
     ].map(([v, l]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
 
     $("figBytes").innerHTML = stackedBar(
       inventories.map(x => x.m.meta.short),
       [
-        { name: "稠密权重", color: BLOCK_COLORS.attn, data: inventories.map(x => x.rd.det / 1e9) },
-        { name: "Routed×(2−p)", color: BLOCK_COLORS.routed, data: inventories.map(x => x.rd.routed / 1e9) },
+        { name: "绋犲瘑鏉冮噸", color: BLOCK_COLORS.attn, data: inventories.map(x => x.rd.det / 1e9) },
+        { name: "Routed脳(2鈭抪)", color: BLOCK_COLORS.routed, data: inventories.map(x => x.rd.routed / 1e9) },
         { name: "KV", color: BLOCK_COLORS.kv, data: inventories.map(x => x.rd.kv / 1e9) },
-        { name: "KDA 状态", color: BLOCK_COLORS.wup, data: inventories.map(x => x.rd.kda / 1e9) }
+        { name: "KDA 鐘舵€?, color: BLOCK_COLORS.wup, data: inventories.map(x => x.rd.kda / 1e9) }
       ],
       280, ""
     );
     $("figFlops").innerHTML = stackedBar(
       inventories.map(x => x.m.meta.short),
       [
-        { name: "线性 GEMM", color: C.accent, data: inventories.map(x => x.lin / 1e9) },
-        { name: "注意力", color: C.warn, data: inventories.map(x => x.attn / 1e9) }
+        { name: "绾挎€?GEMM", color: C.accent, data: inventories.map(x => x.lin / 1e9) },
+        { name: "娉ㄦ剰鍔?, color: C.warn, data: inventories.map(x => x.attn / 1e9) }
       ],
       280, ""
     );
 
     $("tblBlocks").innerHTML = `<thead><tr>
-      <th>模型</th><th class="num">稠密读</th><th class="num">Routed 读</th><th class="num">KV 读</th>
-      <th class="num">总读 GB/tok</th><th class="num">线性 GFLOP</th><th class="num">Attn GFLOP</th>
-      <th class="num">MoE 强度</th><th class="num">Attn 强度</th><th>主读取块</th></tr></thead><tbody>` +
+      <th>妯″瀷</th><th class="num">绋犲瘑璇?/th><th class="num">Routed 璇?/th><th class="num">KV 璇?/th>
+      <th class="num">鎬昏 GB/tok</th><th class="num">绾挎€?GFLOP</th><th class="num">Attn GFLOP</th>
+      <th class="num">MoE 寮哄害</th><th class="num">Attn 寮哄害</th><th>涓昏鍙栧潡</th></tr></thead><tbody>` +
       inventories.map(x => {
         const moeI = intensity(x.lin, x.rd.det + x.rd.routed);
         const attnI = intensity(x.attnK.flop, x.attnK.traffic);
         const parts = [
-          { n: "稠密", v: x.rd.det }, { n: "Routed", v: x.rd.routed }, { n: "KV", v: x.rd.kv }, { n: "KDA", v: x.rd.kda }
+          { n: "绋犲瘑", v: x.rd.det }, { n: "Routed", v: x.rd.routed }, { n: "KV", v: x.rd.kv }, { n: "KDA", v: x.rd.kda }
         ].sort((a, b) => b.v - a.v);
         const moeBound = moeI < ridge * 0.3;
         const attnBound = attnI < ridgeAttn * 0.5;
@@ -1350,11 +1325,11 @@
           <td class="num">${gb(x.rd.det)}</td><td class="num">${gb(x.rd.routed)}</td><td class="num">${gb(x.rd.kv)}</td>
           <td class="num"><b>${gb(x.rd.total)}</b></td>
           <td class="num">${fmt(x.lin / 1e9, 1)}</td><td class="num">${fmt(x.attn / 1e9, 1)}${x.m.dsa ? ` <span class="caption">dense ${fmt(x.attnDense / 1e9, 0)}</span>` : ""}</td>
-          <td class="num">${fmt(moeI, 1)} ${moeBound ? tag("warn", "BW") : tag("ok", "近算力")}</td>
-          <td class="num">${fmt(attnI, 1)} ${attnBound ? tag("warn", "BW") : tag("info", "抬升")}</td>
+          <td class="num">${fmt(moeI, 1)} ${moeBound ? tag("warn", "BW") : tag("ok", "杩戠畻鍔?)}</td>
+          <td class="num">${fmt(attnI, 1)} ${attnBound ? tag("warn", "BW") : tag("info", "鎶崌")}</td>
           <td>${parts[0].n} ${(parts[0].v / x.rd.total * 100).toFixed(0)}%</td></tr>`;
       }).join("") + "</tbody>";
-    $("capBlocks").textContent = "MoE 强度 = 线性 FLOPs / (稠密+Routed 字节)，对 L-Core 脊点 " + fmt(ridge, 0) + "。MXFP4 专家约 3.8 FLOP/B。注意力强度 = 本步 FLOP / 本步搬移（不是 KV 存量），对 H-Core 脊点 " + fmt(ridgeAttn, 0) + "。K3 的 MLA 按吸收后计；GLM/V4 分母是 indexer+topk，不是全长 cache。";
+    $("capBlocks").textContent = "MoE 寮哄害 = 绾挎€?FLOPs / (绋犲瘑+Routed 瀛楄妭)锛屽 L-Core 鑴婄偣 " + fmt(ridge, 0) + "銆侻XFP4 涓撳绾?3.8 FLOP/B銆傛敞鎰忓姏寮哄害 = 鏈 FLOP / 鏈鎼Щ锛堜笉鏄?KV 瀛橀噺锛夛紝瀵?H-Core 鑴婄偣 " + fmt(ridgeAttn, 0) + "銆侹3 鐨?MLA 鎸夊惛鏀跺悗璁★紱GLM/V4 鍒嗘瘝鏄?indexer+topk锛屼笉鏄叏闀?cache銆?;
 
     if ($("figRoofL")) {
     const roofRows = inventories.map(x => {
@@ -1405,15 +1380,15 @@
     $("figRoofL").innerHTML = roofPanel(roofL);
     $("figRoofH").innerHTML = roofPanel(roofH);
     $("tblRoof").innerHTML = `<thead><tr>
-      <th>模型</th>
-      <th class="num">D 整模</th>
+      <th>妯″瀷</th>
+      <th class="num">D 鏁存ā</th>
       <th class="num">D MoE</th>
       <th class="num">D Attn</th>
-      <th class="num">P 整模 ${pfTag}</th>
-      <th class="num">P 线性</th>
+      <th class="num">P 鏁存ā ${pfTag}</th>
+      <th class="num">P 绾挎€?/th>
       <th class="num">P Attn</th>
-      <th>Decode 墙</th>
-      <th>Prefill 墙</th>
+      <th>Decode 澧?/th>
+      <th>Prefill 澧?/th>
     </tr></thead><tbody>` +
       roofRows.map(r => `<tr><td>${r.short}<br><span class="caption">${r.note}</span></td>
         <td class="num"><b>${fmtI(r.modelI)}</b></td>
@@ -1422,54 +1397,54 @@
         <td class="num"><b>${fmtI(r.modelIpf)}</b><br><span class="caption">${fmt(r.linP / 1e18, 2)}+${fmt(r.atP / 1e18, 2)} EF / ${gb(r.wOnce + r.kvW)}</span></td>
         <td class="num">${fmtI(r.moeIpf)}</td>
         <td class="num">${fmtI(r.attnIpf)}</td>
-        <td>${r.moeI < ridge ? tag("warn", "L 带宽") : tag("ok", "L 算力")} ${r.attnI < ridgeAttn ? tag("warn", "H 带宽") : tag("ok", "H 算力")}</td>
-        <td>${r.moeIpf < ridge ? tag("warn", "L 带宽") : tag("ok", "L 算力")} ${r.attnIpf < ridgeAttn ? tag("warn", "H 带宽") : tag("ok", "H 算力")}</td></tr>`).join("") + "</tbody>";
-    $("capRoof").textContent = "D = Decode 一步。P = 一条 Prefill 序列：线性 FLOP×S / 权重读一次；注意力用 Decode 增量积分 / 写满 KV。Prefill 长度 " + pfTag + "。";
+        <td>${r.moeI < ridge ? tag("warn", "L 甯﹀") : tag("ok", "L 绠楀姏")} ${r.attnI < ridgeAttn ? tag("warn", "H 甯﹀") : tag("ok", "H 绠楀姏")}</td>
+        <td>${r.moeIpf < ridge ? tag("warn", "L 甯﹀") : tag("ok", "L 绠楀姏")} ${r.attnIpf < ridgeAttn ? tag("warn", "H 甯﹀") : tag("ok", "H 绠楀姏")}</td></tr>`).join("") + "</tbody>";
+    $("capRoof").textContent = "D = Decode 涓€姝ャ€侾 = 涓€鏉?Prefill 搴忓垪锛氱嚎鎬?FLOP脳S / 鏉冮噸璇讳竴娆★紱娉ㄦ剰鍔涚敤 Decode 澧為噺绉垎 / 鍐欐弧 KV銆侾refill 闀垮害 " + pfTag + "銆?;
 
     const moeAllBw = roofRows.every(r => r.moeI < ridge * 0.2);
     const moePfAllCmp = roofRows.every(r => r.moeIpf >= ridge);
-    $("calloutRoof").innerHTML = `<strong>算力 / 带宽匹配 · Decode 与 Prefill</strong>` +
-      `<p><b>Decode</b> 整模 I 贴近 MoE（权重大）：` +
-      roofRows.map(r => `${r.short} ${fmtI(r.modelI)}`).join("、") +
-      `，都低于 L 脊点 ${fmt(ridge, 0)}。${moeAllBw ? "专家 GEMM 在带宽墙上，加 L-Core 换不来 Decode TPS。" : ""}</p>` +
-      `<p><b>Prefill ${pfTag}</b> 权重复用把线性 I 抬到 ` +
-      roofRows.map(r => `${r.short} ${fmtI(r.moeIpf)}`).join("、") +
-      `。${moePfAllCmp ? "全部越过 L 脊点，线性是算力墙——262 TF 的 L-Core 这时才喂得饱。" : "仍有模型线性偏带宽。"} 注意力 Prefill I = 积分 FLOP / 写 KV：` +
-      roofRows.map(r => `${r.short} ${fmtI(r.attnIpf)}（${r.attnIpf < ridgeAttn ? "H 仍带宽" : "H 算力墙"}）`).join("；") +
-      `。K3 MLA 是因果稠密，I 约 ×S/2；GLM/V4 的 topk 核 I 几乎不动，indexer / HCA 会随前缀涨。</p>` +
-      `<p>同一颗芯片：Decode 吃不完的 L/H 峰值，是留给 Prefill 的。不要用 Decode 的 F_match 去砍 Prefill 还在算力墙上的核。</p>`;
+    $("calloutRoof").innerHTML = `<strong>绠楀姏 / 甯﹀鍖归厤 路 Decode 涓?Prefill</strong>` +
+      `<p><b>Decode</b> 鏁存ā I 璐磋繎 MoE锛堟潈閲嶅ぇ锛夛細` +
+      roofRows.map(r => `${r.short} ${fmtI(r.modelI)}`).join("銆?) +
+      `锛岄兘浣庝簬 L 鑴婄偣 ${fmt(ridge, 0)}銆?{moeAllBw ? "涓撳 GEMM 鍦ㄥ甫瀹藉涓婏紝鍔?L-Core 鎹笉鏉?Decode TPS銆? : ""}</p>` +
+      `<p><b>Prefill ${pfTag}</b> 鏉冮噸澶嶇敤鎶婄嚎鎬?I 鎶埌 ` +
+      roofRows.map(r => `${r.short} ${fmtI(r.moeIpf)}`).join("銆?) +
+      `銆?{moePfAllCmp ? "鍏ㄩ儴瓒婅繃 L 鑴婄偣锛岀嚎鎬ф槸绠楀姏澧欌€斺€?62 TF 鐨?L-Core 杩欐椂鎵嶅杺寰楅ケ銆? : "浠嶆湁妯″瀷绾挎€у亸甯﹀銆?} 娉ㄦ剰鍔?Prefill I = 绉垎 FLOP / 鍐?KV锛歚 +
+      roofRows.map(r => `${r.short} ${fmtI(r.attnIpf)}锛?{r.attnIpf < ridgeAttn ? "H 浠嶅甫瀹? : "H 绠楀姏澧?}锛塦).join("锛?) +
+      `銆侹3 MLA 鏄洜鏋滅瀵嗭紝I 绾?脳S/2锛汫LM/V4 鐨?topk 鏍?I 鍑犱箮涓嶅姩锛宨ndexer / HCA 浼氶殢鍓嶇紑娑ㄣ€?/p>` +
+      `<p>鍚屼竴棰楄姱鐗囷細Decode 鍚冧笉瀹岀殑 L/H 宄板€硷紝鏄暀缁?Prefill 鐨勩€備笉瑕佺敤 Decode 鐨?F_match 鍘荤爫 Prefill 杩樺湪绠楀姏澧欎笂鐨勬牳銆?/p>`;
 
     const partNames = [];
     partIRows.forEach(row => {
       row.parts.forEach(p => { if (partNames.indexOf(p.name) < 0) partNames.push(p.name); });
     });
     $("tblPartI").innerHTML = `<thead><tr>
-      <th>块（算法固有，与 TP 无关）</th>
-      <th>核</th>` +
+      <th>鍧楋紙绠楁硶鍥烘湁锛屼笌 TP 鏃犲叧锛?/th>
+      <th>鏍?/th>` +
       partIRows.map(row => `<th class="num">${row.x.m.meta.short}<br><span class="caption">D / P ${pfTag}</span></th>`).join("") +
-      `<th>说明</th></tr></thead><tbody>` +
+      `<th>璇存槑</th></tr></thead><tbody>` +
       partNames.map(name => {
         const sample = partIRows.map(row => row.parts.find(p => p.name === name)).find(Boolean);
         const core = sample.core === "L" ? tag("info", "L-Core") : tag("purple", "H-Core");
         const ridgeP = sample.core === "L" ? ridge : ridgeAttn;
         const cells = partIRows.map(row => {
           const p = row.parts.find(q => q.name === name);
-          if (!p) return `<td class="num">—</td>`;
-          const wallD = p.I < ridgeP ? tag("warn", "D·BW") : tag("ok", "D·算力");
+          if (!p) return `<td class="num">鈥?/td>`;
+          const wallD = p.I < ridgeP ? tag("warn", "D路BW") : tag("ok", "D路绠楀姏");
           if (p.pf === "skip") {
-            return `<td class="num"><b>${fmtI(p.I)}</b> ${wallD}<br><span class="caption">Prefill 不适用</span></td>`;
+            return `<td class="num"><b>${fmtI(p.I)}</b> ${wallD}<br><span class="caption">Prefill 涓嶉€傜敤</span></td>`;
           }
           const Ipf = prefillIOf(p, S);
-          const wallP = Ipf < ridgeP ? tag("warn", "P·BW") : tag("ok", "P·算力");
+          const wallP = Ipf < ridgeP ? tag("warn", "P路BW") : tag("ok", "P路绠楀姏");
           return `<td class="num"><b>${fmtI(p.I)}</b> ${wallD}<br><span class="caption">${fmtI(Ipf)} ${wallP}</span></td>`;
         }).join("");
-        return `<tr><td>${name}${sample.pf === "S" ? "<br><span class=\"caption\">Prefill ×S</span>" : sample.pf === "S2" ? "<br><span class=\"caption\">Prefill ×S/2</span>" : sample.pf === "hold" ? "<br><span class=\"caption\">Prefill I 不变</span>" : ""}</td><td>${core}</td>${cells}<td class="caption">${sample.note}</td></tr>`;
+        return `<tr><td>${name}${sample.pf === "S" ? "<br><span class=\"caption\">Prefill 脳S</span>" : sample.pf === "S2" ? "<br><span class=\"caption\">Prefill 脳S/2</span>" : sample.pf === "hold" ? "<br><span class=\"caption\">Prefill I 涓嶅彉</span>" : ""}</td><td>${core}</td>${cells}<td class="caption">${sample.note}</td></tr>`;
       }).join("") + "</tbody>";
-    $("capPartI").textContent = "每格上行 Decode I，下行 Prefill " + pfTag + "。单位 FLOP/Byte。线性 ×S（权重读一次）；因果稠密注意力 ×S/2；KDA / 固定 topk / 窗 I 不变。Routed×(2−p) 只在 Decode。";
-    $("calloutPartI").innerHTML = `<strong>Decode 与 Prefill 不是同一堵墙</strong>` +
-      `<p><b>Decode</b>：BF16 线性 I=1、Routed ≈3.76、KDA ≈1.75，全在 L 脊点 ${fmt(ridge, 0)} 左侧。MLA ≈181、CSA/HCA ≈256 仍低于 H 脊点 ${fmt(ridgeAttn, 0)}。加算力换不来 Decode TPS。</p>` +
-      `<p><b>Prefill ${pfTag}</b>：权重被 S 个 token 复用，Routed I ≈ ${fmtI(3.76 * S)}，BF16 线性 ≈ ${fmtI(S)}，已经是 L 算力墙。MLA / HCA / indexer 因果扫前缀，I ≈ (S/2)×Decode，H 也进算力墙。DSA/CSA topk 与滑动窗每查询工作集不变，I 几乎不动，仍可能偏 BW。KDA 每 token 仍读写 128²，Prefill I 还是 1.75，继续走 L-Core 带宽墙。</p>` +
-      `<p>所以双用途芯片：Decode 定「至少多少 TF 喂得饱带宽」，Prefill 定「峰值还要不要留着」。L=262、H=2097 对 Prefill 有意义；只跑 Decode 可以按 Routed 3.76 和 V4 核 256 砍核。</p>`;
+    $("capPartI").textContent = "姣忔牸涓婅 Decode I锛屼笅琛?Prefill " + pfTag + "銆傚崟浣?FLOP/Byte銆傜嚎鎬?脳S锛堟潈閲嶈涓€娆★級锛涘洜鏋滅瀵嗘敞鎰忓姏 脳S/2锛汯DA / 鍥哄畾 topk / 绐?I 涓嶅彉銆俁outed脳(2鈭抪) 鍙湪 Decode銆?;
+    $("calloutPartI").innerHTML = `<strong>Decode 涓?Prefill 涓嶆槸鍚屼竴鍫靛</strong>` +
+      `<p><b>Decode</b>锛欱F16 绾挎€?I=1銆丷outed 鈮?.76銆並DA 鈮?.75锛屽叏鍦?L 鑴婄偣 ${fmt(ridge, 0)} 宸︿晶銆侻LA 鈮?81銆丆SA/HCA 鈮?56 浠嶄綆浜?H 鑴婄偣 ${fmt(ridgeAttn, 0)}銆傚姞绠楀姏鎹笉鏉?Decode TPS銆?/p>` +
+      `<p><b>Prefill ${pfTag}</b>锛氭潈閲嶈 S 涓?token 澶嶇敤锛孯outed I 鈮?${fmtI(3.76 * S)}锛孊F16 绾挎€?鈮?${fmtI(S)}锛屽凡缁忔槸 L 绠楀姏澧欍€侻LA / HCA / indexer 鍥犳灉鎵墠缂€锛孖 鈮?(S/2)脳Decode锛孒 涔熻繘绠楀姏澧欍€侱SA/CSA topk 涓庢粦鍔ㄧ獥姣忔煡璇㈠伐浣滈泦涓嶅彉锛孖 鍑犱箮涓嶅姩锛屼粛鍙兘鍋?BW銆侹DA 姣?token 浠嶈鍐?128虏锛孭refill I 杩樻槸 1.75锛岀户缁蛋 L-Core 甯﹀澧欍€?/p>` +
+      `<p>鎵€浠ュ弻鐢ㄩ€旇姱鐗囷細Decode 瀹氥€岃嚦灏戝灏?TF 鍠傚緱楗卞甫瀹姐€嶏紝Prefill 瀹氥€屽嘲鍊艰繕瑕佷笉瑕佺暀鐫€銆嶃€侺=262銆丠=2097 瀵?Prefill 鏈夋剰涔夛紱鍙窇 Decode 鍙互鎸?Routed 3.76 鍜?V4 鏍?256 鐮嶆牳銆?/p>`;
 
     const matchTf = I => I * bwTBs / chip.utilization;
     const snapUp = (x, grid) => {
@@ -1478,7 +1453,7 @@
     };
     const LGRID = [32.768, 65.536, 98.304, 131.072, 262.144, 524.288];
     const HGRID = [262.144, 524.288, 1048.576, 1572.864, 2097.152, 4194.304];
-    const skipPred = p => p.pf === "skip" || /2−p|2-p|预取/.test(p.name);
+    const skipPred = p => p.pf === "skip" || /2鈭抪|2-p|棰勫彇/.test(p.name);
     const allParts = partIRows.flatMap(row => row.parts.filter(p => !skipPred(p)));
     const lNeed = Math.max(0, ...allParts.filter(p => p.core === "L").map(p => matchTf(p.I)));
     const hNeed = Math.max(0, ...allParts.filter(p => p.core === "H").map(p => matchTf(p.I)));
@@ -1504,18 +1479,18 @@
       };
     });
     $("chipRecCards").innerHTML = [
-      ["Decode 三模型一套", `${fmt(lRec, 0)} / ${fmt(hRec, 0)} TF`,
-        `L 按 Routed I≈3.76 只需约 ${fmt(lNeed, 0)} TF；H 按最狠 Decode 核约 ${fmt(hNeed, 0)} TF。H/L ≈ ${fmt(hRec / lRec, 1)}×，不是 8×。`],
-      ["现基线卡", `${fmt(chip.linearTflops, 0)} / ${fmt(chip.attnTflops, 0)} TF`,
-        `Decode 上 L 过剩 ${fmt(chip.linearTflops / lNeed, 1)}×，H 过剩 ${fmt(chip.attnTflops / hNeed, 1)}×。多出来的峰值是给 Prefill 的。`],
-      ["Prefill " + pfTag, `L 算力墙 · H ${hPfI > ridgeAttn ? "稠密也算力墙" : "核仍偏 BW"}`,
-        `线性最大 I ${fmtI(lPfI)}（脊点 ${fmt(ridge, 0)}），用满 L=262 合理。注意力最大 I ${fmtI(hPfI)}（脊点 ${fmt(ridgeAttn, 0)}）。${hPfI > ridgeAttn ? "MLA/HCA/indexer 已过 H 脊点，2097 对 Prefill 时延有用，不是 Decode 浪费。" : "稀疏核 Prefill 仍偏 BW，H 不必为 Prefill 再抬。"}`]
+      ["Decode 涓夋ā鍨嬩竴濂?, `${fmt(lRec, 0)} / ${fmt(hRec, 0)} TF`,
+        `L 鎸?Routed I鈮?.76 鍙渶绾?${fmt(lNeed, 0)} TF锛汬 鎸夋渶鐙?Decode 鏍哥害 ${fmt(hNeed, 0)} TF銆侶/L 鈮?${fmt(hRec / lRec, 1)}脳锛屼笉鏄?8脳銆俙],
+      ["鐜板熀绾垮崱", `${fmt(chip.linearTflops, 0)} / ${fmt(chip.attnTflops, 0)} TF`,
+        `Decode 涓?L 杩囧墿 ${fmt(chip.linearTflops / lNeed, 1)}脳锛孒 杩囧墿 ${fmt(chip.attnTflops / hNeed, 1)}脳銆傚鍑烘潵鐨勫嘲鍊兼槸缁?Prefill 鐨勩€俙],
+      ["Prefill " + pfTag, `L 绠楀姏澧?路 H ${hPfI > ridgeAttn ? "绋犲瘑涔熺畻鍔涘" : "鏍镐粛鍋?BW"}`,
+        `绾挎€ф渶澶?I ${fmtI(lPfI)}锛堣剨鐐?${fmt(ridge, 0)}锛夛紝鐢ㄦ弧 L=262 鍚堢悊銆傛敞鎰忓姏鏈€澶?I ${fmtI(hPfI)}锛堣剨鐐?${fmt(ridgeAttn, 0)}锛夈€?{hPfI > ridgeAttn ? "MLA/HCA/indexer 宸茶繃 H 鑴婄偣锛?097 瀵?Prefill 鏃跺欢鏈夌敤锛屼笉鏄?Decode 娴垂銆? : "绋€鐤忔牳 Prefill 浠嶅亸 BW锛孒 涓嶅繀涓?Prefill 鍐嶆姮銆?}`]
     ].map(([t, v, d]) => `<div class="stat"><div class="l">${t}</div><div class="v">${v}</div><p class="caption">${d}</p></div>`).join("");
 
     $("tblChipMatch").innerHTML = `<thead><tr>
-      <th>模型</th><th>Decode 线性块</th><th class="num">D I</th><th class="num">匹配 L</th><th>档位</th>
-      <th>Decode 注意力块</th><th class="num">D I</th><th class="num">匹配 H</th><th>档位</th>
-      <th class="num">P 线性 I</th><th>P · L</th><th class="num">P 注意力 I</th><th>P · H</th>
+      <th>妯″瀷</th><th>Decode 绾挎€у潡</th><th class="num">D I</th><th class="num">鍖归厤 L</th><th>妗ｄ綅</th>
+      <th>Decode 娉ㄦ剰鍔涘潡</th><th class="num">D I</th><th class="num">鍖归厤 H</th><th>妗ｄ綅</th>
+      <th class="num">P 绾挎€?I</th><th>P 路 L</th><th class="num">P 娉ㄦ剰鍔?I</th><th>P 路 H</th>
     </tr></thead><tbody>` +
       perModelNeed.map(r => `<tr>
         <td>${r.short}</td>
@@ -1528,24 +1503,24 @@
         <td class="num">${fmt(r.hTf, 0)} TF</td>
         <td>${fmt(r.hSnap, 1)}</td>
         <td class="num">${fmtI(r.lPfI)}</td>
-        <td>${r.lPfI < ridge ? tag("warn", "带宽") : tag("ok", "算力")}</td>
+        <td>${r.lPfI < ridge ? tag("warn", "甯﹀") : tag("ok", "绠楀姏")}</td>
         <td class="num">${fmtI(r.hPfI)}</td>
-        <td>${r.hPfI < ridgeAttn ? tag("warn", "带宽") : tag("ok", "算力")}</td>
+        <td>${r.hPfI < ridgeAttn ? tag("warn", "甯﹀") : tag("ok", "绠楀姏")}</td>
       </tr>`).join("") +
-      `<tr class="hi"><td>三模型取最大</td><td>Routed MXFP4</td><td class="num">${fmtI(lNeed * chip.utilization / bwTBs)}</td>
+      `<tr class="hi"><td>涓夋ā鍨嬪彇鏈€澶?/td><td>Routed MXFP4</td><td class="num">${fmtI(lNeed * chip.utilization / bwTBs)}</td>
         <td class="num"><b>${fmt(lNeed, 0)} TF</b></td><td>${fmt(lRec, 1)}</td>
-        <td>最狠 Decode 核</td><td class="num">${fmtI(hNeed * chip.utilization / bwTBs)}</td>
+        <td>鏈€鐙?Decode 鏍?/td><td class="num">${fmtI(hNeed * chip.utilization / bwTBs)}</td>
         <td class="num"><b>${fmt(hNeed, 0)} TF</b></td><td>${fmt(hRec, 1)}</td>
-        <td class="num">${fmtI(lPfI)}</td><td>${tag("ok", "算力")}</td>
-        <td class="num">${fmtI(hPfI)}</td><td>${hPfI < ridgeAttn ? tag("warn", "带宽") : tag("ok", "算力")}</td></tr>` +
+        <td class="num">${fmtI(lPfI)}</td><td>${tag("ok", "绠楀姏")}</td>
+        <td class="num">${fmtI(hPfI)}</td><td>${hPfI < ridgeAttn ? tag("warn", "甯﹀") : tag("ok", "绠楀姏")}</td></tr>` +
       "</tbody>";
-    $("capChipMatch").textContent = "Decode 匹配 TF = I × 有效带宽 / 利用率。Prefill I 超过脊点后 F_match 不再有上限意义——用满峰值。现卡 L=" + fmt(chip.linearTflops, 1) + "、H=" + fmt(chip.attnTflops, 1) + "。Prefill 长度 " + pfTag + "。";
+    $("capChipMatch").textContent = "Decode 鍖归厤 TF = I 脳 鏈夋晥甯﹀ / 鍒╃敤鐜囥€侾refill I 瓒呰繃鑴婄偣鍚?F_match 涓嶅啀鏈変笂闄愭剰涔夆€斺€旂敤婊″嘲鍊笺€傜幇鍗?L=" + fmt(chip.linearTflops, 1) + "銆丠=" + fmt(chip.attnTflops, 1) + "銆侾refill 闀垮害 " + pfTag + "銆?;
 
-    $("calloutChipSpec").innerHTML = `<strong>建议规格</strong>` +
-      `<p><b>Decode 专芯</b>：L-Core <b>${fmt(lRec, 1)} TFLOPS</b>，H-Core <b>${fmt(hRec, 1)} TFLOPS</b>。Routed 3.76 只需约 ${fmt(lNeed, 0)} TF 喂满 3.58 TB/s；H 按 V4 CSA/HCA ≈256 配到约 ${fmt(hNeed, 0)} TF。KDA 走 L（I≈1.75），不要定 H。</p>` +
-      `<p><b>Prefill ${pfTag}</b>：线性最大 I ${fmtI(lPfI)} ≫ L 脊点 ${fmt(ridge, 0)}，L 留在 262 TF 才能吃饱和。注意力最大 I ${fmtI(hPfI)} ${hPfI > ridgeAttn ? "已过 H 脊点 " + fmt(ridgeAttn, 0) + "，2097 TF 对 Prefill 时延有用（MLA/HCA/indexer 是算力墙）" : "仍低于 H 脊点，H 不必为 Prefill 再抬"}。DSA/CSA topk Prefill I 几乎不变，仍可能偏 BW。</p>` +
-      `<p><b>不要把 Decode 的 H=8L 当成 Prefill 理由</b>。Decode 匹配大约 ${fmt(hRec / lRec, 1)}×。双用途：L=262 是 Prefill 线性墙；H 从 ${fmt(hRec, 1)} 加到 2097 只加速 Prefill 稠密注意力，加速不了 Decode TPS。K3 在 TP32 上 1000 TPS 已经贴通信天花板。</p>` +
-      `<p>只跑 Decode 的 GLM 芯：H ${fmt(perModelNeed.find(r => r.short.indexOf("GLM") >= 0) ? perModelNeed.find(r => r.short.indexOf("GLM") >= 0).hSnap : 524, 1)} TF 够。V4 Decode 必须把 H 拉到 ${fmt(hRec, 1)}。</p>`;
+    $("calloutChipSpec").innerHTML = `<strong>寤鸿瑙勬牸</strong>` +
+      `<p><b>Decode 涓撹姱</b>锛歀-Core <b>${fmt(lRec, 1)} TFLOPS</b>锛孒-Core <b>${fmt(hRec, 1)} TFLOPS</b>銆俁outed 3.76 鍙渶绾?${fmt(lNeed, 0)} TF 鍠傛弧 3.58 TB/s锛汬 鎸?V4 CSA/HCA 鈮?56 閰嶅埌绾?${fmt(hNeed, 0)} TF銆侹DA 璧?L锛圛鈮?.75锛夛紝涓嶈瀹?H銆?/p>` +
+      `<p><b>Prefill ${pfTag}</b>锛氱嚎鎬ф渶澶?I ${fmtI(lPfI)} 鈮?L 鑴婄偣 ${fmt(ridge, 0)}锛孡 鐣欏湪 262 TF 鎵嶈兘鍚冮ケ鍜屻€傛敞鎰忓姏鏈€澶?I ${fmtI(hPfI)} ${hPfI > ridgeAttn ? "宸茶繃 H 鑴婄偣 " + fmt(ridgeAttn, 0) + "锛?097 TF 瀵?Prefill 鏃跺欢鏈夌敤锛圡LA/HCA/indexer 鏄畻鍔涘锛? : "浠嶄綆浜?H 鑴婄偣锛孒 涓嶅繀涓?Prefill 鍐嶆姮"}銆侱SA/CSA topk Prefill I 鍑犱箮涓嶅彉锛屼粛鍙兘鍋?BW銆?/p>` +
+      `<p><b>涓嶈鎶?Decode 鐨?H=8L 褰撴垚 Prefill 鐞嗙敱</b>銆侱ecode 鍖归厤澶х害 ${fmt(hRec / lRec, 1)}脳銆傚弻鐢ㄩ€旓細L=262 鏄?Prefill 绾挎€у锛汬 浠?${fmt(hRec, 1)} 鍔犲埌 2097 鍙姞閫?Prefill 绋犲瘑娉ㄦ剰鍔涳紝鍔犻€熶笉浜?Decode TPS銆侹3 鍦?TP32 涓?1000 TPS 宸茬粡璐撮€氫俊澶╄姳鏉裤€?/p>` +
+      `<p>鍙窇 Decode 鐨?GLM 鑺細H ${fmt(perModelNeed.find(r => r.short.indexOf("GLM") >= 0) ? perModelNeed.find(r => r.short.indexOf("GLM") >= 0).hSnap : 524, 1)} TF 澶熴€俈4 Decode 蹇呴』鎶?H 鎷夊埌 ${fmt(hRec, 1)}銆?/p>`;
 
     }
 
@@ -1559,8 +1534,8 @@
       })),
       280
     );
-    $("tblCap").innerHTML = `<thead><tr><th>模型</th><th class="num">权重</th><th class="num">KV @当前</th><th class="num">KDA</th>
-      <th class="num">单卡能装？</th><th class="num">${cards} 卡每卡占用</th><th>容量瓶颈</th></tr></thead><tbody>` +
+    $("tblCap").innerHTML = `<thead><tr><th>妯″瀷</th><th class="num">鏉冮噸</th><th class="num">KV @褰撳墠</th><th class="num">KDA</th>
+      <th class="num">鍗曞崱鑳借锛?/th><th class="num">${cards} 鍗℃瘡鍗″崰鐢?/th><th>瀹归噺鐡堕</th></tr></thead><tbody>` +
       inventories.map(x => {
         const perCardW = x.wGB / cards;
         const kvShards = x.m.spec.attention.kind === "gqa" ? Math.min(cards, x.m.spec.attention.kvHeads) : cards;
@@ -1568,65 +1543,65 @@
         const fit1 = x.wGB + x.kvGB + x.kdaGB <= capCard;
         const fitN = perCardW + perCardKV <= capCard;
         const kvShare = x.kvGB / (x.wGB + x.kvGB);
-        const bottleneck = x.wGB > x.kvGB * 4 ? "权重（专家总数）" : kvShare > 0.35 ? "KV（长序列）" : "两者都要看";
+        const bottleneck = x.wGB > x.kvGB * 4 ? "鏉冮噸锛堜笓瀹舵€绘暟锛? : kvShare > 0.35 ? "KV锛堥暱搴忓垪锛? : "涓よ€呴兘瑕佺湅";
         return `<tr><td>${x.m.meta.short}</td>
           <td class="num">${fmt(x.wGB, 0)} GB</td>
           <td class="num">${fmt(x.kvGB, 1)} GB</td>
           <td class="num">${fmt(x.kdaGB, 2)} GB</td>
-          <td class="num">${fit1 ? tag("ok", "能") : tag("bad", "不能")}</td>
-          <td class="num">${fmt(perCardW + perCardKV, 1)} / ${capCard} GB ${fitN ? tag("ok", "OK") : tag("bad", "超")}</td>
-          <td>${bottleneck}${x.m.spec.attention.kind === "gqa" ? ` · KV 只切到 ${x.m.spec.attention.kvHeads}` : ""}</td></tr>`;
+          <td class="num">${fit1 ? tag("ok", "鑳?) : tag("bad", "涓嶈兘")}</td>
+          <td class="num">${fmt(perCardW + perCardKV, 1)} / ${capCard} GB ${fitN ? tag("ok", "OK") : tag("bad", "瓒?)}</td>
+          <td>${bottleneck}${x.m.spec.attention.kind === "gqa" ? ` 路 KV 鍙垏鍒?${x.m.spec.attention.kvHeads}` : ""}</td></tr>`;
       }).join("") + "</tbody>";
 
-    $("calloutCap").innerHTML = `<strong>容量匹配</strong><p>权重：K3（896 专家）最重，V4-Pro（384×3072）次之，GLM-5.2（256×2048）最轻。KV：V4 用序列压缩，1M 大约只要 V3.2 的一成；K3 只有 24 层 MLA；GLM-5.2 仍存全长 MLA 潜变量，1M 约 94 GB，是三家里长序列最贵的。</p>` +
-      `<p>当前 ${fmt(ctx / 1024, 0)}K：` +
-      inventories.map(x => `${x.m.meta.short} KV ${fmt(x.kvGB, 1)} GB`).join("，") +
-      `。单用户时三家容量墙都还在权重；多用户 1M 时 GLM-5.2 会先被 KV 顶住，V4 和 K3 还能靠压缩/KDA 撑。</p>`;
+    $("calloutCap").innerHTML = `<strong>瀹归噺鍖归厤</strong><p>鏉冮噸锛欿3锛?96 涓撳锛夋渶閲嶏紝V4-Pro锛?84脳3072锛夋涔嬶紝GLM-5.2锛?56脳2048锛夋渶杞汇€侹V锛歏4 鐢ㄥ簭鍒楀帇缂╋紝1M 澶х害鍙 V3.2 鐨勪竴鎴愶紱K3 鍙湁 24 灞?MLA锛汫LM-5.2 浠嶅瓨鍏ㄩ暱 MLA 娼滃彉閲忥紝1M 绾?94 GB锛屾槸涓夊閲岄暱搴忓垪鏈€璐电殑銆?/p>` +
+      `<p>褰撳墠 ${fmt(ctx / 1024, 0)}K锛歚 +
+      inventories.map(x => `${x.m.meta.short} KV ${fmt(x.kvGB, 1)} GB`).join("锛?) +
+      `銆傚崟鐢ㄦ埛鏃朵笁瀹跺閲忓閮借繕鍦ㄦ潈閲嶏紱澶氱敤鎴?1M 鏃?GLM-5.2 浼氬厛琚?KV 椤朵綇锛孷4 鍜?K3 杩樿兘闈犲帇缂?KDA 鎾戙€?/p>`;
 
     const evals = inventories.map(x => {
       const r = evalAt(x.m, cards, opts, chip);
       return { x, r };
     });
-    $("tblPart").innerHTML = `<thead><tr><th>模型</th><th>拓扑</th><th class="num">不均</th><th class="num">AR/token</th>
-      <th class="num">KV 分片</th><th>可行切法要点</th></tr></thead><tbody>` +
+    $("tblPart").innerHTML = `<thead><tr><th>妯″瀷</th><th>鎷撴墤</th><th class="num">涓嶅潎</th><th class="num">AR/token</th>
+      <th class="num">KV 鍒嗙墖</th><th>鍙鍒囨硶瑕佺偣</th></tr></thead><tbody>` +
       evals.map(({ x, r }) => {
-        if (!r) return `<tr><td>${x.m.meta.short}</td><td colspan="5">该卡数下 TP 不能整除头数</td></tr>`;
-        const kvNote = x.m.hybrid === "csa-hca" ? `压缩 KV · CP=${r.tp}` : `MLA CP=${r.tp}`;
+        if (!r) return `<tr><td>${x.m.meta.short}</td><td colspan="5">璇ュ崱鏁颁笅 TP 涓嶈兘鏁撮櫎澶存暟</td></tr>`;
+        const kvNote = x.m.hybrid === "csa-hca" ? `鍘嬬缉 KV 路 CP=${r.tp}` : `MLA CP=${r.tp}`;
         const extra = [];
-        if (x.m.spec.moe.expertInput === "latent") extra.push("多 Wdown/Wup 边界");
-        if (x.m.spec.moe.activeExperts >= 16) extra.push("top-16 更吃 Owner 不均");
-        if (x.m.dsa) extra.push("DSA/IndexShare 不改切分");
-        if (x.m.hybrid === "csa-hca") extra.push("sliding 窗不随 TP 摊");
-        return `<tr><td>${x.m.meta.short}</td><td>PP${r.pp}×TP${r.tp}</td>
+        if (x.m.spec.moe.expertInput === "latent") extra.push("澶?Wdown/Wup 杈圭晫");
+        if (x.m.spec.moe.activeExperts >= 16) extra.push("top-16 鏇村悆 Owner 涓嶅潎");
+        if (x.m.dsa) extra.push("DSA/IndexShare 涓嶆敼鍒囧垎");
+        if (x.m.hybrid === "csa-hca") extra.push("sliding 绐椾笉闅?TP 鎽?);
+        return `<tr><td>${x.m.meta.short}</td><td>PP${r.pp}脳TP${r.tp}</td>
           <td class="num">${r.imbalance.toFixed(2)}</td>
           <td class="num">${r.collectiveCount}</td>
           <td class="num">${kvNote}</td>
-          <td>${extra.join(" · ") || "标准 TP+EP"}</td></tr>`;
+          <td>${extra.join(" 路 ") || "鏍囧噯 TP+EP"}</td></tr>`;
       }).join("") + "</tbody>";
 
     $("figTime").innerHTML = groupedBar(
       evals.map(e => e.x.m.meta.short),
       [
-        { name: "MC 净读取", color: C.accent, data: evals.map(e => e.r ? +(Math.max(0, e.r.mcMs - e.r.savedMs) * opts.margin).toFixed(3) : null) },
-        { name: "计算", color: C.good, data: evals.map(e => e.r ? +(e.r.computeMs * opts.margin).toFixed(3) : null) },
-        { name: "TP 归约", color: C.warn, data: evals.map(e => e.r ? +(e.r.collectiveTotalMs * opts.margin).toFixed(3) : null) },
+        { name: "MC 鍑€璇诲彇", color: C.accent, data: evals.map(e => e.r ? +(Math.max(0, e.r.mcMs - e.r.savedMs) * opts.margin).toFixed(3) : null) },
+        { name: "璁＄畻", color: C.good, data: evals.map(e => e.r ? +(e.r.computeMs * opts.margin).toFixed(3) : null) },
+        { name: "TP 褰掔害", color: C.warn, data: evals.map(e => e.r ? +(e.r.collectiveTotalMs * opts.margin).toFixed(3) : null) },
         { name: "E2E", color: C.purple, data: evals.map(e => e.r ? +e.r.e2eMs.toFixed(3) : null) }
       ],
       280
     );
 
     const collHeavy = evals.filter(e => e.r && e.r.collectiveStageMs > e.r.computeMs).map(e => e.x.m.meta.short);
-    $("calloutPart").innerHTML = `<strong>切分匹配</strong><p>这 ${cards} 张卡上按 PP1×TP${cards} 估算（头数整除失败则退到可整除的最大 TP）。` +
-      `${collHeavy.length ? "归约已经压过计算的模型：" + collHeavy.join("、") + "。" : "当前设置下归约还没有全面压过计算。"}</p>` +
-      `<p>K3：93 层 + Latent 边界，集合通信次数最多，且 top-16 不均更重。V4-Pro：61 层、top-6，通信次数少；压缩 KV 按序列切，sliding 窗口是每卡一份常数。GLM-5.2：78 层、top-8、hidden 6144，通信介于两者之间。</p>` +
-      `<p>三套 KV 都能走 Context 并行，不要按 GQA 的「KV 头用尽」来想这三颗芯片。</p>`;
+    $("calloutPart").innerHTML = `<strong>鍒囧垎鍖归厤</strong><p>杩?${cards} 寮犲崱涓婃寜 PP1脳TP${cards} 浼扮畻锛堝ご鏁版暣闄ゅけ璐ュ垯閫€鍒板彲鏁撮櫎鐨勬渶澶?TP锛夈€俙 +
+      `${collHeavy.length ? "褰掔害宸茬粡鍘嬭繃璁＄畻鐨勬ā鍨嬶細" + collHeavy.join("銆?) + "銆? : "褰撳墠璁剧疆涓嬪綊绾﹁繕娌℃湁鍏ㄩ潰鍘嬭繃璁＄畻銆?}</p>` +
+      `<p>K3锛?3 灞?+ Latent 杈圭晫锛岄泦鍚堥€氫俊娆℃暟鏈€澶氾紝涓?top-16 涓嶅潎鏇撮噸銆俈4-Pro锛?1 灞傘€乼op-6锛岄€氫俊娆℃暟灏戯紱鍘嬬缉 KV 鎸夊簭鍒楀垏锛宻liding 绐楀彛鏄瘡鍗′竴浠藉父鏁般€侴LM-5.2锛?8 灞傘€乼op-8銆乭idden 6144锛岄€氫俊浠嬩簬涓よ€呬箣闂淬€?/p>` +
+      `<p>涓夊 KV 閮借兘璧?Context 骞惰锛屼笉瑕佹寜 GQA 鐨勩€孠V 澶寸敤灏姐€嶆潵鎯宠繖涓夐鑺墖銆?/p>`;
 
     $("tblMatch").innerHTML = `<thead><tr>
-      <th>模型</th><th class="num">TPS</th><th>瓶颈</th>
-      <th>带宽</th><th>算力</th><th>容量</th><th>互联</th>
-      <th class="num">相对目标</th></tr></thead><tbody>` +
+      <th>妯″瀷</th><th class="num">TPS</th><th>鐡堕</th>
+      <th>甯﹀</th><th>绠楀姏</th><th>瀹归噺</th><th>浜掕仈</th>
+      <th class="num">鐩稿鐩爣</th></tr></thead><tbody>` +
       evals.map(({ x, r }) => {
-        if (!r) return `<tr><td>${x.m.meta.short}</td><td colspan="7">不可行</td></tr>`;
+        if (!r) return `<tr><td>${x.m.meta.short}</td><td colspan="7">涓嶅彲琛?/td></tr>`;
         const bwRatio = (r.busyMs + r.misfetchMs) / Math.max(1e-9, r.mcMs - r.savedMs);
         const cmpRatio = (r.mcMs - r.savedMs) / Math.max(1e-9, r.computeMs);
         const capRatio = capCard / (r.weightsCard / 1e9 + r.statePerUserCard / 1e9);
@@ -1640,19 +1615,19 @@
           <td>${matchTag(cmpRatio)}</td>
           <td>${matchTag(capRatio)}</td>
           <td>${matchTag(collRatio)}</td>
-          <td class="num">${tpsR >= 1 ? tag("ok", fmt(tpsR, 2) + "×") : tag("bad", fmt(tpsR, 2) + "×")}</td></tr>`;
+          <td class="num">${tpsR >= 1 ? tag("ok", fmt(tpsR, 2) + "脳") : tag("bad", fmt(tpsR, 2) + "脳")}</td></tr>`;
       }).join("") + "</tbody>";
 
     const best = evals.filter(e => e.r).sort((a, b) => b.r.tps - a.r.tps)[0];
     const worst = evals.filter(e => e.r).sort((a, b) => a.r.tps - b.r.tps)[0];
-    $("calloutMatch").innerHTML = `<strong>同芯片结论</strong>` +
-      (best && worst ? `<p>同样 ${cards} 张基线卡、同样 Context=${fmt(ctx / 1024, 0)}K：最快是 <b>${best.x.m.meta.short}</b> ${fmt(best.r.tps, 0)} TPS（${best.r.bottleneck}），最慢是 <b>${worst.x.m.meta.short}</b> ${fmt(worst.r.tps, 0)} TPS（${worst.r.bottleneck}）。差的不是「谁更大」，是谁把 Decode 的三堵墙叠在一起。</p>` : "<p>无可行点。</p>") +
-      `<p>表里「匹配 ×」= 供给/需求。带宽列用（计算+归约）/ MC净读取：&gt;1 表示读取已被掩盖，带宽有余；算力列相反。容量是单卡装得下权重+1 用户状态的倍数。互联是计算时间 / 归约时间。</p>`;
+    $("calloutMatch").innerHTML = `<strong>鍚岃姱鐗囩粨璁?/strong>` +
+      (best && worst ? `<p>鍚屾牱 ${cards} 寮犲熀绾垮崱銆佸悓鏍?Context=${fmt(ctx / 1024, 0)}K锛氭渶蹇槸 <b>${best.x.m.meta.short}</b> ${fmt(best.r.tps, 0)} TPS锛?{best.r.bottleneck}锛夛紝鏈€鎱㈡槸 <b>${worst.x.m.meta.short}</b> ${fmt(worst.r.tps, 0)} TPS锛?{worst.r.bottleneck}锛夈€傚樊鐨勪笉鏄€岃皝鏇村ぇ銆嶏紝鏄皝鎶?Decode 鐨勪笁鍫靛鍙犲湪涓€璧枫€?/p>` : "<p>鏃犲彲琛岀偣銆?/p>") +
+      `<p>琛ㄩ噷銆屽尮閰?脳銆? 渚涚粰/闇€姹傘€傚甫瀹藉垪鐢紙璁＄畻+褰掔害锛? MC鍑€璇诲彇锛?gt;1 琛ㄧず璇诲彇宸茶鎺╃洊锛屽甫瀹芥湁浣欙紱绠楀姏鍒楃浉鍙嶃€傚閲忔槸鍗曞崱瑁呭緱涓嬫潈閲?1 鐢ㄦ埛鐘舵€佺殑鍊嶆暟銆備簰鑱旀槸璁＄畻鏃堕棿 / 褰掔害鏃堕棿銆?/p>`;
 
     $("tblNeed").innerHTML = `<thead><tr>
-      <th>模型</th><th class="num">系统带宽</th><th class="num">线性算力</th><th class="num">注意力算力</th>
-      <th class="num">容量</th><th class="num">卡数 by BW</th><th class="num">by 线性</th>
-      <th class="num">by 注意力</th><th class="num">by 容量</th><th>下限由谁定</th></tr></thead><tbody>` +
+      <th>妯″瀷</th><th class="num">绯荤粺甯﹀</th><th class="num">绾挎€х畻鍔?/th><th class="num">娉ㄦ剰鍔涚畻鍔?/th>
+      <th class="num">瀹归噺</th><th class="num">鍗℃暟 by BW</th><th class="num">by 绾挎€?/th>
+      <th class="num">by 娉ㄦ剰鍔?/th><th class="num">by 瀹归噺</th><th>涓嬮檺鐢辫皝瀹?/th></tr></thead><tbody>` +
       inventories.map(x => {
         const needBw = x.rd.total * target;
         const needLin = x.lin * target / chip.utilization;
@@ -1662,7 +1637,7 @@
         const nLin = needLin / (chip.linearTflops * 1e12);
         const nAttn = needAttn / (chip.attnTflops * 1e12);
         const nCap = needCap / capCard;
-        const names = ["带宽", "线性算力", "注意力", "容量"];
+        const names = ["甯﹀", "绾挎€х畻鍔?, "娉ㄦ剰鍔?, "瀹归噺"];
         const vals = [nBw, nLin, nAttn, nCap];
         let im = 0;
         vals.forEach((v, i) => { if (v > vals[im]) im = i; });
@@ -1675,10 +1650,10 @@
           <td class="num">${fmt(nLin, 2)}</td>
           <td class="num">${fmt(nAttn, 2)}</td>
           <td class="num">${fmt(nCap, 2)}</td>
-          <td>${tag(im === 0 ? "warn" : im === 3 ? "bad" : "info", names[im])} ≥ ${fmt(vals[im], 1)} 卡</td></tr>`;
+          <td>${tag(im === 0 ? "warn" : im === 3 ? "bad" : "info", names[im])} 鈮?${fmt(vals[im], 1)} 鍗?/td></tr>`;
       }).join("") + "</tbody>";
 
-    $("calloutNeed").innerHTML = `<strong>朴素下限</strong><p>三模型卡数下限几乎都由<b>带宽</b>定。这张表把每 token 字节一次性读满，没有 SRAM、没有重叠。下面先讲重叠怎么盖住读取，再进入「计入版」。</p>`;
+    $("calloutNeed").innerHTML = `<strong>鏈寸礌涓嬮檺</strong><p>涓夋ā鍨嬪崱鏁颁笅闄愬嚑涔庨兘鐢?b>甯﹀</b>瀹氥€傝繖寮犺〃鎶婃瘡 token 瀛楄妭涓€娆℃€ц婊★紝娌℃湁 SRAM銆佹病鏈夐噸鍙犮€備笅闈㈠厛璁查噸鍙犳€庝箞鐩栦綇璇诲彇锛屽啀杩涘叆銆岃鍏ョ増銆嶃€?/p>`;
 
     $("figOverlapHow").innerHTML = overlapHowSvg();
 
@@ -1686,19 +1661,19 @@
     const fullRows = evals.map(({ x, r }) => r ? { x, r, f: fullDecode(x.m, r, x, chip, target, users, pred) } : { x, r: null, f: null });
 
     $("figOverlapLive").innerHTML = overlapLiveSvg(fullRows);
-    $("capOverlapLive").textContent = `${cards} 卡 · ${users} 用户 · SRAM ${chip.sramMib} MiB/卡 · 预测 ${Math.round(pred * 100)}% · 目标 ${target} TPS/usr。横轴为一步 Decode 的毫秒。`;
+    $("capOverlapLive").textContent = `${cards} 鍗?路 ${users} 鐢ㄦ埛 路 SRAM ${chip.sramMib} MiB/鍗?路 棰勬祴 ${Math.round(pred * 100)}% 路 鐩爣 ${target} TPS/usr銆傛í杞翠负涓€姝?Decode 鐨勬绉掋€俙;
     $("tblOverlap").innerHTML = `<thead><tr>
-      <th>模型</th>
+      <th>妯″瀷</th>
       <th class="num">T_net</th>
-      <th class="num">计算</th>
-      <th class="num">归约/Stage</th>
-      <th class="num">补读</th>
-      <th class="num">忙碌</th>
-      <th class="num">暴露</th>
-      <th>步时</th>
+      <th class="num">璁＄畻</th>
+      <th class="num">褰掔害/Stage</th>
+      <th class="num">琛ヨ</th>
+      <th class="num">蹇欑</th>
+      <th class="num">鏆撮湶</th>
+      <th>姝ユ椂</th>
     </tr></thead><tbody>` +
       fullRows.map(({ x, f }) => {
-        if (!f) return `<tr><td>${x.m.meta.short}</td><td colspan="7">该卡数不可行</td></tr>`;
+        if (!f) return `<tr><td>${x.m.meta.short}</td><td colspan="7">璇ュ崱鏁颁笉鍙</td></tr>`;
         const stage = Math.max(f.netMcMs, f.busyU);
         const exp = Math.max(0, f.netMcMs - f.busyU);
         return `<tr>
@@ -1708,63 +1683,63 @@
           <td class="num">${fmt(f.collStageMs, 3)}</td>
           <td class="num">${fmt(f.misfetchU, 3)}</td>
           <td class="num"><b>${fmt(f.busyU, 3)}</b></td>
-          <td class="num">${exp <= 1e-9 ? tag("ok", "0 · 已掩盖") : tag("warn", fmt(exp, 3) + " ms")}</td>
-          <td>${exp <= 1e-9 ? "取忙碌" : "取净读取"} · ${fmt(stage, 3)} ms</td>
+          <td class="num">${exp <= 1e-9 ? tag("ok", "0 路 宸叉帺鐩?) : tag("warn", fmt(exp, 3) + " ms")}</td>
+          <td>${exp <= 1e-9 ? "鍙栧繖纰? : "鍙栧噣璇诲彇"} 路 ${fmt(stage, 3)} ms</td>
         </tr>`;
       }).join("") + "</tbody>";
 
     const hiddenN = fullRows.filter(row => row.f && row.f.hidden).map(row => row.x.m.meta.short);
     const exposedN = fullRows.filter(row => row.f && !row.f.hidden).map(row => row.x.m.meta.short);
-    $("calloutOverlap").innerHTML = `<strong>怎么读这两条线</strong>
-      <p>青条是 SRAM 扣完后的净读取时间；绿条是计算 + 归约 + 专家未命中补读。引擎取 <span class="mono">max</span>：绿更长则读取被盖住，暴露为 0；青更长则红尾才是缺的 MC。</p>
-      <p>消耗 MC 仍按青条对应的字节 × TPS 计——被盖住不等于没搬。常驻只缩短青条；预取缓冲决定绿条能不能和青条并行（装不满则向「读+归约相加」插值）。</p>
-      <p>${hiddenN.length ? "当前已被掩盖：" + hiddenN.join("、") + "。" : ""}${exposedN.length ? " 仍露尾：" + exposedN.join("、") + "。" : " 当前三家读取都已进忙碌窗。"}</p>`;
+    $("calloutOverlap").innerHTML = `<strong>鎬庝箞璇昏繖涓ゆ潯绾?/strong>
+      <p>闈掓潯鏄?SRAM 鎵ｅ畬鍚庣殑鍑€璇诲彇鏃堕棿锛涚豢鏉℃槸璁＄畻 + 褰掔害 + 涓撳鏈懡涓ˉ璇汇€傚紩鎿庡彇 <span class="mono">max</span>锛氱豢鏇撮暱鍒欒鍙栬鐩栦綇锛屾毚闇蹭负 0锛涢潚鏇撮暱鍒欑孩灏炬墠鏄己鐨?MC銆?/p>
+      <p>娑堣€?MC 浠嶆寜闈掓潯瀵瑰簲鐨勫瓧鑺?脳 TPS 璁♀€斺€旇鐩栦綇涓嶇瓑浜庢病鎼€傚父椹诲彧缂╃煭闈掓潯锛涢鍙栫紦鍐插喅瀹氱豢鏉¤兘涓嶈兘鍜岄潚鏉″苟琛岋紙瑁呬笉婊″垯鍚戙€岃+褰掔害鐩稿姞銆嶆彃鍊硷級銆?/p>
+      <p>${hiddenN.length ? "褰撳墠宸茶鎺╃洊锛? + hiddenN.join("銆?) + "銆? : ""}${exposedN.length ? " 浠嶉湶灏撅細" + exposedN.join("銆?) + "銆? : " 褰撳墠涓夊璇诲彇閮藉凡杩涘繖纰岀獥銆?}</p>`;
 
     $("tblNeedFull").innerHTML = `<thead><tr>
-      <th>模型</th>
-      <th class="num" title="每 token 读满 × 目标 TPS，不计 SRAM / 重叠">朴素 MC</th>
-      <th class="num" title="SRAM 常驻扣完后仍要从 MC 搬的字节 × 步频。被盖住也不会变小。">SRAM 后消耗</th>
-      <th class="num" title="max(0, T_net − 忙碌)。已掩盖=步时不缺 MC；有数字=红尾还在拖步时。">重叠后暴露</th>
-      <th class="num" title="SRAM 常驻使每步少从 MC 读的字节（全系统）。重叠不进这一列。">SRAM 省/步</th>
-      <th class="num" title="片间链路：环 all-reduce 导线字节 2(TP−1)·payload × 步频。不是 MC。">互联 2(TP−1)·payload</th>
-      <th class="num" title="集合通信墙钟时间。1000 TPS 预算 1000 μs。超了不能靠加 TP 摊薄次数。">归约 ms/步</th>
-      <th class="num">容量 ${users} 用户</th>
-      <th>下限由谁定</th>
+      <th>妯″瀷</th>
+      <th class="num" title="姣?token 璇绘弧 脳 鐩爣 TPS锛屼笉璁?SRAM / 閲嶅彔">鏈寸礌 MC</th>
+      <th class="num" title="SRAM 甯搁┗鎵ｅ畬鍚庝粛瑕佷粠 MC 鎼殑瀛楄妭 脳 姝ラ銆傝鐩栦綇涔熶笉浼氬彉灏忋€?>SRAM 鍚庢秷鑰?/th>
+      <th class="num" title="max(0, T_net 鈭?蹇欑)銆傚凡鎺╃洊=姝ユ椂涓嶇己 MC锛涙湁鏁板瓧=绾㈠熬杩樺湪鎷栨鏃躲€?>閲嶅彔鍚庢毚闇?/th>
+      <th class="num" title="SRAM 甯搁┗浣挎瘡姝ュ皯浠?MC 璇荤殑瀛楄妭锛堝叏绯荤粺锛夈€傞噸鍙犱笉杩涜繖涓€鍒椼€?>SRAM 鐪?姝?/th>
+      <th class="num" title="鐗囬棿閾捐矾锛氱幆 all-reduce 瀵肩嚎瀛楄妭 2(TP鈭?)路payload 脳 姝ラ銆備笉鏄?MC銆?>浜掕仈 2(TP鈭?)路payload</th>
+      <th class="num" title="闆嗗悎閫氫俊澧欓挓鏃堕棿銆?000 TPS 棰勭畻 1000 渭s銆傝秴浜嗕笉鑳介潬鍔?TP 鎽婅杽娆℃暟銆?>褰掔害 ms/姝?/th>
+      <th class="num">瀹归噺 ${users} 鐢ㄦ埛</th>
+      <th>涓嬮檺鐢辫皝瀹?/th>
     </tr></thead><tbody>` +
       fullRows.map(({ x, r, f }) => {
-        if (!f) return `<tr><td>${x.m.meta.short}</td><td colspan="8">该卡数不可行</td></tr>`;
-        const hide = f.hidden ? tag("ok", "已掩盖") : tag("warn", fmt(f.exposedBw / 1e12, 1) + " TB/s");
-        const limTag = f.limiter === "归约时间" ? "bad" : f.limiter === "容量" ? "bad" : f.limiter === "暴露MC" ? "warn" : "info";
-        return `<tr><td>${x.m.meta.short}<br><span class="caption">PP${f.r.pp}×TP${f.r.tp} · ${users} 用户</span></td>
-          <td class="num">${fmt(f.naiveBw / 1e12, 1)} TB/s<br><span class="caption">${fmt(f.nMc > 0 ? f.naiveBw / bwCard : 0, 1)} 卡</span></td>
-          <td class="num"><b>${fmt(f.consumedBw / 1e12, 1)} TB/s</b><br><span class="caption">${fmt(f.nMc, 1)} 卡 · 净 ${gb(f.netSys)}/步</span></td>
-          <td class="num">${hide}<br><span class="caption">${f.hidden ? "计算+归约窗盖住读取" : fmt(f.nExp, 1) + " 卡"}</span></td>
+        if (!f) return `<tr><td>${x.m.meta.short}</td><td colspan="8">璇ュ崱鏁颁笉鍙</td></tr>`;
+        const hide = f.hidden ? tag("ok", "宸叉帺鐩?) : tag("warn", fmt(f.exposedBw / 1e12, 1) + " TB/s");
+        const limTag = f.limiter === "褰掔害鏃堕棿" ? "bad" : f.limiter === "瀹归噺" ? "bad" : f.limiter === "鏆撮湶MC" ? "warn" : "info";
+        return `<tr><td>${x.m.meta.short}<br><span class="caption">PP${f.r.pp}脳TP${f.r.tp} 路 ${users} 鐢ㄦ埛</span></td>
+          <td class="num">${fmt(f.naiveBw / 1e12, 1)} TB/s<br><span class="caption">${fmt(f.nMc > 0 ? f.naiveBw / bwCard : 0, 1)} 鍗?/span></td>
+          <td class="num"><b>${fmt(f.consumedBw / 1e12, 1)} TB/s</b><br><span class="caption">${fmt(f.nMc, 1)} 鍗?路 鍑€ ${gb(f.netSys)}/姝?/span></td>
+          <td class="num">${hide}<br><span class="caption">${f.hidden ? "璁＄畻+褰掔害绐楃洊浣忚鍙? : fmt(f.nExp, 1) + " 鍗?}</span></td>
           <td class="num">${gb(f.savedB)}</td>
-          <td class="num">${fmt(f.linkNeed / 1e12, 2)} TB/s<br><span class="caption">${gb(f.wireB)}/步 · ${fmt(f.nLink, 1)} 卡</span></td>
-          <td class="num">${fmt(f.collU * 1000, 0)} μs<br><span class="caption">预算 ${fmt(1000 / target * 1000, 0)} μs ${f.collU * optsMargin() > 1000 / target ? tag("bad", "超") : tag("ok", "入窗")}</span></td>
-          <td class="num">${fmt(f.capNeed, 0)} / ${fmt(f.capSupply, 0)} GB ${f.capNeed <= f.capSupply ? tag("ok", "OK") : tag("bad", "超")}</td>
-          <td>${f.limiter === "归约时间"
-            ? tag("bad", "归约超预算 " + fmt(f.nColl, 2) + "×")
-            : tag(limTag, f.limiter) + " ≥ " + fmt(f.limiterN, 1) + " 卡"}</td></tr>`;
+          <td class="num">${fmt(f.linkNeed / 1e12, 2)} TB/s<br><span class="caption">${gb(f.wireB)}/姝?路 ${fmt(f.nLink, 1)} 鍗?/span></td>
+          <td class="num">${fmt(f.collU * 1000, 0)} 渭s<br><span class="caption">棰勭畻 ${fmt(1000 / target * 1000, 0)} 渭s ${f.collU * optsMargin() > 1000 / target ? tag("bad", "瓒?) : tag("ok", "鍏ョ獥")}</span></td>
+          <td class="num">${fmt(f.capNeed, 0)} / ${fmt(f.capSupply, 0)} GB ${f.capNeed <= f.capSupply ? tag("ok", "OK") : tag("bad", "瓒?)}</td>
+          <td>${f.limiter === "褰掔害鏃堕棿"
+            ? tag("bad", "褰掔害瓒呴绠?" + fmt(f.nColl, 2) + "脳")
+            : tag(limTag, f.limiter) + " 鈮?" + fmt(f.limiterN, 1) + " 鍗?}</td></tr>`;
       }).join("") + "</tbody>";
 
     $("figNeedFull").innerHTML = groupedBar(
       fullRows.map(row => row.x.m.meta.short),
       [
-        { name: "朴素 MC", color: C.muted, data: fullRows.map(row => row.f ? +(row.f.naiveBw / 1e12).toFixed(1) : null) },
-        { name: "SRAM 后消耗", color: C.accent, data: fullRows.map(row => row.f ? +(row.f.consumedBw / 1e12).toFixed(1) : null) },
-        { name: "重叠后暴露", color: C.warn, data: fullRows.map(row => row.f ? +(row.f.exposedBw / 1e12).toFixed(1) : null) }
+        { name: "鏈寸礌 MC", color: C.muted, data: fullRows.map(row => row.f ? +(row.f.naiveBw / 1e12).toFixed(1) : null) },
+        { name: "SRAM 鍚庢秷鑰?, color: C.accent, data: fullRows.map(row => row.f ? +(row.f.consumedBw / 1e12).toFixed(1) : null) },
+        { name: "閲嶅彔鍚庢毚闇?, color: C.warn, data: fullRows.map(row => row.f ? +(row.f.exposedBw / 1e12).toFixed(1) : null) }
       ],
       280
     );
 
-    $("tblPrefill").innerHTML = `<thead><tr><th>Prefill ${prefillL ? fmt(prefillL / 1024, 0) + "K" : "关闭"}</th>
-      <th class="num">线性 EFLOP</th><th class="num">注意力 EFLOP</th>
-      <th class="num">权重读一次</th><th class="num">写 KV</th>
-      <th class="num">线性 I（→H）</th><th class="num">注意力 I</th>
-      <th class="num">若用当前卡数算完</th></tr></thead><tbody>` +
+    $("tblPrefill").innerHTML = `<thead><tr><th>Prefill ${prefillL ? fmt(prefillL / 1024, 0) + "K" : "鍏抽棴"}</th>
+      <th class="num">绾挎€?EFLOP</th><th class="num">娉ㄦ剰鍔?EFLOP</th>
+      <th class="num">鏉冮噸璇讳竴娆?/th><th class="num">鍐?KV</th>
+      <th class="num">绾挎€?I锛堚啋H锛?/th><th class="num">娉ㄦ剰鍔?I</th>
+      <th class="num">鑻ョ敤褰撳墠鍗℃暟绠楀畬</th></tr></thead><tbody>` +
       (prefillL <= 0
-        ? `<tr><td colspan="8" class="caption">页首 Prefill 长度选 0 则不计工作量。算术强度图见独立页。打开后按一条序列：权重流式读一次（p=1），高 I 线性打 H-Core，注意力用 Decode 增量积分 / 写 KV。</td></tr>`
+        ? `<tr><td colspan="8" class="caption">椤甸 Prefill 闀垮害閫?0 鍒欎笉璁″伐浣滈噺銆傜畻鏈己搴﹀浘瑙佺嫭绔嬮〉銆傛墦寮€鍚庢寜涓€鏉″簭鍒楋細鏉冮噸娴佸紡璇讳竴娆★紙p=1锛夛紝楂?I 绾挎€ф墦 H-Core锛屾敞鎰忓姏鐢?Decode 澧為噺绉垎 / 鍐?KV銆?/td></tr>`
         : inventories.map(x => {
           const linP = x.lin * prefillL;
           const atP = prefillAttnFlops(x.m, prefillL);
@@ -1780,18 +1755,18 @@
             <td class="num">${fmt(atP / 1e18, 2)}</td>
             <td class="num">${gb(wOnce)}</td>
             <td class="num">${gb(kvW)}</td>
-            <td class="num"><b>${fmtI(linI)}</b> ${linI < ridgeAttn ? tag("warn", "BW") : tag("ok", "算力")}</td>
-            <td class="num"><b>${fmtI(atI)}</b> ${atI < ridgeAttn ? tag("warn", "BW") : tag("ok", "算力")}</td>
-            <td class="num">${fmt(tSec * 1000, 0)} ms · 流式权重 ${fmt(bwIfStream / 1e12, 2)} TB/s · vs H</td></tr>`;
+            <td class="num"><b>${fmtI(linI)}</b> ${linI < ridgeAttn ? tag("warn", "BW") : tag("ok", "绠楀姏")}</td>
+            <td class="num"><b>${fmtI(atI)}</b> ${atI < ridgeAttn ? tag("warn", "BW") : tag("ok", "绠楀姏")}</td>
+            <td class="num">${fmt(tSec * 1000, 0)} ms 路 娴佸紡鏉冮噸 ${fmt(bwIfStream / 1e12, 2)} TB/s 路 vs H</td></tr>`;
         }).join("")) + "</tbody>";
 
     const anyHidden = fullRows.some(row => row.f && row.f.hidden);
     const collBlock = fullRows.filter(row => row.f && row.f.collU * optsMargin() > 1000 / target).map(row => row.x.m.meta.short);
-    $("calloutNeedFull").innerHTML = `<strong>计入之后还缺什么</strong>` +
-      `<p>SRAM（${chip.sramMib} MiB/卡）把常驻权重从 MC 流量里减掉，所以「消耗」一定低于朴素表。并发 ${users} 用户时确定性权重仍读 1 份，但 MoE 独特专家随 batch 变多（见下节），KV 与算力按 batch 放大。</p>` +
-      `<p>${anyHidden ? "当前卡数下，至少有一个模型的 MC 读取已被计算+归约盖住——再加 MC 带宽换不来 TPS，缺的是归约延迟或算力。" : "当前设置下 MC 读取仍露在关键路径上，SRAM 之后的消耗带宽才是要配的 MC。"}` +
-      `${collBlock.length ? " 归约已经超过 1 步时间预算的：" + collBlock.join("、") + "。这不能靠加卡（加 TP 次数不降），只能降延迟或减 TP。" : ""}</p>` +
-      `<p>互联是另一条总线：all-reduce 按 2·(TP−1)·payload 计系统导线字节，再 × 步频。基线每卡 ${chip.linkBandwidthGBs} GB/s。LM Head 已加进消耗 MC（朴素表没有）。Prefill 不进 Decode 步频，只报一条序列的工作量；若 Prefill 与 Decode 抢同一套 MC，峰值取两者较大。</p>`;
+    $("calloutNeedFull").innerHTML = `<strong>璁″叆涔嬪悗杩樼己浠€涔?/strong>` +
+      `<p>SRAM锛?{chip.sramMib} MiB/鍗★級鎶婂父椹绘潈閲嶄粠 MC 娴侀噺閲屽噺鎺夛紝鎵€浠ャ€屾秷鑰椼€嶄竴瀹氫綆浜庢湸绱犺〃銆傚苟鍙?${users} 鐢ㄦ埛鏃剁‘瀹氭€ф潈閲嶄粛璇?1 浠斤紝浣?MoE 鐙壒涓撳闅?batch 鍙樺锛堣涓嬭妭锛夛紝KV 涓庣畻鍔涙寜 batch 鏀惧ぇ銆?/p>` +
+      `<p>${anyHidden ? "褰撳墠鍗℃暟涓嬶紝鑷冲皯鏈変竴涓ā鍨嬬殑 MC 璇诲彇宸茶璁＄畻+褰掔害鐩栦綇鈥斺€斿啀鍔?MC 甯﹀鎹笉鏉?TPS锛岀己鐨勬槸褰掔害寤惰繜鎴栫畻鍔涖€? : "褰撳墠璁剧疆涓?MC 璇诲彇浠嶉湶鍦ㄥ叧閿矾寰勪笂锛孲RAM 涔嬪悗鐨勬秷鑰楀甫瀹芥墠鏄閰嶇殑 MC銆?}` +
+      `${collBlock.length ? " 褰掔害宸茬粡瓒呰繃 1 姝ユ椂闂撮绠楃殑锛? + collBlock.join("銆?) + "銆傝繖涓嶈兘闈犲姞鍗★紙鍔?TP 娆℃暟涓嶉檷锛夛紝鍙兘闄嶅欢杩熸垨鍑?TP銆? : ""}</p>` +
+      `<p>浜掕仈鏄彟涓€鏉℃€荤嚎锛歛ll-reduce 鎸?2路(TP鈭?)路payload 璁＄郴缁熷绾垮瓧鑺傦紝鍐?脳 姝ラ銆傚熀绾挎瘡鍗?${chip.linkBandwidthGBs} GB/s銆侺M Head 宸插姞杩涙秷鑰?MC锛堟湸绱犺〃娌℃湁锛夈€侾refill 涓嶈繘 Decode 姝ラ锛屽彧鎶ヤ竴鏉″簭鍒楃殑宸ヤ綔閲忥紱鑻?Prefill 涓?Decode 鎶㈠悓涓€濂?MC锛屽嘲鍊煎彇涓よ€呰緝澶с€?/p>`;
 
     const BATCHES = [1, 2, 4, 8, 16, 32, 64];
     if (!BATCHES.includes(users)) {
@@ -1833,11 +1808,11 @@
     );
     $("capBatchUniq").textContent = sweep.filter(s => s.points.length).map(s => {
       const p0 = s.points[0], pLast = s.points[s.points.length - 1];
-      return `${s.x.m.meta.short} E=${p0.Et} k=${p0.k}：B=1 → ${fmt(p0.uniq, 0)}，B=${BATCHES[BATCHES.length - 1]} → ${fmt(pLast.uniq, 0)}（${fmt(100 * pLast.uniq / pLast.Et, 0)}%）`;
-    }).join("；") + "。";
+      return `${s.x.m.meta.short} E=${p0.Et} k=${p0.k}锛欱=1 鈫?${fmt(p0.uniq, 0)}锛孊=${BATCHES[BATCHES.length - 1]} 鈫?${fmt(pLast.uniq, 0)}锛?{fmt(100 * pLast.uniq / pLast.Et, 0)}%锛塦;
+    }).join("锛?) + "銆?;
     $("figBatchCover").innerHTML = lineChart(
       labels,
-      [{ name: "掩盖线 = 1", color: C.muted, data: BATCHES.map(() => 1) }].concat(
+      [{ name: "鎺╃洊绾?= 1", color: C.muted, data: BATCHES.map(() => 1) }].concat(
         sweep.filter(s => s.points.length).map((s, i) => ({
           name: s.x.m.meta.short,
           color: COLORS[i % COLORS.length],
@@ -1849,28 +1824,28 @@
 
     const botTag = bot => {
       if (bot === "MC") return tag("warn", "MC");
-      if (bot === "归约") return tag("bad", "归约");
-      if (bot === "补读") return tag("warn", "补读");
+      if (bot === "褰掔害") return tag("bad", "褰掔害");
+      if (bot === "琛ヨ") return tag("warn", "琛ヨ");
       return tag("info", bot);
     };
     $("tblBatch").innerHTML = `<thead><tr>
-      <th>模型</th><th class="num">batch</th><th class="num">独特专家</th>
-      <th class="num">T_net</th><th class="num">忙碌</th><th>步时瓶颈</th>
-      <th class="num">容量</th><th class="num">TPS/usr</th><th class="num">系统 token/s</th>
-      <th>相对目标 ${target}</th>
+      <th>妯″瀷</th><th class="num">batch</th><th class="num">鐙壒涓撳</th>
+      <th class="num">T_net</th><th class="num">蹇欑</th><th>姝ユ椂鐡堕</th>
+      <th class="num">瀹归噺</th><th class="num">TPS/usr</th><th class="num">绯荤粺 token/s</th>
+      <th>鐩稿鐩爣 ${target}</th>
     </tr></thead><tbody>` +
       sweep.map(({ x, points }) => {
-        if (!points.length) return `<tr><td>${x.m.meta.short}</td><td colspan="9">该卡数不可行</td></tr>`;
+        if (!points.length) return `<tr><td>${x.m.meta.short}</td><td colspan="9">璇ュ崱鏁颁笉鍙</td></tr>`;
         return points.map(f => {
           const hi = f.u === users ? " class=\"hi\"" : "";
-          const cap = f.capOk ? tag("ok", fmt(f.capNeed, 0) + " GB") : tag("bad", "超 " + fmt(f.capNeed / f.capSupply, 2) + "×");
-          const vs = f.tpsUsr >= target ? tag("ok", fmt(f.tpsUsr / target, 2) + "×") : tag("bad", fmt(f.tpsUsr / target, 2) + "×");
+          const cap = f.capOk ? tag("ok", fmt(f.capNeed, 0) + " GB") : tag("bad", "瓒?" + fmt(f.capNeed / f.capSupply, 2) + "脳");
+          const vs = f.tpsUsr >= target ? tag("ok", fmt(f.tpsUsr / target, 2) + "脳") : tag("bad", fmt(f.tpsUsr / target, 2) + "脳");
           return `<tr${hi}><td>${x.m.meta.short}</td>
             <td class="num">${f.u}</td>
-            <td class="num">${fmt(f.uniq, 0)} / ${f.Et}<br><span class="caption">${fmt(f.routedScale, 1)}× 专家权重</span></td>
+            <td class="num">${fmt(f.uniq, 0)} / ${f.Et}<br><span class="caption">${fmt(f.routedScale, 1)}脳 涓撳鏉冮噸</span></td>
             <td class="num">${fmt(f.netMcMs, 3)}</td>
             <td class="num">${fmt(f.busyU, 3)}</td>
-            <td>${botTag(f.stepBot)}${f.hidden ? "" : " " + tag("warn", "露尾")}</td>
+            <td>${botTag(f.stepBot)}${f.hidden ? "" : " " + tag("warn", "闇插熬")}</td>
             <td class="num">${cap}</td>
             <td class="num"><b>${fmt(f.tpsUsr, 0)}</b></td>
             <td class="num">${fmt(f.sysTps, 0)}</td>
@@ -1884,16 +1859,16 @@
       const sys0 = points[0].sysTps, sysN = points[points.length - 1].sysTps;
       const peak = points.reduce((a, f) => f.sysTps > a.sysTps ? f : a, points[0]);
       const uniqSat = points[points.length - 1].uniq / points[0].Et;
-      return `<p><b>${x.m.meta.short}</b>：系统吞吐 B=1 时 ${fmt(sys0, 0)} token/s，扫到 ${BATCHES[BATCHES.length - 1]} 为 ${fmt(sysN, 0)}（峰值在 B=${peak.u} 的 ${fmt(peak.sysTps, 0)}）。` +
-        `${hideAt ? " 读取在 B=" + hideAt.u + " 起被忙碌盖住。" : " 扫描范围内 MC 一直露尾。"}` +
-        `${capAt ? " 容量在 B=" + capAt.u + " 起装不下（KV×batch）。" : " 当前 Context 下容量还没顶住。"}` +
-        ` 独特专家扫到 ${fmt(100 * uniqSat, 0)}% of E。</p>`;
+      return `<p><b>${x.m.meta.short}</b>锛氱郴缁熷悶鍚?B=1 鏃?${fmt(sys0, 0)} token/s锛屾壂鍒?${BATCHES[BATCHES.length - 1]} 涓?${fmt(sysN, 0)}锛堝嘲鍊煎湪 B=${peak.u} 鐨?${fmt(peak.sysTps, 0)}锛夈€俙 +
+        `${hideAt ? " 璇诲彇鍦?B=" + hideAt.u + " 璧疯蹇欑鐩栦綇銆? : " 鎵弿鑼冨洿鍐?MC 涓€鐩撮湶灏俱€?}` +
+        `${capAt ? " 瀹归噺鍦?B=" + capAt.u + " 璧疯涓嶄笅锛圞V脳batch锛夈€? : " 褰撳墠 Context 涓嬪閲忚繕娌￠《浣忋€?}` +
+        ` 鐙壒涓撳鎵埌 ${fmt(100 * uniqSat, 0)}% of E銆?/p>`;
     }).join("");
-    $("calloutBatch").innerHTML = `<strong>batch 扫描怎么读</strong>
-      <p>和稠密 LLM 不同：Decode MoE 的专家权重不会立刻被摊薄。B 从 1 涨时，独特专家近似线性增加（碰撞少），<b>专家权重流量先变差</b>，每用户 TPS 掉得比「权重只读 1 份」更快。E 被点满之后，再加大 batch 才只加 KV/算力/归约体积，强度才明显上升。</p>
-      <p>掩盖倍数跨过 1：步时从取 T_net 变成取忙碌，再加 MC 带宽换不来 TPS。归约延迟几乎不随 B 涨，payload 随 B 涨——层数多的 K3 更容易在中等 batch 被归约或算力接走。</p>
+    $("calloutBatch").innerHTML = `<strong>batch 鎵弿鎬庝箞璇?/strong>
+      <p>鍜岀瀵?LLM 涓嶅悓锛欴ecode MoE 鐨勪笓瀹舵潈閲嶄笉浼氱珛鍒昏鎽婅杽銆侭 浠?1 娑ㄦ椂锛岀嫭鐗逛笓瀹惰繎浼肩嚎鎬у鍔狅紙纰版挒灏戯級锛?b>涓撳鏉冮噸娴侀噺鍏堝彉宸?/b>锛屾瘡鐢ㄦ埛 TPS 鎺夊緱姣斻€屾潈閲嶅彧璇?1 浠姐€嶆洿蹇€侲 琚偣婊′箣鍚庯紝鍐嶅姞澶?batch 鎵嶅彧鍔?KV/绠楀姏/褰掔害浣撶Н锛屽己搴︽墠鏄庢樉涓婂崌銆?/p>
+      <p>鎺╃洊鍊嶆暟璺ㄨ繃 1锛氭鏃朵粠鍙?T_net 鍙樻垚鍙栧繖纰岋紝鍐嶅姞 MC 甯﹀鎹笉鏉?TPS銆傚綊绾﹀欢杩熷嚑涔庝笉闅?B 娑紝payload 闅?B 娑ㄢ€斺€斿眰鏁板鐨?K3 鏇村鏄撳湪涓瓑 batch 琚綊绾︽垨绠楀姏鎺ヨ蛋銆?/p>
       ${notes}
-      <p>未建模：大 batch 时 GEMM 利用率上升、EP all-to-all 拥塞、预测准确率随独特集合变差。独特专家按均匀路由；若专家热点更集中，权重流量会低于表内。</p>`;
+      <p>鏈缓妯★細澶?batch 鏃?GEMM 鍒╃敤鐜囦笂鍗囥€丒P all-to-all 鎷ュ銆侀娴嬪噯纭巼闅忕嫭鐗归泦鍚堝彉宸€傜嫭鐗逛笓瀹舵寜鍧囧寑璺敱锛涜嫢涓撳鐑偣鏇撮泦涓紝鏉冮噸娴侀噺浼氫綆浜庤〃鍐呫€?/p>`;
   }
 
   ["inCtx", "inTps", "inCards", "inPred", "inScale", "inFusion", "inUsers", "inSram", "inLink"].forEach(id => {
