@@ -1,4 +1,19 @@
-﻿# 当前设计状态与已知结论
+# 当前设计状态与已知结论
+
+## 0. 7-reticle 单芯片前提
+
+自 2026-09-21 起，单芯片的物理边界改为一个 7-reticle advanced package：8×400 mm² Compute Die + 16×100 mm² MC，工程 placement window 约 82×64 mm、5,248 mm²；一个 package 对软件表现为一个 TP rank，32 个 package 构成 TP32。
+
+当前需要并行维护两个 profile：
+
+| Profile | 用途 | 规格 |
+|---|---|---|
+| P0 7R physical primary | 封装、面积、集成存储和 PPA 主规划 | 8 L + 8 H/Die，96 MiB data SRAM/Die，400 mm²/Die |
+| P1 compact executable | 当前搜索/回归模型 | 4 L + 4 H/Die，44 MiB data SRAM/Die，约 259.57 mm²/Die |
+
+P1 的性能回归结果不能直接宣称为 P0 7R 物理主候选的最终性能；需要先完成
+P0 的 tile、kernel、MC、NoC、floorplan 和 PPA 模型。
+
 
 版本：2026-09-20。
 
@@ -116,4 +131,3 @@ Shared SRAM 聚合工作窗口**：
 - Decode 小消息与 Prefill 大流量采用独立 QoS/VC。
 
 这些是可继续深化的架构方向，但还不是已签核实现。
-

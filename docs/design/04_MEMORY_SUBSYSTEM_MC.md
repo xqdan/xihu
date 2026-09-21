@@ -1,5 +1,10 @@
-﻿# Memory Cube 存储子系统设计
+# Memory Cube 存储子系统设计
 
+## 0. 7-reticle 集成存储基线
+
+单芯片采用一个 7-reticle package，集成 16 个 MC，每个 Compute Die 本地绑定 2 个 MC。容量优先档为 16×16 GB = 256 GB/package，早期原型可采用 16×8 GB = 128 GB/package。片上数据 SRAM 采用 96 MiB/Die、768 MiB/package 的 7R 候选，分为 64 MiB L-Core Local SRAM、16 MiB H-Core Local SRAM 和 16 MiB Shared SRAM。
+
+7R 面积预算为 8×400 mm² Compute Die + 16×100 mm² MC = 4,800 mm²，工程 placement window 约 5,248 mm²。320 GB/s/MC 时 package raw MC payload 为 5.12 TB/s；640 GB/s/MC 为 Stretch 10.24 TB/s。7R 面积本身不能替代 MC 带宽闭合。
 ## 1. 路线选择
 
 本轮主线是**外置 Memory Cube**：
@@ -28,26 +33,26 @@ KGD 规格摘录：
 | 最大单向带宽 | 8 个 UCIe，320 GB/s |
 | D2D distance | ≤50 mm |
 
-## 3. 卡级基线
+## 3. 7-Reticle Package 基线
 
 | 项目 | 基线 |
 | --- | --- |
-| MC 数量 | 16/卡 |
+| MC 数量 | 16/package |
 | 本地关系 | 2 MC/Compute Die |
 | 容量档位 | 16 GB/MC 优先，8 GB 作为降本档 |
-| 卡容量 | 256 GB（16 GB 档）或 128 GB（8 GB 档） |
-| 原始聚合带宽 | 5.12 TB/s/卡 @320 GB/s |
+| Package 容量 | 256 GB（16 GB 档）或 128 GB（8 GB 档） |
+| 原始聚合带宽 | 5.12 TB/s/package @320 GB/s |
 | 当前模型有效系数 | 0.70 |
-| 模型有效聚合带宽 | 3.584 TB/s/卡 |
+| 模型有效聚合带宽 | 3.584 TB/s/package |
 
-8 GB 档已能覆盖当前 TP32 下约 49.6 GB/卡的模型+状态 backing，但没有充分
+8 GB 档已能覆盖当前 TP32 下约 49.6 GB/package的模型+状态 backing，但没有充分
 覆盖多请求、Prefill、冗余和故障降容。产品容量建议先按 16 GB 档规划，
 性能分析仍按带宽而不是容量决定。
 
 ## 4. 关键阻塞：带宽差一倍
 
 当前 Final Tuning 要接近 1000 TPS，需要每 MC 搜索参数 640 GB/s，对应约
-6.49 TB/s/卡有效 DMA。参考 MC 的 320 GB/s 点只得到约 3.40 TB/s 有效 DMA
+6.49 TB/s/package有效 DMA。参考 MC 的 320 GB/s 点只得到约 3.40 TB/s/package 有效 DMA
 和 546.63 TPS/usr。
 
 因此必须在以下方案中做出工程选择：
@@ -121,4 +126,3 @@ model object
 - 参考 MC 点的 tile 仿真可重现；
 - 1000 TPS 路线明确是 MC-X、更多 MC、压缩字节还是近存计算；
 - 故障降容和数据重映射策略完成。
-

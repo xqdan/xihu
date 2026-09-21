@@ -1,26 +1,29 @@
 # 封装、I/O、功耗、时钟、散热与 RAS
 
+## 0. 7-reticle 单芯片封装边界
+
+新的主规划采用 7-reticle package：约 82×64 mm 工程 placement window，8 个 20×20 mm Compute Die，16 个约 10×10 mm MC。7R 理论面积按 26×33 mm/reticle 计为 6,006 mm²，工程 placement window 按 5,248 mm²管理。
+
+面积基线：8×400 mm² Compute Die + 16×100 mm² MC = 4,800 mm²；剩余约 448 mm²用于 RDL、die 间距、keep-out、PDN、时钟、热扩散和维修余量。一个 package 对软件表现为一个 TP rank，32 个 package 组成 TP32。
 ## 1. 当前封装候选
 
-- 8 个 Compute Die；
-- 16 个约 102 mm² MC；
-- Compute Die 2×4 排布；
+- 8 个约 400 mm² Compute Die；
+- 16 个约 100 mm² MC；
+- Compute Die 4×2 排布；
 - 每 Compute Die 本地连接 2 个 MC；
 - 封装内 Die fabric；
-- 板间 scale-out 和主机接口从封装边缘引出。
+- 板间 scale-out 和主机接口从 package 边缘引出。
 
-旧封装文档按 20×20 mm、400 mm² Compute Die 设计。最新候选面积为
-259.57 mm²，若近似正方形边长约 16.1 mm，必须重新做 floorplan，不能继续
-直接使用旧的 82×64 mm 摆放结论。
-
-按面积粗算：
+7R 主候选的裸片面积为：
 
 ```text
-8 × 259.57 + 16 × 102 ≈ 3708.6 mm² bare-die area
+8 × 400 + 16 × 100 = 4,800 mm²
 ```
 
-相对 5248 mm² 中介层概念面积有约 29% 平面余量，但真实可行性还取决于
-keep-out、stitch、TSV、PDN、PHY 岸线和 die 间距。
+相对 5,248 mm² 工程 placement window 预留约 448 mm²，用于 die 间距、RDL、
+keep-out、PDN、时钟、热扩散和维修余量。当前搜索使用的 259.57 mm² Die
+是 compact executable profile，不能覆盖 7R 主候选的 8 L + 8 H / 96 MiB
+物理规划；两者需要独立 floorplan 和 PPA budget。
 
 ## 2. I/O 岸线
 
@@ -45,11 +48,11 @@ keep-out、stitch、TSV、PDN、PHY 岸线和 die 间距。
 
 当前分析结果：
 
-- Compute Die：237.46 W×8；
+- Compute Die：250 W budget ×8（7R physical primary）；compact model 237.46 W×8 仅作对照；
 - 16 MC：模型约 398.72 W；
-- 卡级固定控制/其他：80 W；
-- 合计：2378.36 W；
-- 卡级上限：2400 W。
+- Package 级固定控制/其他：需重新预算，不能沿用 80 W；
+- Compute + MC + package overhead 的合计必须按 7R profile 重算；
+- Package cooling envelope 初始按 2.8–3.2 kW 规划。
 
 仅剩约 21.64 W 分析余量，且尚未可靠包含：
 
@@ -61,7 +64,7 @@ keep-out、stitch、TSV、PDN、PHY 岸线和 die 间距。
 - PVT guardband；
 - 老化和漏电。
 
-因此当前 640 GB/s Stretch 配置在功耗上也不能直接冻结。
+因此当前 640 GB/s Stretch 配置在功耗上也不能直接冻结；7R 主候选必须重新进行 package-level power/thermal closure。
 
 ## 4. 时钟与电源域
 

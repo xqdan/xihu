@@ -1,4 +1,4 @@
-﻿# K3 1000 TPS/usr 芯片设计文档集
+# K3 1000 TPS/usr 芯片设计文档集
 
 版本：2026-09-20。
 
@@ -55,6 +55,8 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | [OPEN_ISSUES.md](OPEN_ISSUES.md) | 阻塞项、责任子系统和关闭证据 |
 | [spec/k3_mc_baseline.json](spec/k3_mc_baseline.json) | 当前机器可读基线与回归数值 |
 
+- `12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md`：7-reticle 单芯片、Compute Die 面积和集成存储规划。
+
 ## 4. 设计文档完成定义
 
 每个子系统文档进入 `FROZEN` 前至少要包含：
@@ -78,3 +80,6 @@ node tests/test_design_baseline.js
 机器可读基线中的数字由当前 Final Tuning 模型回归。它们是工程模型结果，
 不是硅上保证。
 
+
+
+- `spec/k3_7r_package_baseline.json`：7-reticle package 的面积、SRAM、MC 容量、带宽和 PPA 规划基线。

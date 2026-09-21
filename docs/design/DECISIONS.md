@@ -58,3 +58,12 @@
 - 决策：320 GB/s/MC 是当前参考兼容点；640 GB/s/MC 只能标为 Stretch。
 - 状态：`FROZEN`
 - 影响：998.81 TPS 不能作为已实现承诺。
+
+## ADR-010：7-reticle 单芯片物理边界
+
+- 日期：2026-09-21
+- 决策：将一个 7-reticle advanced package 定义为单芯片系统边界；包含 8 个 Compute Die、16 个 Memory Cube、package-local fabric、collective 和 scale-out endpoint。一个 package 是一个 TP rank，32 个 package 构成 TP32。
+- 状态：`BASELINE`
+- 物理主候选：8×400 mm² Compute Die、16×100 mm² MC、96 MiB data SRAM/Die、256 GB/package 优先容量档。
+- 兼容模型：现有 4 L + 4 H、44 MiB/Die、约 259.57 mm²/Die 仅作为 compact executable profile。
+- 关闭条件：7R placement/bump/RDL、P0 tile/PPA model、MC payload 和 package thermal 通过联合签核。

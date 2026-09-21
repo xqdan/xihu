@@ -1,19 +1,23 @@
 # 系统架构设计
 
+## 0. 单芯片定义
+
+本版本把一个 7-reticle advanced package 定义为一个“单芯片”系统边界：8 个 Compute Die、16 个集成 Memory Cube、active interposer/RDL、package-local fabric、package-level collective 和 scale-out endpoint 均属于一个 package。该 package 对软件暴露为一个 TP rank；32 个 package 构成 TP32 replica。
+
+面积规划采用：7R 理论面积 6,006 mm²；工程 placement window 约 82×64 mm、5,248 mm²；8×400 mm² Compute Die + 16×100 mm² MC = 4,800 mm² 裸片面积，预留约 448 mm² placement/routing/keep-out。
+
 ## 1. 系统边界
 
-本轮定义的“芯片”包含一个加速器卡上的 8 个 Compute Die、16 个外置
-Memory Cube、封装内互联、卡级 Scale-out 端点以及配套控制逻辑。
-32 张卡构成一个 TP32 Decode replica。
+本轮定义的“单芯片”是一个 7-reticle advanced package，包含 8 个 Compute Die、16 个集成 Memory Cube、active interposer/RDL、package-local fabric、package-level collective 和 scale-out endpoint。32 个 package 构成一个 TP32 Decode replica。
 
 ```text
 TP32 replica
-  32 × accelerator card
-    1 card
+  32 × K3 7-reticle package
+    1 package / TP rank
       8 × Compute Die
       16 × Memory Cube (2 local MC / Compute Die)
-      card-local die fabric
-      800 GB/s aggregate scale-out payload budget
+      package-local die fabric
+      800 GB/s/package scale-out payload target
 ```
 
 主机、交换机、光模块和电源/冷却属于系统接口，但其实现不包含在 Compute
@@ -23,29 +27,32 @@ Die RTL 内。
 
 ### 2.1 Compute Die
 
-每 Die 暂定：
+物理主候选每 Die：
 
-- 4 个 L Core；
-- 4 个 H Core；
-- 每 Core 独立 Tensor、Vector、TMA 和 Local SRAM；
-- 24 MiB Shared SRAM，8 slices；
+- 8 个 L Core；
+- 8 个 H Core；
+- 64 MiB L-Core Local SRAM；
+- 16 MiB H-Core Local SRAM；
+- 16 MiB Shared SRAM，16 slices；
+- 独立 Tensor、Vector、TMA 和 Local SRAM；
 - 单独的 collective/reduce 单元；
 - 2 个本地 MC 数据端口；
-- 卡内 Die fabric 端口；
-- Scale-out/RDMA 端点；
-- 管理、PMU、时钟、复位和 RAS。
+- Die fabric、Scale-out/RDMA、管理、PMU、时钟、复位和 RAS。
 
-### 2.2 Card
+当前可执行 compact profile 仍为 4 L + 4 H、44 MiB/Die；它是 P1 模型，不是
+7R P0 物理主候选。
+
+### 2.2 7-Reticle Package
 
 - 8 个 Compute Die；
 - 16 个 MC，每 Die 本地绑定 2 个；
-- 逻辑上每张卡是 TP32 的一个 rank；
-- 卡内先完成局部归约，再进入跨卡 collective；
-- 权重和 KV 默认本地放置，远端 MC 只用于重平衡和故障降级。
+- 逻辑上每个 package 是 TP32 的一个 rank；
+- package 内先完成局部归约，再进入跨 package collective；
+- 权重和 KV 默认本地放置，远端 package/MC 只用于重平衡和故障降级。
 
 ### 2.3 TP32 replica
 
-- 32 张卡按相同 shard map 加载；
+- 32 个 package 按相同 shard map 加载；
 - 每 token 由所有 rank gang-scheduled；
 - collective epoch 在所有 rank 上一致推进；
 - 以最慢 rank 作为 step 完成条件；
@@ -61,7 +68,7 @@ MC weight/state tile
   -> Core Local SRAM
   -> Tensor/Vector execution
   -> local partial
-  -> card-local reduce
+  -> package-local reduce
   -> RDMA-to-remote-SRAM collective
   -> ready/commit
   -> next operator tile
@@ -112,7 +119,7 @@ raw <= 1000 / 1.17 = 854.70 μs/token
 | --- | ---: | --- |
 | Tensor/Vector kernel | 390 μs | 需要真实 kernel trace 回标 |
 | Local TMA/SRAM | 250 μs | 包含 bank conflict |
-| Collective/RDMA | 115 μs | 包含 card-local 和 scale-out |
+| Collective/RDMA | 115 μs | 包含 package-local 和 scale-out |
 | MC/DMA 暴露等待 | 55 μs | 参考 MC 路线当前远超预算 |
 | launch/control/尾部 | 20 μs | descriptor、barrier、sampling |
 | 合计 | 830 μs | 留约 25 μs raw 工程余量 |
@@ -125,5 +132,5 @@ raw <= 1000 / 1.17 = 854.70 μs/token
 - MC 物理规格与每卡连接方式可制造；
 - TP32 物理拓扑明确，最坏 hop 和故障降级可计算；
 - tile 模型在无经验缩放因子的情况下达到 1050 TPS/usr；
-- 单 Die 面积、功耗、岸线和时钟收敛；
+- 单 Die 面积、功耗、package 岸线和时钟收敛；
 - 所有子系统接口文档完成并通过跨团队评审。

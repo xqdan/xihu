@@ -1,4 +1,4 @@
-﻿# K3 1000 TPS/usr 高层架构设计
+# K3 1000 TPS/usr 高层架构设计
 
 版本：2026-09-21  
 状态：`BASELINE / ARCHITECTURE PLANNING`
@@ -33,33 +33,41 @@
 | Raw 延迟预算 | `<=854.70 us/token`，按 1.17 工程裕量倒推 |
 | 目标尾延迟 | P99 不低于 1000 TPS/usr 对应的服务水平 |
 | 主要模式 | Decode 优先；保留 Prefill 兼容能力 |
-| 并行方式 | 32 张卡组成一个 TP32 replica |
+| 并行方式 | 32 个 7-reticle package 组成一个 TP32 replica |
 | 软件介入 | 一个 decode step 内不依赖 host 逐 kernel/逐 collective 介入 |
 
 ### 2.2 架构基线
 
 ```text
 K3 TP32 Decode Replica
-└── 32 × Accelerator Card
-    └── 1 × Card / TP rank
+└── 32 × K3 7-Reticle Package
+    └── 1 × Package / TP rank
         ├── 8 × Compute Die
-        │   ├── 4 × L Core
-        │   ├── 4 × H Core
-        │   ├── Local SRAM
-        │   ├── Shared SRAM
+        │   ├── 8 × L Core
+        │   ├── 8 × H Core
+        │   ├── 96 MiB data SRAM
         │   ├── TMA / DMA
         │   ├── Die-local NoC
         │   ├── Collective / Reduce
         │   ├── MC controllers
-        │   └── Die-to-die / Scale-out endpoints
-        ├── 16 × external Memory Cube
+        │   └── Die-to-die endpoints
+        ├── 16 × integrated Memory Cube
         │   └── 2 × local MC / Compute Die
-        ├── Card-local die fabric
-        ├── Card-level collective gateway
+        ├── Package-local die fabric
+        ├── Package-level collective gateway
         └── Scale-out / RDMA fabric endpoint
 ```
 
-### 2.3 关键架构原则
+> 物理主候选为 8×400 mm² Compute Die + 16×100 mm² MC。当前可执行性能模型仍保留 4 L + 4 H、44 MiB/Die 的 compact profile，直到 8 L + 8 H、96 MiB/Die 的 tile/PPA 模型完成。
+
+### 2.3 单芯片物理边界：7-reticle package
+
+本项目的“单芯片”采用 7-reticle 先进封装 package 作为物理边界，而不是单颗 Compute Die。一个 package 包含 8 个约 400 mm² Compute Die、16 个约 100 mm² MC 和 active interposer/RDL，工程 placement window 按约 82×64 mm、5,248 mm² 管理；7 个 reticle 的理论面积按 26×33 mm/reticle 计为 6,006 mm²。
+
+一个 7-reticle package 对软件表现为一个 TP rank；32 个 package 组成 TP32。现有文档中的“card-level 8 Die + 16 MC”在新口径下解释为“single-chip package”，后续应逐步把 `card` 和 `package` 的边界写清楚。
+
+7-reticle 主候选的单 Die 规划为 20×20 mm、400 mm²、8 L Core + 8 H Core、96 MiB 数据 SRAM；具体面积、SRAM 密度、MC payload 和 PHY 仍需封装/工艺/IP 回标。
+### 2.4 关键架构原则
 
 1. **本地性优先**：权重、KV、Linear Attention state 和工作 tile 优先绑定到本地 Die/MC；远端访问只作为显式的重平衡、collective 或故障降级路径。
 2. **显式数据移动**：Local SRAM、Shared SRAM、MC 和 remote SRAM 不采用 CPU 式隐式 cache coherence；使用 Tile Descriptor、TMA、epoch 和 mailbox 管理数据所有权与可见性。
@@ -92,21 +100,21 @@ L0 的输出必须是机器可读 manifest，能够自动生成 operator DAG、t
 
 ### 3.2 L1：System 与 TP32 层
 
-这一层定义 32 卡如何共同完成一个 token step：TP shard、卡级权重/KV/state placement、卡内先归约、跨卡后归约、Decode/Prefill QoS、慢卡和故障处理，以及 e2e token latency 和 collective budget。
+这一层定义 32 个 package 如何共同完成一个 token step：TP shard、package 级权重/KV/state placement、package 内先归约、跨 package 后归约、Decode/Prefill QoS、慢 package 和故障处理，以及 e2e token latency 和 collective budget。
 
-### 3.3 L2：Card 层
+### 3.3 L2：7-Reticle Package 层
 
-一卡是一个 TP rank，包含 8 个 Compute Die 和 16 个外置 MC。
+一个 7-reticle package 是一个 TP rank，包含 8 个 Compute Die 和 16 个集成 MC。
 
 主要职责：
 
 - 8 Die 的任务分派和 NUMA 管理；
 - 2 MC/Die 的本地数据绑定；
-- 卡内 4×2 mesh 候选拓扑；
-- card-local hierarchical reduce；
-- 卡级 SRAM 工作窗口；
-- 卡级功耗、热和 RAS；
-- 跨卡 Scale-out/RDMA 端点。
+- package 内 4×2 mesh 候选拓扑；
+- package-local hierarchical reduce；
+- package 级 SRAM 工作窗口；
+- package 级功耗、热和 RAS；
+- 跨 package Scale-out/RDMA 端点。
 
 卡内拓扑当前建议采用“4×2 mesh + 两个四 Die reduce domain”的统一候选，但在 packet 模型、封装 floorplan 和 PPA 通过前仍保持 `OPEN`。
 
@@ -114,11 +122,11 @@ L0 的输出必须是机器可读 manifest，能够自动生成 operator DAG、t
 
 ```text
 Compute Die
-├── 4 × L Core
-├── 4 × H Core
-├── 8 × Local SRAM cluster
-├── 8 × Shared SRAM slice
-├── 8 × TMA group
+├── 8 × L Core
+├── 8 × H Core
+├── Local SRAM clusters (80 MiB)
+├── 16 × Shared SRAM slice
+├── 16 × TMA group
 ├── Data NoC
 ├── Control NoC
 ├── MC controller × 2
@@ -254,7 +262,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 - `spec/system/DATA_PLACEMENT_AND_NUMA_SPEC.md`
 - `spec/system/END_TO_END_LATENCY_BUDGET.md`
 
-**主要接口**：Workload manifest、Tile IR、Card Scheduler、Collective/RDMA、PMU/telemetry。
+**主要接口**：Workload manifest、Tile IR、Package Scheduler、Collective/RDMA、PMU/telemetry。
 
 ### M2：AI Core 与计算阵列
 
@@ -269,7 +277,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 - `spec/ai_core/VECTOR_ENGINE_SPEC.md`
 - `spec/ai_core/CORE_COMMAND_AND_EVENT_SPEC.md`
 
-**基线候选**：每 Die 4 L Core + 4 H Core；1.2 GHz 作为模型候选；逻辑 Tensor peak 仅作为上限，不作为可持续性能承诺。
+**基线候选**：每 Die 物理主候选为 8 L Core + 8 H Core、1.0 GHz、96 MiB/Die；4 L + 4 H、1.2 GHz、44 MiB/Die 是当前可执行 compact profile，只用于模型对照。逻辑 Tensor peak 仅作为上限，不作为可持续性能承诺。
 
 ### M3：TMA、Local SRAM 与 Shared SRAM
 
@@ -283,7 +291,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 - `spec/tma_sram/SRAM_ADDRESS_AND_BANK_MAP.md`
 - `spec/tma_sram/BUFFER_LIFECYCLE_SPEC.md`
 
-**基线候选**：L Local SRAM 4×1 MiB/Die；H Local SRAM 4×4 MiB/Die；Shared SRAM 8×3 MiB/Die；总数据 SRAM 44 MiB/Die、352 MiB/card。122.2 MiB 是整卡 Shared SRAM 工作窗口峰值，不是每 Die 容量。
+**基线候选**：物理主候选为 L Local SRAM 64 MiB/Die、H Local SRAM 16 MiB/Die、Shared SRAM 16 MiB/Die，总数据 SRAM 96 MiB/Die、768 MiB/package。当前可执行 compact profile 为 44 MiB/Die、352 MiB/card；两者必须在报告中分开。
 
 ### M4：Memory Cube 与内存控制器
 
@@ -315,7 +323,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 
 **基线候选**：5×5 mesh 作为单 Die 逻辑候选；Data NoC、Control NoC 和 Collective fast path 分层；4096-bit/方向只作为模型候选，必须通过物理布线和 PPA 验证。
 
-### M6：8 Die Card Fabric
+### M6：8 Die Package Fabric
 
 **职责**：8 Die 物理拓扑、die-to-die 链路、card-local route、4+4 reduce domain、MC home/NUMA、链路故障绕行、卡内 collective 和热均衡。
 
@@ -347,7 +355,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 
 ### M8：Scheduler、Compiler、Firmware 与 PMU
 
-**职责**：生成和优化 Tile IR；TP group、Card、Die、Core 四级调度；TMA、MC、NoC 和 collective 资源预约；persistent decode-step execution；bring-up、DVFS、故障处理；PMU 和性能 trace。
+**职责**：生成和优化 Tile IR；TP group、Package、Die、Core 四级调度；TMA、MC、NoC 和 collective 资源预约；persistent decode-step execution；bring-up、DVFS、故障处理；PMU 和性能 trace。
 
 **关键文档**
 
@@ -373,7 +381,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 - `spec/package/CLOCK_RESET_POWER_DOMAIN_SPEC.md`
 - `spec/package/RAS_AND_SECURITY_SPEC.md`
 
-**当前风险**：237.46 W/Die 和约 2.4 kW/card 是模型结果，不是物理签核结果。必须纳入高速 PHY、ECC、VRM、BMC、冷却、PVT 和老化余量。
+**当前风险**：250 W/Die 和约 2.8–3.2 kW/package 是 P0 规划预算；237.46 W/Die 和 2.4 kW 是 P1 compact 模型结果，不是物理签核结果。必须纳入高速 PHY、ECC、VRM、BMC、冷却、PVT 和老化余量。
 
 ### M10：性能模型、验证与签核
 
@@ -506,7 +514,7 @@ ARCH-100 Verification / Sign-off
 |---|---:|
 | Tensor / Vector kernel | 390 us |
 | Local TMA / SRAM | 250 us |
-| Card-local + TP32 Collective/RDMA | 115 us |
+| Package-local + TP32 Collective/RDMA | 115 us |
 | MC / DMA 暴露等待 | 55 us |
 | Launch / control / tail | 20 us |
 | 预算合计 | 830 us |
@@ -517,7 +525,7 @@ ARCH-100 Verification / Sign-off
 
 ### 8.2 容量与带宽目标
 
-初始基线：8 Compute Die/card；16 MC/card；2 MC/Die；16 GB/MC 优先，8 GB 为降本档；44 MiB data SRAM/Die；352 MiB data SRAM/card；Shared SRAM working window 约 122.4 MiB/card；TP32 scale-out payload 目标约 800 GB/s/card；具体 MC 持续 payload 必须由选定供应商或实现路线确认。
+物理主基线：1 个 7-reticle package 包含 8 Compute Die + 16 MC；2 MC/Die；16 GB/MC 优先，8 GB 为原型档；96 MiB data SRAM/Die、768 MiB/package；TP32 scale-out payload 目标约 800 GB/s/package。当前 compact executable profile 仍为 44 MiB/Die；具体 MC 持续 payload 必须由选定供应商或实现路线确认。
 
 ### 8.3 PPA 目标
 
@@ -551,17 +559,17 @@ ARCH-100 Verification / Sign-off
 
 **通过条件**：所有单元数量、接口和时钟域明确；NoC、SRAM、TMA 和 PHY 可布线；面积、功耗、频率有 10–15% 余量。
 
-### G4：Card 架构冻结
+### G4：Package 架构冻结
 
-**交付**：8 Die topology、route table、MC home/NUMA、card-local collective、package floorplan、thermal/PDN/clock v1。
+**交付**：8 Die topology、route table、MC home/NUMA、package-local collective、package floorplan、thermal/PDN/clock v1。
 
 **通过条件**：不再同时使用 ring、mesh 和 hierarchy 三套口径；packet 模型覆盖最坏 collective、MC miss 和故障绕行；卡级 PPA 和热约束收敛。
 
 ### G5：TP32 Scale-out 冻结
 
-**交付**：32 卡拓扑、PHY/port/connector/optics 方案、RDMA protocol、collective protocol、replay/timeout/RAS、P99 报告。
+**交付**：32 package 拓扑、PHY/port/connector/optics 方案、RDMA protocol、collective protocol、replay/timeout/RAS、P99 报告。
 
-**通过条件**：跨卡物理带宽和功耗可实现；32 卡最坏 hop、拥塞、重放和降级通过；host 不需要逐 collective 介入；P99 达标。
+**通过条件**：跨卡物理带宽和功耗可实现；32 package 最坏 hop、拥塞、重放和降级通过；host 不需要逐 collective 介入；P99 达标。
 
 ### G6：RTL 前架构签核
 
@@ -579,7 +587,7 @@ ARCH-100 Verification / Sign-off
 | B-002 | 320 GB/s 参考点与 640 GB/s 目标点冲突 | 当前 998.81 TPS 不能作为承诺 | 供应商规格或替代架构 |
 | B-003 | Final Tuning 仍含经验缩放因子 | 性能可能高估 | 精确 tile/transaction 模型 |
 | B-004 | 卡内拓扑口径冲突 | 带宽、hop、封装无法签核 | 统一拓扑和 packet 模型 |
-| B-005 | TP32 物理拓扑未定义 | 800 GB/s/card 可实现性未知 | PHY、布线、功耗和 P99 方案 |
+| B-005 | TP32 物理拓扑未定义 | 800 GB/s/package 可实现性未知 | PHY、布线、功耗和 P99 方案 |
 | B-006 | 频率、面积、功耗未回标 | PPA 可能不收敛 | synthesis/floorplan/IP macro |
 
 在这些问题关闭前，4 L + 4 H、44 MiB/Die、5×5 NoC 和 8 Die topology 都只能视为架构候选或基线，不能视为最终冻结规格。

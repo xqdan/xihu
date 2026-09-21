@@ -1,0 +1,83 @@
+{
+  "version": "2026-09-21",
+  "status": "baseline-proposal",
+  "scope": "single-chip-package",
+  "softwareVisibility": {
+    "packageIsTpRank": true,
+    "packagesPerTpReplica": 32
+  },
+  "reticle": {
+    "widthMm": 26,
+    "heightMm": 33,
+    "areaMm2": 858,
+    "count": 7,
+    "theoreticalAreaMm2": 6006
+  },
+  "placementWindow": {
+    "widthMm": 82,
+    "heightMm": 64,
+    "areaMm2": 5248,
+    "note": "Engineering placement window; package vendor must confirm stitch map, edge keep-out and maximum dimensions."
+  },
+  "compute": {
+    "dieCount": 8,
+    "dieWidthMm": 20,
+    "dieHeightMm": 20,
+    "dieAreaMm2": 400,
+    "processCandidate": "Samsung SF4X-class 4 nm HPC",
+    "frequencyGHzCandidate": 1.0,
+    "powerWPerDieBudget": 250,
+    "lCoresPerDie": 8,
+    "hCoresPerDie": 8,
+    "dataSramMiBPerDie": 96,
+    "sramBreakdownMiBPerDie": {
+      "lCoreLocal": 64,
+      "hCoreLocal": 16,
+      "shared": 16
+    },
+    "areaBudgetMm2PerDie": {
+      "tensorVectorRf": 200,
+      "sram": 76,
+      "nocAndMcController": 50,
+      "ucieAndFabricPhy": 48,
+      "managementSecurityPmu": 12,
+      "clockDftSpareMargin": 14
+    }
+  },
+  "memory": {
+    "cubeCount": 16,
+    "cubesPerComputeDie": 2,
+    "cubeAreaMm2Planning": 100,
+    "capacityGBPerCubePrimary": 16,
+    "capacityGBPerCubePrototype": 8,
+    "payloadGBsPerCubeBaseline": 320,
+    "payloadGBsPerCubeStretch": 640,
+    "nearMemoryComputeInBaseline": false
+  },
+  "packageTotals": {
+    "computeAreaMm2": 3200,
+    "memoryAreaMm2": 1600,
+    "bareDieAreaMm2": 4800,
+    "placementRoutingReserveMm2": 448,
+    "dataSramMiB": 768,
+    "memoryCapacityGBPrimary": 256,
+    "memoryCapacityGBPrototype": 128,
+    "memoryPayloadTBsBaseline": 5.12,
+    "memoryPayloadTBsStretch": 10.24,
+    "computePowerWBudget": 2000,
+    "coolingEnvelopeW": 3200,
+    "scaleOutPayloadGBsTarget": 800
+  },
+  "profiles": {
+    "physicalPrimary": "P0-7R-balanced-400mm2-96MiB",
+    "executableComparison": "P1-compact-259.57mm2-44MiB",
+    "note": "The current executable performance model remains the compact profile until the 8L+8H/96MiB tile and PPA model is implemented."
+  },
+  "acceptance": {
+    "targetTpsPerUser": 1000,
+    "architectureGateTpsPerUser": 1050,
+    "rawLatencyBudgetUs": 854.7008547008547,
+    "currentStatus": "not-met",
+    "blocker": "A manufacturable MC bandwidth or equivalent byte-reduction route must be demonstrated in the detailed tile/transaction model."
+  }
+}
