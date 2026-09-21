@@ -1,0 +1,17 @@
+﻿'use strict';
+const fs=require('fs'); const path=require('path'); const assert=require('assert');
+const root=path.resolve(__dirname,'..');
+const env=JSON.parse(fs.readFileSync(path.join(root,'data/direction/directional_resource_envelope.json'),'utf8').replace(/^\uFEFF/,''));
+const score=JSON.parse(fs.readFileSync(path.join(root,'data/direction/directional_tps_scorecard.json'),'utf8').replace(/^\uFEFF/,''));
+const report=fs.readFileSync(path.join(root,'reports/direction/stage_a_directional_run_20260921.md'),'utf8');
+assert.strictEqual(env.stage,'direction');
+assert.strictEqual(env.models.length,3);
+assert.strictEqual(env.packageEnvelope.areaConservation,true);
+assert.strictEqual(score.candidateCount,36);
+assert.strictEqual(score.selectedCandidateIds.length,3);
+assert.strictEqual(score.dGate.areaConservation,true);
+assert.strictEqual(score.dGate.threeModelCoverage,true);
+assert.strictEqual(score.dGate.sensitivitySweep,false);
+assert.strictEqual(score.dGate.decision,'BLOCKED_PENDING_SENSITIVITY_SWEEP_AND_FORMAL_MANIFEST');
+assert(report.includes('D-Gate'));
+console.log('PASS stage A directional run: envelope, 36 candidates, three-model coverage and blocked gate recorded');

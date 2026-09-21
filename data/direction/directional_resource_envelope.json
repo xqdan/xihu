@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "directional-resource-envelope-v0.1",
+  "runId": "stage-a-20260921105239",
+  "stage": "direction",
+  "agentId": "D1-D6",
+  "candidateId": "direction-input-envelope",
+  "targetTpsPerUser": 1000,
+  "engineeringMargin": 1.17,
+  "confidence": "E0",
+  "status": "DIRECTIONAL_ESTIMATE",
+  "models": [
+    {
+      "modelId": "K3",
+      "status": "MODEL",
+      "confidence": "E1",
+      "layerCount": 93,
+      "contextTokens": 1048576,
+      "parameterCountB": null,
+      "activeParameterCountB": null,
+      "features": [
+        "heterogeneous_l_h_core",
+        "linear_attention",
+        "moe",
+        "lse_m_l_o",
+        "tp32_collective",
+        "persistent_decode"
+      ],
+      "coarseWorkload": {
+        "decode": {
+          "flopsPerTokenClass": "high_moe_plus_long_context",
+          "memoryClass": "weight_streaming_plus_state",
+          "communicationClass": "tp_collective_and_optional_expert_dispatch"
+        },
+        "prefill": {
+          "flopsClass": "sequence_length_scaled",
+          "memoryClass": "weight_reuse_plus_kv_write",
+          "communicationClass": "tp_cp_collective"
+        }
+      },
+      "blockers": []
+    },
+    {
+      "modelId": "GLM-5.2",
+      "status": "MODEL_PENDING_CONFIG_CONFIRMATION",
+      "confidence": "E0",
+      "layerCount": null,
+      "contextTokens": 1048576,
+      "parameterCountB": 753,
+      "activeParameterCountB": null,
+      "features": [
+        "sparse_moe",
+        "long_context",
+        "index_share_attention",
+        "multi_token_prediction",
+        "agentic_decode"
+      ],
+      "coarseWorkload": {
+        "decode": {
+          "flopsPerTokenClass": "blocked_config",
+          "memoryClass": "weight_streaming_plus_state",
+          "communicationClass": "tp_collective_and_optional_expert_dispatch"
+        },
+        "prefill": {
+          "flopsClass": "sequence_length_scaled",
+          "memoryClass": "weight_reuse_plus_kv_write",
+          "communicationClass": "tp_cp_collective"
+        }
+      },
+      "blockers": [
+        "formal layer/dtype/expert manifest is not frozen"
+      ]
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "status": "MODEL_PENDING_LICENSE_AND_CONFIG_CONFIRMATION",
+      "confidence": "E0",
+      "layerCount": 61,
+      "contextTokens": 1048576,
+      "parameterCountB": 1600,
+      "activeParameterCountB": 49,
+      "features": [
+        "sparse_moe",
+        "long_context",
+        "deepseek_sparse_attention",
+        "indexer",
+        "multi_token_prediction",
+        "expert_parallelism",
+        "agentic_decode"
+      ],
+      "coarseWorkload": {
+        "decode": {
+          "flopsPerTokenClass": "blocked_config",
+          "memoryClass": "weight_streaming_plus_state",
+          "communicationClass": "tp_collective_and_optional_expert_dispatch"
+        },
+        "prefill": {
+          "flopsClass": "sequence_length_scaled",
+          "memoryClass": "weight_reuse_plus_kv_write",
+          "communicationClass": "tp_cp_collective"
+        }
+      },
+      "blockers": [
+        "formal layer/dtype/expert manifest is not frozen"
+      ]
+    }
+  ],
+  "packageEnvelope": {
+    "reticles": 7,
+    "placementWindowMm2": 5248,
+    "computeDies": 8,
+    "computeDieAreaMm2": 400,
+    "memoryCubes": 16,
+    "memoryCapacityGB": 256,
+    "mcBaselineGBsPerCube": 320,
+    "mcStretchGBsPerCube": 640,
+    "packageBaselineTBs": 5.12,
+    "packageStretchTBs": 10.24,
+    "computePowerBudgetW": 2000,
+    "coolingEnvelopeW": 3200,
+    "areaConservation": true
+  },
+  "bandwidthEnvelope": {
+    "mc320": {
+      "sustainedAssumption": 0.7,
+      "payloadTBs": 5.12,
+      "classification": "baseline_reference"
+    },
+    "mc640": {
+      "sustainedAssumption": 0.7,
+      "payloadTBs": 10.24,
+      "classification": "stretch_not_manufacturing_default"
+    }
+  },
+  "assumptions": [
+    "Stage A uses coarse classes, not operator-level measurements.",
+    "K3 is the only repository baseline model; GLM-5.2 and DeepSeek-V4-Pro remain planning inputs.",
+    "MC320/MC640 are directional bandwidth profiles and must be replaced by sustained transaction data in Stage B.",
+    "No software gain is silently applied in this run."
+  ],
+  "constraintsChecked": [
+    "7-reticle area conservation",
+    "8 compute die + 16 MC topology",
+    "P0/P1 separation",
+    "MC320/MC640 separation"
+  ],
+  "nextActions": [
+    "D7 candidate sweep",
+    "Q1 formal manifest for selected candidates",
+    "Q2 arithmetic intensity ledger"
+  ]
+}
