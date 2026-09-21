@@ -1,0 +1,35 @@
+﻿{
+  "schemaVersion": "agent-catalog-interaction-v0.1",
+  "asOf": "2026-09-21",
+  "agents": {
+    "A0": {"stage":"governance","role":"Chief Architect / Integrator","outputs":["candidate_register","adr","gate_status"]},
+    "direction": [
+      {"id":"D1","role":"Workload Direction","outputs":["workload_direction"]},
+      {"id":"D2","role":"Memory / Bandwidth Direction","outputs":["memory_bandwidth_envelope"]},
+      {"id":"D3","role":"Compute / Core Direction","outputs":["compute_core_envelope"]},
+      {"id":"D4","role":"Communication Direction","outputs":["communication_envelope"]},
+      {"id":"D5","role":"Package / 7-Reticle Direction","outputs":["package_7r_envelope"]},
+      {"id":"D6","role":"Software Direction","outputs":["software_gain_budget"]},
+      {"id":"D7","role":"Directional TPS Integrator","outputs":["architecture_candidates","directional_tps_scorecard"]}
+    ],
+    "quantification": [
+      {"id":"Q1","role":"Manifest / Operator","outputs":["model_manifests","operator_dag"]},
+      {"id":"Q2","role":"Arithmetic Intensity / Roofline","outputs":["operator_ledgers","roofline","compute_sizing"]},
+      {"id":"Q3","role":"Tile / Memory Events","outputs":["tile_events","memory_events"]},
+      {"id":"Q4","role":"NoC / Collective Events","outputs":["packet_events","collective_events"]},
+      {"id":"Q5","role":"Kernel Cycle / AI Core","outputs":["kernel_cycles"]},
+      {"id":"Q6","role":"Scheduler / Software Events","outputs":["schedule_events"]},
+      {"id":"Q7","role":"PPA / Thermal / RAS","outputs":["ppa_results","ras_results"]},
+      {"id":"Q8","role":"Fine TPS Integrator","outputs":["fine_tps_matrix"]},
+      {"id":"Q9","role":"Verification / Report / Gate","outputs":["gate_report","regression_report"]}
+    ]
+  },
+  "interactionRules": {
+    "artifactEnvelopeRequired": ["schemaVersion","runId","stage","agentId","candidateId","modelId","confidence","status","inputs","outputs","assumptions","constraintsChecked","blockers","nextActions"],
+    "directionToQuantificationGate": "D_GATE",
+    "quantificationToSignoffGate": "Q_GATE",
+    "maxCandidatesAfterDGate": 3,
+    "sharedManifestHashAcrossQ2ToQ8": true,
+    "feedbackToDirectionRequiresAdr": true
+  }
+}
