@@ -432,3 +432,75 @@ tests/test_multi_model_profiles.js
 ```
 
 在A10完成三模型事件级回放前，不能声称当前P0物理方案同时满足三个模型的1,000 TPS/usr目标。
+## 10. TP8 / TP16 / TP32 测试矩阵
+
+机器可读用例位于：
+
+```text
+data/workload/multi_model_tp_matrix.json
+```
+
+当前版本包含9个基础用例：
+
+```text
+3 models × 3 TP modes = 9 cases
+```
+
+| Model | TP8 | TP16 | TP32 | 特有检查 |
+|---|---|---|---|---|
+| K3 | `K3-TP8-DECODE-1M` | `K3-TP16-DECODE-1M` | `K3-TP32-DECODE-1M` | Linear Attention、LSE `m/l/O`、MoE、persistent decode |
+| GLM-5.2 | `GLM-5.2-TP8-DECODE-1M` | `GLM-5.2-TP16-DECODE-1M` | `GLM-5.2-TP32-DECODE-1M` | index cache、sparse index、MTP、rollback |
+| DeepSeek-V4-Pro | `DeepSeek-V4-Pro-TP8-DECODE-1M` | `DeepSeek-V4-Pro-TP16-DECODE-1M` | `DeepSeek-V4-Pro-TP32-DECODE-1M` | expert parallel、expert dispatch/combine、indexer、FP8/FP4路径 |
+
+### 10.1 统一测试输入
+
+每个测试用例固定：
+
+```text
+batch = 1
+context = 1,048,576 token
+decode tokens = 1
+PP = 1
+physical profile = P1-compact-executable
+MC profiles = MC320, MC640
+seed = 11, 23, 47, 89, 131
+```
+
+测试目标不是直接伪造TPS结果，而是先确认三模型在不同TP规模下的：
+
+- manifest和Tile IR可生成；
+- package/die/MC拓扑计算正确；
+- Tensor/KV/Expert/Index分片语义一致；
+- Collective、Dispatch、Combine和MTP事件可表达；
+- P50/P95/P99、带宽、SRAM、功耗等结果具有统一输出字段。
+
+### 10.2 TP拓扑量化
+
+本项目约定1个7-reticle package对应1个TP rank，因此：
+
+| TP | Package | Compute Die | MC | Data SRAM | MC容量 | Scale-out aggregate target |
+|---:|---:|---:|---:|---:|---:|---:|
+| 8 | 8 | 64 | 128 | 6,144 MiB | 2,048 GB | 6.4 TB/s |
+| 16 | 16 | 128 | 256 | 12,288 MiB | 4,096 GB | 12.8 TB/s |
+| 32 | 32 | 256 | 512 | 24,576 MiB | 8,192 GB | 25.6 TB/s |
+
+其中每个package保持：
+
+```text
+8 Compute Die
+16 MC
+768 MiB data SRAM
+256 GB primary MC capacity
+800 GB/s package scale-out target
+```
+
+### 10.3 测试退出条件
+
+- 9个用例全部能被JSON loader读取；
+- 每个模型恰好包含TP8、TP16、TP32三个用例；
+- 拓扑守恒检查通过：`packages = TP`、`dies = TP × 8`、`MC = TP × 16`；
+- K3用例必须启用LSE merge，禁用index cache和MTP branch；
+- GLM-5.2用例必须启用index cache、MTP branch和rollback；
+- DeepSeek-V4-Pro用例必须启用expert parallel，检查384 expert和每token 6 active expert字段；
+- 后续A10性能模型必须对9个用例分别输出TPS、raw/e2e latency、P50/P95/P99、MC payload和SRAM peak；
+- 任一用例未能生成事件级trace时，不得宣称该TP规模已通过架构验证。
