@@ -1,6 +1,7 @@
 # Agent Collaboration Guide
 
 并行设计总计划：[`docs/design/AGENT_WORKSTREAM_PLAN.md`](docs/design/AGENT_WORKSTREAM_PLAN.md)。
+量化验收矩阵：[`docs/design/AGENT_METRICS_MATRIX.md`](docs/design/AGENT_METRICS_MATRIX.md)。
 
 本文件是所有 agent、同事和自动化任务的协作入口。目标是保持每个改动小、
 边界清晰、可回归，并避免多个 agent 同时破坏公共模型契约。

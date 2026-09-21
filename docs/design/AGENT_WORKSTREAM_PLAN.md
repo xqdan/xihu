@@ -3,6 +3,8 @@
 版本：2026-09-21
 状态：`BASELINE / READY FOR PARALLEL EXECUTION`
 
+> 配套量化验收矩阵：[`AGENT_METRICS_MATRIX.md`](AGENT_METRICS_MATRIX.md)。每个 Agent 的指标、单位、P0/P1 profile 和退出条件以该矩阵为准。
+
 ## 1. 目标
 
 本计划用于把 K3 7-reticle 单芯片架构拆分成可并行、可合并、可验证的 agent workstream，目标是在不破坏公共架构契约的前提下，加速达到：

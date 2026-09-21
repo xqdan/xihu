@@ -1,6 +1,7 @@
 # K3 1000 TPS/usr 芯片设计文档集
 
 - `AGENT_WORKSTREAM_PLAN.md`：并行 agent workstream、依赖图、合并顺序和签核闸门。
+- `AGENT_METRICS_MATRIX.md`：A0–A13 按模块拆解的量化指标、交付物、依赖和退出条件。
 
 版本：2026-09-20。
 
