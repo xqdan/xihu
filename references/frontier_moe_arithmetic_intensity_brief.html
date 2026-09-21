@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>算术强度要点 · V4-Pro / K3 / GLM-5.2</title>
+  <style>
+    :root {
+      --ink: #172033; --muted: #647083; --paper: #f3f1eb; --panel: #fffdf8; --line: #d6d8d8;
+      --accent: #155e75; --accent-soft: #e4f2f4; --warn: #b45309; --warn-soft: #fff4d8;
+      --purple: #6d28d9; --purple-soft: #ede9fe; --good: #166534; --good-soft: #e6f4ea;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper);
+      font: 14.5px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    main { max-width: 1080px; margin: 0 auto; padding: 28px 22px 64px; }
+    h1 { margin: 4px 0 8px; font-size: 26px; line-height: 1.25; }
+    h2 { margin: 30px 0 8px; padding-top: 14px; font-size: 18px; border-top: 1px solid var(--line); }
+    h3 { margin: 12px 0 6px; font-size: 14px; color: var(--accent); }
+    p { margin: 0 0 9px; }
+    .eyebrow { color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .09em; }
+    .subtitle { color: var(--muted); }
+    .panel { padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+    .stat { padding: 11px 13px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+    .stat .v { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .stat .l { font-size: 12px; color: var(--muted); }
+    .callout { margin: 10px 0 12px; padding: 12px 15px; color: #164e63; background: var(--accent-soft);
+      border-left: 4px solid var(--accent); border-radius: 6px; }
+    .callout.warn { color: #78350f; background: var(--warn-soft); border-left-color: var(--warn); }
+    .callout.good { color: #14532d; background: var(--good-soft); border-left-color: var(--good); }
+    .callout p:last-child { margin-bottom: 0; }
+    .formula { margin: 6px 0 10px; padding: 8px 10px; background: #fff; border: 1px dashed var(--line);
+      border-radius: 8px; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 11.5px; font-weight: 650; background: #f7f5ef; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    tr.hi td { background: #f0f7f8; }
+    .tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 650; }
+    .tag.info { background: var(--accent-soft); color: var(--accent); }
+    .tag.purple { background: var(--purple-soft); color: var(--purple); }
+    .tag.vec { background: #eff6ff; color: #1d4ed8; }
+    .mono { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+    .toc a { padding: 4px 10px; background: #fff; border: 1px solid var(--line); border-radius: 999px;
+      color: var(--accent); font-size: 12px; text-decoration: none; }
+    .col-glossary { display: grid; grid-template-columns: 8.2em 1fr; gap: 4px 16px; margin: 0; }
+    .col-glossary dt { font-weight: 700; color: var(--accent); font-size: 13px; padding-top: 2px; }
+    .col-glossary dd { margin: 0 0 10px; }
+    footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
+    footer a, a { color: var(--accent); }
+    @media (max-width: 800px) {
+      .grid-2, .grid-4 { grid-template-columns: 1fr 1fr; }
+      .col-glossary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">BRIEF · 按原文逻辑</div>
+    <h1>算术强度要点：V4-Pro / K3 / GLM-5.2</h1>
+    <p class="subtitle">
+      按 <a href="./frontier_moe_arithmetic_intensity.html">算术强度分析页</a> 的章节顺序把主逻辑写完整，不附图、不逐算子扫表。
+      只评三颗旗舰的算子 I（FLOP/Byte）。Decode 一步和 Prefill 一条序列必须分开看：Prefill 线性会 ×S，对数轴会被拉开，不能和 Decode 画在同一张图上。
+      默认 Decode Context 1M、Prefill 32K、专家预测 80%、PD <b>Decode 80% / Prefill 20%</b>。
+      单卡 MC 仍是 16×320 GB/s×0.7 = <b>3.58 TB/s</b>，Tensor 利用率 0.8。下文芯片 TF 是原始峰值，Roofline 有效峰值为 TF×0.8；脊点 = 有效峰值 / 有效带宽。
+    </p>
+    <div class="toc">
+      <a href="#rules">I 怎么变</a>
+      <a href="#shardOps">切分与 I</a>
+      <a href="#roofDecode">Decode</a>
+      <a href="#roofPrefill">Prefill</a>
+      <a href="#vector">Vector</a>
+      <a href="#pdVec">PD 分核</a>
+      <a href="#chipSpec">按 I 选芯片</a>
+    </div>
+  </header>
+
+  <div class="grid-4">
+    <div class="stat"><div class="v">196.6</div><div class="l">L 矩阵 TF · Decode B=32</div></div>
+    <div class="stat"><div class="v">动态</div><div class="l">H 矩阵 TF · Prefill I_MC</div></div>
+    <div class="stat"><div class="v">8.2</div><div class="l">L-V / H-V 各 TF</div></div>
+    <div class="stat"><div class="v">80/20</div><div class="l">D/P 带宽 %</div></div>
+  </div>
+
+  <h2 id="rules">I 怎么从 Decode 变到 Prefill</h2>
+  <p class="subtitle">先分清「强度」是什么、矩阵挂哪颗核、带宽怎么切，再谈线性 / 注意力 / batch / TP / CP 怎么改 I。</p>
+
+  <dl class="col-glossary">
+    <dt>I_MC</dt>
+    <dd>
+      算术强度，只看 Memory Channel（HBM）搬了多少字节，<b>不含片间网</b>。单位 FLOP/Byte。I 高偏算力墙，I 低偏带宽墙。
+      算子 I_MC 是单个 GEMM 或注意力核：线性 Decode 约为 <span class="mono">2×参数 / 权重字节</span>（MXFP4 Routed ≈ 3.76，BF16 = 1）。
+      定 H 用的是 Prefill <b>整模</b> I_MC：把这张卡上的线性+注意力 FLOP 加总，再按 TP×CP 切开，分母只留本卡要读的权重和 KV。
+      <div class="formula">I_MC = FLOP / HBM</div>
+      <div class="formula">整模 Prefill　I_MC = [(线性 + 注意力) / (TP · CP)] / (权重/TP + KV/CP)</div>
+    </dd>
+    <dt>I+网</dt>
+    <dd>
+      同一套 FLOP，分母再加导线：TP 环 all-reduce ≈ <span class="mono">2(TP−1)·payload·tokens</span>（Decode tokens=B，Prefill =S/CP），
+      CP 搬 KV ≈ <span class="mono">2(CP−1)/CP · KV</span>。比 I_MC 更稀，只判断会不会先碰到网墙，<b>不拿来压低 H 算力档</b>。TP=1 且 CP=1 时与 I_MC 相同。
+      <div class="formula">I+网 = FLOP / (HBM + 2(TP−1)·payload·tokens + 2(CP−1)/CP·KV)</div>
+    </dd>
+    <dt>挂核</dt>
+    <dd>
+      <b>PD 同时在线</b>：L 跑 Decode，H 跑 Prefill。Decode 矩阵尽量挂 L；若该算子 I 高于「PD 下 L 脊点」= 原 L 脊点 / Decode 份额，则<b>临时上 H</b>（抢占一段时间，H 矩阵峰值不把 Prefill 和 Decode 注意力加在一起）。
+      Prefill 矩阵始终挂 H。伴随 Vector 跟矩阵走：线性侧的 Norm/SiLU 跟线性，RoPE/Softmax 跟注意力。
+    </dd>
+    <dt>PD 带宽</dt>
+    <dd>
+      L 与 H 共用 3.58 TB/s，按 Decode / Prefill 份额调度，不是各吃满。默认 <b>Decode 80% / Prefill 20%</b>。
+      份额下有效脊点 = 原脊点 / 份额：Decode 分得多，L 脊点变高（注意力更不容易溢出）；Prefill 只剩 20%，H 脊点变稀。
+      Vector 匹配 TF = I × (份额 × 3.58) / 0.8。H 矩阵峰值仍按<b>满带宽</b> I_MC 定，不被 20% 压低。
+    </dd>
+    <dt>线性 GEMM</dt>
+    <dd>
+      Decode 一步：权重读一份，FLOP 按 1 token 计，所以 I 就是 dtype 决定的那个常数。Prefill 每卡仍然只读一份权重，但本地要算 s=S/CP 个 token，FLOP ×s，于是 <span class="mono">I × (S/CP)</span>。CP=1 时就是 ×S。
+      TP 把权重和 FLOP 一起切开，线性算子 I 不变。
+    </dd>
+    <dt>因果稠密注意力</dt>
+    <dd>
+      MLA / HCA / indexer：Decode 每步只对当前 Q 扫已有 KV，FLOP 与 KV 字节都随 L 同比涨，<b>I 与 Context 无关</b>，矩阵核默认挂 L。
+      对全量因果注意力，Prefill 因果积分 FLOP ~ S²、写出 KV ~ S，算子 I 近似为 (S/2)×Decode；CSA/HCA/DSA/top-k/窗口等固定工作集必须按各自实际工作集单独计算，不能套用该比例。矩阵核挂 H。Softmax/LSE 走 Vector。
+      定 H <b>不要直接用这段算子 I×S</b>，否则会到十万量级；改用整模 I_MC。
+    </dd>
+    <dt>MLA / MQA 怎么切</dt>
+    <dd>
+      潜变量 KV 跨头共享（V4 还是 MQA），<b>不能按头切 KV</b>。TP 只切 Q 头：FLOP ÷TP，每卡仍读完整 KV，所以算子 I ÷TP。
+      要摊 KV 容量和本步 KV 带宽只能走 CP（切序列）：Prefill 上 FLOP 与本地 KV 同 ÷CP，MC I 不变。
+      引擎里「MLA CP=TP」指用 TP 组做 Context 分片，不是切头。
+    </dd>
+    <dt>固定工作集</dt>
+    <dd>
+      DSA/CSA topk、滑动窗：每查询搬的状态差不多，Prefill I ≈ Decode I。Decode 仍挂 L、Prefill 仍挂 H。
+      KDA / RMSNorm / SiLU / RoPE / Softmax / 残差是 Vector，I 几乎不随 S、B 变，不单独改挂 L/H。
+    </dd>
+    <dt>Decode batch</dt>
+    <dd>
+      B = 同一 replica 并发序列。稠密权重读 1 份、FLOP ×B，所以 I ×B。Routed 独特专家 ≈ E·(1−((E−k)/E)<sup>B</sup>)，字节随独特集合涨，I ≈ I₁·B·k/uniq，碰撞少时几乎不涨。
+      注意力与 KDA：FLOP 和状态都 ×B，I 不变。预取 (2−p) 只放大 Decode Routed 分母；Prefill 按 p=1 读一份专家。
+    </dd>
+    <dt>TP / CP</dt>
+    <dd>
+      TP 切稠密权重：在只看 MC、且 FLOP 与权重同步分片的理想模型中，GEMM 的 FLOP 和权重同 ÷TP，<b>线性 I 不变</b>；计入 All-Reduce/All-Gather 后的 I+网 会下降。MLA/MQA 只切头，<b>注意力 I ÷TP</b>。Decode 看 TP=1/8/16，Prefill 另加 32。
+      CP 切序列 / KV。每卡 s=S/CP：线性 I ×s；MLA 注意力 MC I 不随 CP。Decode 一步 Q 不切，CP 只摊本步 KV。
+    </dd>
+  </dl>
+
+  <h2 id="shardOps">各算子怎么切，I 怎么变</h2>
+  <p>
+    三条轴：<b>TP</b> 切张量（头或列），<b>CP</b> 切序列 / KV，<b>EP</b> 放专家。
+    强度只在「FLOP 和字节不同步 ÷」时才变。全分片下线性 GEMM 两边一起除，所以看起来像「切了也没变」。
+    下面是<b>算子 MC I</b>；计入导线后的整模 I+网更稀，见 Prefill / Decode 段落。
+  </p>
+  <div class="callout">
+    <p><b>线性 GEMM</b>：FLOP 与权重同 ÷TP，<span class="mono">I(TP)=I₁</span> 不变。Prefill 每卡读一份权重、本地 s=S/CP，<span class="mono">I(CP)=I₁·S/CP</span>。Decode 稠密 <span class="mono">I(B)=I₁·B</span>；Routed 按独特专家，B 增大时 I 几乎不涨。</p>
+    <p><b>MLA / MQA 核</b>：KV 不按头切。TP 切 Q 头，<span class="mono">I(TP)=I₁/TP</span>。CP 切序列，FLOP 与本地 KV 同 ÷CP，<span class="mono">MC I(CP)=I₁</span>。对全量因果核 Prefill 再乘长度：<span class="mono">I≈I₁·S/(2·TP)</span>；top-k/窗口/DSA/CSA 等固定工作集不乘 S，按实际流量计算。</p>
+    <p><b>Vector</b>：<span class="mono">I(TP,CP,B,S)≈I₁</span>。KDA 状态不随 L，CP 摊不掉。</p>
+  </div>
+  <div class="panel" style="overflow:auto">
+    <table>
+      <thead>
+        <tr><th>块</th><th>核</th><th>TP → I</th><th>CP → I</th><th>Decode</th><th>Prefill</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>线性 GEMM<br><span class="subtitle">投影 / Routed / Shared / FFN</span></td>
+          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
+          <td>I 不变（FLOP 与权重同除）</td>
+          <td>I × S/CP</td>
+          <td>稠密 ×B；Routed 按独特专家，碰撞少时几乎不涨</td>
+          <td>I₁·S/CP · 不随 TP</td>
+        </tr>
+        <tr>
+          <td>MLA / MQA / HCA / indexer</td>
+          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
+          <td>I ÷ TP（KV 复制）</td>
+          <td>MC I 不变</td>
+          <td>不随 B、不随 L</td>
+          <td>因果 ≈ I₁·S/(2·TP)；indexer 扫前缀 ≈×S/2</td>
+        </tr>
+        <tr>
+          <td>DSA/CSA topk、滑动窗</td>
+          <td><span class="tag info">D·L</span> <span class="tag purple">P·H</span></td>
+          <td>I ÷ TP</td>
+          <td>几乎不变（工作集固定）</td>
+          <td>I ≈ I₁</td>
+          <td>I ≈ Decode，不乘 S</td>
+        </tr>
+        <tr>
+          <td>Vector / KDA</td>
+          <td><span class="tag vec">V</span></td>
+          <td colspan="2">I ≈ I₁</td>
+          <td>跟矩阵走；KDA 留 L，不溢出</td>
+          <td>跟矩阵走；KDA 走 H</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="subtitle">所以 32×32 <b>不是</b> I÷1024。线性 I 只被 CP 除以 32；TP 再切一刀，分子分母一起走，线性 I 不动。整模 I_MC 大约只降到原来的 1/32 量级（再被 KV 分母略拉稀）。</p>
+
+  <h2 id="roofDecode">Decode Roofline</h2>
+  <p>
+    一步 Decode，并发序列 <b>B=1 / 16 / 32</b>，切分 <b>TP=1 / 8 / 16</b>。
+    <b>矩阵核默认挂 L</b>。PD 并行时 Decode 只分到 80% 带宽，L 脊点变成「原脊点 / 0.8」，比满带宽更苛刻：注意力 I 更容易高于这条线，于是<b>临时上 H</b>。
+    H 同时在跑 Prefill，所以溢出是抢占/分时，<b>H 矩阵规格不把 Prefill TF 和 Decode 注意力 TF 加在一起</b>。MLA/MQA 核 I÷TP：加大 TP 常能让注意力回到 L。
+  </p>
+  <div class="grid-2">
+    <div class="panel">
+      <h3>L-Core：线性默认留在这</h3>
+      <p>B=1 时专家 GEMM 的 I 就是 MXFP4 的 ≈3.76，远在 L 脊点左侧，<b>永远是带宽墙</b>。BF16 稠密层 I=1，更靠左。</p>
+      <p>B 加大后，稠密权重仍读一份、FLOP ×B，I ×B：B=16 时 I=16，B=32 时 I=32。Routed 独特专家随 B 涨，字节分母也涨，I 从 3.76 只升一点，仍进不了算力墙。</p>
+      <p>因此定 L 不用 Routed，而用 <b>B=32 稠密 I=32</b>：匹配 143 TF，上取到 <b>196.6 TF</b>。只跑 B=1 可以更小；兼顾 B=16 用中间档。</p>
+    </div>
+    <div class="panel">
+      <h3>H-Core：只接溢出的注意力</h3>
+      <p>注意力 I 不随 B（FLOP 和 KV 都 ×B）。三模型 Decode 的代表性高强度核包括 V4 CSA topk / HCA、K3 MLA 吸收后、GLM DSA topk。具体 I 取决于当前 Context、压缩/索引工作集和实现口径；固定 top-k/窗口核通常近似不变，全量 KV 核则需按实际流量重算。</p>
+      <p>PD 下 L 脊点大约 50+。TP=1 时 181 和 256 都溢出到 H；TP=16 后 I÷16，多数能回到 L。溢出时 Softmax/RoPE 跟着上 H-Vector。</p>
+    </div>
+  </div>
+  <div class="callout warn">
+    <p>加大同一 replica 上的 Decode batch，换不来「专家也进算力墙」。要抬系统吞吐，优先加副本、保持小 B。</p>
+    <p>TP 越大，I+网分母里通信越多，有效 I 越稀，更不可能靠加卡把 Decode 整模推进算力墙。I+网只说明网会不会先堵住。</p>
+  </div>
+
+  <h2 id="roofPrefill">Prefill Roofline</h2>
+  <p>
+    一条 Prefill 序列，切分 <b>TP=1 / 8 / 16 / 32</b> 与 <b>CP=1 / 8 / 16 / 32</b>。
+    <b>线性 + 注意力矩阵都挂 H-Core</b>，L 图空——L 留给同时在线的 Decode。
+    工作切分取 <b>TP32×CP32</b>：每卡本地 s = 32K/32 = 1024 token。
+  </p>
+  <div class="grid-2">
+    <div class="panel">
+      <h3>算子 I：线性必然算力墙</h3>
+      <p>权重复用把线性 I 抬到 I₁×s。CP=1 时 ×32768；CP=32 后仍是 I₁×1024，通常远高于 H 脊点。所以 Prefill 线性打到 H 上<b>就是算力墙</b>，不要再用 Decode 的 L 去喂这段。</p>
+      <p>MLA/MQA 不能按头切 KV：TP 只切 Q 头，I÷TP；CP 切序列则 MC I 不变。对全量因果注意力，算子 I 近似 ×S/2；DSA/CSA top-k 与窗口则按实际工作集计算，同样挂 H、I÷TP。</p>
+    </div>
+    <div class="panel">
+      <h3>整模 I_MC：用来定 H</h3>
+      <p>把线性 FLOP 和注意力 FLOP 加在同一张卡上，分母是本卡权重 + 本卡 KV。TP 摊权重，CP 摊 KV 和 token 数。</p>
+      <div class="formula">I_MC = [(线性 + 注意力) / (TP · CP)] / (权重/TP + KV/CP)</div>
+      <p>32×32 时整模 I_MC 应由完整分析页按当前 Prefill 长度、注意力工作集和通信模型动态计算。I+网把环和 KV 导线加进分母，更稀，只对照网墙；CP 越大，通信占比通常越高，是否先碰到网墙需按实际 payload 与 KV 流量判断。</p>
+    </div>
+  </div>
+
+  <h2 id="vector">Vector 算子</h2>
+  <p>
+    逐元素与非线性不进 L/H 矩阵 Roofline。RMSNorm、残差 Add、SiLU 跟线性走；RoPE、Softmax/LSE 跟注意力走；KDA 状态更新留在 Decode 的 L（I≈1.75，低于溢出线，不上 H）。
+    I 几乎不随 B、S、TP。相对 MC 多在带宽墙；融合进矩阵核时不另占 MC。墙必须用该核<b>分到的</b>带宽来量，见下一节。
+  </p>
+
+  <h2 id="pdVec">PD 并行 · L / H 各自的 Vector</h2>
+  <p>
+    L 跑 Decode、H 跑 Prefill，MC 按 Decode 80% / Prefill 20% 切开。
+    满带宽时 Vector 按 KDA I=1.75 只需约 8 TF；切开后每路带宽变少，匹配 TF 按份额缩小。
+    但 H 要同时伺候 Prefill Vector 和溢出过来的 Decode Softmax/RoPE，ALU 按两路 TF <b>相加</b>。加大 TP 后注意力 I÷TP，多数模型回到 L，H-V 不再叠加 Decode 路。
+  </p>
+  <div class="formula">Vector 匹配 TF = I × (份额 × 3.58 TB/s) / 0.8</div>
+  <div class="grid-2">
+    <div class="panel">
+      <p><b>L-V</b>：Decode 留在 L 的 Vector（线性侧；未溢出时含 Softmax/RoPE）。KDA I=1.75 × Decode 80% 带宽，匹配约 6 TF，上取 <b>8.2 TF</b>。</p>
+    </div>
+    <div class="panel">
+      <p><b>H-V</b>：Prefill Vector × Prefill 20%，加上溢出伴随 Softmax/RoPE × Decode 80%。矩阵峰值不叠加；Vector 要叠加。档仍 <b>8.2 TF</b>。</p>
+    </div>
+  </div>
+
+  <h2 id="chipSpec">按算术强度重定 L / H 算力</h2>
+  <p>
+    带宽不动，利用率 0.8，<span class="mono">F_match = I × 3.58 / 0.8</span>，再上取到 Tensor 档。
+    旧 CHIP_DEFAULT 是 L 262 / H 2097、利用率 0.6，Vector 按 H/32+L/64 捆在矩阵上。本页把 L / H / L-V / H-V 拆开。
+    I+网、8×8、16×16、Decode 注意力最坏 TP 只作对照，不定档。
+  </p>
+  <div class="formula">F_match = I × 3.58 TB/s / 0.8</div>
+  <div class="callout">
+    <p><b>L 矩阵 196.6 TF</b>：Decode 线性默认挂 L。B=32 稠密 BF16 I=32 匹配 143 TF，上取 196.6。注意力 I 高于 PD 下 L 脊点时临时上 H，<b>不抬 L</b>。</p>
+    <p><b>H 矩阵</b>：按「能大尽量大」，</p>
+    <div class="formula">H = max(Decode 注意力最坏 TP 满带宽, Prefill TP32×CP32 整模 I_MC 满带宽)</div>
+    <p>Decode 注意力需求按 Decode 自身 TP 候选计算；Prefill 整模 I_MC 由完整分析页动态计算。PD 的 20% 只改 H 脊点和 H-V，<b>不直接压低 H 矩阵峰值</b>。</p>
+    <p><b>L-V / H-V 各 8.2 TF</b>：按份额匹配；溢出时 H-V 两路叠加，仍落在同一档。</p>
+  </div>
+  <div class="panel" style="overflow:auto">
+    <table>
+      <thead>
+        <tr>
+          <th>模型</th>
+          <th>Decode 定 H 的核</th>
+          <th class="num">D I</th>
+          <th class="num">D 匹配 → 档</th>
+          <th class="num">P I_MC 32×32</th>
+          <th class="num">P 匹配 TF</th>
+          <th>谁定 H</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>V4-Pro</td>
+          <td>CSA topk / HCA</td>
+          <td class="num">256</td>
+          <td class="num">1,147 → 1573</td>
+          <td class="num">动态</td>
+          <td class="num">动态</td>
+          <td>Prefill</td>
+        </tr>
+        <tr>
+          <td>K3</td>
+          <td>MLA 吸收后</td>
+          <td class="num">181</td>
+          <td class="num">动态</td>
+          <td class="num">动态</td>
+          <td class="num">动态</td>
+          <td>Prefill</td>
+        </tr>
+        <tr>
+          <td>GLM-5.2</td>
+          <td>DSA topk</td>
+          <td class="num">57</td>
+          <td class="num">动态</td>
+          <td class="num">动态</td>
+          <td class="num">动态</td>
+          <td>Prefill</td>
+        </tr>
+        <tr class="hi">
+          <td>三模型一套</td>
+          <td>L 196.6 · H 动态 · V 8.2</td>
+          <td class="num">256</td>
+          <td class="num">1573</td>
+          <td class="num">动态</td>
+          <td class="num">动态</td>
+          <td><b>H 动态</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="subtitle">Decode 注意力是否随 Context 变化取决于工作集模型：固定 top-k/窗口近似不变，全量 KV 需随实际流量重算。H 应由 Decode 最坏 TP 与 Prefill 32×32 整模 I_MC 的动态最大值决定。</p>
+
+  <div class="callout good">
+    <p><b>收口</b>　Decode 默认挂 L、Prefill 全部矩阵挂 H；溢出抢占 H，矩阵峰值不叠加。L 按 Decode B=32 稠密贴脊点；H 按 Prefill 32×32 整模 I_MC 动态选择并尽量上取；3.58 TB/s 按 D80/P20 切开，只改脊点和 Vector，不直接改 H 的原始峰值需求。</p>
+  </div>
+  <div class="callout warn">
+    <p><b>原文明确不用的三件事</b></p>
+    <p>1. 用算子 I×S 定 H——因果核会到十万，规格失去意义。<br>
+       2. 用 I+网压算力档——那是网墙诊断，导线只会让有效 I 更稀。<br>
+       3. 把 TP32×CP32 当成 I÷1024——线性 I 只随 CP 除以 32，TP 切权重时分子分母一起走。</p>
+  </div>
+
+  <footer>
+    Roofline 图、逐算子表、整模 I×TP×CP 表仍在 <a href="./frontier_moe_arithmetic_intensity.html">完整分析页</a>。
+    模型口径与 <a href="./frontier_moe_dataflow_partition.html">数据流页</a> 相同。完整分析页的 Roofline 计算已更新；本页为静态摘要，数值以完整分析页动态结果为准。V4 注意力 FLOP 为结构估算。
+  </footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "arithmetic-intensity-contract-v0.1",
+  "asOf": "2026-09-21",
+  "status": "ARCHITECTURE_INPUT",
+  "sourceDocument": "references/frontier_moe_arithmetic_intensity.html",
+  "target": {
+    "tpsPerUser": 1000,
+    "targetTimeUsPerToken": 1000,
+    "architectureGateTpsPerUser": 1050
+  },
+  "dimensions": {
+    "models": ["K3", "GLM-5.2", "DeepSeek-V4-Pro"],
+    "tp": [8, 16, 32],
+    "cp": [1, 8, 16, 32],
+    "phases": ["decode", "prefill"],
+    "physicalProfiles": ["P0", "P1"],
+    "mcProfiles": ["MC320", "MC640"]
+  },
+  "coreClasses": ["L", "H", "V", "INDEXER", "REDUCE"],
+  "byteClasses": ["weight", "kv_state", "index", "expert", "collective", "metadata"],
+  "formulae": {
+    "arithmeticIntensity": "flops / memory_bytes",
+    "networkIntensity": "flops / (memory_bytes + collective_bytes)",
+    "ridgePoint": "effective_peak_flops / sustained_bandwidth",
+    "rooflinePerformance": "min(effective_peak_flops, arithmetic_intensity * sustained_bandwidth)",
+    "requiredEffectiveFlops": "flops_per_token * target_tps_per_user",
+    "requiredPeakFlops": "required_effective_flops / (utilization * duty_cycle)"
+  },
+  "validation": {
+    "mustTrack": ["model_id", "manifest_version", "contract_version", "source_commit", "run_id", "seed", "unit", "confidence", "status"],
+    "forbid": ["silent_missing_config", "raw_as_sustained", "p1_as_p0", "single_log2_collective_factor", "hidden_vector_indexer_reduce"]
+  }
+}

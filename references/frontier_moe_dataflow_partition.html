@@ -1,0 +1,1908 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>V4-Pro / K3 / GLM-5.2 · 数据流与资源匹配</title>
+  <style>
+    :root {
+      --ink: #172033; --muted: #647083; --paper: #f3f1eb; --panel: #fffdf8; --line: #d6d8d8;
+      --accent: #155e75; --accent-soft: #e4f2f4; --warn: #b45309; --warn-soft: #fff4d8;
+      --purple: #6d28d9; --purple-soft: #ede9fe; --good: #166534; --good-soft: #e6f4ea;
+      --bad: #b91c1c; --bad-soft: #fee2e2; --grid: #e6e8e6; --blue: #1d4ed8;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper);
+      font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    main { max-width: 1440px; margin: 0 auto; padding: 28px 22px 56px; }
+    h1 { margin: 4px 0 6px; font-size: 27px; line-height: 1.25; }
+    h2 { margin: 34px 0 10px; padding-top: 14px; font-size: 20px; border-top: 1px solid var(--line); }
+    h3 { margin: 14px 0 6px; font-size: 14px; color: var(--accent); }
+    p { margin: 0 0 8px; }
+    .eyebrow { color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .09em; }
+    .subtitle { color: var(--muted); max-width: 1180px; }
+    .panel { padding: 15px 17px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .grid-32 { display: grid; grid-template-columns: 3fr 2fr; gap: 14px; }
+    .caption { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .callout { margin: 12px 0; padding: 12px 15px; color: #164e63; background: var(--accent-soft);
+      border-left: 4px solid var(--accent); border-radius: 6px; font-size: 13.2px; }
+    .callout.warn { color: #78350f; background: var(--warn-soft); border-left-color: var(--warn); }
+    .callout.good { color: #14532d; background: var(--good-soft); border-left-color: var(--good); }
+    .callout p:last-child { margin-bottom: 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 11.5px; font-weight: 650; background: #f7f5ef; white-space: nowrap; }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    tr:last-child td { border-bottom: 0; }
+    tr.hi td { background: #f0f7f8; }
+    .tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 650; white-space: nowrap; }
+    .tag.ok { background: var(--good-soft); color: var(--good); }
+    .tag.warn { background: var(--warn-soft); color: var(--warn); }
+    .tag.bad { background: var(--bad-soft); color: var(--bad); }
+    .tag.info { background: var(--accent-soft); color: var(--accent); }
+    .tag.purple { background: var(--purple-soft); color: var(--purple); }
+    .controls { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .field input, .field select { width: 100%; padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font: inherit; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .chip { padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; cursor: pointer; font-size: 12px; }
+    .chip.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .stat { padding: 11px 13px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+    .stat .v { font-size: 20px; font-weight: 700; }
+    .stat .l { font-size: 12px; color: var(--muted); }
+    .toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 0; }
+    .toc a { padding: 4px 10px; background: #fff; border: 1px solid var(--line); border-radius: 999px; color: var(--accent); font-size: 12px; text-decoration: none; }
+    svg { display: block; width: 100%; height: auto; }
+    svg text { font-family: inherit; }
+    #figRoofL, #figRoofH { padding: 8px 6px 4px; }
+    .roof-key { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+    .roof-key span { padding: 2px 8px; border: 1px solid var(--line); border-radius: 999px; font-size: 11px; background: #fff; }
+    .mono { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+    .barwrap { height: 8px; background: var(--grid); border-radius: 4px; overflow: hidden; min-width: 72px; }
+    .barwrap > i { display: block; height: 100%; border-radius: 4px; }
+    .col-glossary { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 22px; margin: 0; }
+    .col-glossary dt { font-weight: 700; color: var(--accent); font-size: 13px; margin-top: 4px; }
+    .col-glossary dd { margin: 2px 0 6px; font-size: 13px; }
+    .col-glossary .ask { color: var(--muted); font-weight: 650; }
+    th[title] { cursor: help; text-decoration: underline dotted var(--line); }
+    footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
+    footer a { color: var(--accent); }
+    @media (max-width: 1100px) {
+      .grid-2, .grid-3, .grid-4, .grid-32, .controls, .col-glossary { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">DATAFLOW · PARTITION · RESOURCE MATCH</div>
+    <h1>DeepSeek-V4-Pro / Kimi K3 / GLM-5.2：数据流、切分与资源匹配</h1>
+    <p class="subtitle">
+      只评三颗旗舰：DeepSeek-V4-Pro（1.6T-A49B · CSA/HCA）、Kimi K3（仓库口径）、GLM-5.2（与 5.3 同架构，差在后训练）。
+      拆「一层张量怎么走、跨卡怎么切、每 token 要搬多少字节 / 做多少运算 / 占多少容量」。
+      Decode 默认按 <b>PP1×TP32</b>（32 张基线卡；K3 96 头、V4 128 头、GLM 64 头均可整除）。页内可扫 batch。数字是架构量级对照。
+      Decode / Prefill 算术强度与按 I 选芯片见 <a href="./frontier_moe_arithmetic_intensity.html">算术强度与 Roofline</a>。
+    </p>
+    <div class="toc">
+      <a href="#family">家族对照</a>
+      <a href="#flow">一层数据流</a>
+      <a href="#blocks">各块拆解</a>
+      <a href="./frontier_moe_arithmetic_intensity.html">算术强度 / Roofline</a>
+      <a href="#cap">容量</a>
+      <a href="#part">Partition</a>
+      <a href="#match">同芯片匹配</a>
+      <a href="#need">朴素需求</a>
+      <a href="#overlap">重叠怎么盖</a>
+      <a href="#needFull">计入 SRAM / 重叠 / 互联</a>
+      <a href="#needCols">列怎么读</a>
+      <a href="#batch">Batch 变大</a>
+      <a href="#keepTps">稳住 TPS/usr</a>
+      <a href="#hideTp">TP 无限能否盖住搬移</a>
+    </div>
+  </header>
+
+  <div class="panel" style="margin-top:16px">
+    <div class="controls">
+      <div class="field"><label>Context</label>
+        <select id="inCtx">
+          <option value="4096">4K</option>
+          <option value="32768">32K</option>
+          <option value="131072">128K</option>
+          <option value="1048576" selected>1M</option>
+        </select>
+      </div>
+      <div class="field"><label>目标 TPS/usr</label><input id="inTps" type="number" value="1000" step="50"></div>
+      <div class="field"><label>卡数（PP1×TP）</label>
+        <select id="inCards">
+          <option>8</option><option>16</option><option selected>32</option><option>64</option>
+        </select>
+      </div>
+      <div class="field"><label>专家预测准确率</label><input id="inPred" type="number" value="80" min="0" max="100" step="5"></div>
+      <div class="field"><label>归约缩放</label>
+        <select id="inScale"><option value="flat" selected>flat（内存语义）</option><option value="log2">log2（消息语义）</option></select>
+      </div>
+      <div class="field"><label>集合通信融合</label>
+        <select id="inFusion"><option value="1" selected>开：4 次/MoE 层</option><option value="0">关：5 次</option></select>
+      </div>
+    </div>
+    <div class="controls" style="margin-top:10px">
+      <div class="field"><label>并发用户（同一 replica，batch）</label><input id="inUsers" type="number" value="1" min="1" step="1"></div>
+      <div class="field"><label>SRAM / 卡（MiB）</label><input id="inSram" type="number" value="768" min="0" step="64"></div>
+      <div class="field"><label>Prefill 长度</label>
+        <select id="inPrefill">
+          <option value="0">不计 Prefill</option>
+          <option value="4096">4K</option>
+          <option value="32768" selected>32K</option>
+          <option value="131072">128K</option>
+        </select>
+      </div>
+      <div class="field"><label>基线卡互联 GB/s</label><input id="inLink" type="number" value="200" step="50"></div>
+    </div>
+    <div class="chips" id="modelChips"></div>
+    <p class="caption">三模型默认同开。下排「并发用户」= 当前快照的 Decode batch；「Batch 变大」一节会按 1→64 扫描。Routed 按 MXFP4/FP4，其余按 BF16。</p>
+  </div>
+
+  <h2 id="family">模型家族：宽而浅 vs 窄而深，MLA vs GQA</h2>
+  <div class="panel" style="overflow:auto"><table id="tblFamily"></table></div>
+  <div class="callout" id="calloutFamily"></div>
+
+  <h2 id="flow">一层数据流：两条 MoE 主干 × 三种注意力</h2>
+  <div class="grid-2">
+    <div class="panel" id="figMoe"></div>
+    <div class="panel" id="figAttn"></div>
+  </div>
+  <p class="caption">
+    左：权重怎么被读、激活怎么被切。K3 多了 Latent MoE 的 Wdown / Wup，专家吃 3584 维而不是 7168。
+    右：注意力状态怎么切——这决定长序列时容量和 KV 带宽跟不跟得上 TP。
+  </p>
+
+  <h2 id="blocks">每 token 各块：字节、算力、算术强度</h2>
+  <div class="stats" id="stats" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px"></div>
+  <div class="grid-2" style="margin-top:14px">
+    <div>
+      <h3>每 token 权重+状态读取（GB，含预测多读）</h3>
+      <div class="panel" id="figBytes"></div>
+    </div>
+    <div>
+      <h3>每 token FLOPs（线性 vs 注意力）</h3>
+      <div class="panel" id="figFlops"></div>
+    </div>
+  </div>
+  <div class="panel" style="overflow:auto;margin-top:14px"><table id="tblBlocks"></table></div>
+  <p class="caption" id="capBlocks"></p>
+
+  <h2 id="roofline">匹配度 ① 算力 vs 带宽（Roofline）</h2>
+  <div class="callout">
+    <strong>算术强度已单独成页</strong>
+    <p>Decode / Prefill Roofline、各块固有 I、按 I 选芯片规格见
+    <a href="./frontier_moe_arithmetic_intensity.html">算术强度与 Roofline</a>。
+    本页继续讲数据流、切分、容量、重叠和 batch。各块表里的 MoE / Attn 强度仍是 Decode 一步的摘要。</p>
+  </div>
+
+  <h2 id="cap">匹配度 ② 容量：权重常驻 vs KV 随 Context 涨</h2>
+  <div class="grid-2">
+    <div class="panel" id="figKv"></div>
+    <div class="panel" style="overflow:auto"><table id="tblCap"></table></div>
+  </div>
+  <div class="callout" id="calloutCap"></div>
+
+  <h2 id="part">匹配度 ③ Partition：TP / EP / CP 各切什么</h2>
+  <div class="panel" id="figPart"></div>
+  <div class="grid-2" style="margin-top:14px">
+    <div class="panel" style="overflow:auto"><table id="tblPart"></table></div>
+    <div>
+      <h3>同卡数下 PP1×TP 的时间分解</h3>
+      <div class="panel" id="figTime"></div>
+      <p class="caption">MC 净读取、计算、归约都已含建模裕量 1.17。分项之和不等于 E2E（重叠后取大）。</p>
+    </div>
+  </div>
+  <div class="callout" id="calloutPart"></div>
+
+  <h2 id="match">同一张基线卡：谁卡在哪</h2>
+  <div class="panel" style="overflow:auto"><table id="tblMatch"></table></div>
+  <div class="callout good" id="calloutMatch"></div>
+
+  <h2 id="need">朴素需求：每 token 读满 × TPS</h2>
+  <p class="subtitle">不计 SRAM、重叠、互联、LM Head、多用户。系统带宽 = 每 token 字节 × 目标 TPS。用来对照「最狠要多少 MC」。</p>
+  <div class="panel" style="overflow:auto"><table id="tblNeed"></table></div>
+  <div class="callout warn" id="calloutNeed"></div>
+
+  <h2 id="overlap">重叠：读取如何被计算和归约盖住</h2>
+  <p class="subtitle">
+    暴露 MC 不是「还要再读多少字节」，而是：计算和归约已经把时间占满之后，读取还有没有多出来。
+    重叠发生在一张卡、一个 Stage 里，两条时间线并行。引擎（有预取缓冲时）取大：
+    <span class="mono">T_stage = max(T_net, T_compute + T_AR + T_补读)</span>。
+  </p>
+  <div class="panel" id="figOverlapHow"></div>
+  <div class="grid-2" style="margin-top:14px">
+    <div>
+      <h3>当前部署下每模型的两条时间线（ms / 步）</h3>
+      <div class="panel" id="figOverlapLive"></div>
+      <p class="caption" id="capOverlapLive"></p>
+    </div>
+    <div>
+      <h3>消耗 vs 暴露</h3>
+      <div class="panel" style="overflow:auto"><table id="tblOverlap"></table></div>
+      <div class="callout" id="calloutOverlap"></div>
+    </div>
+  </div>
+
+  <h2 id="needFull">计入版：SRAM、重叠、互联、多用户、Prefill</h2>
+  <p class="subtitle">
+    用引擎的分片部署（当前卡数、全分片、专家切 TP 份）。
+    <b>消耗 MC</b> = SRAM 扣掉常驻之后每步仍要从 MC 搬的字节 × 步频（目标 TPS/usr）；确定性权重读 1 份，MoE 独特专家随 batch 变多，KV/算力/集合通信 payload × 并发用户。
+    <b>暴露 MC</b> = 重叠后仍露在关键路径上的读取（已被计算+归约盖住的不算缺带宽）。
+    互联按 all-reduce 体积 2·(TP−1)·payload 计。Prefill 按「权重读一次 + 写满 KV + 前缀注意力积分」。
+  </p>
+  <div class="panel" id="needCols" style="margin:10px 0 8px">
+    <h3 style="margin-top:0">表头各列是什么</h3>
+    <p class="caption" style="margin-top:0">步频 = 页首目标 TPS/usr。前两列是 <b>MC/HBM</b>，中间是 SRAM 少搬了多少，后两列是 <b>片间互联</b>（不是内存带宽）。卡数下限取这几项里最大的。</p>
+    <dl class="col-glossary">
+      <div>
+        <dt>SRAM 后消耗</dt>
+        <dd>SRAM 常驻扣掉之后，每步仍要从 MC 搬走的字节 × 步频。下面「净 xx/步」是一步的字节，「x 卡」按每卡有效 MC 折算。<span class="ask">问的是：MC 总线有多忙。</span> 读取就算被计算盖住，这列也不会变小——字节还是搬了。</dd>
+      </div>
+      <div>
+        <dt>重叠后暴露</dt>
+        <dd>步时取 <span class="mono">max(T_net, 计算+归约+补读)</span>。忙碌更长 → <b>已掩盖</b>：再加 MC 换不来 TPS。读取更长 → 红尾换成 TB/s，才是露在关键路径上的带宽。<span class="ask">问的是：步时还缺不缺 MC。</span> 消耗是「搬了多少」，暴露是「有多少还在拖步时」。</dd>
+      </div>
+      <div>
+        <dt>SRAM 省/步</dt>
+        <dd>因为片上 SRAM 已常驻一部分权重，每步少从 MC 读的字节（全系统）。SRAM 先留作预取缓冲，剩下优先扣确定性权重，再按命中率扣 routed。所以消耗一定低于朴素 MC。重叠不进这一列——重叠不省字节，只省关键路径上的时间。</dd>
+      </div>
+      <div>
+        <dt>互联 2(TP−1)·payload</dt>
+        <dd>片间链路，不是 MC。环 all-reduce：reduce-scatter 走 (TP−1)·payload，all-gather 再走一遍，导线总字节 = 2(TP−1)·payload。payload 是这一步要归约的向量（随 batch 放大）。TB/s = 每步导线字节 × 步频；「x 卡」按每卡链路带宽折。</dd>
+      </div>
+      <div>
+        <dt>归约 ms/步</dt>
+        <dd>集合通信在时间上要占多久：次数 × 启动延迟 + payload 传输（延迟几乎不随 batch 涨，体积会涨）。表里写成 μs。1000 TPS 的预算是 1000 μs。超了不能靠加 TP 摊薄层数带来的次数。<span class="ask">上一列是链路上有多少字节，这一列是 1 ms 窗口通不通过。</span></dd>
+      </div>
+      <div>
+        <dt>对照</dt>
+        <dd>配多少 HBM/MC → 先看消耗，已掩盖则加 MC 无 TPS 收益。步时缺不缺带宽 → 暴露。SRAM 值不值 → 省/步。配多少片间链路 → 互联 TB/s。目标步频通不通过 → 归约时间。</dd>
+      </div>
+    </dl>
+  </div>
+  <div class="panel" style="overflow:auto;margin-top:8px"><table id="tblNeedFull"></table></div>
+  <p class="caption">步频 = 目标 TPS/usr。系统 token/s = 步频 × 用户数。卡数下限取 Decode 消耗 MC / 暴露 MC / 互联 / 容量 / 归约时间 的最大者。</p>
+  <div class="grid-2" style="margin-top:14px">
+    <div>
+      <h3>朴素 MC vs SRAM 后消耗 vs 重叠后暴露（TB/s）</h3>
+      <div class="panel" id="figNeedFull"></div>
+    </div>
+    <div class="panel" style="overflow:auto"><table id="tblPrefill"></table></div>
+  </div>
+  <div class="callout" id="calloutNeedFull"></div>
+
+  <h2 id="batch">Batch 变大：权重摊销 vs 独特专家涨流量</h2>
+  <p class="subtitle">
+    同一 replica、Decode、步频仍按「每用户 TPS」。batch = 并发序列数。
+    稠密层权重确实只读 1 份，算术强度随 batch 上升；MoE 不是：每个新 token 可能点到还没读过的专家，
+    独特专家数 ≈ <span class="mono">E · (1 − ((E−k)/E)<sup>B</sup>)</span>，专家权重流量先涨、饱和后才像稠密。
+    算力与 KV、归约 payload 仍 ×B；归约延迟几乎不涨。
+  </p>
+  <div class="grid-2">
+    <div>
+      <h3>每用户 TPS（随 batch 下降）</h3>
+      <div class="panel" id="figBatchTps"></div>
+    </div>
+    <div>
+      <h3>系统 token/s = TPS/usr × batch（先升后饱和）</h3>
+      <div class="panel" id="figBatchSys"></div>
+    </div>
+  </div>
+  <div class="grid-2" style="margin-top:14px">
+    <div>
+      <h3>独特专家数（饱和于 E）</h3>
+      <div class="panel" id="figBatchUniq"></div>
+      <p class="caption" id="capBatchUniq"></p>
+    </div>
+    <div>
+      <h3>掩盖倍数 = 忙碌 / T_net（&gt;1 则读取被盖住）</h3>
+      <div class="panel" id="figBatchCover"></div>
+    </div>
+  </div>
+  <div class="panel" style="overflow:auto;margin-top:14px"><table id="tblBatch"></table></div>
+  <p class="caption">高亮行 = 页首「并发用户」。步时 = max(T_net, 忙碌)×1.17。容量超了仍给出时间线上的可达 TPS，表示「若装得下会跑多快」。</p>
+  <div class="callout" id="calloutBatch"></div>
+
+  <h2 id="keepTps">怎么保证 batch 变大时每用户 TPS 不掉很多</h2>
+  <p class="subtitle">
+    同一 replica 上，一步 Decode 给 batch 里每个人各吐 1 个 token。每用户 TPS = 1 / 步时，步时 =
+    <span class="mono">max(T_net(B), T_busy(B))</span>。
+    B 涨则独特专家、KV、算力、归约 payload 都涨，步时变长，TPS/usr 必然掉——除非把「多出来的 B」从这条关键路径上拿掉，或让增量小到仍被盖住。
+  </p>
+  <div class="panel">
+    <dl class="col-glossary">
+      <div>
+        <dt>1. 副本扩出去，replica 上保持小 batch（主手段）</dt>
+        <dd>要 1000 TPS/usr，优先 <b>N 份 replica × B=1～2</b>，不要 1 份 replica × B=8。总并发 = N×B，每人看到的仍是 T_step(小 B)。Decode 与 Prefill 拆开，Decode 舱专跑小 batch。系统吞吐用加副本换，不拿单用户时延去换。</dd>
+      </div>
+      <div>
+        <dt>2. 压住 T_net 随 B 涨：独特专家 + KV</dt>
+        <dd>K3/V4 的增量主要是新专家权重；GLM-5.2 在 1M 上 KV 比权重大，B=2 就接近腰斩。杠杆：路由粘性/热点专家（独特集合远小于均匀假设）；SRAM/热专家缓存按 <span class="mono">unique(E,k,B)</span> 而不是按 top-k 来配；真 EP 让每卡只读自己的专家分片（本页默认是专家切列，每卡仍看到全部独特专家）；V4 这类压缩 KV 才能在长上下文上 batch。</dd>
+      </div>
+      <div>
+        <dt>3. 压住 T_busy 随 B 涨：算力与归约</dt>
+        <dd>V4-Pro 在 TP32、B=1 已是归约墙，再加 B，payload×B 直接拉长步时。杠杆：降 TP、加副本（通信次数按层走，不按用户摊）；集合通信融合；降启动延迟；链路带宽只缩短 payload 段。算力墙则要更多 L-Core 或把 batch 拆到更多 replica，单卡算力不够时加大 B 只会更慢。</dd>
+      </div>
+      <div>
+        <dt>4. 让增量仍落在重叠窗里</dt>
+        <dd>若 B=1 时 T_net 已被忙碌盖住，且新增 KV/专家读仍短于忙碌增量，TPS/usr 掉得慢。这要求：B=1 就要有余量（掩盖倍数明显 &gt;1），并且增量主要是可重叠的 MC，而不是归约延迟。K3/GLM 在 TP32 上 B=1 仍露尾，加大 B 会先把露尾加长，没有「免费窗」。</dd>
+      </div>
+    </dl>
+    <p class="caption" style="margin:8px 0 0">TP32、1M、预测 80% 量级：B=2 时 K3 ≈73%、V4 ≈76%、GLM ≈53%（GLM 被 1M KV 打穿）。要「掉得不多」（例如仍 ≥80%），这套卡上 Decode batch 宜停在 1，最多 2；更多用户用加 replica。芯片侧则是更大 SRAM（装独特专家）或更小 KV（压缩注意力）或真 EP。</p>
+  </div>
+
+  <h2 id="hideTp">重叠 + SRAM 常驻之后，TP 不受限能否保证盖住搬移？</h2>
+  <p class="subtitle">
+    能盖住，但<b>盖在归约上，不是盖在算力上</b>。重叠取
+    <span class="mono">max(T_net, T_compute + T_AR + T_补读)</span>。
+    全分片时 T_net 和 T_compute 都随 1/TP 掉；SRAM 常驻让每卡工作集一旦小于 768 MiB，T_net 掉得更快。
+    T_AR 几乎不掉：次数按层走，启动延迟与 payload（模型里按完整 hidden，不随 TP 摊）是地板。
+    所以存在某个 TP*，之后 T_AR &gt; T_net，读取被掩盖。
+  </p>
+  <div class="panel">
+    <dl class="col-glossary">
+      <div>
+        <dt>不能保证：用算力把 MC 盖住</dt>
+        <dd>Decode MoE 算术强度远低于脊点。TP 把 FLOP 和字节按同样比例切开，T_compute / T_net 几乎不变。没有归约、只靠重叠+SRAM 时，在小 TP 上永远是带宽墙。SRAM 只在「每卡切片已经装得进片上」的极大 TP 才可能让 T_net 掉过 T_compute。</dd>
+      </div>
+      <div>
+        <dt>能保证（渐近）：用归约地板把 MC 盖住</dt>
+        <dd>1M、B=1、预测 80%、flat 归约：V4-Pro 在 <b>TP32</b> 已掩盖；K3、GLM-5.2 约 <b>TP64</b> 起掩盖。再加大 TP，掩盖倍数继续升，但 TPS/usr 锁在 1/T_AR 附近：K3 ≈940–1000，V4 ≈1420–1550，GLM ≈1230–1270。再加卡换不来单用户时延——已经是通信墙。</dd>
+      </div>
+      <div>
+        <dt>这不是免费午餐</dt>
+        <dd>头数上限：K3 96、V4 128、GLM 64。GLM 刚好卡在 64 头才盖住。专家切成 TP 份后列宽 expertHidden/TP 变窄，L-Core 利用率掉，算力更短、更依赖归约去盖。Batch&gt;1 时独特专家和 KV 抬高 T_net，掩盖所需的 TP* 会更大。复制张量省归约会让 T_net 不再按 1/TP 掉，掩盖更没了。</dd>
+      </div>
+      <div>
+        <dt>若目标是 1000 TPS/usr</dt>
+        <dd>掩盖 ≠ 达标。K3 盖住时已经贴着归约天花板；要再快只能降每层 AR 次数/延迟，不能靠无限 TP。V4 在 TP32 就既掩盖又超过 1000。无限加卡是在用通信时间当遮羞布，把带宽问题变成延迟问题。</dd>
+      </div>
+    </dl>
+  </div>
+
+  <footer>
+    模型来源：Kimi K3 = 本仓库计算器口径；DeepSeek-V4-Pro = arXiv:2606.19348 + deepseek-ai/DeepSeek-V4-Pro-Base（CSA m=4、HCA m′=128、topk=1024）；
+    GLM-5.2 = zai-org/GLM-5.2（MLA+DSA、IndexShare 每 4 层；GLM-5.3 同结构）。
+    V4 的 KV/注意力 FLOPs 为结构估算；论文 1M 对照为相对 V3.2 的 10% KV / 27% 总 FLOPs。
+    Prefill / 多用户 / SRAM / 互联 / batch 扫描见页内对应节。算术强度与 Roofline 见 <a href="./frontier_moe_arithmetic_intensity.html">独立页</a>。真实 EP all-to-all 拥塞仍未建模。引擎：<a href="../../src/core/design_engine.js">../../src/core/design_engine.js</a>。
+  </footer>
+</main>
+
+<script src="../../src/core/design_engine.js"></script>
+<script>
+(function () {
+  "use strict";
+  const E = window.DesignEngine;
+  const $ = id => document.getElementById(id);
+  const C = { ink: "#172033", muted: "#647083", line: "#d6d8d8", grid: "#e6e8e6", accent: "#155e75",
+    warn: "#b45309", purple: "#6d28d9", good: "#166534", bad: "#b91c1c", blue: "#1d4ed8" };
+  const MXFP4 = 17 / 32;
+  const COLORS = ["#155e75", "#b45309", "#6d28d9", "#166534", "#1d4ed8", "#b91c1c", "#0f766e", "#7c2d12"];
+  const BLOCK_COLORS = {
+    attn: "#155e75", wdown: "#0f766e", router: "#6d28d9", routed: "#b45309",
+    shared: "#166534", wup: "#1d4ed8", denseFfn: "#7c2d12", kv: "#b91c1c", lm: "#647083"
+  };
+
+  const EXTRA = {
+    deepseekV4pro: {
+      name: "DeepSeek-V4-Pro（1.6T-A49B）",
+      totalParams: 1.6e12, activeParams: 49e9, layers: 61, moeLayers: 61,
+      hidden: 7168, vocab: 129280, denseFfnHidden: 0,
+      moe: { totalExperts: 384, activeExperts: 6, sharedExperts: 1, expertHidden: 3072, expertInput: "hidden", latent: 0 },
+      attention: { kind: "mla", heads: 128, qkHeadDim: 512, vHeadDim: 512, kvLatent: 512, ropeDim: 64, qLoraRank: 1536, paramsPerLayer: "residual" },
+      linearAttention: { layers: 0, stateDim: 0 },
+      dtype: { routed: MXFP4, dense: 2 }
+    },
+    glm52: {
+      name: "GLM-5.2 / 5.3（744B-A40B · MLA+DSA）",
+      totalParams: 744e9, activeParams: 40e9, layers: 78, moeLayers: 75,
+      hidden: 6144, vocab: 154880, denseFfnHidden: 12288,
+      moe: { totalExperts: 256, activeExperts: 8, sharedExperts: 1, expertHidden: 2048, expertInput: "hidden", latent: 0 },
+      attention: { kind: "mla", heads: 64, qkHeadDim: 256, vHeadDim: 256, kvLatent: 512, ropeDim: 64, qLoraRank: 2048, paramsPerLayer: "derive" },
+      linearAttention: { layers: 0, stateDim: 0 },
+      dtype: { routed: MXFP4, dense: 2 }
+    }
+  };
+
+  const V4_ATTN = {
+    heads: 128, headDim: 512, indexHeads: 64, indexHeadDim: 128, topk: 1024,
+    window: 128, mCsa: 4, mHca: 128, nCsa: 29, nHca: 31, nSlide: 1, dtype: 2
+  };
+  const GLM_DSA = { topk: 2048, indexHeads: 32, indexHeadDim: 128, indexShare: 4 };
+
+  const META = {
+    kimiK3: { short: "K3", family: "Kimi", flow: "latent", attn: "MLA + 69×KDA", src: "仓库计算器口径" },
+    deepseekV4pro: { short: "V4-Pro", family: "DeepSeek", flow: "dsmoe", attn: "CSA/HCA 混合", src: "HF V4-Pro-Base + 论文" },
+    glm52: { short: "GLM-5.2", family: "GLM", flow: "dsmoe", attn: "MLA + DSA + IndexShare", src: "zai-org/GLM-5.2；5.3 同结构" }
+  };
+
+  const ALL_IDS = ["deepseekV4pro", "kimiK3", "glm52"];
+  let enabled = new Set(ALL_IDS);
+
+  function v4KvBytes(ctx) {
+    const a = V4_ATTN, n = ctx, d = a.dtype;
+    const csa = a.nCsa * ((n / a.mCsa) * a.headDim * d + (n / a.mCsa) * a.indexHeadDim * d + a.window * a.headDim * d);
+    const hca = a.nHca * ((n / a.mHca) * a.headDim * d + a.window * a.headDim * d);
+    const slide = a.nSlide * a.window * a.headDim * d;
+    return csa + hca + slide;
+  }
+  function v4AttnFlops(ctx) {
+    const a = V4_ATTN;
+    const qkv = (heads, dim, keys) => 2 * heads * (dim + dim) * keys;
+    const csaKeys = Math.min(a.topk, Math.floor(ctx / a.mCsa)) + a.window;
+    const hcaKeys = Math.floor(ctx / a.mHca) + a.window;
+    const indexer = a.nCsa * 2 * (ctx / a.mCsa) * a.indexHeads * a.indexHeadDim;
+    const csa = a.nCsa * qkv(a.heads, a.headDim, csaKeys);
+    const hca = a.nHca * qkv(a.heads, a.headDim, hcaKeys);
+    const slide = a.nSlide * qkv(a.heads, a.headDim, a.window);
+    return indexer + csa + hca + slide;
+  }
+  function glmAttnFlops(model, ctx, dsa) {
+    const a = model.spec.attention;
+    const share = dsa.indexShare || 1;
+    const indexer = (model.softmaxLayers / share) * 2 * ctx * dsa.indexHeads * dsa.indexHeadDim;
+    const sparse = model.softmaxLayers * 2 * Math.min(ctx, dsa.topk) * a.heads * (a.qkHeadDim + a.vHeadDim);
+    return indexer + sparse;
+  }
+  function k3AttnFlopsAbsorbed(m, ctx) {
+    const a = m.spec.attention;
+    const la = m.spec.linearAttention || { layers: 0, stateDim: 0 };
+    const mla = m.softmaxLayers * 2 * ctx * a.heads * (2 * (a.kvLatent || 0) + (a.ropeDim || 0));
+    const kda = la.layers * a.heads * (la.stateDim || 0) * (la.stateDim || 0) * 7;
+    return mla + kda;
+  }
+  function attnKernel(m, ctx) {
+    const a = m.spec.attention;
+    const dense = m.spec.dtype.dense;
+    const L = Math.max(1, ctx);
+    const storeKv = m.kvBytesFn(ctx);
+    const kdaT = 2 * (m.kdaStateStore || 0);
+    if (m.hybrid === "csa-hca") {
+      const v = V4_ATTN;
+      const flop = v4AttnFlops(L);
+      const csaKeys = Math.min(v.topk, Math.floor(L / v.mCsa)) + v.window;
+      const hcaKeys = Math.floor(L / v.mHca) + v.window;
+      const ixB = v.nCsa * (L / v.mCsa) * v.indexHeadDim * v.dtype;
+      const csaB = v.nCsa * csaKeys * v.headDim * v.dtype;
+      const hcaB = v.nHca * hcaKeys * v.headDim * v.dtype;
+      const slB = v.nSlide * v.window * v.headDim * v.dtype;
+      const traffic = ixB + csaB + hcaB + slB;
+      return { flop, traffic, store: storeKv, note: "indexer 扫压缩位 + 只搬 CSA topk/窗与 HCA 压缩序列" };
+    }
+    if (m.dsa) {
+      const flop = glmAttnFlops(m, L, m.dsa);
+      const share = m.dsa.indexShare || 1;
+      const ixB = (m.softmaxLayers / share) * L * m.dsa.indexHeadDim * dense;
+      const topk = Math.min(L, m.dsa.topk);
+      const kvTok = (a.kvLatent + (a.ropeDim || 0)) * dense;
+      const traffic = ixB + m.softmaxLayers * topk * kvTok;
+      return { flop, traffic, store: storeKv, note: "indexer 读 index-K + 只搬 topk 份 MLA KV（存量仍是全长）" };
+    }
+    const flop = k3AttnFlopsAbsorbed(m, L);
+    const traffic = storeKv + kdaT;
+    return { flop, traffic, store: storeKv + kdaT, note: "MLA 按吸收后 2·h·L·(2dc+dr)；Decode 扫全长 KV。KDA 读写状态" };
+  }
+
+  function partIntensities(m, ctx, pred) {
+    const p = m.params, b = m.bytes;
+    const L = Math.max(1, ctx);
+    const rows = [];
+    const add = (name, flop, bytes, core, note, pf) => {
+      if (!(flop > 0) || !(bytes > 0)) return;
+      rows.push({ name, flop, bytes, I: flop / bytes, core, note, pf: pf || "S" });
+    };
+    add("Routed 专家（读 1 份）", 2 * p.routedActive, b.routedActive, "L", "MXFP4：I = 2 / (17/32) ≈ 3.76；Prefill I×S", "S");
+    add("Routed ×(2−p) 预取", 2 * p.routedActive, b.routedActive * (2 - pred), "L", "只在 Decode；Prefill 按读 1 份", "skip");
+    add("Shared experts", 2 * p.shared, b.shared, "L", "BF16 GEMM，Decode I=1，Prefill I×S", "S");
+    add("Wdown / Wup", 2 * (p.wdown + p.wup), b.wdown + b.wup, "L", "K3 Latent 边界，BF16", "S");
+    add("Router", 2 * p.router, b.router, "L", "BF16", "S");
+    add("Attn 投影 Wq/Wkv/Wo", 2 * p.attn, b.attn, "L", "BF16，不含 QKᵀ/AV", "S");
+    add("稠密 FFN", 2 * p.denseFfn, b.denseFfn, "L", "BF16", "S");
+    add("LM Head", 2 * p.lmHead, b.lmHead, "L", "BF16", "S");
+    const a = m.spec.attention;
+    const dense = m.spec.dtype.dense;
+    if (m.hybrid === "csa-hca") {
+      const v = V4_ATTN;
+      const csaKeys = Math.min(v.topk, Math.floor(L / v.mCsa)) + v.window;
+      const hcaKeys = Math.floor(L / v.mHca) + v.window;
+      add("CSA indexer", v.nCsa * 2 * (L / v.mCsa) * v.indexHeads * v.indexHeadDim,
+        v.nCsa * (L / v.mCsa) * v.indexHeadDim * v.dtype, "H", "Decode I = indexHeads = 64；Prefill 扫前缀 ≈(S/2)×I", "S2");
+      add("CSA topk / 窗", v.nCsa * 2 * v.heads * (v.headDim + v.headDim) * csaKeys,
+        v.nCsa * csaKeys * v.headDim * v.dtype, "H", "每查询 topk+窗，Prefill I ≈ Decode", "hold");
+      add("HCA 压缩序列", v.nHca * 2 * v.heads * (v.headDim + v.headDim) * hcaKeys,
+        v.nHca * hcaKeys * v.headDim * v.dtype, "H", "keys 随 L 涨，Prefill 因果 ≈(S/2)×I", "S2");
+      add("Sliding window", v.nSlide * 2 * v.heads * (v.headDim + v.headDim) * v.window,
+        v.nSlide * v.window * v.headDim * v.dtype, "H", "窗固定，Prefill I ≈ Decode", "hold");
+    } else if (m.dsa) {
+      const share = m.dsa.indexShare || 1;
+      const topk = Math.min(L, m.dsa.topk);
+      const kvTok = (a.kvLatent + (a.ropeDim || 0)) * dense;
+      add("DSA indexer", (m.softmaxLayers / share) * 2 * L * m.dsa.indexHeads * m.dsa.indexHeadDim,
+        (m.softmaxLayers / share) * L * m.dsa.indexHeadDim * dense, "H", "Decode I = 32；Prefill 扫前缀 ≈(S/2)×I", "S2");
+      add("DSA topk 核", m.softmaxLayers * 2 * topk * a.heads * (a.qkHeadDim + a.vHeadDim),
+        m.softmaxLayers * topk * kvTok, "H", "每查询 topk，Prefill I ≈ Decode", "hold");
+    } else {
+      const la = m.spec.linearAttention || { layers: 0, stateDim: 0 };
+      add("MLA（吸收后）", m.softmaxLayers * 2 * L * a.heads * (2 * (a.kvLatent || 0) + (a.ropeDim || 0)),
+        m.softmaxLayers * L * (a.kvLatent + (a.ropeDim || 0)) * dense, "H", "Decode I 与 L 无关；Prefill 因果 ≈(S/2)×I", "S2");
+      add("KDA 状态", la.layers * a.heads * la.stateDim * la.stateDim * 7,
+        2 * m.kdaStateStore, "L", "无 Softmax/LSE；I ≈ 1.75。Prefill 每 token 仍读写状态，I 不变", "hold");
+    }
+    return rows;
+  }
+
+  function decorate(m, id) {
+    m.id = id;
+    m.meta = META[id];
+    const orig = m.attnFlopsPerToken;
+    m.attnFlopsDense = orig;
+    if (id === "deepseekV4pro") {
+      m.hybrid = "csa-hca";
+      m.kvBytesFn = v4KvBytes;
+      m.attnFlopsPerToken = v4AttnFlops;
+    } else if (id === "glm52") {
+      m.dsa = GLM_DSA;
+      m.baseKvPerTok = m.kvPerTokenPerLayer;
+      m.kvBytesFn = ctx => m.softmaxLayers * ctx * m.baseKvPerTok;
+      m.attnFlopsPerToken = ctx => glmAttnFlops(m, ctx, GLM_DSA);
+    } else {
+      m.baseKvPerTok = m.kvPerTokenPerLayer;
+      m.kvBytesFn = ctx => m.softmaxLayers * ctx * m.baseKvPerTok;
+      m.attnFlopsMha = orig;
+      m.attnFlopsPerToken = ctx => k3AttnFlopsAbsorbed(m, ctx);
+    }
+    return m;
+  }
+
+  function loadModel(id) {
+    const spec = EXTRA[id] || E.MODEL_PRESETS[id];
+    return decorate(E.deriveModel(spec), id);
+  }
+
+  function bindContext(m, ctx) {
+    if (m.hybrid !== "csa-hca") return;
+    const total = m.kvBytesFn(ctx);
+    m.kvPerTokenPerLayer = total / Math.max(1, m.softmaxLayers * ctx);
+  }
+
+  const MODELS = {};
+  ALL_IDS.forEach(id => { MODELS[id] = loadModel(id); });
+
+  function fmt(x, d) {
+    if (!Number.isFinite(x)) return "—";
+    const n = d === undefined ? (Math.abs(x) >= 100 ? 0 : Math.abs(x) >= 10 ? 1 : 2) : d;
+    return Number(x).toLocaleString("en-US", { maximumFractionDigits: n, minimumFractionDigits: n });
+  }
+  function fmtI(x) {
+    if (!(x > 0) || !Number.isFinite(x)) return "—";
+    if (x >= 1e6) return fmt(x / 1e6, 1) + "M";
+    if (x >= 1000) return fmt(x / 1000, x >= 10000 ? 0 : 1) + "k";
+    return fmt(x, x >= 10 ? 0 : 1);
+  }
+  function prefillIOf(p, S) {
+    if (!(p && p.I > 0)) return 0;
+    if (!(S > 1) || p.pf === "hold" || p.pf === "skip") return p.I;
+    if (p.pf === "S2") return p.I * S / 2;
+    return p.I * S;
+  }
+  function gb(b) { return E.gb(b); }
+  function tag(ok, text) {
+    const k = ok === "ok" ? "ok" : ok === "warn" ? "warn" : ok === "bad" ? "bad" : ok === "purple" ? "purple" : "info";
+    return `<span class="tag ${k}">${text}</span>`;
+  }
+  function matchTag(ratio) {
+    if (ratio >= 1.15) return tag("ok", "富余 " + fmt(ratio, 2) + "×");
+    if (ratio >= 0.85) return tag("ok", "匹配 " + fmt(ratio, 2) + "×");
+    if (ratio >= 0.4) return tag("warn", "紧 " + fmt(ratio, 2) + "×");
+    return tag("bad", "缺口 " + fmt(ratio, 2) + "×");
+  }
+  function bar(frac, color) {
+    const w = Math.max(0, Math.min(100, frac * 100));
+    return `<div class="barwrap"><i style="width:${w}%;background:${color}"></i></div>`;
+  }
+
+  function linearFlops(m) {
+    const p = m.params;
+    return 2 * (p.routedActive + p.shared + p.wdown + p.wup + p.router + p.denseFfn + p.attn + p.lmHead);
+  }
+  function weightBytes(m) {
+    const b = m.bytes;
+    return b.attn + b.wdown + b.wup + b.shared + b.router + b.denseFfn + b.routedTotal + b.lmHead;
+  }
+  function readBytes(m, pred, ctx) {
+    const b = m.bytes;
+    const det = b.attn + b.wdown + b.wup + b.shared + b.router + b.denseFfn;
+    const routed = b.routedActive * (2 - pred);
+    const kv = m.kvBytesFn(ctx);
+    const kda = 2 * m.kdaStateStore;
+    return { det, routed, kv, kda, lm: b.lmHead, total: det + routed + kv + kda };
+  }
+  function intensity(flops, bytes) { return bytes > 0 ? flops / bytes : 0; }
+
+  function chipOf(scale) {
+    const c = E.clone(E.CHIP_DEFAULT);
+    c.collectiveScaling = scale;
+    const sram = Number($("inSram") && $("inSram").value);
+    const link = Number($("inLink") && $("inLink").value);
+    if (Number.isFinite(sram) && sram >= 0) c.sramMib = sram;
+    if (Number.isFinite(link) && link > 0) c.linkBandwidthGBs = link;
+    return c;
+  }
+  function optsOf() {
+    return Object.assign({}, E.OPTIONS_DEFAULT, {
+      prediction: Number($("inPred").value) / 100,
+      context: Number($("inCtx").value),
+      collectiveFusion: $("inFusion").value === "1",
+      mlaContextShardMerge: true,
+      maxTp: 64,
+      margin: 1.17,
+      users: 1,
+      imbalance: true
+    });
+  }
+  function activeModels() {
+    return ALL_IDS.filter(id => enabled.has(id)).map(id => MODELS[id]);
+  }
+  function shardPolicy(m, tp) {
+    const policy = { expertGroup: tp, attn: "shard", wdown: "shard", wup: "shard", shared: "shard", router: "shard", denseFfn: "shard" };
+    return policy;
+  }
+  function evalAt(m, cards, opts, chip) {
+    bindContext(m, opts.context);
+    const tp = cards;
+    const pp = 1;
+    if (!E.tpAllowed(m, tp, opts)) {
+      const heads = m.spec.attention.heads;
+      const cand = [];
+      for (let t = tp; t >= 1; t--) if (cards % t === 0 && heads % t === 0) cand.push(t);
+      if (!cand.length) return null;
+      const t2 = cand[0];
+      return E.evaluate(m, chip, { pp: cards / t2, tp: t2, policy: shardPolicy(m, t2) }, opts);
+    }
+    return E.evaluate(m, chip, { pp, tp, policy: shardPolicy(m, tp) }, opts);
+  }
+
+  function payloadElems(m, r) {
+    let elems = 0;
+    const moe = r.moeCollectives || [];
+    for (let i = 0; i < moe.length; i++) elems += moe[i].elems;
+    elems *= m.spec.moeLayers;
+    if (r.tp > 1) elems += m.denseLayers * m.spec.hidden;
+    const a = m.spec.attention;
+    const mergeE = a.heads * ((a.kvLatent || 0) + 2);
+    elems += m.softmaxLayers * (r.mlaMergeCollectives || 0) * mergeE;
+    return elems;
+  }
+
+  function prefillAttnFlops(m, L) {
+    if (L <= 0) return 0;
+    const n = 10;
+    let acc = 0;
+    for (let i = 1; i <= n; i++) acc += m.attnFlopsPerToken(Math.max(1, Math.round(L * i / n)));
+    return acc / n * L;
+  }
+
+  function uniqueExperts(total, k, u) {
+    if (!(total > 0) || !(k > 0) || !(u > 0)) return 0;
+    const miss = Math.max(0, (total - k) / total);
+    return total * (1 - Math.pow(miss, u));
+  }
+
+  function fullDecode(m, r, x, chip, target, users, pred) {
+    const bwCard = chip.mcCount * chip.mcBandwidthGBs * 1e9 * chip.mcEfficiency;
+    const capCard = chip.mcCount * chip.mcCapacityGB;
+    const u = Math.max(1, users);
+    const p = pred == null ? 0.8 : pred;
+    const k = m.spec.moe.activeExperts || 0;
+    const Et = m.spec.moe.totalExperts || 0;
+    const uniq = uniqueExperts(Et, k, u);
+    const routedScale = k > 0 ? uniq / k : 1;
+    const actualCard = r.routedActualCard || 0;
+    const expertB = actualCard * (routedScale + (1 - p));
+    const detCard = r.detCard != null ? r.detCard : Math.max(0, r.cardStageBytes - r.routedCard - r.stateCard);
+    const grossU = detCard + r.stateCard * u + expertB;
+    const savedB = Math.max(0, r.savedMs / 1e3 * bwCard);
+    const netCard = Math.max(0, grossU - savedB);
+    const lmSys = m.bytes.lmHead;
+    const netSys = netCard * r.cards + lmSys;
+    const naiveSys = x.rd.total * u;
+    const consumedBw = netSys * target;
+    const naiveBw = x.rd.total * target;
+    const netMcMs = netCard / bwCard * 1e3;
+    const latMs = (r.collectiveLatencyUs || 0) * r.collectiveCount / 1e3;
+    const payMs = Math.max(0, r.collectiveTotalMs - latMs);
+    const collU = latMs + payMs * u;
+    const computeU = (r.linearMs + r.attnMs) * u;
+    const misfetchU = actualCard * Math.max(0, routedScale - p) / bwCard * 1e3;
+    const busyU = computeU + collU / r.pp + misfetchU;
+    const exposedMs = Math.max(0, netMcMs - busyU);
+    const exposedSys = exposedMs / 1e3 * bwCard * r.cards;
+    const exposedBw = exposedSys * target;
+    const dense = m.spec.dtype.dense;
+    const payB = payloadElems(m, r) * dense * u;
+    const wireB = r.tp > 1 ? 2 * (r.tp - 1) * payB : 0;
+    const linkNeed = wireB * target;
+    const linkSupply = chip.linkBandwidthGBs * 1e9 * r.cards;
+    const capNeed = x.wGB + u * (x.kvGB + x.kdaGB);
+    const capSupply = capCard * r.cards;
+    const budgetMs = 1000 / target;
+    const collNeedCards = collU * r.pp * (optsMargin()) > 0
+      ? (collU * r.pp * optsMargin()) / budgetMs
+      : 0;
+    const nMc = consumedBw / (bwCard);
+    const nExp = exposedBw > 1e6 ? exposedBw / bwCard : 0;
+    const nLink = linkSupply > 0 ? linkNeed / (chip.linkBandwidthGBs * 1e9) : 0;
+    const nCap = capNeed / capCard;
+    const nColl = collNeedCards;
+    const names = ["消耗MC", "暴露MC", "互联", "容量", "归约时间"];
+    const vals = [nMc, nExp, nLink, nCap, nColl];
+    let im = 0;
+    vals.forEach((v, i) => { if (v > vals[im]) im = i; });
+    const collStageMs = collU / r.pp;
+    let stepBot = "算力";
+    if (netMcMs >= busyU) stepBot = "MC";
+    else if (misfetchU >= computeU && misfetchU >= collStageMs) stepBot = "补读";
+    else if (collStageMs >= computeU) stepBot = "归约";
+    const stageMs = Math.max(netMcMs, busyU) * optsMargin();
+    const tpsUsr = 1000 / Math.max(stageMs, 1e-9);
+    return {
+      naiveBw, consumedBw, exposedBw, netSys, naiveSys, savedB: savedB * r.cards,
+      linkNeed, payB, wireB, collU, computeU, busyU, netMcMs, capNeed, capSupply,
+      nMc, nExp, nLink, nCap, nColl, limiter: names[im], limiterN: vals[im],
+      hidden: exposedMs <= 1e-9, u, r, misfetchU, collStageMs,
+      uniq, routedScale, Et, k, stepBot, stageMs, tpsUsr, sysTps: tpsUsr * u,
+      capOk: capNeed <= capSupply, cover: netMcMs > 1e-12 ? busyU / netMcMs : Infinity
+    };
+  }
+
+  function optsMargin() {
+    return 1.17;
+  }
+
+  function stackedBar(cats, series, height, suffix) {
+    const W = 720, H = height || 260, padL = 58, padR = 16, padT = 18, padB = 36;
+    const innerW = W - padL - padR, innerH = H - padT - padB;
+    const n = cats.length, g = innerW / n, bw = g * 0.62;
+    const max = Math.max(1e-9, ...cats.map((_, i) => series.reduce((s, y) => s + (y.data[i] || 0), 0)));
+    const yOf = v => padT + innerH * (1 - v / max);
+    let bars = "";
+    cats.forEach((c, i) => {
+      let acc = 0;
+      series.forEach(s => {
+        const v = s.data[i] || 0;
+        const y1 = yOf(acc + v), y0 = yOf(acc);
+        bars += `<rect x="${padL + i * g + (g - bw) / 2}" y="${y1}" width="${bw}" height="${Math.max(0, y0 - y1)}" fill="${s.color}" rx="2"/>`;
+        acc += v;
+      });
+      bars += `<text x="${padL + i * g + g / 2}" y="${H - 10}" font-size="11" fill="${C.ink}" text-anchor="middle">${c}</text>`;
+      bars += `<text x="${padL + i * g + g / 2}" y="${yOf(acc) - 4}" font-size="10" fill="${C.muted}" text-anchor="middle">${fmt(acc, acc >= 10 ? 1 : 2)}${suffix || ""}</text>`;
+    });
+    const ticks = 4;
+    let grid = "";
+    for (let t = 0; t <= ticks; t++) {
+      const v = max * t / ticks, y = yOf(v);
+      grid += `<line x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${padL - 6}" y="${y + 3}" font-size="10" fill="${C.muted}" text-anchor="end">${fmt(v, 1)}</text>`;
+    }
+    const legend = series.map((s, i) =>
+      `<rect x="${padL + i * 88}" y="2" width="8" height="8" fill="${s.color}" rx="1"/><text x="${padL + 12 + i * 88}" y="10" font-size="10" fill="${C.ink}">${s.name}</text>`
+    ).join("");
+    return `<svg viewBox="0 0 ${W} ${H}">${grid}${bars}${legend}</svg>`;
+  }
+
+  function groupedBar(cats, series, height, suffix) {
+    const W = 720, H = height || 260, padL = 52, padR = 12, padT = 18, padB = 36;
+    const innerW = W - padL - padR, innerH = H - padT - padB;
+    const n = cats.length, g = innerW / n, k = series.length;
+    const bw = g * 0.72 / k;
+    const max = Math.max(1e-9, ...series.flatMap(s => s.data.filter(x => x != null)));
+    const yOf = v => padT + innerH * (1 - v / max);
+    let bars = "";
+    cats.forEach((c, i) => {
+      series.forEach((s, j) => {
+        const v = s.data[i];
+        if (v == null) return;
+        const x = padL + i * g + (g - k * bw) / 2 + j * bw;
+        const y = yOf(v);
+        bars += `<rect x="${x}" y="${y}" width="${bw - 1}" height="${Math.max(0, padT + innerH - y)}" fill="${s.color}" rx="1"/>`;
+      });
+      bars += `<text x="${padL + i * g + g / 2}" y="${H - 10}" font-size="11" fill="${C.ink}" text-anchor="middle">${c}</text>`;
+    });
+    let grid = "";
+    for (let t = 0; t <= 4; t++) {
+      const v = max * t / 4, y = yOf(v);
+      grid += `<line x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${padL - 6}" y="${y + 3}" font-size="10" fill="${C.muted}" text-anchor="end">${fmt(v, 1)}</text>`;
+    }
+    const legend = series.map((s, i) =>
+      `<rect x="${padL + i * 110}" y="2" width="8" height="8" fill="${s.color}" rx="1"/><text x="${padL + 12 + i * 110}" y="10" font-size="10" fill="${C.ink}">${s.name}</text>`
+    ).join("");
+    return `<svg viewBox="0 0 ${W} ${H}">${grid}${bars}${legend}</svg>`;
+  }
+
+  function lineChart(cats, series, height, yLabel) {
+    const W = 720, H = height || 260, padL = 58, padR = 16, padT = 16, padB = 36;
+    const innerW = W - padL - padR, innerH = H - padT - padB;
+    const max = Math.max(1e-9, ...series.flatMap(s => s.data.filter(x => x != null)));
+    const xOf = i => padL + innerW * (cats.length === 1 ? 0.5 : i / (cats.length - 1));
+    const yOf = v => padT + innerH * (1 - v / max);
+    let grid = "";
+    for (let t = 0; t <= 4; t++) {
+      const v = max * t / 4, y = yOf(v);
+      grid += `<line x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}" stroke="${C.grid}"/><text x="${padL - 6}" y="${y + 3}" font-size="10" fill="${C.muted}" text-anchor="end">${fmt(v, 1)}</text>`;
+    }
+    cats.forEach((c, i) => { grid += `<text x="${xOf(i)}" y="${H - 10}" font-size="11" fill="${C.ink}" text-anchor="middle">${c}</text>`; });
+    const paths = series.map(s => {
+      const pts = s.data.map((v, i) => v == null ? null : `${xOf(i)},${yOf(v)}`).filter(Boolean);
+      const dots = s.data.map((v, i) => v == null ? "" : `<circle cx="${xOf(i)}" cy="${yOf(v)}" r="3.2" fill="${s.color}"/>`).join("");
+      return `<polyline fill="none" stroke="${s.color}" stroke-width="2" points="${pts.join(" ")}"/>${dots}`;
+    }).join("");
+    const legend = series.map((s, i) =>
+      `<rect x="${padL + i * 120}" y="2" width="8" height="8" fill="${s.color}" rx="1"/><text x="${padL + 12 + i * 120}" y="10" font-size="10" fill="${C.ink}">${s.name}</text>`
+    ).join("");
+    return `<svg viewBox="0 0 ${W} ${H}">${grid}${paths}${legend}</svg>`;
+  }
+
+  function moeSvg() {
+    const box = (x, y, w, h, fill, stroke, t1, t2) =>
+      `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="${fill}" stroke="${stroke}"/>` +
+      `<text x="${x + w / 2}" y="${y + 18}" font-size="11" font-weight="700" text-anchor="middle" fill="${stroke}">${t1}</text>` +
+      (t2 ? `<text x="${x + w / 2}" y="${y + 34}" font-size="10" text-anchor="middle" fill="${C.muted}">${t2}</text>` : "");
+    const arr = (x1, y1, x2, y2, c) =>
+      `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${c || "#94a3b8"}" stroke-width="1.4" marker-end="url(#ar)"/>`;
+    return `<svg viewBox="0 0 640 430">
+      <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#94a3b8"/></marker></defs>
+      <text x="8" y="18" font-size="12" font-weight="700" fill="${C.ink}">A · V4-Pro / GLM-5.2：hidden 直接进专家</text>
+      ${box(8, 28, 70, 44, "#e9edf1", "#94a3b8", "h", "hidden")}
+      ${arr(78, 50, 96, 50)}
+      ${box(96, 28, 86, 44, "#ede9fe", "#6d28d9", "RMSNorm", "pre-norm")}
+      ${arr(182, 50, 198, 50)}
+      ${box(198, 28, 90, 44, "#fff4d8", "#b45309", "Router", "V4:384 / GLM:256")}
+      ${arr(288, 50, 306, 50)}
+      ${box(306, 28, 118, 44, "#fff4d8", "#b45309", "top-k 专家", "V4 k=6 · GLM k=8")}
+      ${arr(424, 50, 440, 50)}
+      ${box(440, 28, 86, 44, "#e6f4ea", "#166534", "+ Shared", "每 token")}
+      ${arr(526, 50, 542, 50)}
+      ${box(542, 28, 90, 44, "#ede9fe", "#6d28d9", "★ merge AR", "→ hidden")}
+      <text x="8" y="98" font-size="12" font-weight="700" fill="${C.ink}">B · Kimi K3 Latent MoE：先压到 3584，专家更胖、激活更省</text>
+      ${box(8, 108, 70, 44, "#e9edf1", "#94a3b8", "h", "7168")}
+      ${arr(78, 130, 96, 130)}
+      ${box(96, 108, 86, 44, "#dbeafe", "#1d4ed8", "Wdown", "7168→3584")}
+      ${arr(182, 130, 198, 130)}
+      ${box(198, 108, 90, 44, "#fff4d8", "#b45309", "Router", "896 logits")}
+      ${arr(288, 130, 306, 130)}
+      ${box(306, 108, 118, 44, "#fff4d8", "#b45309", "16 / 896 专家", "in=3584 · 3072")}
+      ${arr(424, 130, 440, 130)}
+      ${box(440, 108, 86, 44, "#dbeafe", "#1d4ed8", "Wup", "3584→7168")}
+      ${arr(526, 130, 542, 130)}
+      ${box(542, 108, 90, 44, "#ede9fe", "#6d28d9", "★ Wup AR", "完整 hidden")}
+      <text x="8" y="178" font-size="11" fill="${C.muted}">K3 每 MoE 层多 2 次边界（Wdown all-gather、Wup all-reduce），但专家矩阵是 3584×3072 而不是 7168×2048，激活专家还从 8 加到 16。</text>
+      <text x="8" y="210" font-size="12" font-weight="700" fill="${C.ink}">跨卡切分（4 卡示意）</text>
+      <rect x="8" y="220" width="624" height="196" rx="8" fill="#f7f5ef" stroke="${C.line}"/>
+      <text x="20" y="242" font-size="11" font-weight="700" fill="${C.accent}">TP 切稠密张量</text>
+      <text x="20" y="260" font-size="11" fill="${C.ink}">Attention / Wdown / Wup / Shared / Dense FFN 按列或按头切开，边界上 all-reduce / all-gather。</text>
+      <text x="20" y="286" font-size="11" font-weight="700" fill="${C.warn}">EP / Owner 放专家</text>
+      <text x="20" y="304" font-size="11" fill="${C.ink}">Routed 专家整块放在某张卡（或再切 g 份）。没有权重 all-to-all；token 去找专家，最忙卡决定时间。</text>
+      <text x="20" y="330" font-size="11" font-weight="700" fill="${C.purple}">CP 切 KV</text>
+      <text x="20" y="348" font-size="11" fill="${C.ink}">MLA 的潜变量对所有头共享，不能切头，只能切 Context；GQA 按 KV 头切，头数用尽后容量不再随 TP 下降。</text>
+      <text x="20" y="374" font-size="11" font-weight="700" fill="${C.good}">PP 切层</text>
+      <text x="20" y="392" font-size="11" fill="${C.ink}">单用户延迟下 PP 只是把同样的字节串起来读，不增加并行带宽。1000 TPS/usr 几乎总是「尽量 TP」。</text>
+    </svg>`;
+  }
+
+  function attnSvg() {
+    return `<svg viewBox="0 0 640 430">
+      <text x="8" y="18" font-size="12" font-weight="700" fill="${C.ink}">三套注意力：长序列差在压缩什么</text>
+      <rect x="8" y="28" width="306" height="128" rx="8" fill="#e4f2f4" stroke="${C.accent}"/>
+      <text x="20" y="50" font-size="12" font-weight="700" fill="${C.accent}">K3 · MLA + KDA</text>
+      <text x="20" y="70" font-size="11" fill="${C.ink}">24 层 MLA：KV 压成 576 元 · 1152 B/tok/层</text>
+      <text x="20" y="88" font-size="11" fill="${C.ink}">69 层 KDA：128² 状态/头，不随 L 涨</text>
+      <text x="20" y="106" font-size="11" fill="${C.muted}">长序列容量几乎被 MLA 层数锁死</text>
+      <text x="20" y="138" font-size="11" fill="${C.accent}">1M 系统 KV ≈ 29 GB，主容量是 1.56 TB 权重</text>
+      <rect x="326" y="28" width="306" height="128" rx="8" fill="#fff4d8" stroke="${C.warn}"/>
+      <text x="338" y="50" font-size="12" font-weight="700" fill="${C.warn}">V4-Pro · CSA / HCA</text>
+      <text x="338" y="70" font-size="11" fill="${C.ink}">MQA head_dim=512 · 已换掉 MLA</text>
+      <text x="338" y="88" font-size="11" fill="${C.ink}">CSA：m=4 压缩 + indexer topk=1024</text>
+      <text x="338" y="106" font-size="11" fill="${C.ink}">HCA：m′=128 重压 + 稠密注意；窗=128</text>
+      <text x="338" y="138" font-size="11" fill="${C.warn}">论文：1M 时 KV 约 V3.2 的 10%</text>
+      <rect x="8" y="168" width="624" height="100" rx="8" fill="#e6f4ea" stroke="${C.good}"/>
+      <text x="20" y="190" font-size="12" font-weight="700" fill="${C.good}">GLM-5.2 / 5.3 · MLA + DSA + IndexShare</text>
+      <text x="20" y="210" font-size="11" fill="${C.ink}">KV 仍是 MLA 潜变量（512+64）× 78 层，1M ≈ 94 GB —— DSA 砍算力，几乎不砍容量。</text>
+      <text x="20" y="228" font-size="11" fill="${C.ink}">Indexer 每 4 层共享一次（index_topk=2048）。5.3 与 5.2 同结构，差在后训练；5.2 起原生 1M。</text>
+      <text x="20" y="252" font-size="11" fill="${C.good}">1M 注意力是 indexer 带宽件，不是 dense softmax 算力墙。</text>
+      <text x="8" y="292" font-size="12" font-weight="700" fill="${C.ink}">Partition 含义</text>
+      <text x="8" y="312" font-size="11" fill="${C.ink}">三套都能按 Context 切：K3/GLM 的 MLA 潜变量跨头共享；V4 的压缩 KV 也是序列轴，加 TP = 摊 KV。</text>
+      <text x="8" y="330" font-size="11" fill="${C.ink}">V4 还多一条不随 L 涨的 sliding window（128 tok × 512-d MQA），这部分不能靠加 Context 并行摊掉。</text>
+      <text x="8" y="348" font-size="11" fill="${C.ink}">K3 激活 16 专家，同样 TP 下 Owner 不均比 V4 的 top-6、GLM 的 top-8 更重。</text>
+      <text x="8" y="378" font-size="11" fill="${C.muted}">V4 KV 按 CSA 29 层 + HCA 31 层 + 1 层 sliding、BF16 估算；论文给的 10% vs V3.2 可能含 FP8 存储，表内会略偏保守。</text>
+    </svg>`;
+  }
+
+  function partShort(name) {
+    const map = {
+      "Routed 专家（读 1 份）": "Routed",
+      "Routed ×(2−p) 预取": "Routed预取",
+      "Shared experts": "Shared",
+      "Wdown / Wup": "Wdown/Wup",
+      "Router": "Router",
+      "Attn 投影 Wq/Wkv/Wo": "Attn投影",
+      "稠密 FFN": "稠密FFN",
+      "LM Head": "LM Head",
+      "CSA indexer": "CSA ix",
+      "CSA topk / 窗": "CSA topk",
+      "HCA 压缩序列": "HCA",
+      "Sliding window": "滑动窗",
+      "DSA indexer": "DSA ix",
+      "DSA topk 核": "DSA topk",
+      "MLA（吸收后）": "MLA",
+      "KDA 状态": "KDA"
+    };
+    return map[name] || name;
+  }
+
+  function collectPartPoints(partIRows, core, S) {
+    const out = [];
+    partIRows.forEach((row, mi) => {
+      row.parts.forEach(p => {
+        if (p.core !== core || !(p.I > 0)) return;
+        const prefetch = p.pf === "skip" || /预取|2−p|2-p/.test(p.name);
+        const color = COLORS[mi % COLORS.length];
+        const short = partShort(p.name);
+        out.push({
+          I: p.I,
+          kind: prefetch ? "prefetch" : (core === "H" ? "attn" : "op"),
+          color, label: short + " D", model: row.x.m.meta.short, name: p.name, phase: "decode"
+        });
+        if (S > 1 && !prefetch) {
+          out.push({
+            I: prefillIOf(p, S),
+            kind: "prefill",
+            color, label: short + " P", model: row.x.m.meta.short, name: p.name, phase: "prefill"
+          });
+        }
+      });
+    });
+    return out;
+  }
+
+  function roofPanel(opts) {
+    const peak = opts.peak, ridge = opts.ridge, bwTBs = opts.bwTBs;
+    const points = (opts.points || []).filter(pt => pt && pt.I > 0);
+    const W = 720, H = 348, padL = 54, padR = 14, padT = 28, padB = 46;
+    const xMin = opts.xMin || 0.35;
+    const xMax = opts.xMax || Math.max(ridge * 1.35, ...points.map(pt => pt.I), 1) * 1.08;
+    const yMax = peak * 1.18;
+    const xOf = v => padL + (W - padL - padR) * (Math.log10(Math.max(v, xMin)) - Math.log10(xMin)) / (Math.log10(xMax) - Math.log10(xMin));
+    const yOf = v => padT + (H - padT - padB) * (1 - Math.max(0, v) / yMax);
+    const xRidge = xOf(ridge);
+    const yPeak = yOf(peak);
+    const xSlope0 = xOf(xMin);
+    const ySlope0 = yOf(Math.min(peak, xMin * bwTBs));
+    const xEnd = W - padR;
+    const yBot = H - padB;
+    const ticks = (opts.ticks || [1, 4, 16, ridge]).filter(v => v >= xMin * 0.95 && v <= xMax * 1.02);
+    let grid = `<rect x="${padL}" y="${padT}" width="${W - padL - padR}" height="${H - padT - padB}" fill="#fffdf8" rx="4"/>`;
+    ticks.forEach(v => {
+      const x = xOf(v);
+      const isRidge = Math.abs(v - ridge) / ridge < 0.02;
+      grid += `<line x1="${x}" x2="${x}" y1="${padT}" y2="${yBot}" stroke="${isRidge ? "transparent" : C.grid}"/>`;
+      grid += `<text x="${x}" y="${H - 24}" font-size="10" fill="${isRidge ? (opts.roofColor || C.accent) : C.muted}" text-anchor="middle" font-weight="${isRidge ? 700 : 400}">${fmtI(v)}</text>`;
+    });
+    for (let t = 1; t <= 3; t++) {
+      const v = peak * t / 3, y = yOf(v);
+      grid += `<line x1="${padL}" x2="${xEnd}" y1="${y}" y2="${y}" stroke="${C.grid}"/>`;
+      grid += `<text x="${padL - 6}" y="${y + 3}" font-size="10" fill="${C.muted}" text-anchor="end">${fmt(v, 0)}</text>`;
+    }
+    const roofColor = opts.roofColor || C.accent;
+    const roofFill = `<path d="M${xSlope0} ${yBot} L${xSlope0} ${ySlope0} L${xRidge} ${yPeak} L${xRidge} ${yBot} Z" fill="#e4f2f4" opacity="0.95"/>`
+      + `<path d="M${xRidge} ${yPeak} L${xEnd} ${yPeak} L${xEnd} ${yBot} L${xRidge} ${yBot} Z" fill="#e6f4ea" opacity="0.95"/>`;
+    const roofLine = `<path d="M${xSlope0} ${ySlope0} L${xRidge} ${yPeak} L${xEnd} ${yPeak}" fill="none" stroke="${roofColor}" stroke-width="2.4"/>`
+      + `<line x1="${xRidge}" x2="${xRidge}" y1="${padT}" y2="${yBot}" stroke="${roofColor}" stroke-width="1.2" stroke-dasharray="5 3" opacity="0.85"/>`
+      + `<circle cx="${xRidge}" cy="${yPeak}" r="3.5" fill="${roofColor}"/>`;
+    const region = `<text x="${(xSlope0 + xRidge) / 2}" y="${yBot - 8}" font-size="11" font-weight="700" fill="${C.accent}" text-anchor="middle">带宽墙</text>`
+      + `<text x="${(xRidge + xEnd) / 2}" y="${yBot - 8}" font-size="11" font-weight="700" fill="${C.good}" text-anchor="middle">算力墙</text>`
+      + `<text x="${Math.min(xRidge + 10, xEnd - 78)}" y="${yPeak + 16}" font-size="11" font-weight="700" fill="${roofColor}">脊点 ${fmt(ridge, 0)}</text>`;
+
+    const items = points.map((p, i) => {
+      const I = Math.max(xMin * 1.02, p.I);
+      return { ...p, I, x: xOf(I), y: yOf(Math.min(peak, I * bwTBs)), i };
+    });
+    const groups = [];
+    items.slice().sort((a, b) => a.I - b.I || a.i - b.i).forEach(it => {
+      const g = groups[groups.length - 1];
+      if (g && Math.abs(it.I - g.I) / Math.max(g.I, 0.01) < 0.08) g.items.push(it);
+      else groups.push({ I: it.I, items: [it] });
+    });
+    groups.forEach(g => {
+      const n = g.items.length;
+      const spread = n <= 1 ? 0 : Math.min(10, 56 / n);
+      const cx = xOf(Math.max(xMin * 1.02, g.I));
+      const cy = yOf(Math.min(peak, g.I * bwTBs));
+      g.cx = cx;
+      g.cy = cy;
+      g.items.forEach((it, i) => {
+        it.x = cx + (i - (n - 1) / 2) * spread;
+        it.y = cy;
+      });
+    });
+
+    const markOf = it => {
+      if (it.kind === "prefetch") return `<circle cx="${it.x}" cy="${it.y}" r="5.4" fill="#fff" stroke="${it.color}" stroke-width="1.6" stroke-dasharray="3 2"/>`;
+      if (it.kind === "prefill") return `<rect x="${it.x - 5}" y="${it.y - 5}" width="10" height="10" rx="1" fill="${it.color}" stroke="#fff" stroke-width="1.2"/>`;
+      if (it.kind === "attn") return `<circle cx="${it.x}" cy="${it.y}" r="5.6" fill="#fff" stroke="${it.color}" stroke-width="2"/>`;
+      if (it.kind === "model") return `<rect x="${it.x - 5}" y="${it.y - 5}" width="10" height="10" rx="1.5" fill="${it.color}" stroke="#fff" stroke-width="1.2"/>`;
+      return `<circle cx="${it.x}" cy="${it.y}" r="5.2" fill="${it.color}" stroke="#fff" stroke-width="1.2"/>`;
+    };
+    const markers = groups.flatMap(g => g.items.map(markOf)).join("");
+
+    const xSpan = items.length ? Math.max(...items.map(it => it.x)) - Math.min(...items.map(it => it.x)) : 0;
+    const spreadOut = xSpan > (W - padL - padR) * 0.32;
+    let labels = "";
+    if (spreadOut) {
+      groups.forEach(g => {
+        const uniq = [];
+        g.items.forEach(it => {
+          const s = (it.model ? it.model + " " : "") + it.label;
+          if (uniq.indexOf(s) < 0) uniq.push(s);
+        });
+        const placeUp = g.cy > padT + 20 + uniq.length * 12;
+        uniq.forEach((s, j) => {
+          const ly = placeUp ? g.cy - 12 - j * 12 : g.cy + 16 + j * 12;
+          const anchor = g.cx > (padL + xEnd) * 0.62 ? "end" : "start";
+          const tx = g.cx + (anchor === "end" ? -8 : 8);
+          labels += `<text x="${tx}" y="${ly}" font-size="10" font-weight="650" fill="${g.items[Math.min(j, g.items.length - 1)].color}" text-anchor="${anchor}">${s} ${j === 0 ? fmtI(g.I) : ""}</text>`;
+        });
+      });
+    } else {
+      const boxW = 168;
+      let boxY = padT + 8;
+      const boxX = padL + 8;
+      groups.forEach(g => {
+        const lines = [];
+        const seen = new Set();
+        g.items.forEach(it => {
+          const key = it.label;
+          if (seen.has(key)) {
+            const row = lines.find(l => l.key === key);
+            if (it.model && row.models.indexOf(it.model) < 0) {
+              row.models.push(it.model);
+              row.colors.push(it.color);
+            }
+            return;
+          }
+          seen.add(key);
+          lines.push({
+            key, label: it.label, kind: it.kind,
+            models: it.model ? [it.model] : [],
+            colors: [it.color]
+          });
+        });
+        const h = 20 + lines.length * 16;
+        labels += `<rect x="${boxX}" y="${boxY}" width="${boxW}" height="${h}" rx="6" fill="#fff" stroke="${C.line}"/>`;
+        labels += `<text x="${boxX + 8}" y="${boxY + 13}" font-size="10" fill="${C.muted}">I ≈ ${fmtI(g.I)}</text>`;
+        lines.forEach((ln, i) => {
+          const cy = boxY + 28 + i * 16;
+          ln.colors.forEach((col, k) => {
+            const cx = boxX + 12 + k * 9;
+            if (ln.kind === "prefetch") {
+              labels += `<circle cx="${cx}" cy="${cy - 3}" r="3.4" fill="#fff" stroke="${col}" stroke-width="1.3" stroke-dasharray="2 1"/>`;
+            } else if (ln.kind === "prefill") {
+              labels += `<rect x="${cx - 3}" y="${cy - 6}" width="6" height="6" rx="0.5" fill="${col}"/>`;
+            } else if (ln.kind === "attn") {
+              labels += `<circle cx="${cx}" cy="${cy - 3}" r="3.4" fill="#fff" stroke="${col}" stroke-width="1.4"/>`;
+            } else {
+              labels += `<circle cx="${cx}" cy="${cy - 3}" r="3.3" fill="${col}"/>`;
+            }
+          });
+          labels += `<text x="${boxX + 14 + ln.colors.length * 9}" y="${cy}" font-size="11" font-weight="650" fill="${C.ink}">${ln.label}</text>`;
+        });
+        boxY += h + 6;
+      });
+    }
+
+    const keys = items.map(it => {
+      const dash = it.kind === "prefetch" ? "dashed" : "solid";
+      return `<span style="color:${it.color};border-style:${dash}">${it.model ? it.model + " · " : ""}${it.label} ${fmtI(it.I)}</span>`;
+    }).join("");
+
+    return `<svg viewBox="0 0 ${W} ${H}">${grid}${roofFill}${roofLine}${region}${labels}${markers}
+      <text x="${padL - 40}" y="${padT + 100}" font-size="10" fill="${C.muted}" transform="rotate(-90 ${padL - 40} ${padT + 100})">有效 TFLOPS / 卡</text>
+      <text x="${(padL + xEnd) / 2}" y="${H - 8}" font-size="11" fill="${C.muted}" text-anchor="middle">算术强度 FLOP / Byte（对数）</text>
+    </svg><div class="roof-key">${keys}</div>`;
+  }
+
+  function overlapHowSvg() {
+    const lane = (y, label, segs) => {
+      let s = `<text x="8" y="${y + 14}" font-size="11" font-weight="700" fill="${C.ink}">${label}</text>`;
+      segs.forEach(g => {
+        s += `<rect x="${g.x}" y="${y}" width="${g.w}" height="22" rx="3" fill="${g.fill}" stroke="${g.stroke}" opacity="${g.op || 1}"/>`;
+        if (g.t) s += `<text x="${g.x + g.w / 2}" y="${y + 15}" font-size="10" font-weight="650" fill="${g.tc || "#fff"}" text-anchor="middle">${g.t}</text>`;
+      });
+      return s;
+    };
+    return `<svg viewBox="0 0 1120 430">
+      <text x="8" y="18" font-size="12" font-weight="700" fill="${C.ink}">有预取缓冲：MC 与计算/归约并行，Stage 取 max(净读取, 忙碌+补读)</text>
+      ${lane(28, "MC 读取", [
+        { x: 88, w: 620, fill: "#155e75", stroke: "#155e75", t: "净读取 T_net = 读本 Stage − SRAM 常驻（预取期间 MC 不停）" }
+      ])}
+      ${lane(58, "计算", [
+        { x: 88, w: 160, fill: "#166534", stroke: "#166534", t: "Attn / GEMM" },
+        { x: 368, w: 200, fill: "#166534", stroke: "#166534", t: "专家 GEMM" }
+      ])}
+      ${lane(88, "归约", [
+        { x: 248, w: 120, fill: "#b45309", stroke: "#b45309", t: "all-reduce" },
+        { x: 568, w: 100, fill: "#b45309", stroke: "#b45309", t: "AR" }
+      ])}
+      ${lane(118, "补读", [
+        { x: 368, w: 70, fill: "#b91c1c", stroke: "#b91c1c", t: "未命中" }
+      ])}
+      <text x="88" y="158" font-size="11" fill="${C.muted}">归约空窗里 MC 继续读下一层 → SRAM 缓冲要装得下「预测专家 + 空窗读满量」。未命中补读在 Router 之后，不能和前面的计算重叠。</text>
+      <text x="88" y="176" font-size="11" fill="${C.accent}">上图 T_net 若短于「绿+橙+红」，读取被盖住，暴露 = 0。若 MC 条更长，多出来的红尾才是暴露 MC。</text>
+
+      <text x="8" y="208" font-size="12" font-weight="700" fill="${C.ink}">两种结果</text>
+      <rect x="8" y="218" width="544" height="88" rx="8" fill="#e6f4ea" stroke="${C.good}"/>
+      <text x="20" y="240" font-size="12" font-weight="700" fill="${C.good}">已掩盖 · 暴露 = 0</text>
+      <rect x="20" y="252" width="320" height="14" rx="2" fill="#155e75"/>
+      <rect x="20" y="270" width="400" height="14" rx="2" fill="#166534"/>
+      <text x="430" y="264" font-size="10" fill="${C.muted}">MC</text>
+      <text x="430" y="282" font-size="10" fill="${C.muted}">忙碌更长 → 步时=忙碌</text>
+      <rect x="564" y="218" width="548" height="88" rx="8" fill="#fff4d8" stroke="${C.warn}"/>
+      <text x="576" y="240" font-size="12" font-weight="700" fill="${C.warn}">露在关键路径 · 暴露 &gt; 0</text>
+      <rect x="576" y="252" width="420" height="14" rx="2" fill="#155e75"/>
+      <rect x="996" y="252" width="80" height="14" rx="2" fill="#b91c1c"/>
+      <rect x="576" y="270" width="280" height="14" rx="2" fill="#166534"/>
+      <text x="8" y="330" font-size="11" fill="${C.ink}">红尾 = T_net − (T_compute + T_AR + T_补读)。暴露带宽 = 红尾 × 每卡有效 MC 带宽 × 卡数 × 目标 TPS。</text>
+
+      <text x="8" y="356" font-size="12" font-weight="700" fill="${C.ink}">SRAM 两层 / 无缓冲时重叠变差</text>
+      <text x="8" y="376" font-size="11" fill="${C.ink}">① 预取缓冲：让重叠成立（预测专家必须 Router 前到齐；归约空窗读满量）。装不满则 prefetchRatio&lt;1，在「有缓冲取 max / 无缓冲读+归约相加」之间插值。</text>
+      <text x="8" y="394" font-size="11" fill="${C.ink}">② 常驻：缓冲之外的容量扣掉确定性权重，只缩短 T_net，不创造新并行窗。无缓冲时归约期间 MC 空转，专家读退回 Router 之后。</text>
+      <text x="8" y="418" font-size="11" fill="${C.muted}">模型按 Stage 整段 max()，不是逐算子流水；真实气泡只会让暴露更大。消耗 MC 仍是实际搬动的字节，即使已被掩盖。</text>
+    </svg>`;
+  }
+
+  function overlapLiveSvg(rows) {
+    const ok = rows.filter(row => row.f);
+    if (!ok.length) return `<p class="caption">无可行部署点。</p>`;
+    const W = 720, rowH = 72, padL = 8, padR = 12, padT = 8, padB = 36, barL = 8, barR = 12;
+    const H = padT + ok.length * rowH + padB;
+    const innerW = W - barL - barR;
+    const maxT = Math.max(1e-6, ...ok.map(row => Math.max(row.f.netMcMs, row.f.busyU)));
+    const xOf = t => barL + innerW * (t / maxT);
+    let body = "";
+    ok.forEach((row, i) => {
+      const y = padT + i * rowH;
+      const net = row.f.netMcMs, busy = row.f.busyU;
+      const exp = Math.max(0, net - busy);
+      const note = exp <= 1e-9 ? "已掩盖" : `红尾 ${exp.toFixed(3)} ms`;
+      body += `<text x="${padL}" y="${y + 14}" font-size="12" font-weight="700" fill="${C.ink}">${row.x.m.meta.short}</text>`;
+      body += `<text x="${W - padR}" y="${y + 14}" font-size="10" fill="${C.muted}" text-anchor="end">T_net ${net.toFixed(3)} · 忙碌 ${busy.toFixed(3)} · ${note}</text>`;
+      body += `<rect x="${barL}" y="${y + 20}" width="${Math.max(1, xOf(net) - barL)}" height="16" rx="2" fill="${C.accent}"/>`;
+      if (exp > 1e-6) {
+        body += `<rect x="${xOf(busy)}" y="${y + 20}" width="${Math.max(1, xOf(net) - xOf(busy))}" height="16" rx="2" fill="${C.bad}"/>`;
+      }
+      body += `<rect x="${barL}" y="${y + 40}" width="${Math.max(1, xOf(busy) - barL)}" height="16" rx="2" fill="${C.good}"/>`;
+    });
+    let axis = "";
+    for (let t = 0; t <= 4; t++) {
+      const v = maxT * t / 4, x = xOf(v);
+      axis += `<line x1="${x}" x2="${x}" y1="${padT}" y2="${H - padB}" stroke="${C.grid}"/><text x="${x}" y="${H - 22}" font-size="10" fill="${C.muted}" text-anchor="middle">${v.toFixed(2)} ms</text>`;
+    }
+    return `<svg viewBox="0 0 ${W} ${H}">${axis}${body}
+      <rect x="${barL}" y="${H - 14}" width="10" height="8" fill="${C.accent}"/><text x="${barL + 14}" y="${H - 7}" font-size="10" fill="${C.ink}">净读取</text>
+      <rect x="${barL + 70}" y="${H - 14}" width="10" height="8" fill="${C.good}"/><text x="${barL + 84}" y="${H - 7}" font-size="10" fill="${C.ink}">计算+归约+补读</text>
+      <rect x="${barL + 200}" y="${H - 14}" width="10" height="8" fill="${C.bad}"/><text x="${barL + 214}" y="${H - 7}" font-size="10" fill="${C.ink}">暴露（红尾）</text>
+    </svg>`;
+  }
+
+  function partSvg() {
+    return `<svg viewBox="0 0 1120 220">
+      <rect x="8" y="16" width="180" height="70" rx="8" fill="#e4f2f4" stroke="${C.accent}"/>
+      <text x="98" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.accent}">Attention 权重</text>
+      <text x="98" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">TP 切头 / 切列</text>
+      <rect x="210" y="16" width="180" height="70" rx="8" fill="#ede9fe" stroke="${C.purple}"/>
+      <text x="300" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.purple}">KV / KDA 状态</text>
+      <text x="300" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">按 Context 切（三套都行）</text>
+      <rect x="412" y="16" width="180" height="70" rx="8" fill="#dbeafe" stroke="${C.blue}"/>
+      <text x="502" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.blue}">Wdown · Router · Wup</text>
+      <text x="502" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">分片则集合通信</text>
+      <rect x="614" y="16" width="180" height="70" rx="8" fill="#fff4d8" stroke="${C.warn}"/>
+      <text x="704" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.warn}">Routed Experts</text>
+      <text x="704" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">EP Owner · 可再切 g</text>
+      <rect x="816" y="16" width="140" height="70" rx="8" fill="#e6f4ea" stroke="${C.good}"/>
+      <text x="886" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.good}">Shared / Dense</text>
+      <text x="886" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">跟 TP 走</text>
+      <rect x="972" y="16" width="140" height="70" rx="8" fill="#f3f1eb" stroke="${C.line}"/>
+      <text x="1042" y="42" font-size="12" font-weight="700" text-anchor="middle" fill="${C.ink}">LM Head</text>
+      <text x="1042" y="60" font-size="10" text-anchor="middle" fill="${C.muted}">末 Stage × vocab</text>
+      <text x="20" y="112" font-size="11" fill="${C.ink}">★ 集合通信只出现在「分片 → 需要完整向量」的边界：attn 出、Wdown/Router 入、专家合并、Wup 出；MLA 另加 LSE。复制张量省 1 次通信，但每卡多读 TP 倍字节，Decode 上几乎从不划算。</text>
+      <text x="20" y="132" font-size="11" fill="${C.ink}">专家切 g 份：不均系数从 balls-in-bins 的「最忙卡 / 均值」降下来，但每片列宽变窄，L-Core 阵列利用率可能掉。K3 激活 16 个专家，同样 TP 下比 top-8 模型更吃不均。</text>
+      <text x="20" y="158" font-size="11" fill="${C.muted}">推荐默认：稠密张量全分片 + 专家切成 TP 份（≈ 纯 TP，无真实 all-to-all）。这是下面时间分解用的策略。</text>
+      <text x="20" y="188" font-size="12" font-weight="700" fill="${C.accent}">匹配口诀</text>
+      <text x="20" y="208" font-size="11" fill="${C.ink}">带宽不够 → 加 TP 或 SRAM 常驻；容量不够 → K3/V4 看权重，GLM-5.2 的 1M 还要看 MLA KV；归约不够 → 降延迟，K3 93 层最吃亏；H-Core 按 V4/GLM 的稀疏注意力配，不要按 dense 1M MLA。</text>
+    </svg>`;
+  }
+
+  function renderChips() {
+    $("modelChips").innerHTML = ALL_IDS.map(id => {
+      const m = MODELS[id];
+      const on = enabled.has(id) ? " on" : "";
+      return `<button class="chip${on}" data-id="${id}">${m.meta.short} · ${m.meta.family}</button>`;
+    }).join("");
+    $("modelChips").onclick = e => {
+      const btn = e.target.closest("[data-id]");
+      if (!btn) return;
+      const id = btn.getAttribute("data-id");
+      if (enabled.has(id)) {
+        if (enabled.size === 1) return;
+        enabled.delete(id);
+      } else enabled.add(id);
+      render();
+    };
+  }
+
+  function render() {
+    renderChips();
+    const models = activeModels();
+    const opts = optsOf();
+    const chip = chipOf($("inScale").value);
+    const cards = Number($("inCards").value);
+    const target = Number($("inTps").value) || 1000;
+    const pred = opts.prediction;
+    const ctx = opts.context;
+    const bwCard = chip.mcCount * chip.mcBandwidthGBs * 1e9 * chip.mcEfficiency;
+    const capCard = chip.mcCount * chip.mcCapacityGB;
+    const peakLin = chip.linearTflops * chip.utilization;
+    const peakAttn = chip.attnTflops * chip.utilization;
+    const bwTBs = bwCard / 1e12;
+    const ridge = peakLin / bwTBs;
+    const ridgeAttn = peakAttn / bwTBs;
+    const prefillL = Number($("inPrefill").value) || 0;
+    const S = prefillL > 0 ? prefillL : 32768;
+    const pfTag = (prefillL > 0 ? "" : "对照 ") + (S >= 1024 ? fmt(S / 1024, 0) + "K" : String(S));
+
+    // family table
+    $("tblFamily").innerHTML = `<thead><tr>
+      <th>模型</th><th>家族</th><th>注意力</th><th>MoE 形态</th>
+      <th class="num">总参 / 激活</th><th class="num">层（稠密+MoE）</th>
+      <th class="num">hidden</th><th class="num">专家</th><th class="num">头 / KV</th>
+      <th class="num">推导总参偏差</th></tr></thead><tbody>` +
+      models.map(m => {
+        const a = m.spec.attention;
+        const moe = m.spec.moe;
+        const kvH = m.hybrid === "csa-hca" ? "MQA 压缩 KV" : (a.kind === "mla" ? "MLA 共享" : a.kvHeads + " KV");
+        const flow = m.spec.moe.expertInput === "latent" ? "Latent MoE" : (m.spec.moeLayers === m.spec.layers ? "全层 MoE（前 3 层 Hash）" : "hidden 进专家");
+        const attn = m.meta.attn;
+        const gap = m.check.totalGap / 1e9;
+        return `<tr><td><b>${m.spec.name}</b><br><span class="caption">${m.meta.src}</span></td>
+          <td>${m.meta.family}</td><td>${attn}</td><td>${flow}</td>
+          <td class="num">${fmt(m.spec.totalParams / 1e9, 0)} / ${fmt(m.spec.activeParams / 1e9, 1)} B</td>
+          <td class="num">${m.spec.layers}（${m.denseLayers}+${m.spec.moeLayers}）</td>
+          <td class="num">${m.spec.hidden}</td>
+          <td class="num">${moe.activeExperts}/${moe.totalExperts} +${moe.sharedExperts}s · ${moe.expertHidden}</td>
+          <td class="num">${a.heads} / ${kvH}</td>
+          <td class="num">${gap >= 0 ? "+" : ""}${fmt(gap, 1)} B</td></tr>`;
+      }).join("") + "</tbody>";
+
+    $("calloutFamily").innerHTML =
+      `<strong>三旗舰差在哪</strong><p><b>V4-Pro</b> 把 V3 的 MLA 换成 CSA/HCA 混合注意力（2 层 HCA 打底，之后 CSA/HCA 交错，末层 sliding），MoE 加宽到 384 专家、每次只激活 6 个、中间维 3072；前 3 层用 Hash-MoE 而不是稠密 FFN。mHC（hc_mult=4）加在残差上，几乎不改 Decode 字节账。</p>` +
+      `<p><b>K3</b> 仍是「最重的权重、最轻的长序列 KV」：Latent MoE（3584 进专家）+ 16/896 + 69 层线性注意力。单用户 1000 TPS 时容量墙在 1.56 TB 专家权重，不在 KV。</p>` +
+      `<p><b>GLM-5.2 / 5.3</b> 同骨架：MLA+DSA、6144×78 层、8/256 专家。DSA 把 1M 注意力算力打成 indexer+topk；KV 仍按 MLA 存，所以 1M 容量远重于 V4，也重于 K3。5.3 是同基座后训练。</p>`;
+
+    $("figMoe").innerHTML = moeSvg();
+    $("figAttn").innerHTML = attnSvg();
+    $("figPart").innerHTML = partSvg();
+
+    const inventories = models.map(m => {
+      const rd = readBytes(m, pred, ctx);
+      const lin = linearFlops(m);
+      const attnK = attnKernel(m, ctx);
+      const attn = attnK.flop;
+      const attnDense = m.attnFlopsDense ? m.attnFlopsDense(ctx) : attn;
+      const kvSys = m.kvBytesFn(ctx);
+      return { m, rd, lin, attn, attnDense, attnK, kvSys, wGB: weightBytes(m) / 1e9, kvGB: kvSys / 1e9, kdaGB: m.kdaStateStore / 1e9 };
+    });
+
+    $("stats").innerHTML = [
+      [inventories.length, "对比模型"],
+      [fmt(ctx / 1024, 0) + "K", "Context"],
+      [cards + " 卡", "部署（尽量 TP）"],
+      [target, "目标 TPS/usr"],
+      [fmt(ridge, 0), "L-Core 脊点 FLOP/B"]
+    ].map(([v, l]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+
+    $("figBytes").innerHTML = stackedBar(
+      inventories.map(x => x.m.meta.short),
+      [
+        { name: "稠密权重", color: BLOCK_COLORS.attn, data: inventories.map(x => x.rd.det / 1e9) },
+        { name: "Routed×(2−p)", color: BLOCK_COLORS.routed, data: inventories.map(x => x.rd.routed / 1e9) },
+        { name: "KV", color: BLOCK_COLORS.kv, data: inventories.map(x => x.rd.kv / 1e9) },
+        { name: "KDA 状态", color: BLOCK_COLORS.wup, data: inventories.map(x => x.rd.kda / 1e9) }
+      ],
+      280, ""
+    );
+    $("figFlops").innerHTML = stackedBar(
+      inventories.map(x => x.m.meta.short),
+      [
+        { name: "线性 GEMM", color: C.accent, data: inventories.map(x => x.lin / 1e9) },
+        { name: "注意力", color: C.warn, data: inventories.map(x => x.attn / 1e9) }
+      ],
+      280, ""
+    );
+
+    $("tblBlocks").innerHTML = `<thead><tr>
+      <th>模型</th><th class="num">稠密读</th><th class="num">Routed 读</th><th class="num">KV 读</th>
+      <th class="num">总读 GB/tok</th><th class="num">线性 GFLOP</th><th class="num">Attn GFLOP</th>
+      <th class="num">MoE 强度</th><th class="num">Attn 强度</th><th>主读取块</th></tr></thead><tbody>` +
+      inventories.map(x => {
+        const moeI = intensity(x.lin, x.rd.det + x.rd.routed);
+        const attnI = intensity(x.attnK.flop, x.attnK.traffic);
+        const parts = [
+          { n: "稠密", v: x.rd.det }, { n: "Routed", v: x.rd.routed }, { n: "KV", v: x.rd.kv }, { n: "KDA", v: x.rd.kda }
+        ].sort((a, b) => b.v - a.v);
+        const moeBound = moeI < ridge * 0.3;
+        const attnBound = attnI < ridgeAttn * 0.5;
+        return `<tr><td>${x.m.meta.short}</td>
+          <td class="num">${gb(x.rd.det)}</td><td class="num">${gb(x.rd.routed)}</td><td class="num">${gb(x.rd.kv)}</td>
+          <td class="num"><b>${gb(x.rd.total)}</b></td>
+          <td class="num">${fmt(x.lin / 1e9, 1)}</td><td class="num">${fmt(x.attn / 1e9, 1)}${x.m.dsa ? ` <span class="caption">dense ${fmt(x.attnDense / 1e9, 0)}</span>` : ""}</td>
+          <td class="num">${fmt(moeI, 1)} ${moeBound ? tag("warn", "BW") : tag("ok", "近算力")}</td>
+          <td class="num">${fmt(attnI, 1)} ${attnBound ? tag("warn", "BW") : tag("info", "抬升")}</td>
+          <td>${parts[0].n} ${(parts[0].v / x.rd.total * 100).toFixed(0)}%</td></tr>`;
+      }).join("") + "</tbody>";
+    $("capBlocks").textContent = "MoE 强度 = 线性 FLOPs / (稠密+Routed 字节)，对 L-Core 脊点 " + fmt(ridge, 0) + "。MXFP4 专家约 3.8 FLOP/B。注意力强度 = 本步 FLOP / 本步搬移（不是 KV 存量），对 H-Core 脊点 " + fmt(ridgeAttn, 0) + "。K3 的 MLA 按吸收后计；GLM/V4 分母是 indexer+topk，不是全长 cache。";
+
+    if ($("figRoofL")) {
+    const roofRows = inventories.map(x => {
+      const moeI = intensity(x.lin, x.rd.det + x.rd.routed);
+      const attnI = intensity(x.attnK.flop, x.attnK.traffic);
+      const attnIStore = intensity(x.attnK.flop, Math.max(1, x.attnK.store));
+      const flopAll = x.lin + x.attnK.flop;
+      const bytesStep = x.rd.det + x.rd.routed + (x.rd.lm || 0) + x.attnK.traffic;
+      const bytesStore = x.rd.det + x.rd.routed + (x.rd.lm || 0) + x.attnK.store;
+      const modelI = intensity(flopAll, bytesStep);
+      const modelIStore = intensity(flopAll, bytesStore);
+      const wOnce = x.rd.det + x.m.bytes.routedActive + x.m.bytes.lmHead;
+      const kvW = x.m.kvBytesFn(S) + x.m.kdaStateStore;
+      const linP = x.lin * S;
+      const atP = prefillAttnFlops(x.m, S);
+      const moeIpf = intensity(linP, wOnce);
+      const attnIpf = intensity(atP, kvW);
+      const modelIpf = intensity(linP + atP, wOnce + kvW);
+      return {
+        short: x.m.meta.short,
+        moeI, attnI, attnIStore, modelI, modelIStore, flopAll, bytesStep, bytesStore,
+        moeIpf, attnIpf, modelIpf, linP, atP, wOnce, kvW,
+        moePerf: Math.min(peakLin, moeI * bwTBs),
+        attnPerf: Math.min(peakAttn, attnI * bwTBs),
+        note: x.attnK.note,
+        peakLin, peakAttn, bwTBs
+      };
+    });
+    const partIRows = inventories.map(x => ({ x, parts: partIntensities(x.m, ctx, pred) }));
+    const lOps = collectPartPoints(partIRows, "L", S);
+    const hOps = collectPartPoints(partIRows, "H", S);
+    const lMaxI = Math.max(ridge * 1.4, ...lOps.map(p => p.I), 90);
+    const hMaxI = Math.max(ridgeAttn * 1.25, ...hOps.map(p => p.I), 520);
+    const roofL = {
+      peak: peakLin, ridge, bwTBs,
+      xMin: 0.4, xMax: lMaxI * 1.15,
+      ticks: [0.5, 1, 4, ridge, 1e3, 1e4, S, 3.76 * S],
+      roofColor: C.accent,
+      points: lOps
+    };
+    const roofH = {
+      peak: peakAttn, ridge: ridgeAttn, bwTBs,
+      xMin: 1.2, xMax: hMaxI * 1.12,
+      ticks: [2, 32, 64, 181, 256, ridgeAttn, 1e4, 1e5, 1e6],
+      roofColor: C.purple,
+      points: hOps
+    };
+    $("figRoofL").innerHTML = roofPanel(roofL);
+    $("figRoofH").innerHTML = roofPanel(roofH);
+    $("tblRoof").innerHTML = `<thead><tr>
+      <th>模型</th>
+      <th class="num">D 整模</th>
+      <th class="num">D MoE</th>
+      <th class="num">D Attn</th>
+      <th class="num">P 整模 ${pfTag}</th>
+      <th class="num">P 线性</th>
+      <th class="num">P Attn</th>
+      <th>Decode 墙</th>
+      <th>Prefill 墙</th>
+    </tr></thead><tbody>` +
+      roofRows.map(r => `<tr><td>${r.short}<br><span class="caption">${r.note}</span></td>
+        <td class="num"><b>${fmtI(r.modelI)}</b></td>
+        <td class="num">${fmtI(r.moeI)}</td>
+        <td class="num">${fmtI(r.attnI)}</td>
+        <td class="num"><b>${fmtI(r.modelIpf)}</b><br><span class="caption">${fmt(r.linP / 1e18, 2)}+${fmt(r.atP / 1e18, 2)} EF / ${gb(r.wOnce + r.kvW)}</span></td>
+        <td class="num">${fmtI(r.moeIpf)}</td>
+        <td class="num">${fmtI(r.attnIpf)}</td>
+        <td>${r.moeI < ridge ? tag("warn", "L 带宽") : tag("ok", "L 算力")} ${r.attnI < ridgeAttn ? tag("warn", "H 带宽") : tag("ok", "H 算力")}</td>
+        <td>${r.moeIpf < ridge ? tag("warn", "L 带宽") : tag("ok", "L 算力")} ${r.attnIpf < ridgeAttn ? tag("warn", "H 带宽") : tag("ok", "H 算力")}</td></tr>`).join("") + "</tbody>";
+    $("capRoof").textContent = "D = Decode 一步。P = 一条 Prefill 序列：线性 FLOP×S / 权重读一次；注意力用 Decode 增量积分 / 写满 KV。Prefill 长度 " + pfTag + "。";
+
+    const moeAllBw = roofRows.every(r => r.moeI < ridge * 0.2);
+    const moePfAllCmp = roofRows.every(r => r.moeIpf >= ridge);
+    $("calloutRoof").innerHTML = `<strong>算力 / 带宽匹配 · Decode 与 Prefill</strong>` +
+      `<p><b>Decode</b> 整模 I 贴近 MoE（权重大）：` +
+      roofRows.map(r => `${r.short} ${fmtI(r.modelI)}`).join("、") +
+      `，都低于 L 脊点 ${fmt(ridge, 0)}。${moeAllBw ? "专家 GEMM 在带宽墙上，加 L-Core 换不来 Decode TPS。" : ""}</p>` +
+      `<p><b>Prefill ${pfTag}</b> 权重复用把线性 I 抬到 ` +
+      roofRows.map(r => `${r.short} ${fmtI(r.moeIpf)}`).join("、") +
+      `。${moePfAllCmp ? "全部越过 L 脊点，线性是算力墙——262 TF 的 L-Core 这时才喂得饱。" : "仍有模型线性偏带宽。"} 注意力 Prefill I = 积分 FLOP / 写 KV：` +
+      roofRows.map(r => `${r.short} ${fmtI(r.attnIpf)}（${r.attnIpf < ridgeAttn ? "H 仍带宽" : "H 算力墙"}）`).join("；") +
+      `。K3 MLA 是因果稠密，I 约 ×S/2；GLM/V4 的 topk 核 I 几乎不动，indexer / HCA 会随前缀涨。</p>` +
+      `<p>同一颗芯片：Decode 吃不完的 L/H 峰值，是留给 Prefill 的。不要用 Decode 的 F_match 去砍 Prefill 还在算力墙上的核。</p>`;
+
+    const partNames = [];
+    partIRows.forEach(row => {
+      row.parts.forEach(p => { if (partNames.indexOf(p.name) < 0) partNames.push(p.name); });
+    });
+    $("tblPartI").innerHTML = `<thead><tr>
+      <th>块（算法固有，与 TP 无关）</th>
+      <th>核</th>` +
+      partIRows.map(row => `<th class="num">${row.x.m.meta.short}<br><span class="caption">D / P ${pfTag}</span></th>`).join("") +
+      `<th>说明</th></tr></thead><tbody>` +
+      partNames.map(name => {
+        const sample = partIRows.map(row => row.parts.find(p => p.name === name)).find(Boolean);
+        const core = sample.core === "L" ? tag("info", "L-Core") : tag("purple", "H-Core");
+        const ridgeP = sample.core === "L" ? ridge : ridgeAttn;
+        const cells = partIRows.map(row => {
+          const p = row.parts.find(q => q.name === name);
+          if (!p) return `<td class="num">—</td>`;
+          const wallD = p.I < ridgeP ? tag("warn", "D·BW") : tag("ok", "D·算力");
+          if (p.pf === "skip") {
+            return `<td class="num"><b>${fmtI(p.I)}</b> ${wallD}<br><span class="caption">Prefill 不适用</span></td>`;
+          }
+          const Ipf = prefillIOf(p, S);
+          const wallP = Ipf < ridgeP ? tag("warn", "P·BW") : tag("ok", "P·算力");
+          return `<td class="num"><b>${fmtI(p.I)}</b> ${wallD}<br><span class="caption">${fmtI(Ipf)} ${wallP}</span></td>`;
+        }).join("");
+        return `<tr><td>${name}${sample.pf === "S" ? "<br><span class=\"caption\">Prefill ×S</span>" : sample.pf === "S2" ? "<br><span class=\"caption\">Prefill ×S/2</span>" : sample.pf === "hold" ? "<br><span class=\"caption\">Prefill I 不变</span>" : ""}</td><td>${core}</td>${cells}<td class="caption">${sample.note}</td></tr>`;
+      }).join("") + "</tbody>";
+    $("capPartI").textContent = "每格上行 Decode I，下行 Prefill " + pfTag + "。单位 FLOP/Byte。线性 ×S（权重读一次）；因果稠密注意力 ×S/2；KDA / 固定 topk / 窗 I 不变。Routed×(2−p) 只在 Decode。";
+    $("calloutPartI").innerHTML = `<strong>Decode 与 Prefill 不是同一堵墙</strong>` +
+      `<p><b>Decode</b>：BF16 线性 I=1、Routed ≈3.76、KDA ≈1.75，全在 L 脊点 ${fmt(ridge, 0)} 左侧。MLA ≈181、CSA/HCA ≈256 仍低于 H 脊点 ${fmt(ridgeAttn, 0)}。加算力换不来 Decode TPS。</p>` +
+      `<p><b>Prefill ${pfTag}</b>：权重被 S 个 token 复用，Routed I ≈ ${fmtI(3.76 * S)}，BF16 线性 ≈ ${fmtI(S)}，已经是 L 算力墙。MLA / HCA / indexer 因果扫前缀，I ≈ (S/2)×Decode，H 也进算力墙。DSA/CSA topk 与滑动窗每查询工作集不变，I 几乎不动，仍可能偏 BW。KDA 每 token 仍读写 128²，Prefill I 还是 1.75，继续走 L-Core 带宽墙。</p>` +
+      `<p>所以双用途芯片：Decode 定「至少多少 TF 喂得饱带宽」，Prefill 定「峰值还要不要留着」。L=262、H=2097 对 Prefill 有意义；只跑 Decode 可以按 Routed 3.76 和 V4 核 256 砍核。</p>`;
+
+    const matchTf = I => I * bwTBs / chip.utilization;
+    const snapUp = (x, grid) => {
+      for (let i = 0; i < grid.length; i++) if (grid[i] + 1e-6 >= x) return grid[i];
+      return grid[grid.length - 1];
+    };
+    const LGRID = [32.768, 65.536, 98.304, 131.072, 262.144, 524.288];
+    const HGRID = [262.144, 524.288, 1048.576, 1572.864, 2097.152, 4194.304];
+    const skipPred = p => p.pf === "skip" || /2−p|2-p|预取/.test(p.name);
+    const allParts = partIRows.flatMap(row => row.parts.filter(p => !skipPred(p)));
+    const lNeed = Math.max(0, ...allParts.filter(p => p.core === "L").map(p => matchTf(p.I)));
+    const hNeed = Math.max(0, ...allParts.filter(p => p.core === "H").map(p => matchTf(p.I)));
+    const lPfI = Math.max(0, ...allParts.filter(p => p.core === "L").map(p => prefillIOf(p, S)));
+    const hPfI = Math.max(0, ...allParts.filter(p => p.core === "H").map(p => prefillIOf(p, S)));
+    const lRec = snapUp(lNeed, LGRID);
+    const hRec = snapUp(hNeed, HGRID);
+    const perModelNeed = partIRows.map(row => {
+      const lp = row.parts.filter(p => p.core === "L" && !skipPred(p));
+      const hp = row.parts.filter(p => p.core === "H");
+      const lMax = lp.reduce((a, p) => p.I > a.I ? p : a, lp[0]);
+      const hMax = hp.reduce((a, p) => p.I > a.I ? p : a, hp[0]);
+      const lMaxPf = lp.reduce((a, p) => prefillIOf(p, S) > prefillIOf(a, S) ? p : a, lp[0]);
+      const hMaxPf = hp.length ? hp.reduce((a, p) => prefillIOf(p, S) > prefillIOf(a, S) ? p : a, hp[0]) : null;
+      return {
+        short: row.x.m.meta.short,
+        lMax, hMax, lMaxPf, hMaxPf,
+        lTf: matchTf(lMax.I), hTf: matchTf(hMax.I),
+        lSnap: snapUp(matchTf(lMax.I), LGRID),
+        hSnap: snapUp(matchTf(hMax.I), HGRID),
+        lPfI: prefillIOf(lMaxPf, S),
+        hPfI: hMaxPf ? prefillIOf(hMaxPf, S) : 0
+      };
+    });
+    $("chipRecCards").innerHTML = [
+      ["Decode 三模型一套", `${fmt(lRec, 0)} / ${fmt(hRec, 0)} TF`,
+        `L 按 Routed I≈3.76 只需约 ${fmt(lNeed, 0)} TF；H 按最狠 Decode 核约 ${fmt(hNeed, 0)} TF。H/L ≈ ${fmt(hRec / lRec, 1)}×，不是 8×。`],
+      ["现基线卡", `${fmt(chip.linearTflops, 0)} / ${fmt(chip.attnTflops, 0)} TF`,
+        `Decode 上 L 过剩 ${fmt(chip.linearTflops / lNeed, 1)}×，H 过剩 ${fmt(chip.attnTflops / hNeed, 1)}×。多出来的峰值是给 Prefill 的。`],
+      ["Prefill " + pfTag, `L 算力墙 · H ${hPfI > ridgeAttn ? "稠密也算力墙" : "核仍偏 BW"}`,
+        `线性最大 I ${fmtI(lPfI)}（脊点 ${fmt(ridge, 0)}），用满 L=262 合理。注意力最大 I ${fmtI(hPfI)}（脊点 ${fmt(ridgeAttn, 0)}）。${hPfI > ridgeAttn ? "MLA/HCA/indexer 已过 H 脊点，2097 对 Prefill 时延有用，不是 Decode 浪费。" : "稀疏核 Prefill 仍偏 BW，H 不必为 Prefill 再抬。"}`]
+    ].map(([t, v, d]) => `<div class="stat"><div class="l">${t}</div><div class="v">${v}</div><p class="caption">${d}</p></div>`).join("");
+
+    $("tblChipMatch").innerHTML = `<thead><tr>
+      <th>模型</th><th>Decode 线性块</th><th class="num">D I</th><th class="num">匹配 L</th><th>档位</th>
+      <th>Decode 注意力块</th><th class="num">D I</th><th class="num">匹配 H</th><th>档位</th>
+      <th class="num">P 线性 I</th><th>P · L</th><th class="num">P 注意力 I</th><th>P · H</th>
+    </tr></thead><tbody>` +
+      perModelNeed.map(r => `<tr>
+        <td>${r.short}</td>
+        <td>${r.lMax.name}</td>
+        <td class="num">${fmtI(r.lMax.I)}</td>
+        <td class="num">${fmt(r.lTf, 0)} TF</td>
+        <td>${fmt(r.lSnap, 1)}</td>
+        <td>${r.hMax.name}</td>
+        <td class="num">${fmtI(r.hMax.I)}</td>
+        <td class="num">${fmt(r.hTf, 0)} TF</td>
+        <td>${fmt(r.hSnap, 1)}</td>
+        <td class="num">${fmtI(r.lPfI)}</td>
+        <td>${r.lPfI < ridge ? tag("warn", "带宽") : tag("ok", "算力")}</td>
+        <td class="num">${fmtI(r.hPfI)}</td>
+        <td>${r.hPfI < ridgeAttn ? tag("warn", "带宽") : tag("ok", "算力")}</td>
+      </tr>`).join("") +
+      `<tr class="hi"><td>三模型取最大</td><td>Routed MXFP4</td><td class="num">${fmtI(lNeed * chip.utilization / bwTBs)}</td>
+        <td class="num"><b>${fmt(lNeed, 0)} TF</b></td><td>${fmt(lRec, 1)}</td>
+        <td>最狠 Decode 核</td><td class="num">${fmtI(hNeed * chip.utilization / bwTBs)}</td>
+        <td class="num"><b>${fmt(hNeed, 0)} TF</b></td><td>${fmt(hRec, 1)}</td>
+        <td class="num">${fmtI(lPfI)}</td><td>${tag("ok", "算力")}</td>
+        <td class="num">${fmtI(hPfI)}</td><td>${hPfI < ridgeAttn ? tag("warn", "带宽") : tag("ok", "算力")}</td></tr>` +
+      "</tbody>";
+    $("capChipMatch").textContent = "Decode 匹配 TF = I × 有效带宽 / 利用率。Prefill I 超过脊点后 F_match 不再有上限意义——用满峰值。现卡 L=" + fmt(chip.linearTflops, 1) + "、H=" + fmt(chip.attnTflops, 1) + "。Prefill 长度 " + pfTag + "。";
+
+    $("calloutChipSpec").innerHTML = `<strong>建议规格</strong>` +
+      `<p><b>Decode 专芯</b>：L-Core <b>${fmt(lRec, 1)} TFLOPS</b>，H-Core <b>${fmt(hRec, 1)} TFLOPS</b>。Routed 3.76 只需约 ${fmt(lNeed, 0)} TF 喂满 3.58 TB/s；H 按 V4 CSA/HCA ≈256 配到约 ${fmt(hNeed, 0)} TF。KDA 走 L（I≈1.75），不要定 H。</p>` +
+      `<p><b>Prefill ${pfTag}</b>：线性最大 I ${fmtI(lPfI)} ≫ L 脊点 ${fmt(ridge, 0)}，L 留在 262 TF 才能吃饱和。注意力最大 I ${fmtI(hPfI)} ${hPfI > ridgeAttn ? "已过 H 脊点 " + fmt(ridgeAttn, 0) + "，2097 TF 对 Prefill 时延有用（MLA/HCA/indexer 是算力墙）" : "仍低于 H 脊点，H 不必为 Prefill 再抬"}。DSA/CSA topk Prefill I 几乎不变，仍可能偏 BW。</p>` +
+      `<p><b>不要把 Decode 的 H=8L 当成 Prefill 理由</b>。Decode 匹配大约 ${fmt(hRec / lRec, 1)}×。双用途：L=262 是 Prefill 线性墙；H 从 ${fmt(hRec, 1)} 加到 2097 只加速 Prefill 稠密注意力，加速不了 Decode TPS。K3 在 TP32 上 1000 TPS 已经贴通信天花板。</p>` +
+      `<p>只跑 Decode 的 GLM 芯：H ${fmt(perModelNeed.find(r => r.short.indexOf("GLM") >= 0) ? perModelNeed.find(r => r.short.indexOf("GLM") >= 0).hSnap : 524, 1)} TF 够。V4 Decode 必须把 H 拉到 ${fmt(hRec, 1)}。</p>`;
+
+    }
+
+    const ctxs = [4096, 32768, 131072, 1048576];
+    $("figKv").innerHTML = lineChart(
+      ctxs.map(c => c >= 1048576 ? "1M" : c / 1024 + "K"),
+      inventories.map((x, i) => ({
+        name: x.m.meta.short,
+        color: COLORS[i % COLORS.length],
+        data: ctxs.map(c => x.m.kvBytesFn(c) / 1e9)
+      })),
+      280
+    );
+    $("tblCap").innerHTML = `<thead><tr><th>模型</th><th class="num">权重</th><th class="num">KV @当前</th><th class="num">KDA</th>
+      <th class="num">单卡能装？</th><th class="num">${cards} 卡每卡占用</th><th>容量瓶颈</th></tr></thead><tbody>` +
+      inventories.map(x => {
+        const perCardW = x.wGB / cards;
+        const kvShards = x.m.spec.attention.kind === "gqa" ? Math.min(cards, x.m.spec.attention.kvHeads) : cards;
+        const perCardKV = x.kvGB / kvShards + x.kdaGB / cards;
+        const fit1 = x.wGB + x.kvGB + x.kdaGB <= capCard;
+        const fitN = perCardW + perCardKV <= capCard;
+        const kvShare = x.kvGB / (x.wGB + x.kvGB);
+        const bottleneck = x.wGB > x.kvGB * 4 ? "权重（专家总数）" : kvShare > 0.35 ? "KV（长序列）" : "两者都要看";
+        return `<tr><td>${x.m.meta.short}</td>
+          <td class="num">${fmt(x.wGB, 0)} GB</td>
+          <td class="num">${fmt(x.kvGB, 1)} GB</td>
+          <td class="num">${fmt(x.kdaGB, 2)} GB</td>
+          <td class="num">${fit1 ? tag("ok", "能") : tag("bad", "不能")}</td>
+          <td class="num">${fmt(perCardW + perCardKV, 1)} / ${capCard} GB ${fitN ? tag("ok", "OK") : tag("bad", "超")}</td>
+          <td>${bottleneck}${x.m.spec.attention.kind === "gqa" ? ` · KV 只切到 ${x.m.spec.attention.kvHeads}` : ""}</td></tr>`;
+      }).join("") + "</tbody>";
+
+    $("calloutCap").innerHTML = `<strong>容量匹配</strong><p>权重：K3（896 专家）最重，V4-Pro（384×3072）次之，GLM-5.2（256×2048）最轻。KV：V4 用序列压缩，1M 大约只要 V3.2 的一成；K3 只有 24 层 MLA；GLM-5.2 仍存全长 MLA 潜变量，1M 约 94 GB，是三家里长序列最贵的。</p>` +
+      `<p>当前 ${fmt(ctx / 1024, 0)}K：` +
+      inventories.map(x => `${x.m.meta.short} KV ${fmt(x.kvGB, 1)} GB`).join("，") +
+      `。单用户时三家容量墙都还在权重；多用户 1M 时 GLM-5.2 会先被 KV 顶住，V4 和 K3 还能靠压缩/KDA 撑。</p>`;
+
+    const evals = inventories.map(x => {
+      const r = evalAt(x.m, cards, opts, chip);
+      return { x, r };
+    });
+    $("tblPart").innerHTML = `<thead><tr><th>模型</th><th>拓扑</th><th class="num">不均</th><th class="num">AR/token</th>
+      <th class="num">KV 分片</th><th>可行切法要点</th></tr></thead><tbody>` +
+      evals.map(({ x, r }) => {
+        if (!r) return `<tr><td>${x.m.meta.short}</td><td colspan="5">该卡数下 TP 不能整除头数</td></tr>`;
+        const kvNote = x.m.hybrid === "csa-hca" ? `压缩 KV · CP=${r.tp}` : `MLA CP=${r.tp}`;
+        const extra = [];
+        if (x.m.spec.moe.expertInput === "latent") extra.push("多 Wdown/Wup 边界");
+        if (x.m.spec.moe.activeExperts >= 16) extra.push("top-16 更吃 Owner 不均");
+        if (x.m.dsa) extra.push("DSA/IndexShare 不改切分");
+        if (x.m.hybrid === "csa-hca") extra.push("sliding 窗不随 TP 摊");
+        return `<tr><td>${x.m.meta.short}</td><td>PP${r.pp}×TP${r.tp}</td>
+          <td class="num">${r.imbalance.toFixed(2)}</td>
+          <td class="num">${r.collectiveCount}</td>
+          <td class="num">${kvNote}</td>
+          <td>${extra.join(" · ") || "标准 TP+EP"}</td></tr>`;
+      }).join("") + "</tbody>";
+
+    $("figTime").innerHTML = groupedBar(
+      evals.map(e => e.x.m.meta.short),
+      [
+        { name: "MC 净读取", color: C.accent, data: evals.map(e => e.r ? +(Math.max(0, e.r.mcMs - e.r.savedMs) * opts.margin).toFixed(3) : null) },
+        { name: "计算", color: C.good, data: evals.map(e => e.r ? +(e.r.computeMs * opts.margin).toFixed(3) : null) },
+        { name: "TP 归约", color: C.warn, data: evals.map(e => e.r ? +(e.r.collectiveTotalMs * opts.margin).toFixed(3) : null) },
+        { name: "E2E", color: C.purple, data: evals.map(e => e.r ? +e.r.e2eMs.toFixed(3) : null) }
+      ],
+      280
+    );
+
+    const collHeavy = evals.filter(e => e.r && e.r.collectiveStageMs > e.r.computeMs).map(e => e.x.m.meta.short);
+    $("calloutPart").innerHTML = `<strong>切分匹配</strong><p>这 ${cards} 张卡上按 PP1×TP${cards} 估算（头数整除失败则退到可整除的最大 TP）。` +
+      `${collHeavy.length ? "归约已经压过计算的模型：" + collHeavy.join("、") + "。" : "当前设置下归约还没有全面压过计算。"}</p>` +
+      `<p>K3：93 层 + Latent 边界，集合通信次数最多，且 top-16 不均更重。V4-Pro：61 层、top-6，通信次数少；压缩 KV 按序列切，sliding 窗口是每卡一份常数。GLM-5.2：78 层、top-8、hidden 6144，通信介于两者之间。</p>` +
+      `<p>三套 KV 都能走 Context 并行，不要按 GQA 的「KV 头用尽」来想这三颗芯片。</p>`;
+
+    $("tblMatch").innerHTML = `<thead><tr>
+      <th>模型</th><th class="num">TPS</th><th>瓶颈</th>
+      <th>带宽</th><th>算力</th><th>容量</th><th>互联</th>
+      <th class="num">相对目标</th></tr></thead><tbody>` +
+      evals.map(({ x, r }) => {
+        if (!r) return `<tr><td>${x.m.meta.short}</td><td colspan="7">不可行</td></tr>`;
+        const bwRatio = (r.busyMs + r.misfetchMs) / Math.max(1e-9, r.mcMs - r.savedMs);
+        const cmpRatio = (r.mcMs - r.savedMs) / Math.max(1e-9, r.computeMs);
+        const capRatio = capCard / (r.weightsCard / 1e9 + r.statePerUserCard / 1e9);
+        const collRatio = r.computeMs / Math.max(1e-9, r.collectiveStageMs);
+        const tpsR = r.tps / target;
+        const cell = (ratio, invert) => matchTag(invert ? 1 / Math.max(ratio, 1e-9) : ratio);
+        return `<tr class="${r.tps >= target ? "hi" : ""}"><td>${x.m.meta.short}</td>
+          <td class="num"><b>${fmt(r.tps, 0)}</b></td>
+          <td>${r.bottleneck}</td>
+          <td>${matchTag(bwRatio)}</td>
+          <td>${matchTag(cmpRatio)}</td>
+          <td>${matchTag(capRatio)}</td>
+          <td>${matchTag(collRatio)}</td>
+          <td class="num">${tpsR >= 1 ? tag("ok", fmt(tpsR, 2) + "×") : tag("bad", fmt(tpsR, 2) + "×")}</td></tr>`;
+      }).join("") + "</tbody>";
+
+    const best = evals.filter(e => e.r).sort((a, b) => b.r.tps - a.r.tps)[0];
+    const worst = evals.filter(e => e.r).sort((a, b) => a.r.tps - b.r.tps)[0];
+    $("calloutMatch").innerHTML = `<strong>同芯片结论</strong>` +
+      (best && worst ? `<p>同样 ${cards} 张基线卡、同样 Context=${fmt(ctx / 1024, 0)}K：最快是 <b>${best.x.m.meta.short}</b> ${fmt(best.r.tps, 0)} TPS（${best.r.bottleneck}），最慢是 <b>${worst.x.m.meta.short}</b> ${fmt(worst.r.tps, 0)} TPS（${worst.r.bottleneck}）。差的不是「谁更大」，是谁把 Decode 的三堵墙叠在一起。</p>` : "<p>无可行点。</p>") +
+      `<p>表里「匹配 ×」= 供给/需求。带宽列用（计算+归约）/ MC净读取：&gt;1 表示读取已被掩盖，带宽有余；算力列相反。容量是单卡装得下权重+1 用户状态的倍数。互联是计算时间 / 归约时间。</p>`;
+
+    $("tblNeed").innerHTML = `<thead><tr>
+      <th>模型</th><th class="num">系统带宽</th><th class="num">线性算力</th><th class="num">注意力算力</th>
+      <th class="num">容量</th><th class="num">卡数 by BW</th><th class="num">by 线性</th>
+      <th class="num">by 注意力</th><th class="num">by 容量</th><th>下限由谁定</th></tr></thead><tbody>` +
+      inventories.map(x => {
+        const needBw = x.rd.total * target;
+        const needLin = x.lin * target / chip.utilization;
+        const needAttn = x.attn * target / chip.utilization;
+        const needCap = x.wGB + x.kvGB + x.kdaGB;
+        const nBw = needBw / bwCard;
+        const nLin = needLin / (chip.linearTflops * 1e12);
+        const nAttn = needAttn / (chip.attnTflops * 1e12);
+        const nCap = needCap / capCard;
+        const names = ["带宽", "线性算力", "注意力", "容量"];
+        const vals = [nBw, nLin, nAttn, nCap];
+        let im = 0;
+        vals.forEach((v, i) => { if (v > vals[im]) im = i; });
+        return `<tr><td>${x.m.meta.short}</td>
+          <td class="num">${fmt(needBw / 1e12, 1)} TB/s</td>
+          <td class="num">${fmt(needLin / 1e12, 0)} TF</td>
+          <td class="num">${fmt(needAttn / 1e12, 0)} TF</td>
+          <td class="num">${fmt(needCap, 0)} GB</td>
+          <td class="num">${fmt(nBw, 1)}</td>
+          <td class="num">${fmt(nLin, 2)}</td>
+          <td class="num">${fmt(nAttn, 2)}</td>
+          <td class="num">${fmt(nCap, 2)}</td>
+          <td>${tag(im === 0 ? "warn" : im === 3 ? "bad" : "info", names[im])} ≥ ${fmt(vals[im], 1)} 卡</td></tr>`;
+      }).join("") + "</tbody>";
+
+    $("calloutNeed").innerHTML = `<strong>朴素下限</strong><p>三模型卡数下限几乎都由<b>带宽</b>定。这张表把每 token 字节一次性读满，没有 SRAM、没有重叠。下面先讲重叠怎么盖住读取，再进入「计入版」。</p>`;
+
+    $("figOverlapHow").innerHTML = overlapHowSvg();
+
+    const users = Math.max(1, Number($("inUsers").value) || 1);
+    const fullRows = evals.map(({ x, r }) => r ? { x, r, f: fullDecode(x.m, r, x, chip, target, users, pred) } : { x, r: null, f: null });
+
+    $("figOverlapLive").innerHTML = overlapLiveSvg(fullRows);
+    $("capOverlapLive").textContent = `${cards} 卡 · ${users} 用户 · SRAM ${chip.sramMib} MiB/卡 · 预测 ${Math.round(pred * 100)}% · 目标 ${target} TPS/usr。横轴为一步 Decode 的毫秒。`;
+    $("tblOverlap").innerHTML = `<thead><tr>
+      <th>模型</th>
+      <th class="num">T_net</th>
+      <th class="num">计算</th>
+      <th class="num">归约/Stage</th>
+      <th class="num">补读</th>
+      <th class="num">忙碌</th>
+      <th class="num">暴露</th>
+      <th>步时</th>
+    </tr></thead><tbody>` +
+      fullRows.map(({ x, f }) => {
+        if (!f) return `<tr><td>${x.m.meta.short}</td><td colspan="7">该卡数不可行</td></tr>`;
+        const stage = Math.max(f.netMcMs, f.busyU);
+        const exp = Math.max(0, f.netMcMs - f.busyU);
+        return `<tr>
+          <td>${x.m.meta.short}</td>
+          <td class="num">${fmt(f.netMcMs, 3)} ms</td>
+          <td class="num">${fmt(f.computeU, 3)}</td>
+          <td class="num">${fmt(f.collStageMs, 3)}</td>
+          <td class="num">${fmt(f.misfetchU, 3)}</td>
+          <td class="num"><b>${fmt(f.busyU, 3)}</b></td>
+          <td class="num">${exp <= 1e-9 ? tag("ok", "0 · 已掩盖") : tag("warn", fmt(exp, 3) + " ms")}</td>
+          <td>${exp <= 1e-9 ? "取忙碌" : "取净读取"} · ${fmt(stage, 3)} ms</td>
+        </tr>`;
+      }).join("") + "</tbody>";
+
+    const hiddenN = fullRows.filter(row => row.f && row.f.hidden).map(row => row.x.m.meta.short);
+    const exposedN = fullRows.filter(row => row.f && !row.f.hidden).map(row => row.x.m.meta.short);
+    $("calloutOverlap").innerHTML = `<strong>怎么读这两条线</strong>
+      <p>青条是 SRAM 扣完后的净读取时间；绿条是计算 + 归约 + 专家未命中补读。引擎取 <span class="mono">max</span>：绿更长则读取被盖住，暴露为 0；青更长则红尾才是缺的 MC。</p>
+      <p>消耗 MC 仍按青条对应的字节 × TPS 计——被盖住不等于没搬。常驻只缩短青条；预取缓冲决定绿条能不能和青条并行（装不满则向「读+归约相加」插值）。</p>
+      <p>${hiddenN.length ? "当前已被掩盖：" + hiddenN.join("、") + "。" : ""}${exposedN.length ? " 仍露尾：" + exposedN.join("、") + "。" : " 当前三家读取都已进忙碌窗。"}</p>`;
+
+    $("tblNeedFull").innerHTML = `<thead><tr>
+      <th>模型</th>
+      <th class="num" title="每 token 读满 × 目标 TPS，不计 SRAM / 重叠">朴素 MC</th>
+      <th class="num" title="SRAM 常驻扣完后仍要从 MC 搬的字节 × 步频。被盖住也不会变小。">SRAM 后消耗</th>
+      <th class="num" title="max(0, T_net − 忙碌)。已掩盖=步时不缺 MC；有数字=红尾还在拖步时。">重叠后暴露</th>
+      <th class="num" title="SRAM 常驻使每步少从 MC 读的字节（全系统）。重叠不进这一列。">SRAM 省/步</th>
+      <th class="num" title="片间链路：环 all-reduce 导线字节 2(TP−1)·payload × 步频。不是 MC。">互联 2(TP−1)·payload</th>
+      <th class="num" title="集合通信墙钟时间。1000 TPS 预算 1000 μs。超了不能靠加 TP 摊薄次数。">归约 ms/步</th>
+      <th class="num">容量 ${users} 用户</th>
+      <th>下限由谁定</th>
+    </tr></thead><tbody>` +
+      fullRows.map(({ x, r, f }) => {
+        if (!f) return `<tr><td>${x.m.meta.short}</td><td colspan="8">该卡数不可行</td></tr>`;
+        const hide = f.hidden ? tag("ok", "已掩盖") : tag("warn", fmt(f.exposedBw / 1e12, 1) + " TB/s");
+        const limTag = f.limiter === "归约时间" ? "bad" : f.limiter === "容量" ? "bad" : f.limiter === "暴露MC" ? "warn" : "info";
+        return `<tr><td>${x.m.meta.short}<br><span class="caption">PP${f.r.pp}×TP${f.r.tp} · ${users} 用户</span></td>
+          <td class="num">${fmt(f.naiveBw / 1e12, 1)} TB/s<br><span class="caption">${fmt(f.nMc > 0 ? f.naiveBw / bwCard : 0, 1)} 卡</span></td>
+          <td class="num"><b>${fmt(f.consumedBw / 1e12, 1)} TB/s</b><br><span class="caption">${fmt(f.nMc, 1)} 卡 · 净 ${gb(f.netSys)}/步</span></td>
+          <td class="num">${hide}<br><span class="caption">${f.hidden ? "计算+归约窗盖住读取" : fmt(f.nExp, 1) + " 卡"}</span></td>
+          <td class="num">${gb(f.savedB)}</td>
+          <td class="num">${fmt(f.linkNeed / 1e12, 2)} TB/s<br><span class="caption">${gb(f.wireB)}/步 · ${fmt(f.nLink, 1)} 卡</span></td>
+          <td class="num">${fmt(f.collU * 1000, 0)} μs<br><span class="caption">预算 ${fmt(1000 / target * 1000, 0)} μs ${f.collU * optsMargin() > 1000 / target ? tag("bad", "超") : tag("ok", "入窗")}</span></td>
+          <td class="num">${fmt(f.capNeed, 0)} / ${fmt(f.capSupply, 0)} GB ${f.capNeed <= f.capSupply ? tag("ok", "OK") : tag("bad", "超")}</td>
+          <td>${f.limiter === "归约时间"
+            ? tag("bad", "归约超预算 " + fmt(f.nColl, 2) + "×")
+            : tag(limTag, f.limiter) + " ≥ " + fmt(f.limiterN, 1) + " 卡"}</td></tr>`;
+      }).join("") + "</tbody>";
+
+    $("figNeedFull").innerHTML = groupedBar(
+      fullRows.map(row => row.x.m.meta.short),
+      [
+        { name: "朴素 MC", color: C.muted, data: fullRows.map(row => row.f ? +(row.f.naiveBw / 1e12).toFixed(1) : null) },
+        { name: "SRAM 后消耗", color: C.accent, data: fullRows.map(row => row.f ? +(row.f.consumedBw / 1e12).toFixed(1) : null) },
+        { name: "重叠后暴露", color: C.warn, data: fullRows.map(row => row.f ? +(row.f.exposedBw / 1e12).toFixed(1) : null) }
+      ],
+      280
+    );
+
+    $("tblPrefill").innerHTML = `<thead><tr><th>Prefill ${prefillL ? fmt(prefillL / 1024, 0) + "K" : "关闭"}</th>
+      <th class="num">线性 EFLOP</th><th class="num">注意力 EFLOP</th>
+      <th class="num">权重读一次</th><th class="num">写 KV</th>
+      <th class="num">线性 I（→H）</th><th class="num">注意力 I</th>
+      <th class="num">若用当前卡数算完</th></tr></thead><tbody>` +
+      (prefillL <= 0
+        ? `<tr><td colspan="8" class="caption">页首 Prefill 长度选 0 则不计工作量。算术强度图见独立页。打开后按一条序列：权重流式读一次（p=1），高 I 线性打 H-Core，注意力用 Decode 增量积分 / 写 KV。</td></tr>`
+        : inventories.map(x => {
+          const linP = x.lin * prefillL;
+          const atP = prefillAttnFlops(x.m, prefillL);
+          const wOnce = x.rd.det + x.m.bytes.routedActive + x.m.bytes.lmHead;
+          const kvW = x.m.kvBytesFn(prefillL) + x.m.kdaStateStore;
+          const peak = peakAttn * 1e12 * cards;
+          const tSec = peak > 0 ? (linP + atP) / peak : Infinity;
+          const bwIfStream = tSec > 0 ? wOnce / tSec : 0;
+          const linI = intensity(linP, wOnce);
+          const atI = intensity(atP, kvW);
+          return `<tr><td>${x.m.meta.short}</td>
+            <td class="num">${fmt(linP / 1e18, 2)}</td>
+            <td class="num">${fmt(atP / 1e18, 2)}</td>
+            <td class="num">${gb(wOnce)}</td>
+            <td class="num">${gb(kvW)}</td>
+            <td class="num"><b>${fmtI(linI)}</b> ${linI < ridgeAttn ? tag("warn", "BW") : tag("ok", "算力")}</td>
+            <td class="num"><b>${fmtI(atI)}</b> ${atI < ridgeAttn ? tag("warn", "BW") : tag("ok", "算力")}</td>
+            <td class="num">${fmt(tSec * 1000, 0)} ms · 流式权重 ${fmt(bwIfStream / 1e12, 2)} TB/s · vs H</td></tr>`;
+        }).join("")) + "</tbody>";
+
+    const anyHidden = fullRows.some(row => row.f && row.f.hidden);
+    const collBlock = fullRows.filter(row => row.f && row.f.collU * optsMargin() > 1000 / target).map(row => row.x.m.meta.short);
+    $("calloutNeedFull").innerHTML = `<strong>计入之后还缺什么</strong>` +
+      `<p>SRAM（${chip.sramMib} MiB/卡）把常驻权重从 MC 流量里减掉，所以「消耗」一定低于朴素表。并发 ${users} 用户时确定性权重仍读 1 份，但 MoE 独特专家随 batch 变多（见下节），KV 与算力按 batch 放大。</p>` +
+      `<p>${anyHidden ? "当前卡数下，至少有一个模型的 MC 读取已被计算+归约盖住——再加 MC 带宽换不来 TPS，缺的是归约延迟或算力。" : "当前设置下 MC 读取仍露在关键路径上，SRAM 之后的消耗带宽才是要配的 MC。"}` +
+      `${collBlock.length ? " 归约已经超过 1 步时间预算的：" + collBlock.join("、") + "。这不能靠加卡（加 TP 次数不降），只能降延迟或减 TP。" : ""}</p>` +
+      `<p>互联是另一条总线：all-reduce 按 2·(TP−1)·payload 计系统导线字节，再 × 步频。基线每卡 ${chip.linkBandwidthGBs} GB/s。LM Head 已加进消耗 MC（朴素表没有）。Prefill 不进 Decode 步频，只报一条序列的工作量；若 Prefill 与 Decode 抢同一套 MC，峰值取两者较大。</p>`;
+
+    const BATCHES = [1, 2, 4, 8, 16, 32, 64];
+    if (!BATCHES.includes(users)) {
+      BATCHES.push(users);
+      BATCHES.sort((a, b) => a - b);
+    }
+    const sweep = evals.map(({ x, r }) => {
+      if (!r) return { x, r, points: [] };
+      const points = BATCHES.map(b => fullDecode(x.m, r, x, chip, target, b, pred));
+      return { x, r, points };
+    });
+    const labels = BATCHES.map(b => String(b));
+    $("figBatchTps").innerHTML = lineChart(
+      labels,
+      sweep.filter(s => s.points.length).map((s, i) => ({
+        name: s.x.m.meta.short,
+        color: COLORS[i % COLORS.length],
+        data: s.points.map(f => +f.tpsUsr.toFixed(1))
+      })),
+      260
+    );
+    $("figBatchSys").innerHTML = lineChart(
+      labels,
+      sweep.filter(s => s.points.length).map((s, i) => ({
+        name: s.x.m.meta.short,
+        color: COLORS[i % COLORS.length],
+        data: s.points.map(f => +f.sysTps.toFixed(0))
+      })),
+      260
+    );
+    $("figBatchUniq").innerHTML = lineChart(
+      labels,
+      sweep.filter(s => s.points.length).map((s, i) => ({
+        name: s.x.m.meta.short + " / " + s.points[0].Et,
+        color: COLORS[i % COLORS.length],
+        data: s.points.map(f => +f.uniq.toFixed(1))
+      })),
+      260
+    );
+    $("capBatchUniq").textContent = sweep.filter(s => s.points.length).map(s => {
+      const p0 = s.points[0], pLast = s.points[s.points.length - 1];
+      return `${s.x.m.meta.short} E=${p0.Et} k=${p0.k}：B=1 → ${fmt(p0.uniq, 0)}，B=${BATCHES[BATCHES.length - 1]} → ${fmt(pLast.uniq, 0)}（${fmt(100 * pLast.uniq / pLast.Et, 0)}%）`;
+    }).join("；") + "。";
+    $("figBatchCover").innerHTML = lineChart(
+      labels,
+      [{ name: "掩盖线 = 1", color: C.muted, data: BATCHES.map(() => 1) }].concat(
+        sweep.filter(s => s.points.length).map((s, i) => ({
+          name: s.x.m.meta.short,
+          color: COLORS[i % COLORS.length],
+          data: s.points.map(f => +(f.cover > 8 ? 8 : f.cover).toFixed(2))
+        }))
+      ),
+      260
+    );
+
+    const botTag = bot => {
+      if (bot === "MC") return tag("warn", "MC");
+      if (bot === "归约") return tag("bad", "归约");
+      if (bot === "补读") return tag("warn", "补读");
+      return tag("info", bot);
+    };
+    $("tblBatch").innerHTML = `<thead><tr>
+      <th>模型</th><th class="num">batch</th><th class="num">独特专家</th>
+      <th class="num">T_net</th><th class="num">忙碌</th><th>步时瓶颈</th>
+      <th class="num">容量</th><th class="num">TPS/usr</th><th class="num">系统 token/s</th>
+      <th>相对目标 ${target}</th>
+    </tr></thead><tbody>` +
+      sweep.map(({ x, points }) => {
+        if (!points.length) return `<tr><td>${x.m.meta.short}</td><td colspan="9">该卡数不可行</td></tr>`;
+        return points.map(f => {
+          const hi = f.u === users ? " class=\"hi\"" : "";
+          const cap = f.capOk ? tag("ok", fmt(f.capNeed, 0) + " GB") : tag("bad", "超 " + fmt(f.capNeed / f.capSupply, 2) + "×");
+          const vs = f.tpsUsr >= target ? tag("ok", fmt(f.tpsUsr / target, 2) + "×") : tag("bad", fmt(f.tpsUsr / target, 2) + "×");
+          return `<tr${hi}><td>${x.m.meta.short}</td>
+            <td class="num">${f.u}</td>
+            <td class="num">${fmt(f.uniq, 0)} / ${f.Et}<br><span class="caption">${fmt(f.routedScale, 1)}× 专家权重</span></td>
+            <td class="num">${fmt(f.netMcMs, 3)}</td>
+            <td class="num">${fmt(f.busyU, 3)}</td>
+            <td>${botTag(f.stepBot)}${f.hidden ? "" : " " + tag("warn", "露尾")}</td>
+            <td class="num">${cap}</td>
+            <td class="num"><b>${fmt(f.tpsUsr, 0)}</b></td>
+            <td class="num">${fmt(f.sysTps, 0)}</td>
+            <td>${vs}</td></tr>`;
+        }).join("");
+      }).join("") + "</tbody>";
+
+    const notes = sweep.filter(s => s.points.length).map(({ x, points }) => {
+      const hideAt = points.find(f => f.hidden);
+      const capAt = points.find(f => !f.capOk);
+      const sys0 = points[0].sysTps, sysN = points[points.length - 1].sysTps;
+      const peak = points.reduce((a, f) => f.sysTps > a.sysTps ? f : a, points[0]);
+      const uniqSat = points[points.length - 1].uniq / points[0].Et;
+      return `<p><b>${x.m.meta.short}</b>：系统吞吐 B=1 时 ${fmt(sys0, 0)} token/s，扫到 ${BATCHES[BATCHES.length - 1]} 为 ${fmt(sysN, 0)}（峰值在 B=${peak.u} 的 ${fmt(peak.sysTps, 0)}）。` +
+        `${hideAt ? " 读取在 B=" + hideAt.u + " 起被忙碌盖住。" : " 扫描范围内 MC 一直露尾。"}` +
+        `${capAt ? " 容量在 B=" + capAt.u + " 起装不下（KV×batch）。" : " 当前 Context 下容量还没顶住。"}` +
+        ` 独特专家扫到 ${fmt(100 * uniqSat, 0)}% of E。</p>`;
+    }).join("");
+    $("calloutBatch").innerHTML = `<strong>batch 扫描怎么读</strong>
+      <p>和稠密 LLM 不同：Decode MoE 的专家权重不会立刻被摊薄。B 从 1 涨时，独特专家近似线性增加（碰撞少），<b>专家权重流量先变差</b>，每用户 TPS 掉得比「权重只读 1 份」更快。E 被点满之后，再加大 batch 才只加 KV/算力/归约体积，强度才明显上升。</p>
+      <p>掩盖倍数跨过 1：步时从取 T_net 变成取忙碌，再加 MC 带宽换不来 TPS。归约延迟几乎不随 B 涨，payload 随 B 涨——层数多的 K3 更容易在中等 batch 被归约或算力接走。</p>
+      ${notes}
+      <p>未建模：大 batch 时 GEMM 利用率上升、EP all-to-all 拥塞、预测准确率随独特集合变差。独特专家按均匀路由；若专家热点更集中，权重流量会低于表内。</p>`;
+  }
+
+  ["inCtx", "inTps", "inCards", "inPred", "inScale", "inFusion", "inUsers", "inSram", "inLink"].forEach(id => {
+    if (!$(id)) return;
+    $(id).addEventListener("change", render);
+    $(id).addEventListener("input", render);
+  });
+  render();
+})();
+</script>
+</body>
+</html>
