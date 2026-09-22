@@ -20,11 +20,12 @@ function evaluateDirectionGate(env, score, register) {
     env.packageEnvelope.areaConservation &&
     allModelsComparable &&
     sensitivitySweep &&
-    candidateCountLe3 &&
+    candidateCountLe3 && (register.formalSelectedCandidates || []).length > 0 &&
     register.decisionState === 'D_GATE_PASSED'
   );
 
   return {
+    scope: 'PLANNING_COMPARISON_ONLY_NOT_ARCHITECTURE_FREEZE',
     areaConservation: Boolean(env.packageEnvelope.areaConservation),
     threeModelRowsAccounted: allModelsAccounted,
     threeModelComparable: allModelsComparable,
@@ -45,12 +46,19 @@ function observationCoverage(matrix) {
   const terminalOrObserved = observations.filter(item =>
     ['MODEL_OBSERVED', 'SILICON_OBSERVED', 'BLOCKED_CONFIG'].includes(item.status)
   );
+  const slotKey = x => [x.modelId, x.tp, x.mcProfile].join(':');
+  const expected = matrix.requiredCoverage.models.flatMap(modelId =>
+    matrix.requiredCoverage.tp.flatMap(tp => matrix.requiredCoverage.mcProfiles.map(mcProfile => slotKey({modelId,tp,mcProfile}))));
+  const keys = observations.map(slotKey);
+  const uniqueCoverage = keys.length === required && new Set(keys).size === required && expected.every(k => keys.includes(k));
   return {
+    uniqueCoverage,
+    planningEstimatedSlots: observations.filter(x => x.status === 'PLANNING_ESTIMATE').length,
     requiredSlots: required,
     accountedSlots: observations.length,
-    all18SlotsAccounted: observations.length === required,
+    all18SlotsAccounted: uniqueCoverage,
     terminalOrObservedSlots: terminalOrObserved.length,
-    observationMatrixCompleteOrBlocked: terminalOrObserved.length === required,
+    observationMatrixCompleteOrBlocked: uniqueCoverage && terminalOrObserved.length === required,
     observedSlots: observed.length,
     allObservedSlotsHaveProvenance: observed.every(item => item.source && item.sourceSelector),
     allObservedSlotsReplayable: observed.every(item =>
@@ -84,6 +92,10 @@ function evaluateQuantificationGate(detail, matrix, register, directionGate) {
     directionGate.decision === 'PASS' &&
     detail.runMode === 'FORMAL_QUANTIFICATION' &&
     manifestsResolved &&
+    detail.evidenceKind === 'VALIDATED_EVENT_TIMING' &&
+    coverage.observedSlots === coverage.requiredSlots &&
+    coverage.allObservedSlotsReplayable &&
+    matrix.observations.every(x => x.runId === detail.runId && x.manifestHash === detail.manifestHash) &&
     sharedManifest &&
     fineTpsReady &&
     provenanceComplete &&
@@ -92,15 +104,16 @@ function evaluateQuantificationGate(detail, matrix, register, directionGate) {
   );
 
   return {
+    evidenceKind: detail.evidenceKind || 'UNSPECIFIED',
     directionGatePassed: directionGate.decision === 'PASS',
     exploratoryOnly: detail.runMode !== 'FORMAL_QUANTIFICATION',
     manifestComplete: manifestsResolved,
     tp8Tp16Tp32PlanningExecutable: [8, 16, 32].every(tp =>
-      detail.operatorLedger.some(row => row.modelId === 'K3' && row.tp === tp)
+      detail.operatorLedger.some(row => row.tp === tp)
     ),
     sharedManifestAcrossRooflineAndReplay: sharedManifest,
-    p0P1Separated: detail.operatorLedger.every(row => row.physicalProfile === 'P0'),
-    mc320Mc640Separated: detail.operatorLedger.every(row => row.mcProfile === 'MC320'),
+    p0P1Separated: [...new Set(detail.operatorLedger.map(row => row.physicalProfile))].every(profile => ['P0', 'P1'].includes(profile)),
+    mc320Mc640Separated: [...new Set(detail.operatorLedger.map(row => row.mcProfile))].every(profile => ['MC320', 'MC640'].includes(profile)),
     provenanceComplete,
     ...coverage,
     fineTpsReady,

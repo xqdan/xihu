@@ -15,7 +15,9 @@
     "search:architecture": "node scripts/generate_k3_architecture_search_report.js",
     "search:b1": "node src/search/k3_b1_1000_search.js",
     "search:rdma": "node src/rdma/k3_b1_1000_rdma_sram_search.js",
-    "search:final": "node src/rdma/k3_rdma_final_tuning_search.js"
+    "search:final": "node src/rdma/k3_rdma_final_tuning_search.js",
+    "dashboard": "node scripts/generate_global_dashboard.js",
+    "model:planning": "node models/resolve_architecture_blockers.js && node models/formal_detailed_run.js && node scripts/generate_global_dashboard.js"
   },
   "engines": {
     "node": ">=18"

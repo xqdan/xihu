@@ -1,13 +1,13 @@
 {
   "schemaVersion": "directional-resource-envelope-v0.1",
-  "runId": "stage-a-20260921124431",
+  "runId": "stage-a-20260922-blocker-resolution",
   "stage": "direction",
   "agentId": "D1-D6",
   "candidateId": "direction-input-envelope",
   "targetTpsPerUser": 1000,
   "engineeringMargin": 1.17,
-  "confidence": "E0",
-  "status": "DIRECTIONAL_ESTIMATE",
+  "confidence": "E1",
+  "status": "DIRECTIONAL_ESTIMATE_WITH_FORMAL_PLANNING_MANIFEST",
   "models": [
     {
       "modelId": "K3",
@@ -132,10 +132,9 @@
     }
   },
   "assumptions": [
-    "Stage A uses coarse classes, not operator-level measurements.",
-    "K3 is the only repository baseline model; GLM-5.2 and DeepSeek-V4-Pro remain planning inputs.",
-    "MC320/MC640 are directional bandwidth profiles and must be replaced by sustained transaction data in Stage B.",
-    "No software gain is silently applied in this run."
+    "Formal planning manifests are frozen in data/workload/formal_model_manifests.json.",
+    "GLM-5.2 and DeepSeek-V4-Pro values are architecture planning inputs pending external confirmation.",
+    "MC320 and MC640 remain separate physical bandwidth profiles."
   ],
   "constraintsChecked": [
     "7-reticle area conservation",

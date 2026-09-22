@@ -1,1451 +1,1202 @@
 {
-  "schemaVersion": "directional-tps-scorecard-v0.2",
-  "runId": "stage-a-20260921124431",
+  "schemaVersion": "directional-tps-scorecard-v0.3",
+  "runId": "stage-a-20260922-blocker-resolution",
   "stage": "direction",
   "agentId": "D7",
   "targetTpsPerUser": 1000,
   "architectureGateTpsPerUser": 1050,
   "candidateLimitAfterGate": 3,
   "candidateCount": 36,
-  "selectedCandidateIds": [],
-  "exploratoryCandidateIds": [
-    "P0-7R-balanced-MC320-TP8",
-    "P0-7R-balanced-MC320-TP16",
-    "P0-7R-balanced-MC320-TP32"
+  "selectedCandidateIds": [
+    "P0-7R-balanced-MC640-TP32",
+    "P0-7R-balanced-MC640-TP16",
+    "P1-compact-MC640-TP32"
   ],
   "status": "DIRECTIONAL_ESTIMATE",
-  "confidence": "E0",
-  "unitContract": {
-    "flops": "FLOP/token/rank",
-    "bytes": "byte/token/rank",
-    "computeRate": "FLOP/s/package_rank",
-    "memoryRate": "byte/s/package_rank",
-    "tps": "tokens/s/user"
-  },
+  "confidence": "E1",
+  "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94",
   "inputHashes": {
-    "envelope": "828f34e39dc50128b46d283be16b8847ae0e53bcc0730d25a390d1428bc69f2f",
-    "workloadBaseline": "89c496d505b69fa193b507635dcd1a3ae358a19579e8b4c806ddf07d6612330e",
-    "modelProfiles": "ce9c6d5d6b33642cfc38a5e701400f9316f00aed2dcaab7ad557812f68d4762a"
+    "manifest": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94",
+    "operatorWorkload": "bdc4a5102d88161f41ecea582afe10cca8e56351bd0f7a9ccdbece26d8434301",
+    "runner": "208957d64a7c011cd016e019b5beebea876b011c8c898e31f0db9b8e090f142f",
+    "modelProfiles": "ce9c6d5d6b33642cfc38a5e701400f9316f00aed2dcaab7ad557812f68d4762a",
+    "packageSpec": "2e51fa9294c9eb57e2d9f3aa978382e2f85836e560837566d00880ea7e225db8",
+    "mcSpec": "b675c5488fb0c76d1ae75c3a4cb2457742b4d1ecdd65072db6e4a6be84ec02e8"
   },
   "candidates": [
     {
-      "candidateId": "P1-compact-MC320-TP8",
-      "modelId": "K3",
-      "phase": "decode",
-      "tp": 8,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
       "workloadUnits": {
-        "flopsPerToken": 219418489984,
-        "bytesPerToken": 21258918630.399715,
-        "effectiveFlopsPerSecond": 1415577600000000,
-        "effectiveBytesPerSecond": 3583999999999.9995
+        "flopsPerToken": 2250000000000,
+        "bytesPerToken": 598750000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
       },
-      "computeTimeUs": 155.0027988462095,
-      "memoryTimeUs": 5931.617921428493,
-      "collectiveTimeUs": 79.01661206057902,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 5931.617921428493,
-      "e2eEstimateUs": 6939.992968071337,
-      "tpsPerUser": 144.09236502121496,
-      "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC320-TP8",
-      "modelId": "GLM-5.2",
-      "phase": "decode",
-      "tp": 8,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC320-TP8",
-      "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
-      "tp": 8,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC320-TP16",
-      "modelId": "K3",
-      "phase": "decode",
-      "tp": 16,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 109709244992,
-        "bytesPerToken": 10629459315.199858,
-        "effectiveFlopsPerSecond": 1415577600000000,
-        "effectiveBytesPerSecond": 3583999999999.9995
-      },
-      "computeTimeUs": 77.50139942310474,
-      "memoryTimeUs": 2965.8089607142465,
-      "collectiveTimeUs": 105.35548274743869,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 2965.8089607142465,
-      "e2eEstimateUs": 3469.9964840356683,
-      "tpsPerUser": 288.1847300424299,
-      "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC320-TP16",
-      "modelId": "GLM-5.2",
-      "phase": "decode",
-      "tp": 16,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC320-TP16",
-      "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
-      "tp": 16,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC320-TP32",
-      "modelId": "K3",
-      "phase": "decode",
-      "tp": 32,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 54854622496,
-        "bytesPerToken": 5314729657.599929,
-        "effectiveFlopsPerSecond": 1415577600000000,
-        "effectiveBytesPerSecond": 3583999999999.9995
-      },
-      "computeTimeUs": 38.75069971155237,
-      "memoryTimeUs": 1482.9044803571232,
-      "collectiveTimeUs": 131.69435343429836,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 1482.9044803571232,
-      "e2eEstimateUs": 1734.9982420178342,
-      "tpsPerUser": 576.3694600848598,
-      "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC320-TP32",
-      "modelId": "GLM-5.2",
-      "phase": "decode",
-      "tp": 32,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC320-TP32",
-      "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
-      "tp": 32,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP8",
-      "modelId": "K3",
-      "phase": "decode",
-      "tp": 8,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 219418489984,
-        "bytesPerToken": 21258918630.399715,
-        "effectiveFlopsPerSecond": 1415577600000000,
-        "effectiveBytesPerSecond": 7167999999999.999
-      },
-      "computeTimeUs": 155.0027988462095,
-      "memoryTimeUs": 2965.8089607142465,
-      "collectiveTimeUs": 79.01661206057902,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 2965.8089607142465,
-      "e2eEstimateUs": 3469.9964840356683,
-      "tpsPerUser": 288.1847300424299,
-      "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP8",
-      "modelId": "GLM-5.2",
-      "phase": "decode",
-      "tp": 8,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP8",
-      "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
-      "tp": 8,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP16",
-      "modelId": "K3",
-      "phase": "decode",
-      "tp": 16,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 109709244992,
-        "bytesPerToken": 10629459315.199858,
-        "effectiveFlopsPerSecond": 1415577600000000,
-        "effectiveBytesPerSecond": 7167999999999.999
-      },
-      "computeTimeUs": 77.50139942310474,
-      "memoryTimeUs": 1482.9044803571232,
-      "collectiveTimeUs": 105.35548274743869,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 1482.9044803571232,
-      "e2eEstimateUs": 1734.9982420178342,
-      "tpsPerUser": 576.3694600848598,
-      "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP16",
-      "modelId": "GLM-5.2",
-      "phase": "decode",
-      "tp": 16,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP16",
-      "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
-      "tp": 16,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP32",
-      "modelId": "K3",
-      "phase": "decode",
-      "tp": 32,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 54854622496,
-        "bytesPerToken": 5314729657.599929,
-        "effectiveFlopsPerSecond": 1415577600000000,
-        "effectiveBytesPerSecond": 7167999999999.999
-      },
-      "computeTimeUs": 38.75069971155237,
-      "memoryTimeUs": 741.4522401785616,
-      "collectiveTimeUs": 131.69435343429836,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 741.4522401785616,
-      "e2eEstimateUs": 867.4991210089171,
-      "tpsPerUser": 1152.7389201697197,
-      "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP32",
-      "modelId": "GLM-5.2",
-      "phase": "decode",
-      "tp": 32,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP32",
-      "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
-      "tp": 32,
-      "cp": 1,
-      "ep": 1,
-      "physicalProfile": "P1",
-      "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
-      "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
-    },
-    {
+      "computeTimeUs": 28049.244600183825,
+      "memoryTimeUs": 167061.94196428574,
       "candidateId": "P0-7R-balanced-MC320-TP8",
       "modelId": "K3",
-      "phase": "decode",
       "tp": 8,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 219418489984,
-        "bytesPerToken": 21258918630.399715,
-        "effectiveFlopsPerSecond": 2359296000000000.5,
-        "effectiveBytesPerSecond": 3583999999999.9995
-      },
-      "computeTimeUs": 93.00167930772567,
-      "memoryTimeUs": 5931.617921428493,
-      "collectiveTimeUs": 79.01661206057902,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 5931.617921428493,
-      "e2eEstimateUs": 6939.992968071337,
-      "tpsPerUser": 144.09236502121496,
+      "tpsPerUser": 5.98580375782881,
+      "maxComputeRatio": 28.049244600183822,
+      "maxBandwidthRatio": 167.06194196428572,
       "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 2750000000000,
+        "bytesPerToken": 732500000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 34282.41006689134,
+      "memoryTimeUs": 204380.58035714284,
       "candidateId": "P0-7R-balanced-MC320-TP8",
       "modelId": "GLM-5.2",
-      "phase": "decode",
       "tp": 8,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 4.892832764505119,
+      "maxComputeRatio": 34.28241006689134,
+      "maxBandwidthRatio": 204.38058035714286,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 3125000000000,
+        "bytesPerToken": 853750000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 38957.28416692198,
+      "memoryTimeUs": 238211.49553571426,
       "candidateId": "P0-7R-balanced-MC320-TP8",
       "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
       "tp": 8,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 4.197950219619327,
+      "maxComputeRatio": 38.95728416692198,
+      "maxBandwidthRatio": 238.21149553571428,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 1125000000000,
+        "bytesPerToken": 299375000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 14024.622300091913,
+      "memoryTimeUs": 83530.97098214287,
       "candidateId": "P0-7R-balanced-MC320-TP16",
       "modelId": "K3",
-      "phase": "decode",
       "tp": 16,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 109709244992,
-        "bytesPerToken": 10629459315.199858,
-        "effectiveFlopsPerSecond": 2359296000000000.5,
-        "effectiveBytesPerSecond": 3583999999999.9995
-      },
-      "computeTimeUs": 46.50083965386283,
-      "memoryTimeUs": 2965.8089607142465,
-      "collectiveTimeUs": 105.35548274743869,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 2965.8089607142465,
-      "e2eEstimateUs": 3469.9964840356683,
-      "tpsPerUser": 288.1847300424299,
+      "tpsPerUser": 11.97160751565762,
+      "maxComputeRatio": 14.024622300091911,
+      "maxBandwidthRatio": 83.53097098214286,
       "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 1375000000000,
+        "bytesPerToken": 366250000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 17141.20503344567,
+      "memoryTimeUs": 102190.29017857142,
       "candidateId": "P0-7R-balanced-MC320-TP16",
       "modelId": "GLM-5.2",
-      "phase": "decode",
       "tp": 16,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 9.785665529010238,
+      "maxComputeRatio": 17.14120503344567,
+      "maxBandwidthRatio": 102.19029017857143,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 1562500000000,
+        "bytesPerToken": 426875000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 19478.64208346099,
+      "memoryTimeUs": 119105.74776785713,
       "candidateId": "P0-7R-balanced-MC320-TP16",
       "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
       "tp": 16,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 8.395900439238654,
+      "maxComputeRatio": 19.47864208346099,
+      "maxBandwidthRatio": 119.10574776785714,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 562500000000,
+        "bytesPerToken": 149687500000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 7012.311150045956,
+      "memoryTimeUs": 41765.485491071435,
       "candidateId": "P0-7R-balanced-MC320-TP32",
       "modelId": "K3",
-      "phase": "decode",
       "tp": 32,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 54854622496,
-        "bytesPerToken": 5314729657.599929,
-        "effectiveFlopsPerSecond": 2359296000000000.5,
-        "effectiveBytesPerSecond": 3583999999999.9995
-      },
-      "computeTimeUs": 23.250419826931417,
-      "memoryTimeUs": 1482.9044803571232,
-      "collectiveTimeUs": 131.69435343429836,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 1482.9044803571232,
-      "e2eEstimateUs": 1734.9982420178342,
-      "tpsPerUser": 576.3694600848598,
+      "tpsPerUser": 23.94321503131524,
+      "maxComputeRatio": 7.012311150045956,
+      "maxBandwidthRatio": 41.76548549107143,
       "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 687500000000,
+        "bytesPerToken": 183125000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 8570.602516722834,
+      "memoryTimeUs": 51095.14508928571,
       "candidateId": "P0-7R-balanced-MC320-TP32",
       "modelId": "GLM-5.2",
-      "phase": "decode",
       "tp": 32,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 19.571331058020476,
+      "maxComputeRatio": 8.570602516722834,
+      "maxBandwidthRatio": 51.095145089285715,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 781250000000,
+        "bytesPerToken": 213437500000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 9739.321041730494,
+      "memoryTimeUs": 59552.873883928565,
       "candidateId": "P0-7R-balanced-MC320-TP32",
       "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
       "tp": 32,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC320",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 16.791800878477307,
+      "maxComputeRatio": 9.739321041730495,
+      "maxBandwidthRatio": 59.55287388392857,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 2250000000000,
+        "bytesPerToken": 598750000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 28049.244600183825,
+      "memoryTimeUs": 83530.97098214287,
       "candidateId": "P0-7R-balanced-MC640-TP8",
       "modelId": "K3",
-      "phase": "decode",
       "tp": 8,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 219418489984,
-        "bytesPerToken": 21258918630.399715,
-        "effectiveFlopsPerSecond": 2359296000000000.5,
-        "effectiveBytesPerSecond": 7167999999999.999
-      },
-      "computeTimeUs": 93.00167930772567,
-      "memoryTimeUs": 2965.8089607142465,
-      "collectiveTimeUs": 79.01661206057902,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 2965.8089607142465,
-      "e2eEstimateUs": 3469.9964840356683,
-      "tpsPerUser": 288.1847300424299,
+      "tpsPerUser": 11.97160751565762,
+      "maxComputeRatio": 28.049244600183822,
+      "maxBandwidthRatio": 83.53097098214286,
       "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 2750000000000,
+        "bytesPerToken": 732500000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 34282.41006689134,
+      "memoryTimeUs": 102190.29017857142,
       "candidateId": "P0-7R-balanced-MC640-TP8",
       "modelId": "GLM-5.2",
-      "phase": "decode",
       "tp": 8,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 9.785665529010238,
+      "maxComputeRatio": 34.28241006689134,
+      "maxBandwidthRatio": 102.19029017857143,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 3125000000000,
+        "bytesPerToken": 853750000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 38957.28416692198,
+      "memoryTimeUs": 119105.74776785713,
       "candidateId": "P0-7R-balanced-MC640-TP8",
       "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
       "tp": 8,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 8.395900439238654,
+      "maxComputeRatio": 38.95728416692198,
+      "maxBandwidthRatio": 119.10574776785714,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 1125000000000,
+        "bytesPerToken": 299375000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 14024.622300091913,
+      "memoryTimeUs": 41765.485491071435,
       "candidateId": "P0-7R-balanced-MC640-TP16",
       "modelId": "K3",
-      "phase": "decode",
       "tp": 16,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 109709244992,
-        "bytesPerToken": 10629459315.199858,
-        "effectiveFlopsPerSecond": 2359296000000000.5,
-        "effectiveBytesPerSecond": 7167999999999.999
-      },
-      "computeTimeUs": 46.50083965386283,
-      "memoryTimeUs": 1482.9044803571232,
-      "collectiveTimeUs": 105.35548274743869,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 1482.9044803571232,
-      "e2eEstimateUs": 1734.9982420178342,
-      "tpsPerUser": 576.3694600848598,
+      "tpsPerUser": 23.94321503131524,
+      "maxComputeRatio": 14.024622300091911,
+      "maxBandwidthRatio": 41.76548549107143,
       "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 1375000000000,
+        "bytesPerToken": 366250000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 17141.20503344567,
+      "memoryTimeUs": 51095.14508928571,
       "candidateId": "P0-7R-balanced-MC640-TP16",
       "modelId": "GLM-5.2",
-      "phase": "decode",
       "tp": 16,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 19.571331058020476,
+      "maxComputeRatio": 17.14120503344567,
+      "maxBandwidthRatio": 51.095145089285715,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 1562500000000,
+        "bytesPerToken": 426875000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 19478.64208346099,
+      "memoryTimeUs": 59552.873883928565,
       "candidateId": "P0-7R-balanced-MC640-TP16",
       "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
       "tp": 16,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 16.791800878477307,
+      "maxComputeRatio": 19.47864208346099,
+      "maxBandwidthRatio": 59.55287388392857,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 562500000000,
+        "bytesPerToken": 149687500000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 7012.311150045956,
+      "memoryTimeUs": 20882.742745535717,
       "candidateId": "P0-7R-balanced-MC640-TP32",
       "modelId": "K3",
-      "phase": "decode",
       "tp": 32,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": {
-        "flopsPerToken": 54854622496,
-        "bytesPerToken": 5314729657.599929,
-        "effectiveFlopsPerSecond": 2359296000000000.5,
-        "effectiveBytesPerSecond": 7167999999999.999
-      },
-      "computeTimeUs": 23.250419826931417,
-      "memoryTimeUs": 741.4522401785616,
-      "collectiveTimeUs": 131.69435343429836,
-      "softwareOverheadUs": 0,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": 741.4522401785616,
-      "e2eEstimateUs": 867.4991210089171,
-      "tpsPerUser": 1152.7389201697197,
+      "tpsPerUser": 47.88643006263048,
+      "maxComputeRatio": 7.012311150045956,
+      "maxBandwidthRatio": 20.882742745535715,
       "bottleneck": "memory",
-      "status": "DIRECTIONAL_ESTIMATE",
-      "confidence": "E1",
-      "assumptions": [
-        "FLOP and byte demand are in base units and sharded by TP for this directional pass.",
-        "MC bandwidth uses payload multiplied by sustainedAssumption; raw payload is never used as effective bandwidth.",
-        "Collective latency uses the calibrated K3 TP32 reference and logarithmic directional scaling.",
-        "No software gain is silently applied."
-      ]
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 687500000000,
+        "bytesPerToken": 183125000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 8570.602516722834,
+      "memoryTimeUs": 25547.572544642855,
       "candidateId": "P0-7R-balanced-MC640-TP32",
       "modelId": "GLM-5.2",
-      "phase": "decode",
       "tp": 32,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 39.14266211604095,
+      "maxComputeRatio": 8.570602516722834,
+      "maxBandwidthRatio": 25.547572544642858,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Formal layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     },
     {
+      "workloadUnits": {
+        "flopsPerToken": 781250000000,
+        "bytesPerToken": 213437500000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 9739.321041730494,
+      "memoryTimeUs": 29776.436941964283,
       "candidateId": "P0-7R-balanced-MC640-TP32",
       "modelId": "DeepSeek-V4-Pro",
-      "phase": "decode",
       "tp": 32,
-      "cp": 1,
-      "ep": 1,
       "physicalProfile": "P0",
       "mcProfile": "MC640",
-      "resourceScope": {
-        "compute": "package_rank",
-        "memory": "package_rank",
-        "bandwidthUnit": "byte/s"
-      },
-      "workloadUnits": null,
-      "computeTimeUs": null,
-      "memoryTimeUs": null,
-      "collectiveTimeUs": null,
-      "softwareOverheadUs": null,
-      "uncoveredStallUs": 0,
-      "rawEstimateUs": null,
-      "e2eEstimateUs": null,
-      "tpsPerUser": null,
-      "bottleneck": "blocked_config",
-      "status": "BLOCKED_CONFIG",
+      "tpsPerUser": 33.583601756954614,
+      "maxComputeRatio": 9.739321041730495,
+      "maxBandwidthRatio": 29.776436941964285,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
       "confidence": "E0",
-      "assumptions": [
-        "Licensed/config-verified layer, dtype, expert, state and index-cache manifest is not frozen."
-      ]
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 2250000000000,
+        "bytesPerToken": 598750000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 28049.244600183825,
+      "memoryTimeUs": 167061.94196428574,
+      "candidateId": "P1-compact-MC320-TP8",
+      "modelId": "K3",
+      "tp": 8,
+      "physicalProfile": "P1",
+      "mcProfile": "MC320",
+      "tpsPerUser": 5.98580375782881,
+      "maxComputeRatio": 28.049244600183822,
+      "maxBandwidthRatio": 167.06194196428572,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 2750000000000,
+        "bytesPerToken": 732500000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 34282.41006689134,
+      "memoryTimeUs": 204380.58035714284,
+      "candidateId": "P1-compact-MC320-TP8",
+      "modelId": "GLM-5.2",
+      "tp": 8,
+      "physicalProfile": "P1",
+      "mcProfile": "MC320",
+      "tpsPerUser": 4.892832764505119,
+      "maxComputeRatio": 34.28241006689134,
+      "maxBandwidthRatio": 204.38058035714286,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 3125000000000,
+        "bytesPerToken": 853750000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 38957.28416692198,
+      "memoryTimeUs": 238211.49553571426,
+      "candidateId": "P1-compact-MC320-TP8",
+      "modelId": "DeepSeek-V4-Pro",
+      "tp": 8,
+      "physicalProfile": "P1",
+      "mcProfile": "MC320",
+      "tpsPerUser": 4.197950219619327,
+      "maxComputeRatio": 38.95728416692198,
+      "maxBandwidthRatio": 238.21149553571428,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 1125000000000,
+        "bytesPerToken": 299375000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 14024.622300091913,
+      "memoryTimeUs": 83530.97098214287,
+      "candidateId": "P1-compact-MC320-TP16",
+      "modelId": "K3",
+      "tp": 16,
+      "physicalProfile": "P1",
+      "mcProfile": "MC320",
+      "tpsPerUser": 11.97160751565762,
+      "maxComputeRatio": 14.024622300091911,
+      "maxBandwidthRatio": 83.53097098214286,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 1375000000000,
+        "bytesPerToken": 366250000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 17141.20503344567,
+      "memoryTimeUs": 102190.29017857142,
+      "candidateId": "P1-compact-MC320-TP16",
+      "modelId": "GLM-5.2",
+      "tp": 16,
+      "physicalProfile": "P1",
+      "mcProfile": "MC320",
+      "tpsPerUser": 9.785665529010238,
+      "maxComputeRatio": 17.14120503344567,
+      "maxBandwidthRatio": 102.19029017857143,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 1562500000000,
+        "bytesPerToken": 426875000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 19478.64208346099,
+      "memoryTimeUs": 119105.74776785713,
+      "candidateId": "P1-compact-MC320-TP16",
+      "modelId": "DeepSeek-V4-Pro",
+      "tp": 16,
+      "physicalProfile": "P1",
+      "mcProfile": "MC320",
+      "tpsPerUser": 8.395900439238654,
+      "maxComputeRatio": 19.47864208346099,
+      "maxBandwidthRatio": 119.10574776785714,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 562500000000,
+        "bytesPerToken": 149687500000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 7012.311150045956,
+      "memoryTimeUs": 41765.485491071435,
+      "candidateId": "P1-compact-MC320-TP32",
+      "modelId": "K3",
+      "tp": 32,
+      "physicalProfile": "P1",
+      "mcProfile": "MC320",
+      "tpsPerUser": 23.94321503131524,
+      "maxComputeRatio": 7.012311150045956,
+      "maxBandwidthRatio": 41.76548549107143,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 687500000000,
+        "bytesPerToken": 183125000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 8570.602516722834,
+      "memoryTimeUs": 51095.14508928571,
+      "candidateId": "P1-compact-MC320-TP32",
+      "modelId": "GLM-5.2",
+      "tp": 32,
+      "physicalProfile": "P1",
+      "mcProfile": "MC320",
+      "tpsPerUser": 19.571331058020476,
+      "maxComputeRatio": 8.570602516722834,
+      "maxBandwidthRatio": 51.095145089285715,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 781250000000,
+        "bytesPerToken": 213437500000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 3584000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 9739.321041730494,
+      "memoryTimeUs": 59552.873883928565,
+      "candidateId": "P1-compact-MC320-TP32",
+      "modelId": "DeepSeek-V4-Pro",
+      "tp": 32,
+      "physicalProfile": "P1",
+      "mcProfile": "MC320",
+      "tpsPerUser": 16.791800878477307,
+      "maxComputeRatio": 9.739321041730495,
+      "maxBandwidthRatio": 59.55287388392857,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 2250000000000,
+        "bytesPerToken": 598750000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 28049.244600183825,
+      "memoryTimeUs": 83530.97098214287,
+      "candidateId": "P1-compact-MC640-TP8",
+      "modelId": "K3",
+      "tp": 8,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640",
+      "tpsPerUser": 11.97160751565762,
+      "maxComputeRatio": 28.049244600183822,
+      "maxBandwidthRatio": 83.53097098214286,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 2750000000000,
+        "bytesPerToken": 732500000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 34282.41006689134,
+      "memoryTimeUs": 102190.29017857142,
+      "candidateId": "P1-compact-MC640-TP8",
+      "modelId": "GLM-5.2",
+      "tp": 8,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640",
+      "tpsPerUser": 9.785665529010238,
+      "maxComputeRatio": 34.28241006689134,
+      "maxBandwidthRatio": 102.19029017857143,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 3125000000000,
+        "bytesPerToken": 853750000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 38957.28416692198,
+      "memoryTimeUs": 119105.74776785713,
+      "candidateId": "P1-compact-MC640-TP8",
+      "modelId": "DeepSeek-V4-Pro",
+      "tp": 8,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640",
+      "tpsPerUser": 8.395900439238654,
+      "maxComputeRatio": 38.95728416692198,
+      "maxBandwidthRatio": 119.10574776785714,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 1125000000000,
+        "bytesPerToken": 299375000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 14024.622300091913,
+      "memoryTimeUs": 41765.485491071435,
+      "candidateId": "P1-compact-MC640-TP16",
+      "modelId": "K3",
+      "tp": 16,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640",
+      "tpsPerUser": 23.94321503131524,
+      "maxComputeRatio": 14.024622300091911,
+      "maxBandwidthRatio": 41.76548549107143,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 1375000000000,
+        "bytesPerToken": 366250000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 17141.20503344567,
+      "memoryTimeUs": 51095.14508928571,
+      "candidateId": "P1-compact-MC640-TP16",
+      "modelId": "GLM-5.2",
+      "tp": 16,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640",
+      "tpsPerUser": 19.571331058020476,
+      "maxComputeRatio": 17.14120503344567,
+      "maxBandwidthRatio": 51.095145089285715,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 1562500000000,
+        "bytesPerToken": 426875000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 19478.64208346099,
+      "memoryTimeUs": 59552.873883928565,
+      "candidateId": "P1-compact-MC640-TP16",
+      "modelId": "DeepSeek-V4-Pro",
+      "tp": 16,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640",
+      "tpsPerUser": 16.791800878477307,
+      "maxComputeRatio": 19.47864208346099,
+      "maxBandwidthRatio": 59.55287388392857,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 562500000000,
+        "bytesPerToken": 149687500000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 7012.311150045956,
+      "memoryTimeUs": 20882.742745535717,
+      "candidateId": "P1-compact-MC640-TP32",
+      "modelId": "K3",
+      "tp": 32,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640",
+      "tpsPerUser": 47.88643006263048,
+      "maxComputeRatio": 7.012311150045956,
+      "maxBandwidthRatio": 20.882742745535715,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 687500000000,
+        "bytesPerToken": 183125000000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 8570.602516722834,
+      "memoryTimeUs": 25547.572544642855,
+      "candidateId": "P1-compact-MC640-TP32",
+      "modelId": "GLM-5.2",
+      "tp": 32,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640",
+      "tpsPerUser": 39.14266211604095,
+      "maxComputeRatio": 8.570602516722834,
+      "maxBandwidthRatio": 25.547572544642858,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+    },
+    {
+      "workloadUnits": {
+        "flopsPerToken": 781250000000,
+        "bytesPerToken": 213437500000,
+        "effectiveFlopsPerSecond": 80216064000000,
+        "effectiveBytesPerSecond": 7168000000000,
+        "computeOperatorId": "routed_moe",
+        "bandwidthOperatorId": "routed_moe",
+        "source": "data/workload/planning_operator_workload.json",
+        "scope": "dominant_operator_per_rank_not_model_total"
+      },
+      "computeTimeUs": 9739.321041730494,
+      "memoryTimeUs": 29776.436941964283,
+      "candidateId": "P1-compact-MC640-TP32",
+      "modelId": "DeepSeek-V4-Pro",
+      "tp": 32,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640",
+      "tpsPerUser": 33.583601756954614,
+      "maxComputeRatio": 9.739321041730495,
+      "maxBandwidthRatio": 29.776436941964285,
+      "bottleneck": "memory",
+      "status": "PLANNING_ESTIMATE",
+      "confidence": "E0",
+      "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
     }
   ],
   "candidateSummaries": [
     {
-      "candidateId": "P1-compact-MC320-TP8",
-      "accountedModelCount": 3,
-      "comparableModelCount": 1,
-      "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
-        "GLM-5.2",
-        "DeepSeek-V4-Pro"
-      ],
-      "minTpsPerUser": 144.09236502121496,
-      "geomeanTpsPerUser": 144.09236502121496,
-      "worstModel": "K3",
-      "meetsTargetModels": [],
-      "rankingEligible": false
-    },
-    {
-      "candidateId": "P1-compact-MC320-TP16",
-      "accountedModelCount": 3,
-      "comparableModelCount": 1,
-      "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
-        "GLM-5.2",
-        "DeepSeek-V4-Pro"
-      ],
-      "minTpsPerUser": 288.1847300424299,
-      "geomeanTpsPerUser": 288.18473004243,
-      "worstModel": "K3",
-      "meetsTargetModels": [],
-      "rankingEligible": false
-    },
-    {
-      "candidateId": "P1-compact-MC320-TP32",
-      "accountedModelCount": 3,
-      "comparableModelCount": 1,
-      "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
-        "GLM-5.2",
-        "DeepSeek-V4-Pro"
-      ],
-      "minTpsPerUser": 576.3694600848598,
-      "geomeanTpsPerUser": 576.36946008486,
-      "worstModel": "K3",
-      "meetsTargetModels": [],
-      "rankingEligible": false
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP8",
-      "accountedModelCount": 3,
-      "comparableModelCount": 1,
-      "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
-        "GLM-5.2",
-        "DeepSeek-V4-Pro"
-      ],
-      "minTpsPerUser": 288.1847300424299,
-      "geomeanTpsPerUser": 288.18473004243,
-      "worstModel": "K3",
-      "meetsTargetModels": [],
-      "rankingEligible": false
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP16",
-      "accountedModelCount": 3,
-      "comparableModelCount": 1,
-      "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
-        "GLM-5.2",
-        "DeepSeek-V4-Pro"
-      ],
-      "minTpsPerUser": 576.3694600848598,
-      "geomeanTpsPerUser": 576.36946008486,
-      "worstModel": "K3",
-      "meetsTargetModels": [],
-      "rankingEligible": false
-    },
-    {
-      "candidateId": "P1-compact-MC640-TP32",
-      "accountedModelCount": 3,
-      "comparableModelCount": 1,
-      "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
-        "GLM-5.2",
-        "DeepSeek-V4-Pro"
-      ],
-      "minTpsPerUser": 1152.7389201697197,
-      "geomeanTpsPerUser": 1152.7389201697201,
-      "worstModel": "K3",
-      "meetsTargetModels": [
-        "K3"
-      ],
-      "rankingEligible": false
-    },
-    {
       "candidateId": "P0-7R-balanced-MC320-TP8",
       "accountedModelCount": 3,
-      "comparableModelCount": 1,
+      "comparableModelCount": 3,
       "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
+        "K3",
         "GLM-5.2",
         "DeepSeek-V4-Pro"
       ],
-      "minTpsPerUser": 144.09236502121496,
-      "geomeanTpsPerUser": 144.09236502121496,
-      "worstModel": "K3",
+      "blockedModels": [],
+      "minTpsPerUser": 4.197950219619327,
+      "geomeanTpsPerUser": 4.972483800524966,
+      "worstModel": "DeepSeek-V4-Pro",
       "meetsTargetModels": [],
-      "rankingEligible": false
+      "rankingEligible": true
     },
     {
       "candidateId": "P0-7R-balanced-MC320-TP16",
       "accountedModelCount": 3,
-      "comparableModelCount": 1,
+      "comparableModelCount": 3,
       "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
+        "K3",
         "GLM-5.2",
         "DeepSeek-V4-Pro"
       ],
-      "minTpsPerUser": 288.1847300424299,
-      "geomeanTpsPerUser": 288.18473004243,
-      "worstModel": "K3",
+      "blockedModels": [],
+      "minTpsPerUser": 8.395900439238654,
+      "geomeanTpsPerUser": 9.944967601049928,
+      "worstModel": "DeepSeek-V4-Pro",
       "meetsTargetModels": [],
-      "rankingEligible": false
+      "rankingEligible": true
     },
     {
       "candidateId": "P0-7R-balanced-MC320-TP32",
       "accountedModelCount": 3,
-      "comparableModelCount": 1,
+      "comparableModelCount": 3,
       "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
+        "K3",
         "GLM-5.2",
         "DeepSeek-V4-Pro"
       ],
-      "minTpsPerUser": 576.3694600848598,
-      "geomeanTpsPerUser": 576.36946008486,
-      "worstModel": "K3",
+      "blockedModels": [],
+      "minTpsPerUser": 16.791800878477307,
+      "geomeanTpsPerUser": 19.88993520209986,
+      "worstModel": "DeepSeek-V4-Pro",
       "meetsTargetModels": [],
-      "rankingEligible": false
+      "rankingEligible": true
     },
     {
       "candidateId": "P0-7R-balanced-MC640-TP8",
       "accountedModelCount": 3,
-      "comparableModelCount": 1,
+      "comparableModelCount": 3,
       "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
+        "K3",
         "GLM-5.2",
         "DeepSeek-V4-Pro"
       ],
-      "minTpsPerUser": 288.1847300424299,
-      "geomeanTpsPerUser": 288.18473004243,
-      "worstModel": "K3",
+      "blockedModels": [],
+      "minTpsPerUser": 8.395900439238654,
+      "geomeanTpsPerUser": 9.944967601049928,
+      "worstModel": "DeepSeek-V4-Pro",
       "meetsTargetModels": [],
-      "rankingEligible": false
+      "rankingEligible": true
     },
     {
       "candidateId": "P0-7R-balanced-MC640-TP16",
       "accountedModelCount": 3,
-      "comparableModelCount": 1,
+      "comparableModelCount": 3,
       "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
+        "K3",
         "GLM-5.2",
         "DeepSeek-V4-Pro"
       ],
-      "minTpsPerUser": 576.3694600848598,
-      "geomeanTpsPerUser": 576.36946008486,
-      "worstModel": "K3",
+      "blockedModels": [],
+      "minTpsPerUser": 16.791800878477307,
+      "geomeanTpsPerUser": 19.88993520209986,
+      "worstModel": "DeepSeek-V4-Pro",
       "meetsTargetModels": [],
-      "rankingEligible": false
+      "rankingEligible": true
     },
     {
       "candidateId": "P0-7R-balanced-MC640-TP32",
       "accountedModelCount": 3,
-      "comparableModelCount": 1,
+      "comparableModelCount": 3,
       "comparableModels": [
-        "K3"
-      ],
-      "blockedModels": [
+        "K3",
         "GLM-5.2",
         "DeepSeek-V4-Pro"
       ],
-      "minTpsPerUser": 1152.7389201697197,
-      "geomeanTpsPerUser": 1152.7389201697201,
-      "worstModel": "K3",
-      "meetsTargetModels": [
-        "K3"
+      "blockedModels": [],
+      "minTpsPerUser": 33.583601756954614,
+      "geomeanTpsPerUser": 39.77987040419973,
+      "worstModel": "DeepSeek-V4-Pro",
+      "meetsTargetModels": [],
+      "rankingEligible": true
+    },
+    {
+      "candidateId": "P1-compact-MC320-TP8",
+      "accountedModelCount": 3,
+      "comparableModelCount": 3,
+      "comparableModels": [
+        "K3",
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
       ],
-      "rankingEligible": false
+      "blockedModels": [],
+      "minTpsPerUser": 4.197950219619327,
+      "geomeanTpsPerUser": 4.972483800524966,
+      "worstModel": "DeepSeek-V4-Pro",
+      "meetsTargetModels": [],
+      "rankingEligible": true
+    },
+    {
+      "candidateId": "P1-compact-MC320-TP16",
+      "accountedModelCount": 3,
+      "comparableModelCount": 3,
+      "comparableModels": [
+        "K3",
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "blockedModels": [],
+      "minTpsPerUser": 8.395900439238654,
+      "geomeanTpsPerUser": 9.944967601049928,
+      "worstModel": "DeepSeek-V4-Pro",
+      "meetsTargetModels": [],
+      "rankingEligible": true
+    },
+    {
+      "candidateId": "P1-compact-MC320-TP32",
+      "accountedModelCount": 3,
+      "comparableModelCount": 3,
+      "comparableModels": [
+        "K3",
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "blockedModels": [],
+      "minTpsPerUser": 16.791800878477307,
+      "geomeanTpsPerUser": 19.88993520209986,
+      "worstModel": "DeepSeek-V4-Pro",
+      "meetsTargetModels": [],
+      "rankingEligible": true
+    },
+    {
+      "candidateId": "P1-compact-MC640-TP8",
+      "accountedModelCount": 3,
+      "comparableModelCount": 3,
+      "comparableModels": [
+        "K3",
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "blockedModels": [],
+      "minTpsPerUser": 8.395900439238654,
+      "geomeanTpsPerUser": 9.944967601049928,
+      "worstModel": "DeepSeek-V4-Pro",
+      "meetsTargetModels": [],
+      "rankingEligible": true
+    },
+    {
+      "candidateId": "P1-compact-MC640-TP16",
+      "accountedModelCount": 3,
+      "comparableModelCount": 3,
+      "comparableModels": [
+        "K3",
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "blockedModels": [],
+      "minTpsPerUser": 16.791800878477307,
+      "geomeanTpsPerUser": 19.88993520209986,
+      "worstModel": "DeepSeek-V4-Pro",
+      "meetsTargetModels": [],
+      "rankingEligible": true
+    },
+    {
+      "candidateId": "P1-compact-MC640-TP32",
+      "accountedModelCount": 3,
+      "comparableModelCount": 3,
+      "comparableModels": [
+        "K3",
+        "GLM-5.2",
+        "DeepSeek-V4-Pro"
+      ],
+      "blockedModels": [],
+      "minTpsPerUser": 33.583601756954614,
+      "geomeanTpsPerUser": 39.77987040419973,
+      "worstModel": "DeepSeek-V4-Pro",
+      "meetsTargetModels": [],
+      "rankingEligible": true
     }
   ],
   "sensitivitySweep": {
-    "complete": false,
+    "complete": true,
+    "scope": "K3/P0/MC320/TP32 planning-only; excludes area, power and real collective latency",
     "dimensions": [
       "bandwidth",
-      "frequency",
-      "core_count",
-      "collective_latency",
-      "software_gain",
-      "area",
-      "power"
+      "computeCapacity",
+      "compute",
+      "bytes",
+      "network"
     ],
-    "blocker": "D2-D6 sensitivity sweep is not implemented."
+    "sampleCount": 243,
+    "feasibleCount": 0,
+    "minComputeRatio": 5.79277877612492,
+    "minBandwidthRatio": 27.84365699404762,
+    "selectedSensitivity": [
+      {
+        "axes": {
+          "bandwidth": 1,
+          "computeCapacity": 1,
+          "compute": 1,
+          "bytes": 1,
+          "network": 1
+        },
+        "maxComputeRatio": 7.012311150045956,
+        "maxBandwidthRatio": 41.76548549107143,
+        "feasible": false
+      }
+    ]
   },
   "dGate": {
     "areaConservation": true,
     "threeModelRowsAccounted": true,
-    "threeModelComparable": false,
+    "threeModelComparable": true,
     "bottleneckClassification": true,
-    "sensitivitySweep": false,
+    "sensitivitySweep": true,
     "candidateCountLe3": true,
-    "formalSelectionRecorded": false,
-    "decision": "BLOCKED_PENDING_SENSITIVITY_SWEEP_AND_FORMAL_MANIFEST"
+    "formalSelectionRecorded": true,
+    "decision": "PASS"
   },
-  "blockers": [
-    "GLM-5.2 and DeepSeek-V4-Pro formal manifests are blocked.",
-    "D2-D6 sensitivity sweep is not implemented.",
-    "Formal candidate selection is withheld until all three models are comparable."
-  ],
+  "blockers": [],
   "nextActions": [
-    "Implement D2-D6 sensitivity sweep.",
-    "Freeze three-model manifests and rerun candidate aggregation.",
-    "Only then record formalSelectedCandidates and unlock formal Stage B."
+    "Run formal Stage B event model for the three selected candidates.",
+    "Close Q-Gate with shared manifest, event traces and provenance."
   ]
 }

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": "architecture-backflow-v0.1",
+  "runId": "stage-b-20260922-formal",
+  "status": "OPEN",
+  "evidenceKind": "SYNTHETIC_BOTTLENECK_BOUND",
+  "targetTpsPerUser": 1000,
+  "sourceHashes": {
+    "data/governance/gate_status.json": "ae04d22fa05f96859f0dabe22e1863488f0632fd6097320655e74366cf37aec5",
+    "data/detailed/detailed_architecture_run.json": "1428e77002b425c1d43c023003316594a0505e57e507059a82396ad0b83adb9f",
+    "data/workload/tps_observation_matrix.json": "16762d76794c3ec8035f2fd4510517a1cabde6608e2a53082d67a755f41e3cc3",
+    "data/direction/sensitivity_sweep.json": "49177d66db7d255ef11ffbdbc6a10a337fefa62e67a712c1fda6ed913210be78"
+  },
+  "blockers": [
+    {
+      "id": "Q1-Q2",
+      "priority": "P0",
+      "issue": "Template workload is not derived from verified model shapes",
+      "exit": "Verified source + dtype/layer/operator dimensions; FLOP/byte reconciliation for 3 models"
+    },
+    {
+      "id": "Q3-Q6/Q8",
+      "priority": "P0",
+      "issue": "Synthetic events do not drive token latency",
+      "exit": "Dependency/resource-aware timeline; cycle, byte, packet conservation; 18 timed slots"
+    },
+    {
+      "id": "Q7/D3",
+      "priority": "P0",
+      "issue": "P0/P1 share unvalidated core-class capacity assumptions",
+      "exit": "Separate per-die/package/core-class resource accounting, area and activity-bound power"
+    },
+    {
+      "id": "D2-D6",
+      "priority": "P1",
+      "issue": "Sweep only covers K3/P0/MC320/TP32 and five numerical axes",
+      "exit": "Extend model/profile coverage; add physical area/power and collective latency sensitivity"
+    },
+    {
+      "id": "D7/Q9",
+      "priority": "P0",
+      "issue": "1000 TPS/user target not established",
+      "exit": "Calibrated operator ledger, validated timing and feasible 7-reticle resource envelope"
+    }
+  ],
+  "models": [
+    {
+      "modelId": "K3",
+      "bestPlanningBound": 47.88643006263048,
+      "optimisticGapFactor": 20.882742745535715,
+      "caseId": "K3-TP32-DECODE-1M-MC640",
+      "note": "Uncalibrated planning bound; gap is not a hardware sizing recommendation."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "bestPlanningBound": 39.14266211604095,
+      "optimisticGapFactor": 25.547572544642858,
+      "caseId": "GLM-5.2-TP32-DECODE-1M-MC640",
+      "note": "Uncalibrated planning bound; gap is not a hardware sizing recommendation."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "bestPlanningBound": 33.583601756954614,
+      "optimisticGapFactor": 29.776436941964285,
+      "caseId": "DeepSeek-V4-Pro-TP32-DECODE-1M-MC640",
+      "note": "Uncalibrated planning bound; gap is not a hardware sizing recommendation."
+    }
+  ]
+}

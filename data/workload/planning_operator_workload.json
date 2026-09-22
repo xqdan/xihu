@@ -1,0 +1,126 @@
+{
+  "schemaVersion": "planning-operator-workload-v0.1",
+  "status": "UNVERIFIED_PLANNING_ASSUMPTIONS",
+  "units": {
+    "flops": "global FLOP/token",
+    "bytes": "global byte/token before TP",
+    "rate": "SI per package rank"
+  },
+  "limitations": [
+    "Hand-authored sizing scenarios, not derived from verified model shapes.",
+    "Not calibrated to the historical K3 RDMA baseline."
+  ],
+  "operators": {
+    "K3": [
+      [
+        "dense_projection",
+        "L",
+        4000000000000,
+        1070000000000,
+        "weight"
+      ],
+      [
+        "routed_moe",
+        "L",
+        18000000000000,
+        4790000000000,
+        "expert"
+      ],
+      [
+        "attention",
+        "H",
+        6000000000000,
+        1900000000000,
+        "kv_state"
+      ],
+      [
+        "kda_state",
+        "V",
+        800000000000,
+        350000000000,
+        "kv_state"
+      ],
+      [
+        "collective_reduce",
+        "REDUCE",
+        200000000000,
+        80000000000,
+        "collective"
+      ]
+    ],
+    "GLM-5.2": [
+      [
+        "dense_projection",
+        "L",
+        4500000000000,
+        1200000000000,
+        "weight"
+      ],
+      [
+        "routed_moe",
+        "L",
+        22000000000000,
+        5860000000000,
+        "expert"
+      ],
+      [
+        "indexer",
+        "INDEXER",
+        2000000000000,
+        600000000000,
+        "index"
+      ],
+      [
+        "sparse_attention",
+        "H",
+        5000000000000,
+        1650000000000,
+        "kv_state"
+      ],
+      [
+        "collective_dispatch",
+        "REDUCE",
+        300000000000,
+        120000000000,
+        "collective"
+      ]
+    ],
+    "DeepSeek-V4-Pro": [
+      [
+        "dense_projection",
+        "L",
+        5200000000000,
+        1390000000000,
+        "weight"
+      ],
+      [
+        "routed_moe",
+        "L",
+        25000000000000,
+        6830000000000,
+        "expert"
+      ],
+      [
+        "indexer",
+        "INDEXER",
+        3000000000000,
+        850000000000,
+        "index"
+      ],
+      [
+        "sparse_attention",
+        "H",
+        7000000000000,
+        2300000000000,
+        "kv_state"
+      ],
+      [
+        "expert_dispatch",
+        "REDUCE",
+        500000000000,
+        200000000000,
+        "collective"
+      ]
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "formal-manifest-binding-v0.1",
+  "manifestPath": "data/workload/formal_model_manifests.json",
+  "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94",
+  "sourceCommit": "1bd2683b31fe6a8b3f978b394c740b7cd5863c21",
+  "inputHashes": {
+    "manifest": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94",
+    "operatorWorkload": "bdc4a5102d88161f41ecea582afe10cca8e56351bd0f7a9ccdbece26d8434301",
+    "runner": "208957d64a7c011cd016e019b5beebea876b011c8c898e31f0db9b8e090f142f",
+    "modelProfiles": "ce9c6d5d6b33642cfc38a5e701400f9316f00aed2dcaab7ad557812f68d4762a",
+    "packageSpec": "2e51fa9294c9eb57e2d9f3aa978382e2f85836e560837566d00880ea7e225db8",
+    "mcSpec": "b675c5488fb0c76d1ae75c3a4cb2457742b4d1ecdd65072db6e4a6be84ec02e8"
+  },
+  "boundModels": [
+    "K3",
+    "GLM-5.2",
+    "DeepSeek-V4-Pro"
+  ],
+  "boundCandidates": [
+    "P0-7R-balanced-MC640-TP32",
+    "P0-7R-balanced-MC640-TP16",
+    "P1-compact-MC640-TP32"
+  ],
+  "status": "BOUND_FOR_FORMAL_STAGE_B"
+}

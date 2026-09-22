@@ -67,7 +67,7 @@ Selected sweep source: `data/governance/candidate_register.json`.
 - 18 required slots accounted: **yes**.
 - Matrix is complete or explicitly blocked: **no**; the 16 pending slots are not yet terminal blocked-config observations.
 - Provenance complete: **no**; manifestHash and seed are intentionally missing.
-- Source commit: `a9cc13b24b70d94baddc39865cfafa7344249426`.
+- Source commit: `1bd2683b31fe6a8b3f978b394c740b7cd5863c21`.
 
 ## 7. Q-Gate
 

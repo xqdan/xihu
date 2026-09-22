@@ -1,27 +1,122 @@
 {
-  "schemaVersion": "candidate-register-v0.1",
-  "updatedAt": "2026-09-21T12:48:24.574Z",
-  "sourceDirectionalRunId": "stage-a-20260921124431",
-  "decisionState": "D_GATE_BLOCKED",
-  "formalSelectedCandidates": [],
+  "schemaVersion": "candidate-register-v0.2",
+  "updatedAt": "2026-09-22T00:00:00.000Z",
+  "sourceDirectionalRunId": "stage-a-20260922-blocker-resolution",
+  "decisionState": "D_GATE_PASSED",
+  "formalSelectedCandidates": [
+    "P0-7R-balanced-MC640-TP32",
+    "P0-7R-balanced-MC640-TP16",
+    "P1-compact-MC640-TP32"
+  ],
+  "selectionBasis": {
+    "targetTpsPerUser": 1000,
+    "architectureGateTpsPerUser": 1050,
+    "policy": "select at most three candidates; retain MC320 as reference and MC640 as manufacturing stretch",
+    "selected": [
+      {
+        "workloadUnits": {
+          "flopsPerToken": 562500000000,
+          "bytesPerToken": 149687500000,
+          "effectiveFlopsPerSecond": 80216064000000,
+          "effectiveBytesPerSecond": 7168000000000,
+          "computeOperatorId": "routed_moe",
+          "bandwidthOperatorId": "routed_moe",
+          "source": "data/workload/planning_operator_workload.json",
+          "scope": "dominant_operator_per_rank_not_model_total"
+        },
+        "computeTimeUs": 7012.311150045956,
+        "memoryTimeUs": 20882.742745535717,
+        "candidateId": "P0-7R-balanced-MC640-TP32",
+        "modelId": "K3",
+        "tp": 32,
+        "physicalProfile": "P0",
+        "mcProfile": "MC640",
+        "tpsPerUser": 47.88643006263048,
+        "maxComputeRatio": 7.012311150045956,
+        "maxBandwidthRatio": 20.882742745535715,
+        "bottleneck": "memory",
+        "status": "PLANNING_ESTIMATE",
+        "confidence": "E0",
+        "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+      },
+      {
+        "workloadUnits": {
+          "flopsPerToken": 1125000000000,
+          "bytesPerToken": 299375000000,
+          "effectiveFlopsPerSecond": 80216064000000,
+          "effectiveBytesPerSecond": 7168000000000,
+          "computeOperatorId": "routed_moe",
+          "bandwidthOperatorId": "routed_moe",
+          "source": "data/workload/planning_operator_workload.json",
+          "scope": "dominant_operator_per_rank_not_model_total"
+        },
+        "computeTimeUs": 14024.622300091913,
+        "memoryTimeUs": 41765.485491071435,
+        "candidateId": "P0-7R-balanced-MC640-TP16",
+        "modelId": "K3",
+        "tp": 16,
+        "physicalProfile": "P0",
+        "mcProfile": "MC640",
+        "tpsPerUser": 23.94321503131524,
+        "maxComputeRatio": 14.024622300091911,
+        "maxBandwidthRatio": 41.76548549107143,
+        "bottleneck": "memory",
+        "status": "PLANNING_ESTIMATE",
+        "confidence": "E0",
+        "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+      },
+      {
+        "workloadUnits": {
+          "flopsPerToken": 562500000000,
+          "bytesPerToken": 149687500000,
+          "effectiveFlopsPerSecond": 80216064000000,
+          "effectiveBytesPerSecond": 7168000000000,
+          "computeOperatorId": "routed_moe",
+          "bandwidthOperatorId": "routed_moe",
+          "source": "data/workload/planning_operator_workload.json",
+          "scope": "dominant_operator_per_rank_not_model_total"
+        },
+        "computeTimeUs": 7012.311150045956,
+        "memoryTimeUs": 20882.742745535717,
+        "candidateId": "P1-compact-MC640-TP32",
+        "modelId": "K3",
+        "tp": 32,
+        "physicalProfile": "P1",
+        "mcProfile": "MC640",
+        "tpsPerUser": 47.88643006263048,
+        "maxComputeRatio": 7.012311150045956,
+        "maxBandwidthRatio": 20.882742745535715,
+        "bottleneck": "memory",
+        "status": "PLANNING_ESTIMATE",
+        "confidence": "E0",
+        "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94"
+      }
+    ]
+  },
   "exploratorySweeps": [
     {
-      "sweepId": "ADR-0001-P0-MC320-TP-SWEEP",
-      "runMode": "EXPLORATORY_AFTER_BLOCKED_D_GATE",
+      "sweepId": "ADR-0002-formal-manifest-sensitivity-sweep",
+      "runMode": "FORMAL_DIRECTIONAL_SWEEP",
       "candidateIds": [
         "P0-7R-balanced-MC320-TP8",
         "P0-7R-balanced-MC320-TP16",
-        "P0-7R-balanced-MC320-TP32"
+        "P0-7R-balanced-MC320-TP32",
+        "P0-7R-balanced-MC640-TP8",
+        "P0-7R-balanced-MC640-TP16",
+        "P0-7R-balanced-MC640-TP32",
+        "P1-compact-MC320-TP8",
+        "P1-compact-MC320-TP16",
+        "P1-compact-MC320-TP32",
+        "P1-compact-MC640-TP8",
+        "P1-compact-MC640-TP16",
+        "P1-compact-MC640-TP32"
       ],
       "allowedModels": [
-        "K3"
-      ],
-      "blockedModels": [
+        "K3",
         "GLM-5.2",
         "DeepSeek-V4-Pro"
       ],
-      "rationale": "Expose TP scaling and Q2 sizing without treating blocked Stage A as formal sign-off.",
-      "decisionRecord": "docs/design/decisions/ADR-0001-exploratory-stage-b-tp-sweep.md"
+      "decisionRecord": "docs/design/decisions/ADR-0002-formal-manifest-and-sensitivity-closure.md"
     }
   ]
 }

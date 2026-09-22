@@ -1,0 +1,237 @@
+{
+  "schemaVersion": "formal-model-manifests-v0.1",
+  "asOf": "2026-09-22",
+  "status": "ARCHITECTURE_PLANNING_MANIFEST",
+  "scope": {
+    "batch": 1,
+    "contextTokens": 1048576,
+    "decodeTokens": 1,
+    "pp": 1,
+    "tpValues": [
+      8,
+      16,
+      32
+    ],
+    "mcProfiles": [
+      "MC320",
+      "MC640"
+    ],
+    "note": "This is a reproducible architecture planning manifest, not a vendor-certified deployment manifest."
+  },
+  "models": [
+    {
+      "modelId": "K3",
+      "status": "UNVERIFIED_PLANNING_MANIFEST",
+      "confidence": "E0",
+      "source": "data/workload/model_profiles.json#/profiles/0",
+      "layerCount": 93,
+      "dtype": {
+        "weights": "FP8",
+        "activation": "FP8",
+        "accumulation": "FP16"
+      },
+      "expertConfig": {
+        "type": "routed_moe",
+        "experts": 256,
+        "activeExpertsPerToken": 8,
+        "sharedExperts": 1
+      },
+      "stateConfig": {
+        "kvState": "FP8",
+        "kdaState": "FP8",
+        "indexState": "NONE",
+        "contextTokens": 1048576
+      },
+      "operatorInventory": [
+        {
+          "operatorId": "dense_projection",
+          "class": "dense_projection",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "weight"
+        },
+        {
+          "operatorId": "routed_moe",
+          "class": "routed_moe",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "expert"
+        },
+        {
+          "operatorId": "attention",
+          "class": "attention",
+          "countPerLayer": 1,
+          "coreClass": "H",
+          "bytesClass": "kv_state"
+        },
+        {
+          "operatorId": "kda_state",
+          "class": "kda_state",
+          "countPerLayer": 1,
+          "coreClass": "V",
+          "bytesClass": "kv_state"
+        },
+        {
+          "operatorId": "collective_reduce",
+          "class": "collective_reduce",
+          "countPerLayer": 1,
+          "coreClass": "REDUCE",
+          "bytesClass": "collective"
+        }
+      ],
+      "blockers": [
+        "Vendor/config verification and shape-derived workload not supplied."
+      ]
+    },
+    {
+      "modelId": "GLM-5.2",
+      "status": "UNVERIFIED_PLANNING_MANIFEST",
+      "confidence": "E0",
+      "source": "data/workload/model_profiles.json#/profiles/1",
+      "layerCount": 96,
+      "dtype": {
+        "weights": "FP8",
+        "activation": "FP8",
+        "accumulation": "FP16"
+      },
+      "expertConfig": {
+        "type": "sparse_moe",
+        "experts": 256,
+        "activeExpertsPerToken": 8,
+        "sharedExperts": 1,
+        "indexShareGroupSize": 4
+      },
+      "stateConfig": {
+        "kvState": "FP8",
+        "indexState": "FP8",
+        "indexCache": "FP8",
+        "contextTokens": 1048576,
+        "mtpBranches": 2,
+        "mtpAcceptanceRateAssumption": 0.2
+      },
+      "operatorInventory": [
+        {
+          "operatorId": "dense_projection",
+          "class": "dense_projection",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "weight"
+        },
+        {
+          "operatorId": "routed_moe",
+          "class": "routed_moe",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "expert"
+        },
+        {
+          "operatorId": "indexer",
+          "class": "indexer",
+          "countPerLayer": 1,
+          "coreClass": "INDEXER",
+          "bytesClass": "index"
+        },
+        {
+          "operatorId": "sparse_attention",
+          "class": "sparse_attention",
+          "countPerLayer": 1,
+          "coreClass": "H",
+          "bytesClass": "kv_state"
+        },
+        {
+          "operatorId": "collective_dispatch",
+          "class": "collective_dispatch",
+          "countPerLayer": 1,
+          "coreClass": "REDUCE",
+          "bytesClass": "collective"
+        }
+      ],
+      "blockers": [
+        "Vendor/config verification and shape-derived workload not supplied."
+      ]
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "status": "UNVERIFIED_PLANNING_MANIFEST",
+      "confidence": "E0",
+      "source": "data/workload/model_profiles.json#/profiles/2",
+      "layerCount": 61,
+      "dtype": {
+        "weights": "FP8",
+        "expertWeights": "FP4",
+        "activation": "FP8",
+        "accumulation": "FP16"
+      },
+      "expertConfig": {
+        "type": "sparse_moe",
+        "experts": 384,
+        "activeExpertsPerToken": 6,
+        "sharedExperts": 1,
+        "expertCapacityOverflowRateAssumption": 0
+      },
+      "stateConfig": {
+        "kvState": "FP8",
+        "indexState": "FP8",
+        "indexCache": "FP8",
+        "contextTokens": 1048576,
+        "indexerTopK": 2048,
+        "mtpBranches": 2,
+        "mtpAcceptanceRateAssumption": 0.2
+      },
+      "operatorInventory": [
+        {
+          "operatorId": "dense_projection",
+          "class": "dense_projection",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "weight"
+        },
+        {
+          "operatorId": "routed_moe",
+          "class": "routed_moe",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "expert"
+        },
+        {
+          "operatorId": "indexer",
+          "class": "indexer",
+          "countPerLayer": 1,
+          "coreClass": "INDEXER",
+          "bytesClass": "index"
+        },
+        {
+          "operatorId": "sparse_attention",
+          "class": "sparse_attention",
+          "countPerLayer": 1,
+          "coreClass": "H",
+          "bytesClass": "kv_state"
+        },
+        {
+          "operatorId": "expert_dispatch",
+          "class": "expert_dispatch",
+          "countPerLayer": 1,
+          "coreClass": "REDUCE",
+          "bytesClass": "collective"
+        }
+      ],
+      "blockers": [
+        "Vendor/config verification and shape-derived workload not supplied."
+      ]
+    }
+  ],
+  "commonOperatorContract": {
+    "fields": [
+      "operatorId",
+      "class",
+      "coreClass",
+      "bytesClass",
+      "flopsPerToken",
+      "bytesPerToken",
+      "source",
+      "manifestHash"
+    ],
+    "dag": "layer_0 -> repeated_layer_operator_inventory -> final_projection -> collective_reduce",
+    "unknownPolicy": "explicit_blocker_only; no residual parameter or silent scaling"
+  }
+}
