@@ -1,4 +1,4 @@
-﻿# Agent Catalog and Interaction Protocol
+# Agent Catalog and Interaction Protocol
 
 版本：2026-09-21  
 状态：`BASELINE / AGENT CONTRACT v0.1`
@@ -24,6 +24,7 @@
 - Stage B 不能绕过 D-Gate 对无限候选进行细化；
 - 每个结果都必须能回溯到 `candidate_id`、`model_id`、profile、版本和 run_id；
 - Agent 之间通过机器可读 contract 和结构化 handoff 交互，而不是通过隐含假设。
+详细架构设计的分层工作包、反馈路由和 handoff packet 由 [`19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md`](19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md) 与 `data/analysis/detailed_architecture_operating_model.json` 定义。Q0 是控制面角色，和 A0 协作完成候选绑定；Q1-Q2 先完成工作负载/算术强度/sizing 判断，再启动 Q3-Q5 的并行事件建模。
 
 ## 2. 共享对象和生命周期
 

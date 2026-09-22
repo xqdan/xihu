@@ -38,7 +38,8 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 
 ### 高层架构总纲
 
-- [HIGH_LEVEL_ARCHITECTURE.md](HIGH_LEVEL_ARCHITECTURE.md)：K3 1000 TPS/usr 高层架构、模块边界、详细设计文档树、接口契约、里程碑和签核门槛。
+- [HIGH_LEVEL_ARCHITECTURE.md](HIGH_LEVEL_ARCHITECTURE.md)：K3 1000 TPS/usr 高层架构、模块边界、详细设计文档树、接口契约、里程碑和签核门槛。- [19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md](19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md)：详细设计按 B0-B5 工作包组织，定义 Q1-Q9 的输入、输出、约束、并行关系和方向回流。
+- [detailed/README.md](detailed/README.md)：Q0-Q9 详细设计规格、任务卡、handoff packet 和产物目录。
 
 | 文档 | 负责范围 |
 | --- | --- |

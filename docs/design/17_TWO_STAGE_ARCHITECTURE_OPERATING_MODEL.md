@@ -1,7 +1,8 @@
-﻿# 两阶段架构设计 Operating Model
+# 两阶段架构设计 Operating Model
 
 版本：2026-09-21  
 状态：`PROPOSED / ARCHITECTURE OPERATING MODEL v0.1`
+> 详细设计的工作包化组织见 [`19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md`](19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md)。Stage B 不再被视为 Q1-Q9 的无条件串行链，而是 B0 控制面、B1 量化闭环、B2 物理事件、B3 执行/PPA、B4 TPS 集成、B5 验证与反馈六个可门控工作包。
 
 ## 1. 核心设计思路
 
