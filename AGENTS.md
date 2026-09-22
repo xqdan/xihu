@@ -1,69 +1,55 @@
-# Agent Collaboration Guide
+﻿# Agent Collaboration Guide
 
-并行设计总计划：[`docs/design/AGENT_WORKSTREAM_PLAN.md`](docs/design/AGENT_WORKSTREAM_PLAN.md)。
-量化验收矩阵：[`docs/design/AGENT_METRICS_MATRIX.md`](docs/design/AGENT_METRICS_MATRIX.md)。
+本项目按工业界芯片团队组织：Hardware、Software、Model 三大专业团队并行设计，Architecture Council 负责集成和 ADR，独立 V&V 负责 Gate。
 
-本文件是所有 agent、同事和自动化任务的协作入口。目标是保持每个改动小、
-边界清晰、可回归，并避免多个 agent 同时破坏公共模型契约。
+总组织说明：[`docs/design/20_INDUSTRIAL_AGENT_ORGANIZATION.md`](docs/design/20_INDUSTRIAL_AGENT_ORGANIZATION.md)
+团队目录：[`docs/design/teams/README.md`](docs/design/teams/README.md)
+机器可读 roster：`data/analysis/teams/industrial_agent_organization.json`
 
-## 1. 模块 ownership
+## 1. Team ownership
 
-| 模块 | 目录 | 主要责任 |
+| Team | Directory | Ownership |
 |---|---|---|
-| Workload / KPI | `docs/design/`, `data/` | 模型清单、dtype、KPI、基线假设 |
-| Core / memory | `src/core/`, `src/simulation/` | Compute、SRAM、TMA、算子级模型 |
-| Architecture search | `src/search/` | 设计空间、约束、Pareto 和搜索回归 |
-| RDMA / collective | `src/rdma/` | mailbox、epoch、reduce、scale-out 模型 |
-| Reports | `scripts/`, `templates/`, `reports/` | 生成器、模板和可审阅报告 |
-| Verification | `tests/` | 回归、结构、物理守恒和 golden checks |
-| Architecture docs | `docs/design/` | 系统规格、ADR、open issues、计划 |
+| Hardware | `docs/design/teams/hardware/`, `src/core/`, `src/simulation/` | Package/floorplan, AI Core, SRAM/TMA, MC, NoC/Die-to-Die, PPA/RAS |
+| Software | `docs/design/teams/software/`, `src/`, `src/rdma/` | Deployment/runtime, compiler, kernels, fusion, collective overlap, scheduler, profiler |
+| Model | `docs/design/teams/model/`, `data/workload/`, `docs/design/workload/` | Model manifest, workload/operator ledger, scenarios, routing/sparsity, golden traces, model KPI |
+| Architecture Council | `docs/design/architecture/`, `docs/design/decisions/`, `data/governance/` | Requirements, contracts, ADR, candidate integration, D-Gate |
+| V&V | `verification/`, `tests/` | Independent schema, conservation, traceability, regression, Q-Gate |
+
+D1–D7 and Q1–Q9 remain compatibility aliases for the flow, but new work items must use `HW-*`, `SW-*`, `MODEL-*`, `ARCH-*`, or `VV-*` IDs.
 
 ## 2. Parallel work rules
 
-- 每个 agent 领取一个明确的模块或 issue，不跨 ownership 随意重构。
-- 同一文件默认只允许一个 active owner；需要并发编辑时先拆分章节或复制到
-  独立 proposal 文件。
-- 先修改契约，再修改实现：Tile IR、数据 schema、接口、路径或状态机变化，
-  必须同时更新对应设计文档和测试。
-- 不直接编辑由脚本生成的 JSON/HTML，除非任务明确是更新 baseline snapshot。
-- 不删除旧结果；需要淘汰时移动到明确的迁移任务中，并记录 ADR。
-- 不把供应商未确认的数字标记为 `FROZEN`。
+- 每个 agent 领取明确的 Team、职责、输入版本、输出 artifact 和验收指标。
+- 团队内部 peer review 后才能进入跨团队 Integration Review。
+- 同一文件只有一个 owner；跨团队变更通过 `docs/design/architecture/` contract、ADR 和测试。
+- 不直接编辑 runner 生成的 JSON/HTML，使用 generator 或明确 baseline snapshot 任务。
+- 模型未确认字段标记 `UNVERIFIED_PLANNING_MANIFEST`；软件收益必须带实现前提；硬件 peak 不等于 sustained。
+- 合成事件不能使 Q-Gate 通过；V&V 不能修改被测数据来制造通过。
 
-## 3. Task handoff format
+## 3. Shared contracts
 
-每个 agent 完成任务时至少留下：
-
-```text
-Scope: 修改了哪些模块
-Decision: 做了什么架构/模型决定
-Assumptions: 使用了哪些假设
-Files: 主要文件
-Validation: 运行的命令和结果
-Risks: 尚未关闭的风险
-Next: 后续 agent 可以接手的任务
-```
-
-## 4. Shared contracts
-
-以下内容是跨 agent 公共契约：
-
-- K3 layer manifest 和 dtype manifest；
-- Tile IR / descriptor；
-- 地址、layout、buffer lifecycle 和 epoch 语义；
+- Model workload/operator contract；
+- deployment-to-hardware ABI；
+- Tile IR、layout、buffer lifecycle、epoch；
 - NoC packet、MC transaction、RDMA transaction；
-- KPI 和 raw/e2e latency budget；
-- PMU event 和 golden trace 格式。
+- fusion legality 和 collective overlap contract；
+- KPI、latency budget、PMU event 和 golden trace。
 
-修改这些契约前，必须先更新 `docs/design/DECISIONS.md` 或新增 ADR，
-并补充至少一个回归测试。
+修改公共契约前，必须更新 `docs/design/architecture/` 或新增 ADR，并由 V&V 增加回归测试。
+
+## 4. Industrial review cadence
+
+- Team Review：团队内部设计和风险；
+- Integration Review：Hardware/Software/Model 接口；
+- Architecture Review Board：候选、PPA、软件收益、模型覆盖；
+- V&V Gate Review：独立验证 D/Q Gate；
+- Performance Backflow Review：性能不达标时回到硬件/软件/模型责任人，不直接修改 Gate。
 
 ## 5. Definition of done
 
-任务只有在以下条件满足时才算完成：
-
-- 代码、设计文档和测试保持一致；
-- `npm test` 通过，或明确记录已知失败及原因；
-- 未引入未说明的全局缩放因子；
-- 性能结论包含输入假设、seed、模型版本和单位；
-- 不包含秘密、供应商凭证或本机路径；
-- PR 可以由不了解上下文的 reviewer 独立复现。
+- 代码、设计文档、机器数据和测试一致；
+- `npm test`、`npm run check:structure` 通过；
+- 性能结论包含模型版本、输入假设、seed 和单位；
+- 规划估算、validated replay、silicon observation 明确区分；
+- PR 可以由不熟悉上下文的 reviewer 独立复现。

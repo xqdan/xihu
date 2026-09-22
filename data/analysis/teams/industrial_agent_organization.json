@@ -1,0 +1,211 @@
+{
+  "schemaVersion": "industrial-agent-organization-v0.1",
+  "asOf": "2026-09-22",
+  "status": "PROPOSED",
+  "governance": {
+    "architectureCouncil": {
+      "id": "ARCH",
+      "agents": [
+        "ARCH-01",
+        "ARCH-02",
+        "ARCH-03"
+      ],
+      "responsibility": "requirements, ADR, candidate integration, D-Gate decisions"
+    },
+    "verification": {
+      "id": "VV",
+      "agents": [
+        "VV-01",
+        "VV-02",
+        "VV-03"
+      ],
+      "independence": "independent of implementation teams",
+      "responsibility": "contracts, conservation, regression, Q-Gate"
+    }
+  },
+  "teams": {
+    "hardware": {
+      "directory": "docs/design/teams/hardware",
+      "agents": [
+        {
+          "id": "HW-01",
+          "role": "Package/Floorplan",
+          "legacy": [
+            "D5"
+          ]
+        },
+        {
+          "id": "HW-02",
+          "role": "AI-Core",
+          "legacy": [
+            "D3",
+            "Q5"
+          ]
+        },
+        {
+          "id": "HW-03",
+          "role": "SRAM/TMA/Memory",
+          "legacy": [
+            "D2",
+            "Q3"
+          ]
+        },
+        {
+          "id": "HW-04",
+          "role": "MC/Memory Controller",
+          "legacy": [
+            "D2",
+            "Q3"
+          ]
+        },
+        {
+          "id": "HW-05",
+          "role": "NoC/Die-to-Die",
+          "legacy": [
+            "D4",
+            "Q4"
+          ]
+        },
+        {
+          "id": "HW-06",
+          "role": "PPA/Thermal/RAS",
+          "legacy": [
+            "Q7"
+          ]
+        }
+      ]
+    },
+    "software": {
+      "directory": "docs/design/teams/software",
+      "agents": [
+        {
+          "id": "SW-01",
+          "role": "Deployment/Runtime",
+          "legacy": [
+            "D6",
+            "Q6"
+          ]
+        },
+        {
+          "id": "SW-02",
+          "role": "Compiler/Graph",
+          "legacy": [
+            "D6",
+            "Q6"
+          ]
+        },
+        {
+          "id": "SW-03",
+          "role": "Kernel Optimization",
+          "legacy": [
+            "D6",
+            "Q5"
+          ]
+        },
+        {
+          "id": "SW-04",
+          "role": "Operator Fusion",
+          "legacy": [
+            "D6",
+            "Q6"
+          ]
+        },
+        {
+          "id": "SW-05",
+          "role": "Collective/Comm-Compute Overlap",
+          "legacy": [
+            "D4",
+            "Q4",
+            "Q6"
+          ]
+        },
+        {
+          "id": "SW-06",
+          "role": "Scheduler/Serving",
+          "legacy": [
+            "D6",
+            "Q6"
+          ]
+        },
+        {
+          "id": "SW-07",
+          "role": "Software KPI/Profiler",
+          "legacy": [
+            "D6",
+            "Q8"
+          ]
+        }
+      ]
+    },
+    "model": {
+      "directory": "docs/design/teams/model",
+      "agents": [
+        {
+          "id": "MODEL-01",
+          "role": "Config/Manifest",
+          "legacy": [
+            "D1",
+            "Q1"
+          ]
+        },
+        {
+          "id": "MODEL-02",
+          "role": "Workload/Operator",
+          "legacy": [
+            "D1",
+            "Q2"
+          ]
+        },
+        {
+          "id": "MODEL-03",
+          "role": "Scenario/Test",
+          "legacy": [
+            "A10"
+          ]
+        },
+        {
+          "id": "MODEL-04",
+          "role": "Routing/Sparsity",
+          "legacy": [
+            "D1",
+            "Q1",
+            "Q4"
+          ]
+        },
+        {
+          "id": "MODEL-05",
+          "role": "Golden Trace",
+          "legacy": [
+            "Q1",
+            "Q9"
+          ]
+        },
+        {
+          "id": "MODEL-06",
+          "role": "Model KPI/Acceptance",
+          "legacy": [
+            "A10",
+            "Q8"
+          ]
+        }
+      ]
+    }
+  },
+  "flow": {
+    "requirements": "ARCH-01 -> MODEL-01/HW-01",
+    "contract": "MODEL-02/03 <-> HW-02/03/04/05 <-> SW-01/02",
+    "optimization": "SW-03/04/05/06 consumes model+hardware contracts",
+    "integration": "ARCH-02 aggregates all teams into candidate and TPS envelope",
+    "verification": "VV-01 validates contracts; VV-02 validates timing; VV-03 owns Gate",
+    "feedback": "performance miss creates ARCH backflow issue; no direct Gate edit"
+  },
+  "rules": {
+    "oneOwnerPerFile": true,
+    "teamPeerReviewBeforeIntegration": true,
+    "sharedArtifactsVersioned": true,
+    "unverifiedModelNeverFrozen": true,
+    "syntheticEventsNeverQGatePass": true,
+    "softwareGainMustHaveImplementationPrecondition": true,
+    "hardwareProfileMustNotBeChangedBySoftware": true
+  }
+}
