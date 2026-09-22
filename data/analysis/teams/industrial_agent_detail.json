@@ -1,0 +1,878 @@
+{
+  "schemaVersion": "agent-org-detail-v0.1",
+  "asOf": "2026-09-22",
+  "organization": {
+    "schemaVersion": "industrial-agent-organization-v0.1",
+    "asOf": "2026-09-22",
+    "status": "PROPOSED",
+    "governance": {
+      "architectureCouncil": {
+        "id": "ARCH",
+        "agents": [
+          "ARCH-01",
+          "ARCH-02",
+          "ARCH-03"
+        ],
+        "responsibility": "requirements, ADR, candidate integration, D-Gate decisions"
+      },
+      "verification": {
+        "id": "VV",
+        "agents": [
+          "VV-01",
+          "VV-02",
+          "VV-03"
+        ],
+        "independence": "independent of implementation teams",
+        "responsibility": "contracts, conservation, regression, Q-Gate"
+      }
+    },
+    "teams": {
+      "hardware": {
+        "directory": "docs/design/teams/hardware",
+        "agents": [
+          {
+            "id": "HW-01",
+            "role": "Package/Floorplan",
+            "legacy": [
+              "D5"
+            ]
+          },
+          {
+            "id": "HW-02",
+            "role": "AI-Core",
+            "legacy": [
+              "D3",
+              "Q5"
+            ]
+          },
+          {
+            "id": "HW-03",
+            "role": "SRAM/TMA/Memory",
+            "legacy": [
+              "D2",
+              "Q3"
+            ]
+          },
+          {
+            "id": "HW-04",
+            "role": "MC/Memory Controller",
+            "legacy": [
+              "D2",
+              "Q3"
+            ]
+          },
+          {
+            "id": "HW-05",
+            "role": "NoC/Die-to-Die",
+            "legacy": [
+              "D4",
+              "Q4"
+            ]
+          },
+          {
+            "id": "HW-06",
+            "role": "PPA/Thermal/RAS",
+            "legacy": [
+              "Q7"
+            ]
+          }
+        ]
+      },
+      "software": {
+        "directory": "docs/design/teams/software",
+        "agents": [
+          {
+            "id": "SW-01",
+            "role": "Deployment/Runtime",
+            "legacy": [
+              "D6",
+              "Q6"
+            ]
+          },
+          {
+            "id": "SW-02",
+            "role": "Compiler/Graph",
+            "legacy": [
+              "D6",
+              "Q6"
+            ]
+          },
+          {
+            "id": "SW-03",
+            "role": "Kernel Optimization",
+            "legacy": [
+              "D6",
+              "Q5"
+            ]
+          },
+          {
+            "id": "SW-04",
+            "role": "Operator Fusion",
+            "legacy": [
+              "D6",
+              "Q6"
+            ]
+          },
+          {
+            "id": "SW-05",
+            "role": "Collective/Comm-Compute Overlap",
+            "legacy": [
+              "D4",
+              "Q4",
+              "Q6"
+            ]
+          },
+          {
+            "id": "SW-06",
+            "role": "Scheduler/Serving",
+            "legacy": [
+              "D6",
+              "Q6"
+            ]
+          },
+          {
+            "id": "SW-07",
+            "role": "Software KPI/Profiler",
+            "legacy": [
+              "D6",
+              "Q8"
+            ]
+          }
+        ]
+      },
+      "model": {
+        "directory": "docs/design/teams/model",
+        "agents": [
+          {
+            "id": "MODEL-01",
+            "role": "Config/Manifest",
+            "legacy": [
+              "D1",
+              "Q1"
+            ]
+          },
+          {
+            "id": "MODEL-02",
+            "role": "Workload/Operator",
+            "legacy": [
+              "D1",
+              "Q2"
+            ]
+          },
+          {
+            "id": "MODEL-03",
+            "role": "Scenario/Test",
+            "legacy": [
+              "A10"
+            ]
+          },
+          {
+            "id": "MODEL-04",
+            "role": "Routing/Sparsity",
+            "legacy": [
+              "D1",
+              "Q1",
+              "Q4"
+            ]
+          },
+          {
+            "id": "MODEL-05",
+            "role": "Golden Trace",
+            "legacy": [
+              "Q1",
+              "Q9"
+            ]
+          },
+          {
+            "id": "MODEL-06",
+            "role": "Model KPI/Acceptance",
+            "legacy": [
+              "A10",
+              "Q8"
+            ]
+          }
+        ]
+      }
+    },
+    "flow": {
+      "requirements": "ARCH-01 -> MODEL-01/HW-01",
+      "contract": "MODEL-02/03 <-> HW-02/03/04/05 <-> SW-01/02",
+      "optimization": "SW-03/04/05/06 consumes model+hardware contracts",
+      "integration": "ARCH-02 aggregates all teams into candidate and TPS envelope",
+      "verification": "VV-01 validates contracts; VV-02 validates timing; VV-03 owns Gate",
+      "feedback": "performance miss creates ARCH backflow issue; no direct Gate edit"
+    },
+    "rules": {
+      "oneOwnerPerFile": true,
+      "teamPeerReviewBeforeIntegration": true,
+      "sharedArtifactsVersioned": true,
+      "unverifiedModelNeverFrozen": true,
+      "syntheticEventsNeverQGatePass": true,
+      "softwareGainMustHaveImplementationPrecondition": true,
+      "hardwareProfileMustNotBeChangedBySoftware": true
+    }
+  },
+  "teamMeta": {
+    "hardware": {
+      "name": "Hardware Team",
+      "mission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选"
+    },
+    "software": {
+      "name": "Software Team",
+      "mission": "将模型部署到硬件并通过编译、算子、融合、通信 overlap 和调度提升有效吞吐",
+      "goal": "把每项软件收益转化为可执行、可回放、可回滚的 schedule"
+    },
+    "model": {
+      "name": "Model Team",
+      "mission": "维护三模型真实性、工作负载、场景和测试验收",
+      "goal": "让每个硬件/软件结论都有明确 model、shape、dtype、routing 和测试范围"
+    }
+  },
+  "agentDetails": {
+    "ARCH-01": {
+      "team": "Architecture Council",
+      "goal": "发布统一目标、约束、证据等级和版本基线",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "architecture or verification report",
+        "machine-readable artifact",
+        "review and handoff"
+      ],
+      "constraints": [
+        "不得越权替代专业团队",
+        "关键结果必须带版本/hash",
+        "不得把规划估算当 validated observation"
+      ]
+    },
+    "ARCH-02": {
+      "team": "Architecture Council",
+      "goal": "集成三团队结果，生成候选架构和方向级 TPS/PPA envelope",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "architecture or verification report",
+        "machine-readable artifact",
+        "review and handoff"
+      ],
+      "constraints": [
+        "不得越权替代专业团队",
+        "关键结果必须带版本/hash",
+        "不得把规划估算当 validated observation"
+      ]
+    },
+    "ARCH-03": {
+      "team": "Architecture Council",
+      "goal": "管理详细协同设计、backflow 和跨团队决策",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "architecture or verification report",
+        "machine-readable artifact",
+        "review and handoff"
+      ],
+      "constraints": [
+        "不得越权替代专业团队",
+        "关键结果必须带版本/hash",
+        "不得把规划估算当 validated observation"
+      ]
+    },
+    "VV-01": {
+      "team": "V&V",
+      "goal": "验证跨团队 schema、单位、版本和 provenance",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "architecture or verification report",
+        "machine-readable artifact",
+        "review and handoff"
+      ],
+      "constraints": [
+        "不得越权替代专业团队",
+        "关键结果必须带版本/hash",
+        "不得把规划估算当 validated observation"
+      ]
+    },
+    "VV-02": {
+      "team": "V&V",
+      "goal": "验证事件、时序、守恒和 18-slot coverage",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "architecture or verification report",
+        "machine-readable artifact",
+        "review and handoff"
+      ],
+      "constraints": [
+        "不得越权替代专业团队",
+        "关键结果必须带版本/hash",
+        "不得把规划估算当 validated observation"
+      ]
+    },
+    "VV-03": {
+      "team": "V&V",
+      "goal": "独立执行 D-Gate/Q-Gate 和 regression",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "architecture or verification report",
+        "machine-readable artifact",
+        "review and handoff"
+      ],
+      "constraints": [
+        "不得越权替代专业团队",
+        "关键结果必须带版本/hash",
+        "不得把规划估算当 validated observation"
+      ]
+    },
+    "HW-01": {
+      "team": "Hardware Team",
+      "role": "Package/Floorplan",
+      "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
+      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Package/Floorplan design specification",
+        "HW-01 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D5"
+      ]
+    },
+    "HW-02": {
+      "team": "Hardware Team",
+      "role": "AI-Core",
+      "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
+      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "AI-Core design specification",
+        "HW-02 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D3",
+        "Q5"
+      ]
+    },
+    "HW-03": {
+      "team": "Hardware Team",
+      "role": "SRAM/TMA/Memory",
+      "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
+      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "SRAM/TMA/Memory design specification",
+        "HW-03 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D2",
+        "Q3"
+      ]
+    },
+    "HW-04": {
+      "team": "Hardware Team",
+      "role": "MC/Memory Controller",
+      "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
+      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "MC/Memory Controller design specification",
+        "HW-04 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D2",
+        "Q3"
+      ]
+    },
+    "HW-05": {
+      "team": "Hardware Team",
+      "role": "NoC/Die-to-Die",
+      "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
+      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "NoC/Die-to-Die design specification",
+        "HW-05 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D4",
+        "Q4"
+      ]
+    },
+    "HW-06": {
+      "team": "Hardware Team",
+      "role": "PPA/Thermal/RAS",
+      "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
+      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "PPA/Thermal/RAS design specification",
+        "HW-06 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "Q7"
+      ]
+    },
+    "SW-01": {
+      "team": "Software Team",
+      "role": "Deployment/Runtime",
+      "goal": "把每项软件收益转化为可执行、可回放、可回滚的 schedule",
+      "teamMission": "将模型部署到硬件并通过编译、算子、融合、通信 overlap 和调度提升有效吞吐",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Deployment/Runtime design specification",
+        "SW-01 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D6",
+        "Q6"
+      ]
+    },
+    "SW-02": {
+      "team": "Software Team",
+      "role": "Compiler/Graph",
+      "goal": "把每项软件收益转化为可执行、可回放、可回滚的 schedule",
+      "teamMission": "将模型部署到硬件并通过编译、算子、融合、通信 overlap 和调度提升有效吞吐",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Compiler/Graph design specification",
+        "SW-02 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D6",
+        "Q6"
+      ]
+    },
+    "SW-03": {
+      "team": "Software Team",
+      "role": "Kernel Optimization",
+      "goal": "把每项软件收益转化为可执行、可回放、可回滚的 schedule",
+      "teamMission": "将模型部署到硬件并通过编译、算子、融合、通信 overlap 和调度提升有效吞吐",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Kernel Optimization design specification",
+        "SW-03 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D6",
+        "Q5"
+      ]
+    },
+    "SW-04": {
+      "team": "Software Team",
+      "role": "Operator Fusion",
+      "goal": "把每项软件收益转化为可执行、可回放、可回滚的 schedule",
+      "teamMission": "将模型部署到硬件并通过编译、算子、融合、通信 overlap 和调度提升有效吞吐",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Operator Fusion design specification",
+        "SW-04 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D6",
+        "Q6"
+      ]
+    },
+    "SW-05": {
+      "team": "Software Team",
+      "role": "Collective/Comm-Compute Overlap",
+      "goal": "把每项软件收益转化为可执行、可回放、可回滚的 schedule",
+      "teamMission": "将模型部署到硬件并通过编译、算子、融合、通信 overlap 和调度提升有效吞吐",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Collective/Comm-Compute Overlap design specification",
+        "SW-05 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D4",
+        "Q4",
+        "Q6"
+      ]
+    },
+    "SW-06": {
+      "team": "Software Team",
+      "role": "Scheduler/Serving",
+      "goal": "把每项软件收益转化为可执行、可回放、可回滚的 schedule",
+      "teamMission": "将模型部署到硬件并通过编译、算子、融合、通信 overlap 和调度提升有效吞吐",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Scheduler/Serving design specification",
+        "SW-06 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D6",
+        "Q6"
+      ]
+    },
+    "SW-07": {
+      "team": "Software Team",
+      "role": "Software KPI/Profiler",
+      "goal": "把每项软件收益转化为可执行、可回放、可回滚的 schedule",
+      "teamMission": "将模型部署到硬件并通过编译、算子、融合、通信 overlap 和调度提升有效吞吐",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Software KPI/Profiler design specification",
+        "SW-07 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D6",
+        "Q8"
+      ]
+    },
+    "MODEL-01": {
+      "team": "Model Team",
+      "role": "Config/Manifest",
+      "goal": "让每个硬件/软件结论都有明确 model、shape、dtype、routing 和测试范围",
+      "teamMission": "维护三模型真实性、工作负载、场景和测试验收",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Config/Manifest design specification",
+        "MODEL-01 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D1",
+        "Q1"
+      ]
+    },
+    "MODEL-02": {
+      "team": "Model Team",
+      "role": "Workload/Operator",
+      "goal": "让每个硬件/软件结论都有明确 model、shape、dtype、routing 和测试范围",
+      "teamMission": "维护三模型真实性、工作负载、场景和测试验收",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Workload/Operator design specification",
+        "MODEL-02 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D1",
+        "Q2"
+      ]
+    },
+    "MODEL-03": {
+      "team": "Model Team",
+      "role": "Scenario/Test",
+      "goal": "让每个硬件/软件结论都有明确 model、shape、dtype、routing 和测试范围",
+      "teamMission": "维护三模型真实性、工作负载、场景和测试验收",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Scenario/Test design specification",
+        "MODEL-03 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "A10"
+      ]
+    },
+    "MODEL-04": {
+      "team": "Model Team",
+      "role": "Routing/Sparsity",
+      "goal": "让每个硬件/软件结论都有明确 model、shape、dtype、routing 和测试范围",
+      "teamMission": "维护三模型真实性、工作负载、场景和测试验收",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Routing/Sparsity design specification",
+        "MODEL-04 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "D1",
+        "Q1",
+        "Q4"
+      ]
+    },
+    "MODEL-05": {
+      "team": "Model Team",
+      "role": "Golden Trace",
+      "goal": "让每个硬件/软件结论都有明确 model、shape、dtype、routing 和测试范围",
+      "teamMission": "维护三模型真实性、工作负载、场景和测试验收",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Golden Trace design specification",
+        "MODEL-05 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "Q1",
+        "Q9"
+      ]
+    },
+    "MODEL-06": {
+      "team": "Model Team",
+      "role": "Model KPI/Acceptance",
+      "goal": "让每个硬件/软件结论都有明确 model、shape、dtype、routing 和测试范围",
+      "teamMission": "维护三模型真实性、工作负载、场景和测试验收",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Model KPI/Acceptance design specification",
+        "MODEL-06 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": [
+        "A10",
+        "Q8"
+      ]
+    }
+  },
+  "flow": [
+    {
+      "from": "ARCH-01",
+      "to": [
+        "MODEL-01",
+        "HW-01"
+      ],
+      "label": "requirements / constraints"
+    },
+    {
+      "from": [
+        "MODEL-01",
+        "MODEL-02",
+        "MODEL-03"
+      ],
+      "to": [
+        "HW-02",
+        "HW-03",
+        "HW-04",
+        "HW-05",
+        "SW-01",
+        "SW-02"
+      ],
+      "label": "model workload contract"
+    },
+    {
+      "from": [
+        "HW-*",
+        "MODEL-*"
+      ],
+      "to": [
+        "SW-*"
+      ],
+      "label": "hardware/model feasibility contracts"
+    },
+    {
+      "from": [
+        "HW-*",
+        "SW-*",
+        "MODEL-*"
+      ],
+      "to": "ARCH-02",
+      "label": "candidate integration"
+    },
+    {
+      "from": "ARCH-02",
+      "to": "VV-01",
+      "label": "D-Gate evidence review"
+    },
+    {
+      "from": "ARCH-03",
+      "to": "VV-02",
+      "label": "timing / conservation review"
+    },
+    {
+      "from": [
+        "VV-01",
+        "VV-02"
+      ],
+      "to": "VV-03",
+      "label": "independent Gate"
+    }
+  ],
+  "evidenceStates": [
+    [
+      "UNVERIFIED_PLANNING_MANIFEST",
+      "模型/配置规划输入，未供应商确认"
+    ],
+    [
+      "SYNTHETIC_BOTTLENECK_BOUND",
+      "合成规划上界，不是事件时序结果"
+    ],
+    [
+      "VALIDATED_EVENT_TIMING",
+      "由独立可回放 trace 支撑的时序结果"
+    ],
+    [
+      "SILICON_OBSERVED",
+      "真实芯片观测结果"
+    ]
+  ]
+}
