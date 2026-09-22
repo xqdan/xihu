@@ -874,5 +874,15 @@
       "SILICON_OBSERVED",
       "真实芯片观测结果"
     ]
-  ]
+  ],
+  "contracts": {
+    "directory": "docs/design/architecture/contracts",
+    "artifacts": [
+      "data/contracts/model_workload_contract.json",
+      "data/contracts/hardware_resource_contract.json",
+      "data/contracts/software_execution_contract.json",
+      "data/contracts/integration_manifest.json"
+    ],
+    "evidence": "data/verification/timing_evidence_status.json"
+  }
 }

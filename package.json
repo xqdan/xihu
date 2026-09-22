@@ -1,25 +1,25 @@
-{
-  "name": "k3-architecture-repo",
-  "version": "0.1.0",
-  "private": true,
-  "description": "K3, GLM-5.2 and DeepSeek-V4-Pro multi-model inference architecture collaboration baseline",
-  "scripts": {
-    "test": "node tests/run_all.js",
-    "check:structure": "node tests/test_project_structure.js",
-    "report:architecture": "node scripts/generate_k3_architecture_search_report.js --render-only",
-    "report:operator-sram": "node scripts/generate_k3_operator_sram_report.js",
-    "report:rdma": "node scripts/generate_k3_rdma_optimization_reports.js",
-    "report:latest": "node scripts/generate_k3_latest_design_doc.js",
-    "report:sram-capacity": "node scripts/generate_sram_architecture_capacity.js",
-    "analyze:sram": "node scripts/analyze_sram_tps_architecture.js",
-    "search:architecture": "node scripts/generate_k3_architecture_search_report.js",
-    "search:b1": "node src/search/k3_b1_1000_search.js",
-    "search:rdma": "node src/rdma/k3_b1_1000_rdma_sram_search.js",
-    "search:final": "node src/rdma/k3_rdma_final_tuning_search.js",
-    "dashboard": "node scripts/generate_global_dashboard.js",
-    "model:planning": "node models/resolve_architecture_blockers.js && node models/formal_detailed_run.js && node scripts/generate_global_dashboard.js"
-  },
-  "engines": {
-    "node": ">=18"
-  }
+﻿{
+    "name":  "k3-architecture-repo",
+    "version":  "0.1.0",
+    "private":  true,
+    "description":  "K3, GLM-5.2 and DeepSeek-V4-Pro multi-model inference architecture collaboration baseline",
+    "scripts":  {
+                    "test":  "node tests/run_all.js",
+                    "check:structure":  "node tests/test_project_structure.js",
+                    "report:architecture":  "node scripts/generate_k3_architecture_search_report.js --render-only",
+                    "report:operator-sram":  "node scripts/generate_k3_operator_sram_report.js",
+                    "report:rdma":  "node scripts/generate_k3_rdma_optimization_reports.js",
+                    "report:latest":  "node scripts/generate_k3_latest_design_doc.js",
+                    "report:sram-capacity":  "node scripts/generate_sram_architecture_capacity.js",
+                    "analyze:sram":  "node scripts/analyze_sram_tps_architecture.js",
+                    "search:architecture":  "node scripts/generate_k3_architecture_search_report.js",
+                    "search:b1":  "node src/search/k3_b1_1000_search.js",
+                    "search:rdma":  "node src/rdma/k3_b1_1000_rdma_sram_search.js",
+                    "search:final":  "node src/rdma/k3_rdma_final_tuning_search.js",
+                    "dashboard":  "node scripts/generate_global_dashboard.js",
+                    "model:planning":  "node models/resolve_architecture_blockers.js \u0026\u0026 node models/formal_detailed_run.js \u0026\u0026 node scripts/generate_global_dashboard.js"
+                },
+    "engines":  {
+                    "node":  "\u003e=18"
+                }
 }

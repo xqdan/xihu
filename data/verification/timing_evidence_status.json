@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "timing-evidence-status-v0.1",
+  "asOf": "2026-09-22",
+  "current": "SYNTHETIC_BOTTLENECK_BOUND",
+  "validatedSlots": 0,
+  "planningSlots": 18,
+  "siliconSlots": 0,
+  "qGate": "BLOCKED",
+  "exitCriteria": [
+    "validated model workload",
+    "memory/packet/kernel/schedule dependency trace",
+    "18 validated timed slots",
+    "independent VV-02/VV-03 report"
+  ],
+  "blockers": [
+    "Synthetic event records do not drive latency."
+  ]
+}

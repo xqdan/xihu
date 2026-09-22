@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "software-execution-contract-v0.1",
+  "status": "PLANNING_OPTIMIZATIONS_NOT_MEASURED",
+  "ownerTeam": "Software Team",
+  "ownerAgents": [
+    "SW-01",
+    "SW-02",
+    "SW-03",
+    "SW-04",
+    "SW-05",
+    "SW-06",
+    "SW-07"
+  ],
+  "consumers": [
+    "ARCH-02",
+    "ARCH-03",
+    "HW-*",
+    "MODEL-05",
+    "VV-02"
+  ],
+  "strategies": [
+    "persistent decode",
+    "QKV fusion",
+    "RoPE+attention fusion",
+    "RMSNorm+linear fusion",
+    "MoE gate+dispatch fusion",
+    "dequant+GEMM fusion",
+    "MLP chain fusion",
+    "communication-computation overlap",
+    "prefetch/double-buffer",
+    "MTP acceptance/rollback"
+  ],
+  "requiredFields": [
+    "applicable models/operators",
+    "shape/dtype legality",
+    "workspace/alias",
+    "precision impact",
+    "fallback",
+    "launch count",
+    "resource occupancy",
+    "measured or estimated gain",
+    "schedule trace"
+  ],
+  "blockers": [
+    "No validated kernel or dependency-aware schedule trace is available."
+  ],
+  "outputs": [
+    "lowered graph",
+    "kernel catalog",
+    "fusion legality report",
+    "collective overlap schedule",
+    "runtime critical path"
+  ]
+}
