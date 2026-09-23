@@ -11,6 +11,12 @@ const replay = read('data/detailed/formal_event_replay.json');
 const register = read('data/governance/candidate_register.json');
 const matrix = read('data/workload/tps_observation_matrix.json');
 const report = fs.readFileSync(path.join(root, IDS.stageBReport), 'utf8');
+// Fail fast when the committed detailed run predates the current runner or resource profiles.
+const hashFile = p => require('crypto').createHash('sha256').update(fs.readFileSync(path.join(root, p))).digest('hex');
+assert.strictEqual(detail.provenance.inputHashes.resourceProfiles, hashFile('models/planning/resource_profiles.js'),
+  'detailed_architecture_run.json was generated with a different resource_profiles.js; run `npm run model:planning`');
+assert.strictEqual(detail.provenance.inputHashes.runner, hashFile('models/formal_detailed_run.js'),
+  'detailed_architecture_run.json was generated with a different formal_detailed_run.js; run `npm run model:planning`');
 assert.strictEqual(detail.runId, IDS.stageBRunId);
 assert.strictEqual(detail.stage, 'quantification');
 assert.strictEqual(detail.runMode, 'PLANNING_QUANTIFICATION');

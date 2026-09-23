@@ -29,6 +29,16 @@ const mcSpec = read('docs/design/spec/k3_mc_baseline.json');
 const RES = require('../models/planning/resource_profiles');
 const peak = (shape, cores, ghz) => cores * shape.engines * shape.rows * shape.cols * 2 * ghz * 1e9 * 8;
 const p0 = score.resourceProfiles.P0, p1 = score.resourceProfiles.P1;
+// Fail fast with an actionable message when the committed scorecard predates the current runner.
+assert(p0 && p1 && p0.engine && p1.engine && score.inputHashes.resourceProfiles,
+  'directional_tps_scorecard.json is stale (missing resourceProfiles.*.engine); run `npm run model:planning` and commit the regenerated data/ and reports/ files');
+const hashFile = p => require('crypto').createHash('sha256').update(fs.readFileSync(path.join(root, p))).digest('hex');
+assert.strictEqual(score.inputHashes.resourceProfiles, hashFile('models/planning/resource_profiles.js'),
+  'scorecard was generated with a different models/planning/resource_profiles.js; run `npm run model:planning`');
+assert.strictEqual(score.inputHashes.runner, hashFile('models/resolve_architecture_blockers.js'),
+  'scorecard was generated with a different models/resolve_architecture_blockers.js; run `npm run model:planning`');
+assert.strictEqual(score.inputHashes.mcSpec, hashFile('docs/design/spec/k3_mc_baseline.json'),
+  'scorecard predates the current k3_mc_baseline.json; run `npm run baseline:sync && npm run model:planning`');
 assert.strictEqual(p0.lCoresPerDie, packageSpec.compute.lCoresPerDie);
 assert.strictEqual(p0.hCoresPerDie, packageSpec.compute.hCoresPerDie);
 assert.strictEqual(p0.ghz, packageSpec.compute.frequencyGHzCandidate);
