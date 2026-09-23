@@ -1,0 +1,618 @@
+{
+  "schemaVersion": "model-manifest-qualification-matrix-v0.1",
+  "asOf": "2026-09-22",
+  "status": "BLOCKED",
+  "purpose": "Field-level qualification backlog for three-model workload contracts; planning manifests remain unverified.",
+  "sourceManifest": "data/workload/formal_model_manifests.json",
+  "models": [
+    "K3",
+    "GLM-5.2",
+    "DeepSeek-V4-Pro"
+  ],
+  "fields": [
+    "modelVersion",
+    "layerCount",
+    "hiddenSize",
+    "attentionShape",
+    "dtype",
+    "expertCount",
+    "activeExperts",
+    "routingCapacity",
+    "kvState",
+    "indexState",
+    "mtpBehavior",
+    "operatorShape",
+    "flopsPerToken",
+    "bytesPerToken",
+    "collectiveBytes"
+  ],
+  "requiredFieldCount": 45,
+  "verifiedFieldCount": 0,
+  "rows": [
+    {
+      "modelId": "K3",
+      "field": "modelVersion",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned modelVersion source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-01",
+        "MODEL-04"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "layerCount",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned layerCount source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-02"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "hiddenSize",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned hiddenSize source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-02",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "attentionShape",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned attentionShape source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-03",
+        "SW-02"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "dtype",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned dtype source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-01",
+        "HW-02",
+        "SW-01"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "expertCount",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned expertCount source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-04",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "activeExperts",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned activeExperts source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-04",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "routingCapacity",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-03",
+      "requiredEvidence": "Versioned routingCapacity source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-03",
+        "HW-04",
+        "SW-04"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "kvState",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-03",
+      "requiredEvidence": "Versioned kvState source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-03",
+        "HW-03",
+        "SW-05"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "indexState",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-03",
+      "requiredEvidence": "Versioned indexState source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-03",
+        "HW-03",
+        "SW-05"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "mtpBehavior",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned mtpBehavior source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-04",
+        "SW-06"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "operatorShape",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned operatorShape source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-02",
+        "SW-02",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "flopsPerToken",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned flopsPerToken source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-04",
+        "HW-01",
+        "HW-02"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "bytesPerToken",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned bytesPerToken source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-04",
+        "HW-03",
+        "HW-05"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "K3",
+      "field": "collectiveBytes",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned collectiveBytes source and reconciliation against data/workload/model_profiles.json#/profiles/0",
+      "downstreamImpact": [
+        "MODEL-04",
+        "HW-06",
+        "SW-04"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "modelVersion",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned modelVersion source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-01",
+        "MODEL-04"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "layerCount",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned layerCount source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-02"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "hiddenSize",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned hiddenSize source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-02",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "attentionShape",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned attentionShape source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-03",
+        "SW-02"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "dtype",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned dtype source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-01",
+        "HW-02",
+        "SW-01"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "expertCount",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned expertCount source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-04",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "activeExperts",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned activeExperts source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-04",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "routingCapacity",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-03",
+      "requiredEvidence": "Versioned routingCapacity source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-03",
+        "HW-04",
+        "SW-04"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "kvState",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-03",
+      "requiredEvidence": "Versioned kvState source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-03",
+        "HW-03",
+        "SW-05"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "indexState",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-03",
+      "requiredEvidence": "Versioned indexState source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-03",
+        "HW-03",
+        "SW-05"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "mtpBehavior",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned mtpBehavior source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-04",
+        "SW-06"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "operatorShape",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned operatorShape source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-02",
+        "SW-02",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "flopsPerToken",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned flopsPerToken source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-04",
+        "HW-01",
+        "HW-02"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "bytesPerToken",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned bytesPerToken source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-04",
+        "HW-03",
+        "HW-05"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "GLM-5.2",
+      "field": "collectiveBytes",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned collectiveBytes source and reconciliation against data/workload/model_profiles.json#/profiles/1",
+      "downstreamImpact": [
+        "MODEL-04",
+        "HW-06",
+        "SW-04"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "modelVersion",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned modelVersion source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-01",
+        "MODEL-04"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "layerCount",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned layerCount source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-02"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "hiddenSize",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned hiddenSize source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-02",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "attentionShape",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned attentionShape source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-03",
+        "SW-02"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "dtype",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-01",
+      "requiredEvidence": "Versioned dtype source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-01",
+        "HW-02",
+        "SW-01"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "expertCount",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned expertCount source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-04",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "activeExperts",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned activeExperts source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-02",
+        "HW-04",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "routingCapacity",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-03",
+      "requiredEvidence": "Versioned routingCapacity source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-03",
+        "HW-04",
+        "SW-04"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "kvState",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-03",
+      "requiredEvidence": "Versioned kvState source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-03",
+        "HW-03",
+        "SW-05"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "indexState",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-03",
+      "requiredEvidence": "Versioned indexState source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-03",
+        "HW-03",
+        "SW-05"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "mtpBehavior",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned mtpBehavior source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-04",
+        "SW-06"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "operatorShape",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-02",
+      "requiredEvidence": "Versioned operatorShape source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-02",
+        "SW-02",
+        "SW-03"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "flopsPerToken",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned flopsPerToken source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-04",
+        "HW-01",
+        "HW-02"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "bytesPerToken",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned bytesPerToken source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-04",
+        "HW-03",
+        "HW-05"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "field": "collectiveBytes",
+      "status": "MISSING_SOURCE",
+      "owner": "MODEL-04",
+      "requiredEvidence": "Versioned collectiveBytes source and reconciliation against data/workload/model_profiles.json#/profiles/2",
+      "downstreamImpact": [
+        "MODEL-04",
+        "HW-06",
+        "SW-04"
+      ],
+      "exitCriteria": "Source is versioned; value is reconciled into the operator/FLOP/byte/collective ledger; reviewer sign-off recorded."
+    }
+  ],
+  "blockers": [
+    "Verified model shape/config sources are missing.",
+    "No field may be marked VERIFIED without versioned source, reconciliation, and reviewer sign-off."
+  ],
+  "policy": {
+    "planningValuesMayBeReferenced": true,
+    "planningValuesMayNotCloseQGate": true,
+    "manifestMayNotBeMarkedFrozen": true
+  }
+}

@@ -20,6 +20,33 @@ DRAFT -> TEAM_REVIEW -> INTEGRATION_REVIEW -> VV_CHECK -> PUBLISHED
 - `data/contracts/integration_manifest.json`：三团队输入 hash 和状态；
 - `data/verification/timing_evidence_status.json`：planning / synthetic / validated / silicon 证据状态。
 
+## Qualification and regeneration (ARCH-02 / VV-02)
+
+`data/workload/model_manifest_qualification_matrix.json` is the field-level
+qualification backlog. The model contract publishes its path as
+`qualificationMatrix`, and copies `status`, `verifiedFieldCount`, and
+`requiredFieldCount` into `qualificationStatus`, `verifiedFieldCount`, and
+`requiredFieldCount`. These describe evidence completeness only; they do not
+promote planning data or close Q-Gate.
+
+After writing all three team contracts, the generator computes SHA-256 over
+their exact file bytes. `integration_manifest.contractHashes` must cover exactly
+the three declared `inputs`. `generatedAt` uses the qualification snapshot's
+`asOf` date so rebuilding the same snapshot remains reproducible.
+
+Run these commands from the repository root in order:
+
+```sh
+node scripts/generate_team_contracts.js
+npm run dashboard
+npm test
+npm run check:structure
+```
+
+The dashboard and direction feedback bind the same source hashes, including the
+qualification matrix. V&V checks contract completeness, hash coverage, snapshot
+freshness, and generator reproducibility in a temporary directory.
+
 ## Gate rule
 
 只有 `VALIDATED_EVENT_TIMING` 且通过 VV-02/VV-03 独立检查，才允许 Q-Gate 进入 PASS。`UNVERIFIED_PLANNING_MANIFEST` 和 `SYNTHETIC_BOTTLENECK_BOUND` 只能用于架构规划和 backflow。

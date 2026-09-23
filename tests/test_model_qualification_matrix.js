@@ -1,0 +1,26 @@
+﻿'use strict';
+const assert=require('assert');const fs=require('fs');
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8').replace(/^\uFEFF/,''));
+const matrix=read('data/workload/model_manifest_qualification_matrix.json');
+const contract=read('data/contracts/model_workload_contract.json');
+const expectedModels=['K3','GLM-5.2','DeepSeek-V4-Pro'];
+const expectedFields=['modelVersion','layerCount','hiddenSize','attentionShape','dtype','expertCount','activeExperts','routingCapacity','kvState','indexState','mtpBehavior','operatorShape','flopsPerToken','bytesPerToken','collectiveBytes'];
+assert.strictEqual(matrix.status,'BLOCKED');
+assert.deepStrictEqual(matrix.models,expectedModels);
+assert.deepStrictEqual(matrix.fields,expectedFields);
+assert.strictEqual(matrix.requiredFieldCount,45);
+assert.strictEqual(matrix.verifiedFieldCount,0);
+assert.strictEqual(matrix.rows.length,45);
+assert.strictEqual(matrix.requiredFieldCount,matrix.models.length*matrix.fields.length);
+assert.strictEqual(matrix.verifiedFieldCount,matrix.rows.filter(r=>r.status==='VERIFIED').length);
+for(const modelId of expectedModels){const rows=matrix.rows.filter(r=>r.modelId===modelId);assert.strictEqual(rows.length,15,`field count for ${modelId}`);for(const row of rows){assert(expectedFields.includes(row.field));assert(row.owner);assert.strictEqual(row.status,'MISSING_SOURCE');assert(row.exitCriteria);assert(Array.isArray(row.downstreamImpact)&&row.downstreamImpact.length>0);}}
+assert.strictEqual(contract.qualificationMatrix,'data/workload/model_manifest_qualification_matrix.json');
+assert.strictEqual(contract.qualificationStatus,'BLOCKED');
+assert.strictEqual(contract.verifiedFieldCount,0);
+assert.strictEqual(contract.requiredFieldCount,45);
+assert.strictEqual(contract.qualificationStatus,matrix.status);
+assert.strictEqual(contract.verifiedFieldCount,matrix.verifiedFieldCount);
+assert.strictEqual(contract.requiredFieldCount,matrix.requiredFieldCount);
+assert(contract.status.includes('BLOCKED'));
+assert(contract.blockers.some(x=>x.includes('qualification matrix')));
+console.log('PASS model qualification matrix: 3 models x 15 fields remain explicitly blocked');

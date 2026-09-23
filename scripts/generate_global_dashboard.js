@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -6,7 +6,10 @@ const root = path.resolve(__dirname, '..');
 const read = p => JSON.parse(fs.readFileSync(path.join(root,p),'utf8').replace(/^\uFEFF/,''));
 const sources = ['data/governance/gate_status.json','data/detailed/detailed_architecture_run.json','data/workload/tps_observation_matrix.json','data/direction/sensitivity_sweep.json','data/contracts/model_workload_contract.json','data/contracts/hardware_resource_contract.json','data/contracts/software_execution_contract.json','data/contracts/integration_manifest.json','data/verification/timing_evidence_status.json'];
 const [gate,detail,matrix,sweep,modelContract,hardwareContract,softwareContract,integrationContract,evidence] = sources.map(read);
+sources.push(modelContract.qualificationMatrix);
 const hashes = Object.fromEntries(sources.map(p=>[p,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,p))).digest('hex')]));
+const integrationHashesMatch = integrationContract.inputs.every(p => integrationContract.contractHashes && integrationContract.contractHashes[p] === hashes[p]);
+const integrationHashMessage = integrationHashesMatch ? 'Contract hashes match; waiting for gate prerequisites' : 'Contract hash mismatch blocks integration';
 const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const blockers = [
  {id:'Q1-Q2',priority:'P0',issue:'Template workload is not derived from verified model shapes',exit:'Verified source + dtype/layer/operator dimensions; FLOP/byte reconciliation for 3 models'},
@@ -30,5 +33,5 @@ const html=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta 
 <section class="panel"><h2>三团队 Contract 状态</h2><table><tr><th>团队</th><th>状态</th><th>关键阻塞</th></tr><tr><td>Model Team</td><td class="bad">${esc(modelContract.status)}</td><td>${esc(modelContract.blockers.join('; '))}</td></tr><tr><td>Hardware Team</td><td class="bad">${esc(hardwareContract.status)}</td><td>${esc(hardwareContract.blockers.join('; '))}</td></tr><tr><td>Software Team</td><td class="bad">${esc(softwareContract.status)}</td><td>${esc(softwareContract.blockers.join('; '))}</td></tr><tr><td>Integration</td><td class="bad">${esc(integrationContract.status)}</td><td>Contract hash mismatch blocks integration</td></tr><tr><td>Timing Evidence</td><td class="bad">${esc(evidence.current)}</td><td>validated slots: ${evidence.validatedSlots}; Q-Gate: ${evidence.qGate}</td></tr></table></section><section class="panel"><h2>剩余阻塞与责任 Agent</h2><table><tr><th>优先级 / Agent</th><th>阻塞</th><th>验收条件</th></tr>${blockers.map(x=>`<tr><td>${esc(x.priority+' / '+x.id)}</td><td>${esc(x.issue)}</td><td>${esc(x.exit)}</td></tr>`).join('')}</table></section>
 <section class="panel"><h2>文档和机器产物</h2><ul>${[...sources,'data/governance/direction_feedback.json','docs/design/decisions/ADR-0003-planning-evidence-boundary.md','reports/detailed/stage_b_formal_run_20260922.md','data/contracts/model_workload_contract.json','data/contracts/hardware_resource_contract.json','data/contracts/software_execution_contract.json','data/contracts/integration_manifest.json','data/verification/timing_evidence_status.json'].map(p=>`<li><a href="../../${esc(p)}">${esc(p)}</a></li>`).join('')}</ul><p>刷新：<code>npm run dashboard</code>；验证：<code>npm test</code>。本页不声明远端 CI 已通过。</p></section>
 <script id="dashboard-source-hashes" type="application/json">${JSON.stringify(hashes)}</script></main></body></html>`;
-fs.writeFileSync(path.join(root,'reports/dashboard/architecture_global_dashboard.html'),html+'\n');
+fs.writeFileSync(path.join(root,'reports/dashboard/architecture_global_dashboard.html'),html.replace('Contract hash mismatch blocks integration',integrationHashMessage)+'\n');
 console.log('Generated dashboard and direction feedback from current artifacts');

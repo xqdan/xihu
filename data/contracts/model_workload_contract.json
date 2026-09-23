@@ -59,12 +59,17 @@
   ],
   "evidencePolicy": "All values remain UNVERIFIED until source and shape reconciliation are supplied.",
   "blockers": [
-    "Verified model shape/config sources are missing."
+    "Verified model shape/config sources are missing.",
+    "Model qualification matrix status: BLOCKED; 0/45 fields verified."
   ],
   "outputs": [
     "operator DAG",
     "workload ledger",
     "routing traffic envelope",
     "golden workload trace"
-  ]
+  ],
+  "qualificationMatrix": "data/workload/model_manifest_qualification_matrix.json",
+  "qualificationStatus": "BLOCKED",
+  "verifiedFieldCount": 0,
+  "requiredFieldCount": 45
 }
