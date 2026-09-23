@@ -46,10 +46,14 @@ npm run search:architecture
 npm run search:b1
 npm run search:rdma
 npm run search:final
+npm run workload:planning
+npm run model:planning
 npm run report:architecture
 npm run report:rdma
 npm run report:latest
 ```
+
+`model:planning` 依次生成 K3 形状推导的规划 workload、Stage A 方向比较（D-Gate 由独立校验器计算）、Stage B 规划量化、三团队 contract 和全局看板。
 
 生成数据和报告前，请确认当前分支是个人工作分支；不要在共享基线分支上直接
 覆盖 baseline 文件。
@@ -78,13 +82,13 @@ npm run report:latest
 
 ## Current blockers
 
+- K3 的形状唯一来源是 `src/core/design_engine.js#MODEL_PRESETS.kimiK3`（工程 preset，未经模型提供方签核）；正式 manifest、profile 和规划 workload 由 `tests/test_k3_manifest_consistency.js` 强制与其一致；
 - GLM-5.2 的正式部署配置、dtype、expert/index cache参数尚未冻结；
 - DeepSeek-V4-Pro 的授权配置、权重格式、专家路由和部署参数尚未冻结；
 - 三模型的 index cache、expert dispatch、MTP 和 FP8/FP4 路径尚未进入事件级回放。
 
-- 正式 K3 layer manifest、dtype、KV/state layout 尚未完全冻结；
-- 320 GB/s/MC 参考规格与 640 GB/s/MC Stretch 结果存在一倍带宽差异；
-- Final Tuning 中部分优化仍需要精确 tile/transaction 模型替代经验缩放；
+- MC 带宽档位未选定：320 GB/s/MC 参考、480 默认搜索上限、560/640 激进（ADR-011）；P1 最佳搜索点使用 640 GB/s；
+- Final Tuning 中的优化仍是命名的经验缩放因子（模型文件 `GAIN` 表），需要精确 tile/transaction 模型替代；
 - 卡内 8 Die topology、TP32 scale-out 物理拓扑和 PPA 尚未签核。
 
-仓库中的 `998.81 TPS/usr` 只能作为当前模型结果，不能视为已经实现的产品承诺。
+仓库中的 P1 Final Tuning TPS 数字（`docs/design/spec/k3_mc_baseline.json#modelResults`）只能作为当前模型结果，不能视为已经实现的产品承诺。

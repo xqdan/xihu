@@ -5,35 +5,50 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '../..');
 const read = relativePath => JSON.parse(
-  fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/^\uFEFF/, '')
+  fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/^﻿/, '')
 );
 
+// Independent D-Gate validator. It recomputes every check from the artifacts;
+// runners must consume its result instead of writing a decision literal.
+// The candidate register's decisionState is DERIVED from this function, so it
+// is not an input to the pass criteria (that would be circular). Instead the
+// validator reports whether the register agrees with the recomputed decision.
 function evaluateDirectionGate(env, score, register) {
   const summaries = score.candidateSummaries || [];
   const allModelsAccounted = summaries.length > 0 &&
     summaries.every(item => item.accountedModelCount === env.models.length);
   const allModelsComparable = summaries.length > 0 &&
     summaries.every(item => item.comparableModelCount === env.models.length);
-  const candidateCountLe3 = (register.formalSelectedCandidates || []).length <= 3;
+  const selected = register.formalSelectedCandidates || [];
+  const candidateCountLe3 = selected.length <= 3;
+  const formalSelectionRecorded = selected.length > 0;
+  const selectionResolvable = formalSelectionRecorded &&
+    selected.every(id => summaries.some(item => item.candidateId === id));
   const sensitivitySweep = Boolean(score.sensitivitySweep && score.sensitivitySweep.complete);
+  const bottleneckClassification = (score.candidates || []).length > 0 &&
+    score.candidates.every(item => Boolean(item.bottleneck));
   const pass = Boolean(
     env.packageEnvelope.areaConservation &&
     allModelsComparable &&
+    bottleneckClassification &&
     sensitivitySweep &&
-    candidateCountLe3 && (register.formalSelectedCandidates || []).length > 0 &&
-    register.decisionState === 'D_GATE_PASSED'
+    candidateCountLe3 && formalSelectionRecorded && selectionResolvable
   );
+  const decision = pass ? 'PASS' : 'BLOCKED_PENDING_SENSITIVITY_SWEEP_AND_FORMAL_MANIFEST';
+  const expectedRegisterState = pass ? 'D_GATE_PASSED' : 'D_GATE_BLOCKED';
 
   return {
     scope: 'PLANNING_COMPARISON_ONLY_NOT_ARCHITECTURE_FREEZE',
     areaConservation: Boolean(env.packageEnvelope.areaConservation),
     threeModelRowsAccounted: allModelsAccounted,
     threeModelComparable: allModelsComparable,
-    bottleneckClassification: score.candidates.every(item => Boolean(item.bottleneck)),
+    bottleneckClassification,
     sensitivitySweep,
     candidateCountLe3,
-    formalSelectionRecorded: (register.formalSelectedCandidates || []).length > 0,
-    decision: pass ? 'PASS' : 'BLOCKED_PENDING_SENSITIVITY_SWEEP_AND_FORMAL_MANIFEST'
+    formalSelectionRecorded,
+    selectionResolvable,
+    registerConsistent: register.decisionState === expectedRegisterState,
+    decision
   };
 }
 
@@ -113,6 +128,9 @@ function evaluateQuantificationGate(detail, matrix, register, directionGate) {
     ),
     sharedManifestAcrossRooflineAndReplay: sharedManifest,
     p0P1Separated: [...new Set(detail.operatorLedger.map(row => row.physicalProfile))].every(profile => ['P0', 'P1'].includes(profile)),
+    p0P1DistinctResources: Boolean(detail.sizing && detail.sizing.availableResources &&
+      detail.sizing.availableResources.P0 && detail.sizing.availableResources.P1 &&
+      ['L', 'H', 'V'].some(core => detail.sizing.availableResources.P0[core].peakFlops !== detail.sizing.availableResources.P1[core].peakFlops)),
     mc320Mc640Separated: [...new Set(detail.operatorLedger.map(row => row.mcProfile))].every(profile => ['MC320', 'MC640'].includes(profile)),
     provenanceComplete,
     ...coverage,
@@ -132,7 +150,7 @@ function writeGateStatus() {
     ? evaluateQuantificationGate(read('data/detailed/detailed_architecture_run.json'), matrix, register, directionGate)
     : {decision: 'NOT_RUN'};
   const out = {
-    schemaVersion: 'architecture-gate-status-v0.1',
+    schemaVersion: 'architecture-gate-status-v0.2',
     evaluatedAt: new Date().toISOString(),
     sourceDirectionalRunId: score.runId,
     sourceDetailedRunId: fs.existsSync(detailPath)

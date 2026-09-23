@@ -1,4 +1,8 @@
 'use strict';
+/* DEPRECATED (2026-09-23): superseded by models/formal_detailed_run.js.
+ * This exploratory Stage B runner predates the validator-computed D-Gate and
+ * the shape-derived planning workload; it overwrites the same artifacts with an
+ * older run id. Kept for history only; do not run it as part of the pipeline. */
 
 const fs = require('fs');
 const path = require('path');

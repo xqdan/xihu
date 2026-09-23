@@ -39,7 +39,7 @@ Die RTL 内。
 - 2 个本地 MC 数据端口；
 - Die fabric、Scale-out/RDMA、管理、PMU、时钟、复位和 RAS。
 
-当前可执行 compact profile 仍为 4 L + 4 H、44 MiB/Die；它是 P1 模型，不是
+当前可执行 compact profile（P1）由 Final Tuning 搜索决定，权威值在 `spec/k3_mc_baseline.json`；它是 P1 模型，不是
 7R P0 物理主候选。
 
 ### 2.2 7-Reticle Package

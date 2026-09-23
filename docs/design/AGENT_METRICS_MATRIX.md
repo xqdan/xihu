@@ -12,7 +12,7 @@
 | Profile | 用途 | 关键参数 |
 |---|---|---|
 | `P0-7R-physical` | 物理架构、面积、功耗、封装和最终签核 | 8 Die/package，8 L + 8 H/Die，400 mm²/Die，96 MiB SRAM/Die，16 MC/package |
-| `P1-compact-executable` | 当前可执行模型回归和对照 | 4 L + 4 H/Die，44 MiB SRAM/Die，约259.57 mm²/Die |
+| `P1-compact-executable` | 当前可执行模型回归和对照 | 4 L + 4 H/Die，1.2 GHz，44 MiB SRAM/Die，面积见 `00_CURRENT_STATE.md` 第 2 节 |
 
 P1 的结果不得写入 P0 的最终签核结论。P0 尚未完成详细 tile、transaction 和 PPA 模型时，性能结论必须标为 `MODEL / NOT SILICON-PROVEN`。
 
@@ -309,7 +309,7 @@ manifest→DAG→Tile IR→resource/transaction simulator，输出P0/P1、320/64
 | 指标 | 目标 / 验收 |
 |---|---|
 | Profile | P0/P1独立加载、独立报告、独立结果；混用检查100%通过 |
-| 当前对照 | P1必须复现当前结果：MC320约546.63 TPS/usr，MC640约998.81 TPS/usr；数值变化需有差异说明 |
+| 当前对照 | P1必须复现 `spec/k3_mc_baseline.json#modelResults` 的 MC320 / MC640 两点（`tests/test_design_baseline.js`）；数值变化需有差异说明 |
 | P0签核 | 可制造路线达到≥1,050 TPS/usr；仅达到1,000–1,049.99只能标记未过架构门槛 |
 | 端到端延迟 | raw latency≤854.70 µs/token；同时报告P50/P95/P99 |
 | 模型输入 | 所有FLOP、byte、queue、NoC、MC、RDMA时间由事件产生；经验缩放因子为0 |
@@ -432,7 +432,7 @@ A2 ─────┼── A5 ──┤
 
 ## 17. 不允许用以下方式“达标”
 
-- 用P1的998.81 TPS/usr替代P0签核；
+- 用P1的 MC640 Stretch 结果替代P0签核；
 - 把MC raw bandwidth直接写成sustained bandwidth；
 - 用一个全局utilization、scaling或efficiency乘数隐藏未建模的transaction；
 - 把package 2,000 W compute budget写成3,200 W package total；

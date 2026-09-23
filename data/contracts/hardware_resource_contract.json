@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "hardware-resource-contract-v0.1",
-  "status": "PLANNING_ENVELOPE_PENDING_P0_P1_RECONCILIATION",
+  "schemaVersion": "hardware-resource-contract-v0.2",
+  "status": "PLANNING_ENVELOPE_PENDING_ACTIVITY_VALIDATION",
   "ownerTeam": "Hardware Team",
   "ownerAgents": [
     "HW-01",
@@ -20,11 +20,13 @@
   "profiles": {
     "P0": {
       "purpose": "physical primary",
-      "resourceStatus": "PARTIAL"
+      "resourceStatus": "PARTIAL",
+      "coreClassPeakSource": "models/planning/resource_profiles.js (8L+8H, 1.0 GHz)"
     },
     "P1": {
       "purpose": "compact executable comparison",
-      "resourceStatus": "PARTIAL"
+      "resourceStatus": "PARTIAL",
+      "coreClassPeakSource": "models/planning/resource_profiles.js (4L+4H, 1.2 GHz)"
     }
   },
   "dimensions": {
@@ -49,7 +51,7 @@
     "area/power/thermal/RAS"
   ],
   "blockers": [
-    "P0/P1 core-class capacity and activity-bound PPA are not independently reconciled."
+    "P0/P1 core-class peaks are distinct planning values; sustained utilization, duty cycle and activity-bound PPA are not independently reconciled."
   ],
   "outputs": [
     "AI Core spec",

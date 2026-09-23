@@ -38,7 +38,7 @@ K3仍然是当前主性能目标；GLM-5.2和DeepSeek-V4-Pro成为必须进入�
 
 ### 3.1 K3
 
-K3继续使用当前仓库的93层工程preset和P0/P1架构分离。A1必须把当前代码中的隐式结构转换为正式manifest；原有的998.81 TPS/usr仍然只是P1/MC640对照结果。
+K3继续使用当前仓库的93层工程preset和P0/P1架构分离。K3 的唯一形状来源是 `src/core/design_engine.js#MODEL_PRESETS.kimiK3`，正式 manifest 由它约束（`tests/test_k3_manifest_consistency.js`）；P1/MC640 的 Final Tuning 结果（见 `00_CURRENT_STATE.md` 第 3 节）仍然只是对照结果。
 
 K3重点验证：
 
@@ -304,7 +304,7 @@ precision_path
 
 量化验收：
 
-- K3 P1继续复现MC320约546.63和MC640约998.81 TPS/usr；
+- K3 P1继续复现 `spec/k3_mc_baseline.json#modelResults` 中的 MC320 与 MC640 两点；
 - P0三模型均给出≥1,050 TPS/usr是否达标的明确结论；
 - 未达标时按memory、indexer、expert dispatch、NoC、RDMA、Core、thermal分解；
 - 经验缩放因子为0。

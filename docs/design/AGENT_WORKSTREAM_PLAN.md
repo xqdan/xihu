@@ -70,7 +70,7 @@ agent 只能在自己的 branch 提交建议，由 Integrator 在合并时统一
 | Profile | 用途 | 规格 |
 |---|---|---|
 | `P0-7R-physical` | 封装、面积、SRAM、PPA 主规划 | 8 L + 8 H、96 MiB/Die、400 mm²/Die、16 MC/package |
-| `P1-compact-executable` | 现有代码回归和可执行对照 | 4 L + 4 H、44 MiB/Die、约 259.57 mm²/Die |
+| `P1-compact-executable` | 现有代码回归和可执行对照 | 4 L + 4 H、1.2 GHz、44 MiB/Die、面积见 `00_CURRENT_STATE.md` 第 2 节 |
 
 禁止把 P1 的性能结果直接写成 P0 的最终签核结果。
 

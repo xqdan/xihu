@@ -24,6 +24,7 @@ for (const observation of matrix.observations) {
   assert.strictEqual(observation.unit, matrix.metric.unit);
   assert(cases.some(testCase => testCase.caseId === observation.caseId), `${observation.observationId}: missing test case`);
   assert.strictEqual(observation.status, 'PLANNING_ESTIMATE');
+  assert.strictEqual(observation.evidenceKind, 'SYNTHETIC_BOTTLENECK_BOUND');
   assert.strictEqual(observation.physicalProfile, 'P0');
   assert(Number.isFinite(observation.tpsPerUser) && observation.tpsPerUser > 0);
   assert(Number.isFinite(observation.rawLatencyUsPerToken) && observation.rawLatencyUsPerToken > 0);
@@ -32,15 +33,18 @@ for (const observation of matrix.observations) {
   assert(observation.sourceSelector);
   assert(observation.manifestHash);
   assert(observation.runId);
+  assert(observation.boundingOperatorId);
   assert.strictEqual(observation.blocker, null);
 }
-const k3Mc320 = matrix.observations.find(o => o.observationId === 'K3-TP32-DECODE-1M-MC320');
-const k3Mc640 = matrix.observations.find(o => o.observationId === 'K3-TP32-DECODE-1M-MC640');
-assert(k3Mc320.tpsPerUser < matrix.metric.targetTpsPerUser);
-assert(k3Mc640.tpsPerUser < matrix.metric.targetTpsPerUser);
-assert.notStrictEqual(k3Mc320.tpsPerUser, k3Mc640.tpsPerUser);
+// Bandwidth-bound slots must scale with TP and MC profile in the expected direction.
+const slot = (model, tp, mc) => matrix.observations.find(o => o.modelId === model && o.tp === tp && o.mcProfile === mc);
+for (const model of matrix.requiredCoverage.models) {
+  assert(slot(model, 8, 'MC320').tpsPerUser < slot(model, 32, 'MC320').tpsPerUser, `${model}: TP32 bound must exceed TP8 bound`);
+  assert(slot(model, 32, 'MC320').tpsPerUser <= slot(model, 32, 'MC640').tpsPerUser, `${model}: MC640 bound must not be below MC320`);
+}
+assert.notStrictEqual(slot('K3', 32, 'MC320').tpsPerUser, slot('K3', 32, 'MC640').tpsPerUser);
 assert.strictEqual(matrix.currentCoverage.modelObserved, 0);
 assert.strictEqual(matrix.currentCoverage.siliconObserved, 0);
 assert.strictEqual(matrix.currentCoverage.pendingModelRun, 18);
 assert.strictEqual(matrix.currentCoverage.planningPercentComplete, 100);
-console.log('PASS TPS matrix: 18 planning estimates, zero validated observations');
+console.log('PASS TPS matrix: 18 planning estimates with bounding operators, zero validated observations');

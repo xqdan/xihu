@@ -12,7 +12,7 @@
 |---|---|---|
 | Hardware | `docs/design/teams/hardware/`, `src/core/`, `src/simulation/` | Package/floorplan, AI Core, SRAM/TMA, MC, NoC/Die-to-Die, PPA/RAS |
 | Software | `docs/design/teams/software/`, `src/`, `src/rdma/` | Deployment/runtime, compiler, kernels, fusion, collective overlap, scheduler, profiler |
-| Model | `docs/design/teams/model/`, `data/workload/`, `docs/design/workload/` | Model manifest, workload/operator ledger, scenarios, routing/sparsity, golden traces, model KPI |
+| Model | `docs/design/teams/model/`, `data/workload/`, `src/core/design_engine.js`（K3 唯一形状来源） | Model manifest, workload/operator ledger, scenarios, routing/sparsity, golden traces, model KPI |
 | Architecture Council | `docs/design/architecture/`, `docs/design/decisions/`, `data/governance/` | Requirements, contracts, ADR, candidate integration, D-Gate |
 | V&V | `verification/`, `tests/` | Independent schema, conservation, traceability, regression, Q-Gate |
 
@@ -24,7 +24,8 @@ D1–D7 and Q1–Q9 remain compatibility aliases for the flow, but new work item
 - 团队内部 peer review 后才能进入跨团队 Integration Review。
 - 同一文件只有一个 owner；跨团队变更通过 `docs/design/architecture/` contract、ADR 和测试。
 - 不直接编辑 runner 生成的 JSON/HTML，使用 generator 或明确 baseline snapshot 任务。
-- 模型未确认字段标记 `UNVERIFIED_PLANNING_MANIFEST`；软件收益必须带实现前提；硬件 peak 不等于 sustained。
+- 模型未确认字段标记 `UNVERIFIED_PLANNING_MANIFEST`；K3 的形状只能改 `src/core/design_engine.js` 的 preset，manifest/profile/planning workload 由测试强制一致；软件收益必须带实现前提；硬件 peak 不等于 sustained。
+- Gate 决策、候选登记状态和候选选择由 `models/governance/evaluate_gates.js` 和 runner 中的显式策略计算，任何 runner 不得写入 `PASS`/`D_GATE_PASSED` 字面量。
 - 合成事件不能使 Q-Gate 通过；V&V 不能修改被测数据来制造通过。
 
 ## 3. Shared contracts

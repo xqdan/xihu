@@ -45,15 +45,27 @@ KGD 规格摘录：
 | 当前模型有效系数 | 0.70 |
 | 模型有效聚合带宽 | 3.584 TB/s/package |
 
+### 3.1 MC 带宽档位（ADR-011）
+
+| 档位 GB/s/颗 | 分类 | 用途 |
+| ---: | --- | --- |
+| 320 | `REFERENCE` | 参考器件 KGD 规格，P1 回归的参考兼容点 |
+| 400 | `GRID` | 规格网格候选 |
+| 480 | `DEFAULT_SEARCH_CAP` | 1.5× 参考值，默认搜索上限；路线 A 观测点 |
+| 560 | `AGGRESSIVE` | 超过默认上限，报告必须标记 |
+| 640 | `STRETCH/AGGRESSIVE` | P1 Final Tuning 的 Stretch 点，不是制造默认值 |
+
+机器可读定义见 `spec/k3_mc_baseline.json#bandwidthTiers`。MC 数量档位为 8、16、24、32 颗/卡；16 颗是 7R 主候选。
+
 8 GB 档已能覆盖当前 TP32 下约 49.6 GB/package的模型+状态 backing，但没有充分
 覆盖多请求、Prefill、冗余和故障降容。产品容量建议先按 16 GB 档规划，
 性能分析仍按带宽而不是容量决定。
 
 ## 4. 关键阻塞：带宽差一倍
 
-当前 Final Tuning 要接近 1000 TPS，需要每 MC 搜索参数 640 GB/s，对应约
-6.49 TB/s/package有效 DMA。参考 MC 的 320 GB/s 点只得到约 3.40 TB/s/package 有效 DMA
-和 546.63 TPS/usr。
+当前 Final Tuning（P1）要接近 1000 TPS，需要每 MC 搜索参数 640 GB/s；参考 MC 的
+320 GB/s 点明显不达标。两点的有效 DMA 带宽和 TPS 以
+`docs/design/spec/k3_mc_baseline.json#modelResults` 为准。
 
 因此必须在以下方案中做出工程选择：
 

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "directional-sensitivity-sweep-v0.1",
-  "runId": "stage-a-20260922-blocker-resolution",
-  "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94",
+  "runId": "stage-a-20260923-calibrated-workload",
+  "manifestHash": "68303686e210999ec31ea08df9310e76d36677f184422b0754fe87cae051c319",
   "dimensions": [
     {
       "name": "bandwidth",
@@ -45,11 +45,11 @@
     }
   ],
   "sampleCount": 243,
-  "feasibleCount": 0,
+  "feasibleCount": 162,
   "selectedCandidates": [
     "P0-7R-balanced-MC640-TP32",
-    "P0-7R-balanced-MC640-TP16",
-    "P1-compact-MC640-TP32"
+    "P1-compact-MC640-TP32",
+    "P0-7R-balanced-MC320-TP32"
   ],
   "summary": {
     "complete": true,
@@ -62,9 +62,9 @@
       "network"
     ],
     "sampleCount": 243,
-    "feasibleCount": 0,
-    "minComputeRatio": 5.79277877612492,
-    "minBandwidthRatio": 27.84365699404762,
+    "feasibleCount": 162,
+    "minComputeRatio": 0.03731969309462915,
+    "minBandwidthRatio": 0.6461545297619049,
     "selectedSensitivity": [
       {
         "axes": {
@@ -74,9 +74,9 @@
           "bytes": 1,
           "network": 1
         },
-        "maxComputeRatio": 7.012311150045956,
-        "maxBandwidthRatio": 41.76548549107143,
-        "feasible": false
+        "maxComputeRatio": 0.0451764705882353,
+        "maxBandwidthRatio": 0.9692317946428571,
+        "feasible": true
       }
     ]
   },
@@ -89,9 +89,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -101,9 +101,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -113,9 +113,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -125,8 +125,8 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -137,8 +137,8 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -149,8 +149,8 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -161,8 +161,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -173,8 +173,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -185,8 +185,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -197,9 +197,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -209,9 +209,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -221,9 +221,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -233,8 +233,8 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -245,8 +245,8 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -257,8 +257,8 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -269,8 +269,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -281,8 +281,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -293,8 +293,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -305,9 +305,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -317,9 +317,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -329,9 +329,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -341,8 +341,8 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -353,8 +353,8 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -365,8 +365,8 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -377,8 +377,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -389,8 +389,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -401,8 +401,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -413,9 +413,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -425,9 +425,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -437,9 +437,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -449,8 +449,8 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -461,8 +461,8 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -473,8 +473,8 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -485,8 +485,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -497,8 +497,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -509,8 +509,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -521,9 +521,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -533,9 +533,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -545,9 +545,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -557,8 +557,8 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -569,8 +569,8 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -581,8 +581,8 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -593,8 +593,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -605,8 +605,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -617,8 +617,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -629,9 +629,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -641,9 +641,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -653,9 +653,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -665,8 +665,8 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -677,8 +677,8 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -689,8 +689,8 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -701,8 +701,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -713,8 +713,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -725,8 +725,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -737,9 +737,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -749,9 +749,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -761,9 +761,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -773,8 +773,8 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -785,8 +785,8 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -797,8 +797,8 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -809,8 +809,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -821,8 +821,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -833,8 +833,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -845,9 +845,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -857,9 +857,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -869,9 +869,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -881,8 +881,8 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -893,8 +893,8 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -905,8 +905,8 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -917,8 +917,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -929,8 +929,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -941,8 +941,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -953,9 +953,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -965,9 +965,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -977,9 +977,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.9692317946428574,
+      "feasible": true
     },
     {
       "axes": {
@@ -989,8 +989,8 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -1001,8 +1001,8 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -1013,8 +1013,8 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 52.206856863839285,
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 1.2115397433035715,
       "feasible": false
     },
     {
@@ -1025,8 +1025,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -1037,8 +1037,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -1049,8 +1049,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 62.648228236607146,
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 1.4538476919642855,
       "feasible": false
     },
     {
@@ -1061,9 +1061,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1073,9 +1073,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1085,9 +1085,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1097,9 +1097,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1109,9 +1109,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1121,9 +1121,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1133,8 +1133,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1145,8 +1145,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1157,8 +1157,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1169,9 +1169,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1181,9 +1181,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1193,9 +1193,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1205,9 +1205,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1217,9 +1217,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1229,9 +1229,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1241,8 +1241,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1253,8 +1253,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1265,8 +1265,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1277,9 +1277,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1289,9 +1289,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1301,9 +1301,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1313,9 +1313,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1325,9 +1325,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1337,9 +1337,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1349,8 +1349,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1361,8 +1361,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1373,8 +1373,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1385,9 +1385,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1397,9 +1397,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1409,9 +1409,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1421,9 +1421,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1433,9 +1433,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1445,9 +1445,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1457,8 +1457,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1469,8 +1469,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1481,8 +1481,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1493,9 +1493,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1505,9 +1505,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1517,9 +1517,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1529,9 +1529,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1541,9 +1541,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1553,9 +1553,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1565,8 +1565,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1577,8 +1577,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1589,8 +1589,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1601,9 +1601,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1613,9 +1613,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1625,9 +1625,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1637,9 +1637,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1649,9 +1649,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1661,9 +1661,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1673,8 +1673,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1685,8 +1685,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1697,8 +1697,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1709,9 +1709,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1721,9 +1721,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1733,9 +1733,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1745,9 +1745,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1757,9 +1757,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1769,9 +1769,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1781,8 +1781,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1793,8 +1793,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1805,8 +1805,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1817,9 +1817,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1829,9 +1829,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1841,9 +1841,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1853,9 +1853,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1865,9 +1865,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1877,9 +1877,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1889,8 +1889,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1901,8 +1901,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1913,8 +1913,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -1925,9 +1925,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1937,9 +1937,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1949,9 +1949,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 33.412388392857146,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.7753854357142859,
+      "feasible": true
     },
     {
       "axes": {
@@ -1961,9 +1961,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1973,9 +1973,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1985,9 +1985,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.9692317946428571,
+      "feasible": true
     },
     {
       "axes": {
@@ -1997,8 +1997,8 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -2009,8 +2009,8 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -2021,8 +2021,8 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 50.118582589285715,
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 1.1630781535714285,
       "feasible": false
     },
     {
@@ -2033,9 +2033,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2045,9 +2045,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2057,9 +2057,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2069,9 +2069,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2081,9 +2081,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2093,9 +2093,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2105,9 +2105,9 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2117,9 +2117,9 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2129,9 +2129,9 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 7.837288932404303,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05049134948096885,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2141,9 +2141,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2153,9 +2153,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2165,9 +2165,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2177,9 +2177,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2189,9 +2189,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2201,9 +2201,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2213,9 +2213,9 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2225,9 +2225,9 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2237,9 +2237,9 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 8.249777823583477,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05314878892733564,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2249,9 +2249,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2261,9 +2261,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2273,9 +2273,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2285,9 +2285,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2297,9 +2297,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2309,9 +2309,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2321,9 +2321,9 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2333,9 +2333,9 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2345,9 +2345,9 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 8.662266714762652,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.05580622837370242,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2357,9 +2357,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2369,9 +2369,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2381,9 +2381,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2393,9 +2393,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2405,9 +2405,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2417,9 +2417,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2429,9 +2429,9 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2441,9 +2441,9 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2453,9 +2453,9 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 6.661695592543658,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.042917647058823526,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2465,9 +2465,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2477,9 +2477,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2489,9 +2489,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2501,9 +2501,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2513,9 +2513,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2525,9 +2525,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2537,9 +2537,9 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2549,9 +2549,9 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2561,9 +2561,9 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 7.012311150045956,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.0451764705882353,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2573,9 +2573,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2585,9 +2585,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2597,9 +2597,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2609,9 +2609,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2621,9 +2621,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2633,9 +2633,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2645,9 +2645,9 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2657,9 +2657,9 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2669,9 +2669,9 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 7.3629267075482545,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04743529411764706,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2681,9 +2681,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2693,9 +2693,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2705,9 +2705,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2717,9 +2717,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2729,9 +2729,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2741,9 +2741,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2753,9 +2753,9 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2765,9 +2765,9 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2777,9 +2777,9 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 5.79277877612492,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.03731969309462915,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2789,9 +2789,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2801,9 +2801,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2813,9 +2813,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2825,9 +2825,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2837,9 +2837,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2849,9 +2849,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2861,9 +2861,9 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2873,9 +2873,9 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2885,9 +2885,9 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 6.097661869605179,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.039283887468030694,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2897,9 +2897,9 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2909,9 +2909,9 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2921,9 +2921,9 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 27.84365699404762,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.6461545297619049,
+      "feasible": true
     },
     {
       "axes": {
@@ -2933,9 +2933,9 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2945,9 +2945,9 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2957,9 +2957,9 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 34.804571242559526,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.807693162202381,
+      "feasible": true
     },
     {
       "axes": {
@@ -2969,9 +2969,9 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2981,9 +2981,9 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     },
     {
       "axes": {
@@ -2993,9 +2993,9 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 6.402544963085439,
-      "maxBandwidthRatio": 41.76548549107143,
-      "feasible": false
+      "maxComputeRatio": 0.04124808184143223,
+      "maxBandwidthRatio": 0.969231794642857,
+      "feasible": true
     }
   ]
 }

@@ -21,7 +21,7 @@
 ```
 
 相对 5,248 mm² 工程 placement window 预留约 448 mm²，用于 die 间距、RDL、
-keep-out、PDN、时钟、热扩散和维修余量。当前搜索使用的 259.57 mm² Die
+keep-out、PDN、时钟、热扩散和维修余量。当前 P1 搜索使用的 Die 面积（见 `00_CURRENT_STATE.md` 第 2 节）
 是 compact executable profile，不能覆盖 7R 主候选的 8 L + 8 H / 96 MiB
 物理规划；两者需要独立 floorplan 和 PPA budget。
 
@@ -48,7 +48,7 @@ keep-out、PDN、时钟、热扩散和维修余量。当前搜索使用的 259.5
 
 当前分析结果：
 
-- Compute Die：250 W budget ×8（7R physical primary）；compact model 237.46 W×8 仅作对照；
+- Compute Die：250 W budget ×8（7R physical primary）；P1 compact model 的 Die 功耗 ×8 仅作对照（`spec/k3_mc_baseline.json`）；
 - 16 MC：模型约 398.72 W；
 - Package 级固定控制/其他：需重新预算，不能沿用 80 W；
 - Compute + MC + package overhead 的合计必须按 7R profile 重算；

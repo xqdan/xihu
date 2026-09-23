@@ -1,7 +1,11 @@
 {
-  "schemaVersion": "formal-model-manifests-v0.1",
-  "asOf": "2026-09-22",
+  "schemaVersion": "formal-model-manifests-v0.2",
+  "asOf": "2026-09-23",
   "status": "ARCHITECTURE_PLANNING_MANIFEST",
+  "singleSourceOfTruth": {
+    "K3": "src/core/design_engine.js#MODEL_PRESETS.kimiK3",
+    "rule": "K3 shape fields below must equal the engineering preset; tests/test_k3_manifest_consistency.js enforces this. Change the preset first, then regenerate."
+  },
   "scope": {
     "batch": 1,
     "contextTokens": 1048576,
@@ -23,22 +27,42 @@
       "modelId": "K3",
       "status": "UNVERIFIED_PLANNING_MANIFEST",
       "confidence": "E0",
-      "source": "data/workload/model_profiles.json#/profiles/0",
+      "source": "src/core/design_engine.js#MODEL_PRESETS.kimiK3",
+      "profileRef": "data/workload/model_profiles.json#/profiles/0",
       "layerCount": 93,
+      "moeLayerCount": 92,
+      "hiddenSize": 7168,
+      "moeLatent": 3584,
+      "expertHidden": 3072,
+      "attention": {
+        "kind": "mla",
+        "heads": 96,
+        "qkHeadDim": 192,
+        "vHeadDim": 128,
+        "kvLatent": 512,
+        "ropeDim": 64,
+        "softmaxLayers": 24,
+        "linearAttentionLayers": 69,
+        "linearStateDim": 128
+      },
       "dtype": {
-        "weights": "FP8",
-        "activation": "FP8",
-        "accumulation": "FP16"
+        "weightsDense": "BF16",
+        "weightsRouted": "MXFP4",
+        "routedBytesPerParam": 0.53125,
+        "denseBytesPerParam": 2,
+        "activation": "BF16",
+        "accumulation": "FP32"
       },
       "expertConfig": {
         "type": "routed_moe",
-        "experts": 256,
-        "activeExpertsPerToken": 8,
-        "sharedExperts": 1
+        "experts": 896,
+        "activeExpertsPerToken": 16,
+        "sharedExperts": 2,
+        "expertInput": "latent"
       },
       "stateConfig": {
-        "kvState": "FP8",
-        "kdaState": "FP8",
+        "kvState": "BF16",
+        "kdaState": "BF16",
         "indexState": "NONE",
         "contextTokens": 1048576
       },
@@ -80,7 +104,7 @@
         }
       ],
       "blockers": [
-        "Vendor/config verification and shape-derived workload not supplied."
+        "Vendor/config verification not supplied; shape is the repository engineering preset."
       ]
     },
     {
@@ -89,6 +113,7 @@
       "confidence": "E0",
       "source": "data/workload/model_profiles.json#/profiles/1",
       "layerCount": 96,
+      "layerCountStatus": "PLANNING_ASSUMPTION_NOT_CONFIRMED",
       "dtype": {
         "weights": "FP8",
         "activation": "FP8",

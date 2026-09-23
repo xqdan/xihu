@@ -87,21 +87,21 @@ MC640结果必须标为`STRETCH`或`MODEL`，除非供应商或物理实现完�
 
 ## 5. 当前已知基线
 
-| Model | TP | MC | TPS/usr | Raw latency | E2E latency | 状态 |
-|---|---:|---:|---:|---:|---:|---|
-| K3 | 32 | 320 GB/s/MC | 546.63 | 1,563.58 µs | 1,829.39 µs | MODEL_OBSERVED |
-| K3 | 32 | 640 GB/s/MC | 998.81 | 855.72 µs | 1,001.19 µs | MODEL_OBSERVED |
-| GLM-5.2 | 8/16/32 | 320/640 | — | — | — | PENDING_MODEL_RUN / BLOCKED_CONFIG |
-| DeepSeek-V4-Pro | 8/16/32 | 320/640 | — | — | — | PENDING_MODEL_RUN / BLOCKED_CONFIG |
+| Model | TP | Profile | MC | TPS/usr | Raw latency | E2E latency | 状态 |
+|---|---:|---|---:|---:|---:|---:|---|
+| K3 | 32 | P1 | 320 GB/s/MC | 见 `spec/k3_mc_baseline.json#modelResults.referenceMc320GBs` | 同左 | 同左 | MODEL_OBSERVED |
+| K3 | 32 | P1 | 640 GB/s/MC | 见 `spec/k3_mc_baseline.json#modelResults.stretchMc640GBs` | 同左 | 同左 | MODEL_OBSERVED |
+| GLM-5.2 | 8/16/32 | P0 | 320/640 | 规划上界 | — | — | PLANNING_ESTIMATE |
+| DeepSeek-V4-Pro | 8/16/32 | P0 | 320/640 | 规划上界 | — | — | PLANNING_ESTIMATE |
 
-K3现有结果来自：
+K3 P1 结果来自：
 
 ```text
 data/rdma/k3_rdma_final_tuning_results.json
 docs/design/spec/k3_mc_baseline.json
 ```
 
-当前K3 MC640结果为998.81 TPS/usr，低于1000目标，也低于1050架构门槛；因此不能写成“已经达标”。
+数值由 `tests/test_design_baseline.js` 回归，本文不再重复抄写，避免多处漂移。K3 MC640 是否达到 1000 目标以 `spec/k3_mc_baseline.json#acceptance.currentStatus` 为准；即使达到，也是 P1 模型结果而非架构门槛（1050）闭合，不能写成“已经达标”。规划上界（`data/workload/tps_observation_matrix.json`）与 P1 tile 模拟结果不是同一口径，不可直接比较。
 
 ## 6. 不同Agent对TPS的责任
 

@@ -1,5 +1,7 @@
 # 当前设计状态与已知结论
 
+版本：2026-09-23。
+
 ## 0. 7-reticle 单芯片前提
 
 自 2026-09-21 起，单芯片的物理边界改为一个 7-reticle advanced package：8×400 mm² Compute Die + 16×100 mm² MC，工程 placement window 约 82×64 mm、5,248 mm²；一个 package 对软件表现为一个 TP rank，32 个 package 构成 TP32。
@@ -8,14 +10,11 @@
 
 | Profile | 用途 | 规格 |
 |---|---|---|
-| P0 7R physical primary | 封装、面积、集成存储和 PPA 主规划 | 8 L + 8 H/Die，96 MiB data SRAM/Die，400 mm²/Die |
-| P1 compact executable | 当前搜索/回归模型 | 4 L + 4 H/Die，44 MiB data SRAM/Die，约 259.57 mm²/Die |
+| P0 7R physical primary | 封装、面积、集成存储和 PPA 主规划 | 8 L + 8 H/Die，1.0 GHz 候选，96 MiB data SRAM/Die，400 mm²/Die |
+| P1 compact executable | 当前搜索/回归模型 | 由 Final Tuning 搜索决定，权威值在 `spec/k3_mc_baseline.json#computeDieCandidate`；2026-09-23 修正模型后为 24 L + 8 H/Die、1.0 GHz、88 MiB data SRAM/Die（2026-09-20 的候选是 4 L + 4 H、1.2 GHz、44 MiB） |
 
 P1 的性能回归结果不能直接宣称为 P0 7R 物理主候选的最终性能；需要先完成
-P0 的 tile、kernel、MC、NoC、floorplan 和 PPA 模型。
-
-
-版本：2026-09-20。
+P0 的 tile、kernel、MC、NoC、floorplan 和 PPA 模型。本文第 2、3 节的数字全部是 **P1** 结果。
 
 ## 1. 已确定的工作负载口径
 
@@ -37,51 +36,59 @@ K3 preset 来自
 不是已经由模型提供方签核的正式规格。模型结构、精度和层顺序在架构冻结前必须
 由独立的模型清单确认。
 
-## 2. 当前最佳 Compute Die 候选
+## 2. 当前最佳 Compute Die 候选（P1）
 
-当前 Final Tuning 搜索候选：
+当前 Final Tuning 搜索候选的**权威数值**在
+[`spec/k3_mc_baseline.json`](spec/k3_mc_baseline.json) 的 `computeDieCandidate` 中，
+由 `npm run baseline:sync` 从
+[`data/rdma/k3_rdma_final_tuning_results.json`](../../data/rdma/k3_rdma_final_tuning_results.json)
+生成，`tests/test_design_baseline.js` 强制两者一致。本文不再手抄数字，避免多处漂移。
 
 | 项目 | 值 | 状态 |
 | --- | ---: | --- |
-| 工艺/频率 | 工艺未锁；1.2 GHz | `MODEL` |
-| L Core | 4 个 | `BASELINE` |
-| H Core | 4 个 | `BASELINE` |
-| BF16 Dense peak | 176.95 TFLOPS/Die | 推导值 |
-| Vector peak | 9.83 TOPS/Die | 推导值 |
-| Local SRAM | 20 MiB/Die | `BASELINE` |
-| Shared SRAM | 24 MiB/Die，8 slices | `BASELINE` |
-| 总数据 SRAM | 44 MiB/Die，352 MiB/卡 | 推导值 |
-| NoC | 抽象 5×5 mesh，512 B/cycle/方向 | `MODEL` |
-| TMA | 每 Core 4×512 B/cycle | `MODEL` |
-| Reduce | 4096 lanes/Die | `MODEL` |
-| 面积 | 259.57 mm²/Die | `MODEL` |
-| 功耗 | 237.46 W/Die | `MODEL` |
-| 卡功耗 | 2378.36 W | `MODEL` |
+| 工艺/频率 | 工艺未锁；`computeDieCandidate.frequencyGHz`（当前 1.0 GHz） | `MODEL` |
+| L Core | `computeDieCandidate.lCores`（当前 24，每 Core 2×(2×128) engine） | `MODEL` |
+| H Core | `computeDieCandidate.hCores`（当前 8，每 Core 4×(32×64) engine） | `MODEL` |
+| BF16 Dense peak | `computeDieCandidate.bf16DenseTflops` | 推导值 |
+| Vector peak | `computeDieCandidate.vectorTops` | 推导值 |
+| Local SRAM | `lCore/hCore.localSramMiB`（当前 2 MiB/Core，64 MiB/Die） | `MODEL` |
+| Shared SRAM | `sharedSramMiB` / `sharedSramSlices`（当前 24 MiB，16 slices） | `MODEL` |
+| 总数据 SRAM | `physicalDataSramMiB`（当前 88 MiB/Die） | 推导值 |
+| NoC | 抽象 mesh，`dataNocBytesPerCyclePerDirection` | `MODEL` |
+| TMA | `tmaEngines` × `tmaBytesPerCyclePerEngine` | `MODEL` |
+| Reduce | `reduceLanes` | `MODEL` |
+| 面积 | `computeDieCandidate.estimatedAreaMm2`（含共享 SRAM 端口放大成本） | `MODEL` |
+| 功耗 | `computeDieCandidate.estimatedPowerW`（同上） | `MODEL` |
+| 卡功耗 | `computeDieCandidate.estimatedCardPowerW` | `MODEL` |
 
-这些值来自
-[`data/rdma/k3_rdma_final_tuning_results.json`](../../data/rdma/k3_rdma_final_tuning_results.json)。
+2026-09-23 修正 Final Tuning 模型（端口放大计费、launch 只应用一次）后重新搜索，
+最佳候选从 4 L + 4 H、1.2 GHz、44 MiB/Die 移动到 24 L + 8 H、1.0 GHz、88 MiB/Die。
+02、03、05 号文档的单元级描述仍基于 2026-09-20 的候选，在 P1 候选稳定前只作对照，
+不作为当前规格。
+
 其中利用率、面积和功耗系数尚未由 memory compiler、标准单元、PHY 宏和
-综合/布线结果回标。
+综合/布线结果回标。自 2026-09-23 起，Final Tuning 对共享 SRAM 读写端口的
+放大（`localWriteRatio`、`tmaPortWriteScale`、`sharedReadScale`）按 bank 面积
+和端口功耗计入 die/card 限制，不再是无成本的带宽放大。
 
-## 3. 当前性能结论
+## 3. 当前性能结论（P1）
 
-| MC 带宽假设 | TPS/usr | raw | e2e | 结论 |
-| --- | ---: | ---: | ---: | --- |
-| 320 GB/s/MC | 546.63 | 1563.58 μs | 1829.39 μs | 参考规格兼容点，明显不达标 |
-| 640 GB/s/MC | 998.81 | 855.72 μs | 1001.19 μs | Stretch 点，仍未严格达到 1000 |
+| MC 带宽假设 | 权威数值 | 结论 |
+| --- | --- | --- |
+| 320 GB/s/MC | `modelResults.referenceMc320GBs` | 参考规格兼容点，明显不达标 |
+| 640 GB/s/MC | `modelResults.stretchMc640GBs` | Stretch 点（ADR-011 归为 `STRETCH/AGGRESSIVE`）；是否达到 1000 以 `acceptance.currentStatus` 为准，且即使达到也只是模型结果 |
 
-640 GB/s 点的时间账：
+两点的 TPS、raw/e2e 时延、compute/comm/DMA 等待时间、每 token 每卡外部读取
+字节和有效 DMA 带宽都记录在上述 JSON 字段中；`README.md`、各子系统文档和
+看板引用同一来源。
 
-- compute/comm 串行时间：651.91 + 131.69 μs；
-- DMA 等待：72.12 μs；
-- raw：855.72 μs；
-- 工程裕量后：1001.19 μs；
-- 每 token 每卡外部读取约 5.36 GB；
-- 有效 DMA 约 6.49 TB/s/卡。
-
-320 GB/s 点的计算与通信时间基本不变，但 DMA 等待增加到约
-779.97 μs。因此当前首要矛盾是**实现可行的 MC 聚合带宽**，而不是继续增加
+320 GB/s 点的计算与通信时间与 640 GB/s 点基本相同，差别几乎全部来自 DMA
+等待。因此当前首要矛盾是**实现可行的 MC 聚合带宽**，而不是继续增加
 Tensor peak。
+
+Final Tuning 的所有经验缩放因子在
+[`src/rdma/k3_rdma_final_tuning_model.js`](../../src/rdma/k3_rdma_final_tuning_model.js)
+的 `GAIN` 表中逐项命名，证据等级均为 ASSUMPTION（B-003）。
 
 ## 4. 必须纠正的口径
 
@@ -111,13 +118,14 @@ Shared SRAM 聚合工作窗口**：
 
 | 冲突 | 当前处理 |
 | --- | --- |
-| 旧概念为 8 L + 8 H Core；最新搜索为 4 L + 4 H | 以 4+4 为当前候选，旧文档仅作参考 |
-| 旧 Compute Die 为 400 mm²；最新估算 259.57 mm² | 重新做 floorplan，400 mm² 仅是上限 |
+| P0 为 8 L + 8 H Core、1.0 GHz；P1 由搜索决定（当前 24 L + 8 H、1.0 GHz） | 不是冲突，是两个 profile（ADR-004）；P0 是物理主规划，P1 是当前可执行回归模型；报告必须注明 profile |
+| P0 Compute Die 为 400 mm² 上限；P1 估算见第 2 节 | 400 mm² 是 P0 规划上限，P1 数字只用于回归对照 |
 | 卡内互联有“4×2 mesh”“双向 ring”“4+4 hierarchy”三种描述 | `BLOCKER`，统一拓扑后才可冻结 |
-| 参考 MC 最大 320 GB/s；最佳搜索使用 640 GB/s | `BLOCKER`，必须关闭 |
+| 参考 MC 320 GB/s；默认搜索上限 480 GB/s；P1 最佳搜索使用 640 GB/s | `BLOCKER`，档位定义见 ADR-011，必须选定可制造档 |
 | NoC 的 512 B/cycle 是分析参数，尚无可布线证明 | `OPEN`，需物理和拥塞模型 |
-| Final Tuning 中大量优化使用经验缩放因子 | `BLOCKER`，需逐项替换为事件和资源模型 |
+| Final Tuning 中大量优化使用经验缩放因子 | `BLOCKER`；因子已在 `GAIN` 表中逐项命名，共享 SRAM 端口放大已计入面积/功耗，但仍需逐项替换为事件和资源模型 |
 | Attention 投影参数由 residual 拟合，不是精确 Q/K/V 图 | `BLOCKER`，需模型清单和编译 trace |
+| 正式 manifest 曾与 `design_engine` preset 描述不同的 K3 | 已修正：K3 唯一来源是 `src/core/design_engine.js#MODEL_PRESETS.kimiK3`，`tests/test_k3_manifest_consistency.js` 强制一致 |
 
 ## 6. 当前可以保留的设计方向
 

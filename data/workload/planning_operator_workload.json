@@ -1,50 +1,87 @@
 {
-  "schemaVersion": "planning-operator-workload-v0.1",
-  "status": "UNVERIFIED_PLANNING_ASSUMPTIONS",
+  "schemaVersion": "planning-operator-workload-v0.2",
+  "status": "K3_SHAPE_DERIVED; GLM-5.2 AND DEEPSEEK-V4-PRO UNVERIFIED",
+  "generatedBy": "scripts/generate_planning_operator_workload.js",
   "units": {
     "flops": "global FLOP/token",
     "bytes": "global byte/token before TP",
     "rate": "SI per package rank"
   },
+  "sourceHashes": {
+    "designEngine": "dc3a2e4d91dfa3ff3a1d75e3d338fbca535c22da826a1eb67c543a194b0c6e5a",
+    "finalTuningResults": "e26de57e6693fbe0d83863b0eeba9d2fd473e90f3c79f2b35a0e472d5dd3e56c",
+    "directionalWorkloadBaseline": "4e12328db5b0a7c4cab3a9c6e4c8d1567a8e621438e3e92dc2aa8537c87eabdf"
+  },
+  "provenance": {
+    "K3": {
+      "status": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+      "shapeSource": "src/core/design_engine.js#MODEL_PRESETS.kimiK3",
+      "attentionParameterSource": "residual",
+      "context": 1048576,
+      "collectiveSource": "data/rdma/k3_rdma_final_tuning_results.json#/search/best/wireBytes x TP32",
+      "reconciliation": {
+        "calibratedGlobalFlopsPerToken": 1755347919872,
+        "derivedGlobalFlopsPerToken": 1755347919872,
+        "flopsRatioDerivedOverCalibrated": 1,
+        "calibratedGlobalMemoryBytesPerToken": 170014673510.39832,
+        "derivedGlobalMemoryBytesPerToken": 166413968384,
+        "bytesRatioDerivedOverCalibrated": 0.978821209651777,
+        "note": "Derived bytes count each weight/KV byte once. The calibrated baseline is the RDMA tile simulator read traffic, which includes expert prefetch mis-prediction (2-p) re-reads and tile re-loads, so it is expected to be somewhat larger."
+      }
+    },
+    "GLM-5.2": {
+      "status": "UNVERIFIED_RATIO_SCALED_FROM_K3",
+      "flopsScale": 0.06094958055111111,
+      "bytesScale": 0.0205196015270037,
+      "note": "Hand-authored operator mix rescaled to the derived K3 totals; replace with shape-derived rows once the manifest is confirmed."
+    },
+    "DeepSeek-V4-Pro": {
+      "status": "UNVERIFIED_RATIO_SCALED_FROM_K3",
+      "flopsScale": 0.06094958055111111,
+      "bytesScale": 0.0205196015270037,
+      "note": "Hand-authored operator mix rescaled to the derived K3 totals; replace with shape-derived rows once the manifest is confirmed."
+    }
+  },
   "limitations": [
-    "Hand-authored sizing scenarios, not derived from verified model shapes.",
-    "Not calibrated to the historical K3 RDMA baseline."
+    "K3 rows are derived from the repository engineering preset, which is itself not vendor-confirmed.",
+    "GLM-5.2 and DeepSeek-V4-Pro rows are not derived from verified model shapes.",
+    "Collective FLOP is a planning estimate (one accumulate per transported element)."
   ],
   "operators": {
     "K3": [
       [
         "dense_projection",
         "L",
-        4000000000000,
-        1070000000000,
+        111159256064,
+        111159256064,
         "weight"
       ],
       [
         "routed_moe",
         "L",
-        18000000000000,
-        4790000000000,
+        97240743936,
+        25829572608,
         "expert"
       ],
       [
         "attention",
         "H",
-        6000000000000,
-        1900000000000,
+        1546188226560,
+        28991029248,
         "kv_state"
       ],
       [
         "kda_state",
         "V",
-        800000000000,
-        350000000000,
+        759693312,
+        434110464,
         "kv_state"
       ],
       [
         "collective_reduce",
         "REDUCE",
-        200000000000,
-        80000000000,
+        389768069.12000084,
+        779536138.2400017,
         "collective"
       ]
     ],
@@ -52,36 +89,36 @@
       [
         "dense_projection",
         "L",
-        4500000000000,
-        1200000000000,
+        274273112480,
+        24623521832.404438,
         "weight"
       ],
       [
         "routed_moe",
         "L",
-        22000000000000,
-        5860000000000,
+        1340890772124.4443,
+        120244864948.24168,
         "expert"
       ],
       [
         "indexer",
         "INDEXER",
-        2000000000000,
-        600000000000,
+        121899161102.22223,
+        12311760916.202219,
         "index"
       ],
       [
         "sparse_attention",
         "H",
-        5000000000000,
-        1650000000000,
+        304747902755.55554,
+        33857342519.556103,
         "kv_state"
       ],
       [
         "collective_dispatch",
         "REDUCE",
-        300000000000,
-        120000000000,
+        18284874165.333332,
+        2462352183.2404437,
         "collective"
       ]
     ],
@@ -89,36 +126,36 @@
       [
         "dense_projection",
         "L",
-        5200000000000,
-        1390000000000,
+        316937818865.7778,
+        28522246122.53514,
         "weight"
       ],
       [
         "routed_moe",
         "L",
-        25000000000000,
-        6830000000000,
+        1523739513777.7778,
+        140148878429.43527,
         "expert"
       ],
       [
         "indexer",
         "INDEXER",
-        3000000000000,
-        850000000000,
+        182848741653.33334,
+        17441661297.953144,
         "index"
       ],
       [
         "sparse_attention",
         "H",
-        7000000000000,
-        2300000000000,
+        426647063857.7778,
+        47195083512.108505,
         "kv_state"
       ],
       [
         "expert_dispatch",
         "REDUCE",
-        500000000000,
-        200000000000,
+        30474790275.555557,
+        4103920305.4007397,
         "collective"
       ]
     ]

@@ -14,7 +14,7 @@ Review 范围：`k3-architecture-repo` 当前 baseline；目标是 K3、GLM-5.2�
 - **E2**：可重复的模型仿真结果，有 seed、版本和 breakdown。
 - **E3**：原型/硅上实测并完成校准。
 
-当前关键 TPS 证据是 E2 的 K3 TP32 两点：MC320 为 546.63，MC640 为 998.81 tokens/s/user；后者仍低于 1000 目标和 1050 架构门槛。其余 16 个观测槽位尚无事件级结果。
+当前关键 TPS 证据是 E2 的 K3 TP32 两点（P1 profile，MC320 与 MC640，数值见 `00_CURRENT_STATE.md` 第 3 节和 `spec/k3_mc_baseline.json`）；MC640 点仍低于 1000 目标和 1050 架构门槛。其余 16 个观测槽位尚无事件级结果。
 
 ## 2. P0 阻塞问题
 
@@ -25,7 +25,7 @@ Review 范围：`k3-architecture-repo` 当前 baseline；目标是 K3、GLM-5.2�
 | MR-003 | A10/A9 | `k3_operator_sram_sim.js` 明确 `c.tp!==32` 即报错 | TP8/TP16 只有结构测试，不是性能测试 | 把 TP、package count、跨 package fabric、collective algorithm 参数化 | K3 至少 TP8/16/32 均能生成 trace、latency 和 breakdown |
 | MR-004 | A1/A3/A10 | 缺少三模型 FLOP/token、有效 bytes/token、各层算术强度和 Roofline | 无法决定 Tensor/Vector/Indexer/Reduce 的规模 | 新增 arithmetic-intensity pipeline，按 operator、memory tier、通信域输出 roofline | 每模型×TP 至少输出 FLOP、bytes、AI、required effective FLOPS、required peak FLOPS |
 | MR-005 | A5 | MC320/640 作为 raw、payload、sustained、effective 的语义未彻底分离 | MC640 可能被误读成可制造 baseline | 设 `raw/sustained/effective` 三层字段，标明供应商/假设/校准来源 | 任一 TPS 结果没有 sustained payload 就不能进入 G4 |
-| MR-006 | A0/A10 | P1 的 998.81 TPS 不能外推 P0 | 物理 profile 与性能结论失真 | 所有结果强制携带 physical profile；P0 未跑时报告状态为 pending | CI 检查 P1 结果不得写入 P0 签核摘要 |
+| MR-006 | A0/A10 | P1 的 MC640 结果不能外推 P0 | 物理 profile 与性能结论失真 | 所有结果强制携带 physical profile；P0 未跑时报告状态为 pending | CI 检查 P1 结果不得写入 P0 签核摘要 |
 | MR-007 | A8 | collective 使用 `log2(TP)` 缩放，未表达真实拓扑、payload、拥塞和算法 | TP8/16/32 趋势不可信 | 为 all-reduce/all-gather/all-to-all 建 packet/flit/VC/credit replay | 每 TP 输出 hops、payload、queue wait、P50/P95/P99；禁止单一 log2 结果替代 trace |
 | MR-008 | A1/A7/A8 | Expert dispatch/combine、all-to-all、capacity overflow、热点和 reroute 未事件级建模 | DeepSeek/GLM 的主要瓶颈可能完全遗漏 | 增加 token routing trace、capacity factor、overflow、home mapping、combine protocol | P99 expert load/mean、overflow rate、remote bytes 和尾延迟均可复现 |
 | MR-009 | A1/A4/A9 | index cache、MTP draft/verify、accept/rollback 只是概念接口 | 长上下文和 MTP TPS 无法解释 | 定义容量、命中、分支、rollback bytes、epoch/commit，并进入 Tile IR | 每模型输出 hit rate、accept rate、rollback rate/bytes 和对应时间 |

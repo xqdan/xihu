@@ -1,13 +1,24 @@
 'use strict';
-
+/* Stage B: formal planning quantification for the D-Gate selected candidates.
+ *
+ * Reads the candidate register (never hard-codes candidates), the hash-bound
+ * manifest and the shape-derived planning workload. P0 and P1 use distinct
+ * core-class capacities from models/planning/resource_profiles.js.
+ *
+ * Evidence kind stays SYNTHETIC_BOTTLENECK_BOUND: Q3-Q8 events are placeholders
+ * and do not drive latency. Performance acceptance is COMPUTED from the 18
+ * planning slots, not written as a literal.
+ */
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const {execFileSync} = require('child_process');
 const {writeGateStatus} = require('./governance/evaluate_gates');
+const RES = require('./planning/resource_profiles');
+const IDS = require('./planning/run_ids');
 
 const root = path.resolve(__dirname, '..');
-const read = relativePath => JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/^\uFEFF/, ''));
+const read = relativePath => JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/^﻿/, ''));
 const write = (relativePath, value) => {
   const target = path.join(root, relativePath);
   fs.mkdirSync(path.dirname(target), {recursive: true});
@@ -28,50 +39,37 @@ const profiles = read('data/workload/model_profiles.json');
 const directional = read('data/direction/directional_tps_scorecard.json');
 const register = read('data/governance/candidate_register.json');
 const matrix = read('data/workload/tps_observation_matrix.json');
+const workload = read('data/workload/planning_operator_workload.json');
 const targetTps = profiles.policy.sharedDecodeTargetTpsPerUser;
-const utilization = 0.6;
-const dutyCycle = 0.85;
-const mcBandwidth = {MC320: 5.12e12 * 0.7, MC640: 10.24e12 * 0.7};
-const networkBandwidth = 0.8e12;
-const available = {
-  L: 157.2864e12,
-  H: 1258.2912e12,
-  V: 78.6432e12,
-  INDEXER: 78.6432e12,
-  REDUCE: 78.6432e12
-};
-const opTemplates = read('data/workload/planning_operator_workload.json').operators;
+const architectureGateTps = profiles.policy.sharedArchitectureGateTpsPerUser;
+const {coreProfiles, mcProfiles, utilization, dutyCycle, networkBandwidth} = RES;
+const opTemplates = workload.operators;
 
-const runId = 'stage-b-20260922-formal';
+const runId = IDS.stageBRunId;
 const selected = register.formalSelectedCandidates;
+if (register.decisionState !== 'D_GATE_PASSED' || selected.length === 0) {
+  throw new Error(`Formal Stage B requires D_GATE_PASSED with selected candidates; register state is ${register.decisionState}`);
+}
 const inputHashes = {
   directionalScorecard: hashFile('data/direction/directional_tps_scorecard.json'),
   modelProfiles: hashFile('data/workload/model_profiles.json'),
   operatorWorkload: hashFile('data/workload/planning_operator_workload.json'),
+  resourceProfiles: hashFile('models/planning/resource_profiles.js'),
   runner: hashFile('models/formal_detailed_run.js'),
   gateValidator: hashFile('models/governance/evaluate_gates.js'),
   manifest: manifestHash,
   candidateRegister: hashFile('data/governance/candidate_register.json')
 };
 
-function physicalProfile(candidateId) {
-  return candidateId.startsWith('P1') ? 'P1' : 'P0';
-}
-function mcProfile(candidateId) {
-  return candidateId.includes('MC640') ? 'MC640' : 'MC320';
-}
-function tpOf(candidateId) {
-  return Number(candidateId.match(/TP(\d+)$/)[1]);
-}
-
 function ledgerRows(modelId, candidateId) {
-  const tp = tpOf(candidateId);
-  const mc = mcProfile(candidateId);
+  const tp = RES.tpOf(candidateId);
+  const mc = RES.mcProfileOf(candidateId);
+  const physical = RES.physicalProfileOf(candidateId);
   return opTemplates[modelId].map(([operatorId, coreClass, globalFlops, globalBytes, byteClass]) => {
     const flops = globalFlops / tp;
     const bytes = globalBytes / tp;
-    const bandwidth = byteClass === 'collective' ? networkBandwidth : mcBandwidth[mc];
-    const peak = available[coreClass];
+    const bandwidth = byteClass === 'collective' ? networkBandwidth : mcProfiles[mc].effectiveBytesPerSecond;
+    const peak = coreProfiles[physical].peakByCore[coreClass];
     const intensity = flops / bytes;
     const ridgePoint = peak / bandwidth;
     const rooflinePerformance = Math.min(peak, intensity * bandwidth);
@@ -89,13 +87,15 @@ function ledgerRows(modelId, candidateId) {
       tp,
       cp: 1,
       ep: modelId === 'K3' ? 1 : 6,
-      physicalProfile: physicalProfile(candidateId),
+      physicalProfile: physical,
       mcProfile: mc,
       operatorId,
       operatorClass: operatorId,
       coreClass,
       manifestHash,
       source: 'data/workload/formal_model_manifests.json',
+      workloadSource: 'data/workload/planning_operator_workload.json',
+      workloadStatus: workload.provenance[modelId].status,
       flops,
       bytes: {[byteClass]: bytes, total: bytes},
       arithmeticIntensity: intensity,
@@ -123,8 +123,7 @@ const ledger = [];
 for (const physicalProfile of ['P0', 'P1']) {
   for (const mcProfile of ['MC320', 'MC640']) {
     for (const tp of [8, 16, 32]) {
-      const candidateId =
-        `${physicalProfile === 'P1' ? 'P1-compact' : 'P0-7R-balanced'}-${mcProfile}-TP${tp}`;
+      const candidateId = RES.candidateIdFor(physicalProfile, mcProfile, tp);
       for (const model of manifest.models) {
         ledger.push(...ledgerRows(model.modelId, candidateId));
       }
@@ -153,7 +152,7 @@ for (const row of ledger) {
     dramBytes: row.bytes.total * 0.7,
     sramBytes: row.bytes.total * 0.3,
     tileCount: Math.max(1, Math.ceil(row.bytes.total / (8 * 1024 * 1024))),
-    status: 'REPLAYED'
+    status: 'SYNTHETIC_PLACEHOLDER'
   });
   eventTrace.push({
     ...eventBase,
@@ -162,7 +161,7 @@ for (const row of ledger) {
     packets: row.requiredNetworkBandwidth > 0 ? Math.ceil(row.requiredNetworkBandwidth / 64e3) : 0,
     bytes: row.requiredNetworkBandwidth,
     hopCountP99: row.requiredNetworkBandwidth > 0 ? 3 : 0,
-    status: 'REPLAYED'
+    status: 'SYNTHETIC_PLACEHOLDER'
   });
   eventTrace.push({
     ...eventBase,
@@ -171,7 +170,7 @@ for (const row of ledger) {
     computeCycles: Math.ceil(row.requiredEffectiveFlops / 1e12),
     memoryCycles: Math.ceil(row.requiredMemoryBandwidth / 1e9),
     criticalCycles: Math.max(Math.ceil(row.requiredEffectiveFlops / 1e12), Math.ceil(row.requiredMemoryBandwidth / 1e9)),
-    status: 'REPLAYED'
+    status: 'SYNTHETIC_PLACEHOLDER'
   });
   eventTrace.push({
     ...eventBase,
@@ -180,7 +179,7 @@ for (const row of ledger) {
     overlapFactor: Math.min(1, row.rooflineBound === 'bandwidth' ? 0.85 : 0.9),
     queueDepthP99: row.requiredNetworkBandwidth > 0 ? 8 : 4,
     uncoveredStallCycles: Math.ceil(row.requiredMemoryBandwidth / 1e9 * 0.15),
-    status: 'REPLAYED'
+    status: 'SYNTHETIC_PLACEHOLDER'
   });
 }
 
@@ -188,26 +187,19 @@ const byModelTpMc = new Map();
 for (const row of ledger) {
   const key = `${row.modelId}:${row.tp}:${row.mcProfile}:${row.physicalProfile}`;
   const previous = byModelTpMc.get(key);
-  if (!previous || Math.max(row.requiredToAvailableRatio, row.requiredToAvailableBandwidthRatio) > previous.ratio) {
-    byModelTpMc.set(key, {row, ratio: Math.max(row.requiredToAvailableRatio, row.requiredToAvailableBandwidthRatio)});
-  }
+  const ratio = Math.max(row.requiredToAvailableRatio, row.requiredToAvailableBandwidthRatio);
+  if (!previous || ratio > previous.ratio) byModelTpMc.set(key, {row, ratio});
 }
 
 const observations = matrix.observations.map(observation => {
   const physical = observation.physicalProfile;
   if (!['P0','P1'].includes(physical)) throw new Error('Missing/invalid physicalProfile');
-  const selectedCandidate =
-    `${physical === 'P1' ? 'P1-compact' : 'P0-7R-balanced'}-${observation.mcProfile}-TP${observation.tp}`;
-  const result = byModelTpMc.get(
-    `${observation.modelId}:${observation.tp}:${observation.mcProfile}:${physical}`
-  );
+  const selectedCandidate = RES.candidateIdFor(physical, observation.mcProfile, observation.tp);
+  const result = byModelTpMc.get(`${observation.modelId}:${observation.tp}:${observation.mcProfile}:${physical}`);
   if (!result) {
-    throw new Error(
-      `Missing replay coverage for ${observation.modelId} TP${observation.tp} ${observation.mcProfile} ${physical}`
-    );
+    throw new Error(`Missing replay coverage for ${observation.modelId} TP${observation.tp} ${observation.mcProfile} ${physical}`);
   }
-  const ratio = result.ratio;
-  const tpsPerUser = targetTps / ratio;
+  const tpsPerUser = targetTps / result.ratio;
   const e2eLatencyUsPerToken = 1e6 / tpsPerUser;
   return {
     ...observation,
@@ -218,6 +210,8 @@ const observations = matrix.observations.map(observation => {
     rawLatencyUsPerToken: e2eLatencyUsPerToken,
     latencyScope: 'optimistic_single_operator_bottleneck_no_schedule_or_margin',
     e2eLatencyUsPerToken,
+    boundingOperatorId: result.row.operatorId,
+    boundingResource: result.row.requiredToAvailableBandwidthRatio >= result.row.requiredToAvailableRatio ? 'memory_bandwidth' : 'compute',
     source: 'data/detailed/formal_event_replay.json',
     sourceSelector: `${selectedCandidate}#/model/${observation.modelId}/tp${observation.tp}/${observation.mcProfile}`,
     blocker: null,
@@ -230,6 +224,7 @@ const summary = manifest.models.map(model => {
   const rows = ledger.filter(row => row.modelId === model.modelId);
   const worstCompute = rows.reduce((a, b) => a.requiredToAvailableRatio > b.requiredToAvailableRatio ? a : b);
   const worstBandwidth = rows.reduce((a, b) => a.requiredToAvailableBandwidthRatio > b.requiredToAvailableBandwidthRatio ? a : b);
+  const modelObservations = observations.filter(item => item.modelId === model.modelId);
   return {
     modelId: model.modelId,
     operatorCount: rows.length,
@@ -237,15 +232,15 @@ const summary = manifest.models.map(model => {
     worstOperator: worstCompute.operatorId,
     maxRequiredToAvailableBandwidthRatio: worstBandwidth.requiredToAvailableBandwidthRatio,
     worstBandwidthOperator: worstBandwidth.operatorId,
-    minTpsPerUser: Math.min(...observations.filter(item => item.modelId === model.modelId).map(item => item.tpsPerUser)),
-    targetMet: observations.filter(item => item.modelId === model.modelId).every(item => item.tpsPerUser >= targetTps),
+    minTpsPerUser: Math.min(...modelObservations.map(item => item.tpsPerUser)),
+    targetMet: modelObservations.every(item => item.tpsPerUser >= targetTps),
     status: 'MODEL_REPLAY_ESTIMATE',
     confidence: model.confidence
   };
 });
 
 const eventArtifact = {
-  schemaVersion: 'formal-event-replay-v0.1',
+  schemaVersion: 'formal-event-replay-v0.2',
   runId,
   manifestHash,
   inputHashes,
@@ -272,8 +267,17 @@ write('data/workload/tps_observation_matrix.json', {
   observations
 });
 
+const allMeetTarget = observations.every(item => item.tpsPerUser >= targetTps);
+const allMeetGate = observations.every(item => item.tpsPerUser >= architectureGateTps);
+const selectedSlotsMeetTarget = observations
+  .filter(item => selected.includes(RES.candidateIdFor(item.physicalProfile, item.mcProfile, item.tp)))
+  .every(item => item.tpsPerUser >= targetTps);
+const performanceStatus = allMeetGate
+  ? 'PLANNING_BOUND_ABOVE_GATE_NOT_VALIDATED'
+  : (selectedSlotsMeetTarget ? 'SELECTED_CANDIDATES_ABOVE_TARGET_OTHERS_MISS_NOT_VALIDATED' : 'PERFORMANCE_MISS_REQUIRES_DIRECTION_BACKFLOW');
+
 const detail = {
-  schemaVersion: 'detailed-architecture-run-v0.3',
+  schemaVersion: 'detailed-architecture-run-v0.4',
   runId,
   stage: 'quantification',
   runMode: 'PLANNING_QUANTIFICATION',
@@ -281,7 +285,7 @@ const detail = {
   agentId: 'Q1-Q9-orchestrator',
   sourceDirectionalRunId: directional.runId,
   selectedCandidates: selected,
-  candidateSelection: {source: 'data/governance/candidate_register.json', formal: true, exploratory: false, decision: 'D_GATE_PASSED'},
+  candidateSelection: {source: 'data/governance/candidate_register.json', formal: true, exploratory: false, decision: register.decisionState},
   manifestStatus: Object.fromEntries(manifest.models.map(model => [model.modelId, model.status])),
   manifestHash,
   operatorLedger: ledger,
@@ -289,11 +293,11 @@ const detail = {
   summary,
   agentRuns: {
     Q1: {status: 'COMPLETE', output: 'formal model manifest, operator inventory and shared hash'},
-    Q2: {status: 'COMPLETE', output: 'three-model arithmetic intensity, Roofline, compute/bandwidth/network sizing ledger'},
-    Q3: {status: 'PLANNING_ONLY', output: 'tile and memory event replay'},
-    Q4: {status: 'PLANNING_ONLY', output: 'collective packet and NoC event replay'},
-    Q5: {status: 'PLANNING_ONLY', output: 'kernel cycle replay'},
-    Q6: {status: 'PLANNING_ONLY', output: 'scheduler overlap and stall replay'},
+    Q2: {status: 'COMPLETE', output: 'three-model arithmetic intensity, Roofline, compute/bandwidth/network sizing ledger (K3 shape-derived; GLM/DeepSeek unverified)'},
+    Q3: {status: 'PLANNING_ONLY', output: 'tile and memory event placeholders'},
+    Q4: {status: 'PLANNING_ONLY', output: 'collective packet and NoC event placeholders'},
+    Q5: {status: 'PLANNING_ONLY', output: 'kernel cycle placeholders'},
+    Q6: {status: 'PLANNING_ONLY', output: 'scheduler overlap and stall placeholders'},
     Q7: {status: 'PLANNING_ONLY', output: 'planning PPA and thermal envelope reconciliation'},
     Q8: {status: 'PLANNING_ONLY', output: 'optimistic bottleneck bounds; no dependency-aware timing replay'},
     Q9: {status: 'COMPLETE', output: 'independent gate validator executed after artifact generation'}
@@ -308,37 +312,42 @@ const detail = {
     sourceCommit,
     manifestHash,
     inputHashes,
-    seed: 20260922,
-    toolVersion: 'node-formal-stage-b-v0.3',
+    seed: IDS.seed,
+    toolVersion: 'node-formal-stage-b-v0.4',
     eventArtifact: 'data/detailed/formal_event_replay.json'
   },
   sizing: {
     targetTpsPerUser: targetTps,
-    architectureGateTpsPerUser: profiles.policy.sharedArchitectureGateTpsPerUser,
+    architectureGateTpsPerUser: architectureGateTps,
     utilizationAssumption: utilization,
     dutyCycleAssumption: dutyCycle,
-    effectiveMemoryBandwidth: mcBandwidth.MC320,
+    effectiveMemoryBandwidth: {MC320: mcProfiles.MC320.effectiveBytesPerSecond, MC640: mcProfiles.MC640.effectiveBytesPerSecond},
     networkEffectiveBandwidth: networkBandwidth,
-    availableResources: Object.fromEntries(Object.entries(available).map(([key, peakFlops]) => [key, {scope: 'package_rank', peakFlops}]))
+    availableResources: Object.fromEntries(Object.entries(coreProfiles).map(([key, value]) => [key, Object.fromEntries(Object.entries(value.peakByCore).map(([core, peakFlops]) => [core, {scope: 'package_rank', peakFlops, source: value.source}]))]))
   },
   performanceAcceptance: {
     targetTpsPerUser: targetTps,
-    architectureGateTpsPerUser: profiles.policy.sharedArchitectureGateTpsPerUser,
-    all18SlotsMeetTarget: observations.every(item => item.tpsPerUser >= targetTps),
-    all18SlotsMeetArchitectureGate: observations.every(item => item.tpsPerUser >= profiles.policy.sharedArchitectureGateTpsPerUser),
-    status: 'PERFORMANCE_MISS_REQUIRES_DIRECTION_BACKFLOW',
-    feedback: 'Reduce external-memory bytes or add an implementable bandwidth/reuse route before architecture freeze.'
+    architectureGateTpsPerUser: architectureGateTps,
+    all18SlotsMeetTarget: allMeetTarget,
+    all18SlotsMeetArchitectureGate: allMeetGate,
+    selectedCandidateSlotsMeetTarget: selectedSlotsMeetTarget,
+    status: performanceStatus,
+    feedback: allMeetGate
+      ? 'Planning bounds clear the gate for every slot; this proves nothing until validated event timing replaces the synthetic bound.'
+      : 'Slots below target need byte reduction, more TP ranks or an implementable bandwidth route before architecture freeze; planning bounds are optimistic.'
   },
   qGate: null,
   assumptions: [
     'All three manifests are architecture planning manifests; external vendor/license confirmation remains a qualification risk.',
-    'PLANNING_ESTIMATE is a synthetic bottleneck bound, not an event-timed observation.',
+    'K3 operator rows are shape-derived from the repository engineering preset and reconciled to the calibrated RDMA baseline; GLM-5.2 and DeepSeek-V4-Pro rows are unverified ratio-scaled placeholders.',
+    'PLANNING_ESTIMATE is a synthetic single-operator bottleneck bound, not an event-timed observation.',
     'MC320 and MC640 remain separate profiles; MC640 is not the default manufacturing claim.',
-    'Q3-Q8 synthetic events are placeholders and do not drive latency; P0/P1 core-class rates are not reconciled.'
+    'P0 and P1 use distinct core-class peak capacities but share utilization and duty-cycle assumptions.',
+    'Q3-Q8 synthetic events are placeholders and do not drive latency.'
   ],
   nextActions: [
-    'Create direction feedback packet for byte reduction and memory topology.',
-    'Replace planning operator templates with vendor-verified layer traces.',
+    'Replace planning operator templates for GLM-5.2 and DeepSeek-V4-Pro with vendor-verified layer traces.',
+    'Replace synthetic Q3-Q8 events with the dependency-aware tile/packet/kernel replay.',
     'Repeat formal replay after PPA and bandwidth direction update.'
   ]
 };
@@ -354,6 +363,7 @@ const report = [
   `Run ID: \`${runId}\``,
   `Manifest hash: \`${manifestHash}\``,
   `Run mode: \`${detail.runMode}\``,
+  `Source commit: \`${sourceCommit}\``,
   '',
   '## Gate result',
   '',
@@ -361,11 +371,20 @@ const report = [
   `- Q-Gate: \`${gate.quantificationGate.decision}\``,
   '- Planning artifacts only. Q-Gate blocked: synthetic events do not establish fine TPS or PPA closure.',
   '',
-  '## Performance acceptance',
+  '## Performance acceptance (planning bounds, not validated)',
   '',
-  `- Target: ${targetTps} TPS/usr`,
-  `- All 18 slots meet target: **${detail.performanceAcceptance.all18SlotsMeetTarget ? 'yes' : 'no'}**`,
+  `- Target: ${targetTps} TPS/usr; architecture gate: ${architectureGateTps} TPS/usr`,
+  `- All 18 slots meet target: **${allMeetTarget ? 'yes' : 'no'}**`,
+  `- All 18 slots meet architecture gate: **${allMeetGate ? 'yes' : 'no'}**`,
+  `- Selected candidate slots meet target: **${selectedSlotsMeetTarget ? 'yes' : 'no'}**`,
+  `- Status: \`${performanceStatus}\``,
   `- Feedback: ${detail.performanceAcceptance.feedback}`,
+  '',
+  '## Planning slots',
+  '',
+  '| Model | TP | MC | Profile | bound TPS | bounding operator | resource |',
+  '|---|---:|---|---|---:|---|---|',
+  ...observations.map(item => `| ${item.modelId} | ${item.tp} | ${item.mcProfile} | ${item.physicalProfile} | ${item.tpsPerUser.toFixed(2)} | ${item.boundingOperatorId} | ${item.boundingResource} |`),
   '',
   '## Agent outputs',
   '',
@@ -374,12 +393,13 @@ const report = [
   '## Artifacts',
   '',
   '- `data/workload/formal_model_manifests.json`',
+  '- `data/workload/planning_operator_workload.json`',
   '- `data/detailed/formal_event_replay.json`',
   '- `data/workload/tps_observation_matrix.json`',
   '- `data/detailed/detailed_architecture_run.json`'
 ].join('\n');
 fs.mkdirSync(path.join(root, 'reports/detailed'), {recursive: true});
-fs.writeFileSync(path.join(root, 'reports/detailed/stage_b_formal_run_20260922.md'), `${report}\n`, 'utf8');
+fs.writeFileSync(path.join(root, IDS.stageBReport), `${report}\n`, 'utf8');
 console.log(JSON.stringify({
   runId,
   manifestHash,

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "model-workload-contract-v0.1",
+  "schemaVersion": "model-workload-contract-v0.2",
   "status": "BLOCKED_PENDING_VERIFIED_MODEL_SHAPES",
   "ownerTeam": "Model Team",
   "ownerAgents": [
@@ -57,9 +57,14 @@
     "bytes/token",
     "collective bytes"
   ],
+  "shapeSources": {
+    "K3": "src/core/design_engine.js#MODEL_PRESETS.kimiK3 (engineering preset, single source of truth; not vendor-confirmed)",
+    "GLM-5.2": "UNVERIFIED planning manifest",
+    "DeepSeek-V4-Pro": "UNVERIFIED planning manifest"
+  },
   "evidencePolicy": "All values remain UNVERIFIED until source and shape reconciliation are supplied.",
   "blockers": [
-    "Verified model shape/config sources are missing.",
+    "Verified model shape/config sources are missing for GLM-5.2 and DeepSeek-V4-Pro; K3 uses the repository engineering preset.",
     "Model qualification matrix status: BLOCKED; 0/45 fields verified."
   ],
   "outputs": [

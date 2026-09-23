@@ -47,13 +47,9 @@ LSE 不是普通 sum。每个 rank 提供 `(m, l, O)`，合并需要 max、exp�
 | partial-ready | Attention 20%、LSE 25%、Router 18% | `MODEL` |
 | group ACK/ready counter | enabled | `BASELINE` |
 
-优化后模型每 token：
-
-- 510 transport phases；
-- 14352 peer requests；
-- 约 24.36 MB wire bytes/card；
-- RDMA workspace 峰值约 1.264 MiB/card；
-- collective 模拟串行时间约 131.69 μs/token。
+优化后模型每 token 的 phase 数、peer request 数、wire bytes、RDMA workspace 峰值
+和 collective 串行时间以 `data/rdma/k3_rdma_final_tuning_results.json#/search/best`
+（`phases`、`requests`、`wireBytes`、`rdmaReserveMiB`、`commUs`）为准；本文不再手抄数值。
 
 ## 4. Mailbox 单元
 

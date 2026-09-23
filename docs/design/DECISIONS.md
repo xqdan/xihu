@@ -22,10 +22,12 @@
 
 ## ADR-004：Compute Die 候选
 
-- 日期：2026-09-20
-- 决策：以 4 L Core + 4 H Core、1.2 GHz、44 MiB 数据 SRAM 作为细化起点。
+- 日期：2026-09-20（2026-09-23 补充频率口径）
+- 决策：以 4 L Core + 4 H Core、1.2 GHz、44 MiB 数据 SRAM 作为**P1 compact executable** 细化起点。
 - 状态：`MODEL`
 - 说明：只有在 MC 和 tile 模型闭合后才能冻结。
+- 频率口径：P1 compact executable 的频率和 Core 数由 Final Tuning 搜索决定，权威值在 `spec/k3_mc_baseline.json#computeDieCandidate`（02/03/05/09 号文档描述的是 2026-09-20 的 4 L + 4 H、1.2 GHz 候选）；P0 7R physical primary 的标称频率候选为 1.0 GHz（`spec/k3_7r_package_baseline.json`、12 号文档、AGENT_METRICS_MATRIX）。两者不是冲突，而是两个 profile；任何文档写频率时必须注明 profile。规划管线的 P0/P1 峰值算力统一由 `models/planning/resource_profiles.js` 从这两个 spec 推导。
+- 2026-09-23 更新：修正 Final Tuning 模型（共享 SRAM 端口放大按面积/功耗计费、launch batching 只应用一次）后重新搜索，P1 最佳候选移动到 24 L + 8 H、1.0 GHz、88 MiB/Die，MC640 下约 859 TPS/usr、MC320 下约 534 TPS/usr。原 4 L + 4 H 候选的 998.81 TPS 不再复现，因为其中约 140 μs 的收益来自无成本的端口放大和重复的 launch 折扣。
 
 ## ADR-005：SRAM 统计口径
 
@@ -57,7 +59,7 @@
 - 日期：2026-09-20
 - 决策：320 GB/s/MC 是当前参考兼容点；640 GB/s/MC 只能标为 Stretch。
 - 状态：`FROZEN`
-- 影响：998.81 TPS 不能作为已实现承诺。
+- 影响：P1 的 MC640 Stretch 结果不能作为已实现承诺。
 
 ## ADR-010：7-reticle 单芯片物理边界
 
@@ -67,3 +69,18 @@
 - 物理主候选：8×400 mm² Compute Die、16×100 mm² MC、96 MiB data SRAM/Die、256 GB/package 优先容量档。
 - 兼容模型：现有 4 L + 4 H、44 MiB/Die、约 259.57 mm²/Die 仅作为 compact executable profile。
 - 关闭条件：7R placement/bump/RDL、P0 tile/PPA model、MC payload 和 package thermal 通过联合签核。
+
+## ADR-011：MC 带宽档位与规格网格
+
+- 日期：2026-09-23
+- 背景：`HIGH_LEVEL_ARCHITECTURE.md`（2026-09-22 版）引入了规格网格：MC 带宽档 320/400/480/560/640 GB/s/颗、默认搜索上限 1.5×320 = 480 GB/s、路线 A 观测点 32 颗 × 480 GB/s × 8 GB，以及"约 6 reticle 有源中介层"的图注。这些此前没有进入 ADR、`spec/k3_mc_baseline.json` 或 04 号文档。
+- 决策：
+  1. 320 GB/s/颗是参考基线（沿用 ADR-009）；
+  2. 480 GB/s/颗是默认搜索上限，超过它的档位在所有报告中标记为 `AGGRESSIVE`；
+  3. 560 与 640 GB/s/颗保留在网格中，只能标为 `STRETCH/AGGRESSIVE`，供应商证据闭合前不得作为制造默认值；
+  4. 路线 A（32 MC × 480 GB/s × 8 GB，384 MiB SRAM/卡）是 1M context 的算力下限观测点，不是帕累托选点，也不是签核规格；
+  5. reticle 张数留在封装签核：7-reticle 是仓库的工程 placement window，规格页图注的约 6 reticle 是另一份材料的估计，两者共同锁定的只是 8 颗约 400 mm² Compute Die 加 UCIe 直连 MC。
+- 机器可读：`spec/k3_mc_baseline.json#bandwidthTiers`。
+- 规格来源：`references/k3_1000tps_chip_designs.html`（已入库副本，原件来自工作区 `docs/1000tps/`）。
+- 状态：`BASELINE`
+- 影响：B-002 的表述改为"MC 档位未选定"，关闭证据是选定颗数与每颗带宽的供应商规格。

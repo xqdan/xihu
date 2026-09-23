@@ -1,15 +1,17 @@
 {
   "schemaVersion": "formal-manifest-binding-v0.1",
   "manifestPath": "data/workload/formal_model_manifests.json",
-  "manifestHash": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94",
-  "sourceCommit": "1bd2683b31fe6a8b3f978b394c740b7cd5863c21",
+  "manifestHash": "68303686e210999ec31ea08df9310e76d36677f184422b0754fe87cae051c319",
+  "sourceCommit": "b1cf2c90b5419e942eee3860dfcb32142b773bd6",
   "inputHashes": {
-    "manifest": "92cea05d01eb96af4b5ef61796e9dae82768ba4e60749f2afc2d9ab95286ea94",
-    "operatorWorkload": "bdc4a5102d88161f41ecea582afe10cca8e56351bd0f7a9ccdbece26d8434301",
-    "runner": "208957d64a7c011cd016e019b5beebea876b011c8c898e31f0db9b8e090f142f",
-    "modelProfiles": "ce9c6d5d6b33642cfc38a5e701400f9316f00aed2dcaab7ad557812f68d4762a",
-    "packageSpec": "2e51fa9294c9eb57e2d9f3aa978382e2f85836e560837566d00880ea7e225db8",
-    "mcSpec": "b675c5488fb0c76d1ae75c3a4cb2457742b4d1ecdd65072db6e4a6be84ec02e8"
+    "manifest": "68303686e210999ec31ea08df9310e76d36677f184422b0754fe87cae051c319",
+    "operatorWorkload": "d18e768a19aa79663caf71182dda94c3f6858d9abdfb35d5b90eeb9a2e341f66",
+    "runner": "4c592bfdb24644c16a10d7f25809784114b5886373d286995f50e730d12be656",
+    "resourceProfiles": "ac3ebe060d7f6ef4cf9187c3efafdee8fdb5e5a1ca933280b6970899cef2845e",
+    "gateValidator": "08eb31a43c97ce69e6fd4b2ffd20ad0559dc04897631b43bd7222b278b993dfc",
+    "modelProfiles": "7dd0442947fa57f9b3c41cbb7281912f3a4a4bd5ef20d142a84b8cdffffb680e",
+    "packageSpec": "c0f713c8db6211d5d7857cd6da5e752291ae873167166b7649895c542bf0b6d2",
+    "mcSpec": "266df792bacdf1fea5a691dd72b005e43f99a683b15ad7c68dfce38e2d7bf6b4"
   },
   "boundModels": [
     "K3",
@@ -18,8 +20,8 @@
   ],
   "boundCandidates": [
     "P0-7R-balanced-MC640-TP32",
-    "P0-7R-balanced-MC640-TP16",
-    "P1-compact-MC640-TP32"
+    "P1-compact-MC640-TP32",
+    "P0-7R-balanced-MC320-TP32"
   ],
   "status": "BOUND_FOR_FORMAL_STAGE_B"
 }

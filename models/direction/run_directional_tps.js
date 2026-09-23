@@ -1,4 +1,9 @@
 'use strict';
+/* DEPRECATED (2026-09-23): superseded by models/resolve_architecture_blockers.js.
+ * This runner predates the formal manifest, the shape-derived planning workload
+ * and the validator-computed D-Gate. It overwrites the same artifacts with an
+ * older run id and a BLOCKED register. Kept for history only; do not run it as
+ * part of the planning pipeline. */
 
 const fs = require('fs');
 const path = require('path');

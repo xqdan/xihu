@@ -1,27 +1,27 @@
 {
   "schemaVersion": "architecture-backflow-v0.1",
-  "runId": "stage-b-20260922-formal",
+  "runId": "stage-b-20260923-formal",
   "status": "OPEN",
   "evidenceKind": "SYNTHETIC_BOTTLENECK_BOUND",
   "targetTpsPerUser": 1000,
   "sourceHashes": {
-    "data/governance/gate_status.json": "ae04d22fa05f96859f0dabe22e1863488f0632fd6097320655e74366cf37aec5",
-    "data/detailed/detailed_architecture_run.json": "1428e77002b425c1d43c023003316594a0505e57e507059a82396ad0b83adb9f",
-    "data/workload/tps_observation_matrix.json": "16762d76794c3ec8035f2fd4510517a1cabde6608e2a53082d67a755f41e3cc3",
-    "data/direction/sensitivity_sweep.json": "49177d66db7d255ef11ffbdbc6a10a337fefa62e67a712c1fda6ed913210be78",
-    "data/contracts/model_workload_contract.json": "e45e27a29764079c19a330f41b6558155a4faa34d236faaff73c6970231b2fff",
-    "data/contracts/hardware_resource_contract.json": "1fc6a72504af497cd0bb4a42c8c7a5a9fdba82aa330c92277c5ca2bb3d6bb0ae",
+    "data/governance/gate_status.json": "4f9e76c998aef607a050724b8e786780762c278c8a3cf768bb6d46545f97b99c",
+    "data/detailed/detailed_architecture_run.json": "2f75804253831956751892a0961114bbe666365487795dcf82679d1fdd042c18",
+    "data/workload/tps_observation_matrix.json": "7d4de321408cd12d2c9a4c40ae6fcd0cc0361a25c43688c0f54f52ada7646500",
+    "data/direction/sensitivity_sweep.json": "d7a4bafda3d8bb5c50fc49cf1f4af028b4d86dc745900ce37f2ebe9d78afc469",
+    "data/contracts/model_workload_contract.json": "08ae3ea5c0af17440a021a829c4841b36f12fb16bff5503c1b7d4cfff0b7cf31",
+    "data/contracts/hardware_resource_contract.json": "8721643a8f9c87450446856ecff0c391170eadbc2d3825ac987ec76555532adb",
     "data/contracts/software_execution_contract.json": "f62368547587b79776ea71abe07a3c1435929c22a43e4361778940ad8ce6ef37",
-    "data/contracts/integration_manifest.json": "1fe16fe3661917a78715b2d6095de84bc10d0128a7e28ac9a5560d4cdf2f1ef6",
-    "data/verification/timing_evidence_status.json": "1c2db4a3f7d307f414633f6e9252b92e0b4f69f720e87cf3b22eb860988e70d8",
+    "data/contracts/integration_manifest.json": "907ac51e67373293ad41d136e55dae79fb511843b109f1b99f82676cac932875",
+    "data/verification/timing_evidence_status.json": "0c40f0f0cc95299fb939167e10260a9c670d6d59660827507146e6008648b303",
     "data/workload/model_manifest_qualification_matrix.json": "59fab64d1cb2dac702e27bbc91503a8906b21a3abe7d50f0e2f7215e67f98b50"
   },
   "blockers": [
     {
       "id": "Q1-Q2",
       "priority": "P0",
-      "issue": "Template workload is not derived from verified model shapes",
-      "exit": "Verified source + dtype/layer/operator dimensions; FLOP/byte reconciliation for 3 models"
+      "issue": "K3 workload is shape-derived from the engineering preset; GLM-5.2 / DeepSeek-V4-Pro rows are unverified ratio-scaled placeholders",
+      "exit": "Vendor-verified dtype/layer/operator dimensions; FLOP/byte reconciliation for GLM-5.2 and DeepSeek-V4-Pro"
     },
     {
       "id": "Q3-Q6/Q8",
@@ -32,8 +32,8 @@
     {
       "id": "Q7/D3",
       "priority": "P0",
-      "issue": "P0/P1 share unvalidated core-class capacity assumptions",
-      "exit": "Separate per-die/package/core-class resource accounting, area and activity-bound power"
+      "issue": "P0/P1 core-class peaks are now distinct but utilization, duty cycle and PPA are not activity-validated",
+      "exit": "Per-die/package/core-class resource accounting, area and activity-bound power"
     },
     {
       "id": "D2-D6",
@@ -44,29 +44,29 @@
     {
       "id": "D7/Q9",
       "priority": "P0",
-      "issue": "1000 TPS/user target not established",
+      "issue": "1000 TPS/user target not established by validated timing",
       "exit": "Calibrated operator ledger, validated timing and feasible 7-reticle resource envelope"
     }
   ],
   "models": [
     {
       "modelId": "K3",
-      "bestPlanningBound": 47.88643006263048,
-      "optimisticGapFactor": 20.882742745535715,
+      "bestPlanningBound": 2063.4898803922965,
+      "optimisticGapFactor": 0.4846158973214285,
       "caseId": "K3-TP32-DECODE-1M-MC640",
       "note": "Uncalibrated planning bound; gap is not a hardware sizing recommendation."
     },
     {
       "modelId": "GLM-5.2",
-      "bestPlanningBound": 39.14266211604095,
-      "optimisticGapFactor": 25.547572544642858,
+      "bestPlanningBound": 1907.5741828870016,
+      "optimisticGapFactor": 0.5242260085982914,
       "caseId": "GLM-5.2-TP32-DECODE-1M-MC640",
       "note": "Uncalibrated planning bound; gap is not a hardware sizing recommendation."
     },
     {
       "modelId": "DeepSeek-V4-Pro",
-      "bestPlanningBound": 33.583601756954614,
-      "optimisticGapFactor": 29.776436941964285,
+      "bestPlanningBound": 1636.6595478356999,
+      "optimisticGapFactor": 0.6110006209430597,
       "caseId": "DeepSeek-V4-Pro-TP32-DECODE-1M-MC640",
       "note": "Uncalibrated planning bound; gap is not a hardware sizing recommendation."
     }

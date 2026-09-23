@@ -1,6 +1,6 @@
 {
   "schemaVersion": "directional-workload-baseline-v0.2",
-  "asOf": "2026-09-21",
+  "asOf": "2026-09-23",
   "status": "PARTIALLY_CALIBRATED",
   "unitPolicy": {
     "flopsPerToken": "FLOP/token, global model work before TP sharding",
@@ -15,7 +15,7 @@
       "status": "CALIBRATED_DIRECTIONAL_BASELINE",
       "confidence": "E1",
       "globalFlopsPerToken": 1755347919872,
-      "globalMemoryBytesPerToken": 170071349043.19772,
+      "globalMemoryBytesPerToken": 170014673510.39832,
       "tpScaling": {
         "compute": "globalFlopsPerToken / tp",
         "memory": "globalMemoryBytesPerToken / tp",
@@ -23,18 +23,18 @@
       },
       "collectiveReference": {
         "tp": 32,
-        "latencyUsPerToken": 131.69435343429836,
+        "latencyUsPerToken": 138.42546670161298,
         "scaling": "log2(tp) / log2(referenceTp)"
       },
       "softwareOverheadUsPerToken": 0,
       "calibration": {
         "observedTp": 32,
-        "observedReadBytesPerRank": 5314729657.599929,
-        "observedRawLatencyUs": 1563.5773507534657,
-        "observedE2eLatencyUs": 1829.3855003815547,
-        "observedTpsPerUser": 546.6316420412375,
-        "source": "data/rdma/k3_rdma_final_tuning_results.json",
-        "flopDerivation": "2 * 104.2B active parameters + 1.546947919872T long-context attention/state FLOP from src/core/design_engine.js"
+        "observedReadBytesPerRank": 5312958547.199947,
+        "observedRawLatencyUs": 1600.7328017534446,
+        "observedE2eLatencyUs": 1872.85737805153,
+        "observedTpsPerUser": 533.9434874856156,
+        "source": "data/rdma/k3_rdma_final_tuning_results.json (MC320 replay of search.best)",
+        "flopDerivation": "2 x 104.2B active parameters + 1.546948T long-context attention/state FLOP from src/core/design_engine.js"
       },
       "limitations": [
         "TP8 and TP16 byte scaling is directional, not observed.",

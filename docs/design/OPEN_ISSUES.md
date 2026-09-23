@@ -5,11 +5,11 @@
 | ID | 问题 | 影响 | 关闭证据 |
 | --- | --- | --- | --- |
 | B-001 | 正式 K3 逐层结构和 dtype 未冻结 | FLOP/byte、算子图和容量可能变化 | 模型清单与权重 manifest |
-| B-002 | 参考 MC 320 GB/s，而目标点使用 640 GB/s | TPS 从 998.81 降到 546.63 | 厂商 MC-X 规格或替代架构 |
-| B-003 | Final Tuning 使用经验缩放因子 | 性能可能高估 | 精确 tile/transaction 模型 |
+| B-002 | MC 档位未选定：320 参考、480 默认上限、560/640 激进（ADR-011）；P1 目标点使用 640 GB/s | 320 与 640 两点 TPS 见 `00_CURRENT_STATE.md` 第 3 节 | 选定颗数与每颗带宽的供应商规格或替代架构 |
+| B-003 | Final Tuning 使用经验缩放因子（已在 `GAIN` 表逐项命名；共享 SRAM 端口放大已计入面积/功耗） | 性能可能高估 | 逐项替换为精确 tile/transaction 模型 |
 | B-004 | 卡内 topology 口径冲突 | 带宽、hop、封装无法签核 | 统一拓扑与 packet 模型 |
 | B-005 | TP32 scale-out 物理拓扑未定义 | 800 GB/s 和低时延不可实现性未知 | PHY/拓扑/布线/功耗方案 |
-| B-006 | 1.2 GHz、259.57 mm²、237.46 W 未回标 | PPA 可能不收敛 | synthesis/floorplan/IP macro |
+| B-006 | P1 的 1.2 GHz、面积、功耗（见 `00_CURRENT_STATE.md` 第 2 节）和 P0 的 1.0 GHz 候选均未回标 | PPA 可能不收敛 | synthesis/floorplan/IP macro |
 
 ## P1 关键问题
 

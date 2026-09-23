@@ -128,8 +128,8 @@ Stretch 路线。
 16 × 640 GB/s = 10.24 TB/s raw payload  (Stretch)
 ```
 
-注意：7R 面积和 16 个 MC 的集成并不自动证明 1000 TPS/usr。当前模型已经
-显示 320 GB/s/MC 约为 546.63 TPS/usr，接近目标的结果依赖 640 GB/s/MC
+注意：7R 面积和 16 个 MC 的集成并不自动证明 1000 TPS/usr。当前 P1 模型已经
+显示 320 GB/s/MC 点明显不达标（数值见 `00_CURRENT_STATE.md` 第 3 节），接近目标的结果依赖 640 GB/s/MC
 或等效的字节削减、复用和算法/调度变化。
 
 ## 4. 单芯片数据流和互联
@@ -345,7 +345,7 @@ docs/design/
 2. 8×400 mm² Compute Die 和 16×100 mm² MC floorplan 通过；
 3. 96 MiB/Die SRAM macro、bank、ECC 和端口模型通过；
 4. 320 GB/s MC baseline 和 640 GB/s Stretch 使用同一 Tile/MC 模型复算；
-5. 选定的可制造路线达到 `>=1050 TPS/usr`，而不是只达到 998.81 TPS/usr；
+5. 选定的可制造路线达到 `>=1050 TPS/usr`，而不是只达到当前 P1 MC640 Stretch 点；
 6. package power、thermal、PDN、PHY 和 RDL 具有至少 10% 余量；
 7. 单 package 到 TP32 的 collective、RDMA、故障和降级模型通过；
 8. 7R 物理边界、存储层次和接口规格写入机器可读 baseline。

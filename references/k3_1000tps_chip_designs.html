@@ -1,0 +1,1747 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kimi K3 · 1000 TPS/usr 目标下的代表性芯片规格</title>
+  <style>
+    :root {
+      --ink: #172033; --muted: #647083; --paper: #f3f1eb; --panel: #fffdf8; --line: #d6d8d8;
+      --accent: #155e75; --accent-soft: #e4f2f4; --warn: #b45309; --warn-soft: #fff4d8;
+      --purple: #6d28d9; --good: #166534; --good-soft: #e6f4ea; --bad: #b91c1c; --grid: #e6e8e6;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper);
+      font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+    main { max-width: 1440px; margin: 0 auto; padding: 30px 24px 48px; }
+    h1 { margin: 4px 0 6px; font-size: 28px; line-height: 1.25; }
+    h2 { margin: 36px 0 12px; padding-top: 14px; font-size: 20px; border-top: 1px solid var(--line); }
+    h3 { margin: 16px 0 6px; font-size: 14px; color: var(--accent); }
+    p { margin: 0; }
+    .eyebrow { color: var(--accent); font-size: 12px; font-weight: 700; letter-spacing: .09em; }
+    .subtitle { color: var(--muted); max-width: 1050px; }
+    .panel { padding: 16px 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid-32 { display: grid; grid-template-columns: 3fr 2fr; gap: 16px; }
+    .caption { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    .callout { margin-top: 12px; padding: 12px 15px; color: #164e63; background: var(--accent-soft);
+      border-left: 4px solid var(--accent); border-radius: 6px; font-size: 13px; }
+    .callout.warn { color: #78350f; background: var(--warn-soft); border-left-color: var(--warn); }
+    .callout p + p { margin-top: 6px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { color: var(--muted); font-size: 12px; font-weight: 650; white-space: nowrap; }
+    td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    tr:last-child td { border-bottom: 0; }
+    .steps { counter-reset: s; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+    .step { position: relative; padding: 14px 16px 14px 48px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; font-size: 13px; }
+    .step::before { counter-increment: s; content: counter(s); position: absolute; left: 14px; top: 13px; width: 24px; height: 24px; border-radius: 50%;
+      background: var(--accent); color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+    .step b { display: block; margin-bottom: 4px; }
+    .controls { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .field input, .field select { width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font: inherit; }
+    textarea { width: 100%; min-height: 150px; padding: 9px; border: 1px solid var(--line); border-radius: 6px; background: #fff;
+      font: 12px/1.5 ui-monospace, Consolas, monospace; resize: vertical; }
+    button { padding: 9px 18px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font: inherit; font-weight: 650; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    .progress { height: 8px; background: var(--grid); border-radius: 4px; overflow: hidden; margin-top: 10px; }
+    .progress > div { height: 100%; width: 0; background: var(--accent); transition: width .1s; }
+    .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .stat { padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+    .stat .v { font-size: 22px; font-weight: 700; }
+    .stat .l { font-size: 12px; color: var(--muted); }
+    .tag { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 650; margin-right: 4px; }
+    .tag.ok { background: var(--good-soft); color: var(--good); }
+    .tag.warn { background: var(--warn-soft); color: var(--warn); }
+    .tag.bad { background: #fee2e2; color: var(--bad); }
+    .tag.info { background: var(--accent-soft); color: var(--accent); }
+    .badge { display: inline-flex; width: 22px; height: 22px; border-radius: 50%; color: #fff; font-weight: 700; font-size: 12px; align-items: center; justify-content: center; margin-right: 6px; }
+    .rep { margin-top: 16px; }
+    .rep h3 { margin-top: 0; display: flex; align-items: center; font-size: 15px; }
+    .rep .spec { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin: 8px 0 12px; }
+    .rep .spec div { padding: 6px 8px; background: #f7f5ef; border-radius: 6px; font-size: 12px; }
+    .rep .spec b { display: block; font-size: 14px; }
+    .mono { font-family: ui-monospace, Consolas, monospace; font-size: 12px; }
+    svg { display: block; width: 100%; height: auto; }
+    svg text { font-family: inherit; }
+    footer { margin-top: 28px; color: var(--muted); font-size: 12px; }
+    @media (max-width: 1100px) { .grid-2, .grid-3, .grid-32, .steps, .controls, .stats { grid-template-columns: 1fr 1fr; } .rep .spec { grid-template-columns: repeat(4, 1fr); } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">TARGET-DRIVEN CHIP DESIGN SPACE</div>
+    <h1>Kimi K3 · 目标 1000 TPS/usr：芯片规格空间中的代表性设计</h1>
+    <p class="subtitle">
+      给定目标单用户 TPS，把芯片规格（MC 数量/带宽/容量、SRAM、算力、归约延迟、互联）和卡数都放开，
+      部署方案（PP×TP、层内策略、专家切分）对每个芯片点单独优化。算法在物理约束下枚举规格网格，
+      找到每个芯片"达标的最少卡数"，再用帕累托前沿和设计原型挑出几组有代表性的规格。
+    </p>
+  </header>
+
+  <h2>系统架构与设计变量</h2>
+  <div class="panel" id="figArch"></div>
+  <p class="caption">
+    单卡 = 1 个封装：8 颗计算 Die（L-Core 线性阵列 + H-Core 注意力 + 本地 SRAM 切片）经 UCIe 直连 N 颗 3D-DRAM MC。
+    模型先按 TP 切到卡（每 MoE 层 4 次卡间集合通信，MLA 注意力层另加一次 LSE 合并；把 Router 的 all-gather 单独算一次则为 5），再按 PP 切成串行 Stage；每卡内部再按 8 Die 分片。
+    图中彩色标签即本页搜索的芯片规格维度，灰色标签为部署决策。
+  </p>
+
+  <h2>算法</h2>
+  <div class="steps">
+    <div class="step"><b>规格网格 + 物理约束</b>7 个规格维度取离散档位做笛卡尔积。每个点先过三道硬约束：Die 面积预算（SRAM 面积 + 张量阵列 + MC PHY + 固定开销 ≤ 8 × 400 mm²，所以 SRAM 上限随 MC 数量和算力变化）、MC 带宽 ≤ 基线 × 上限倍数、权重 + KV 状态 ≤ 每卡容量（由部署优化内部判定）。</div>
+    <div class="step"><b>逐芯片求达标最少卡数 N*</b>对每个芯片点，卡数从小到大枚举；每个卡数下枚举所有 PP×TP（TP 整除头数且 ≤ 上限）× 专家切分份数 × Router 分片/复制，取 TPS 最大者。第一个 ≥ 目标 × (1 + 达标裕量) 的卡数即 N*（裕量用于吸收建模误差，避免 1001 TPS 也算达标）。归约延迟随 TP 的缩放方式（内存语义平坦 / 消息语义 log₂）、Wdown/Router all-gather 是否融合、MLA Context 分片的 LSE 合并是否计入，按页首选择。这一步只用分片主导的策略子集做快筛（全分片 × Router 分片/复制 × Wup 分片/复制；Wup 复制在"归约慢 + MC 余量大"的角落会胜出，其余复制策略在 K3 上从未胜出），代表点再做全策略复核。</div>
+    <div class="step"><b>成本模型</b>芯片成本 = 硅面积（1 分/mm²）+ 存储（容量 × 单价 × 高速溢价）+ 互联 + 归约延迟改进代价；系统成本 = N* × 芯片成本。代价系数全部可编辑，默认延续 ../../src/core/design_engine.js 的面积比例口径。注意：此口径下每卡固定成本为 0，"少卡堆芯片"天然占优，页尾的成本系数敏感性表用于检验该结论是否稳健。</div>
+    <div class="step"><b>帕累托前沿</b>在（芯片成本, N*）平面取非支配集：同样卡数下芯片更便宜、或同样芯片成本下卡更少的设计才留下。所有达标设计画成散点，前沿高亮。</div>
+    <div class="step"><b>原型选点</b>从达标集合中按 8 个原型各选 1 个：最少卡数、最低系统成本、最省单卡、带宽保守、少 SRAM、归约延迟保守、帕累托膝点、最大裕量。同一设计命中多个原型时合并。这样保证代表点覆盖"堆卡 vs 堆芯片"两端和中间折中。</div>
+    <div class="step"><b>代表点复核与紧约束</b>对每个代表点用全策略空间重新优化部署，输出 PP×TP、层内策略、瓶颈、时间分解、面积分解。再把每个规格降一档重跑：降了就达不了标 → 必需；要加卡才达标 → 有代价；不影响 → 有余量。</div>
+  </div>
+
+  <h2>输入</h2>
+  <div class="panel">
+    <div class="controls">
+      <div class="field"><label>目标 TPS/usr</label><input id="inTarget" type="number" value="1000" step="50"></div>
+      <div class="field"><label>候选卡数（逗号分隔）</label><input id="inCards" value="16, 24, 32, 48, 64, 96, 128, 192, 256"></div>
+      <div class="field"><label>TP 上限</label><input id="inMaxTp" type="number" value="32" step="1"></div>
+      <div class="field"><label>MC 带宽上限（× 基线 320 GB/s）</label><input id="inBwCap" type="number" value="1.5" step="0.25"></div>
+      <div class="field"><label>Die 面积预算（mm²/卡）</label><input id="inDie" type="number" value="3200" step="100"></div>
+      <div class="field"><label>专家预测准确率（%）</label><input id="inPred" type="number" value="80" step="5" min="0" max="100"></div>
+      <div class="field"><label>SRAM 预取深度（层，0 = 不预取）</label><input id="inDepth" type="number" value="2" step="1" min="0"></div>
+      <div class="field"><label>归约延迟随 TP 的缩放</label><select id="inScaling"><option value="flat">flat：内存语义两轮，8→32 卡近似平坦</option><option value="log2">log2：消息语义树形，随 log₂TP 增长</option></select></div>
+      <div class="field"><label>达标裕量（%，TPS ≥ 目标 × (1+裕量) 才算达标）</label><input id="inGuard" type="number" value="5" step="1" min="0"></div>
+      <div class="field"><label>集合通信融合（Wdown 与 Router 的 all-gather 合并为一次）</label><select id="inFusion"><option value="1">开：每 MoE 层 4 次</option><option value="0">关：每 MoE 层 5 次</option></select></div>
+      <div class="field"><label>MLA KV 按 Context 分片的 LSE 合并</label><select id="inMlaMerge"><option value="1">计入：每 softmax 注意力层 +1 次</option><option value="0">不计</option></select></div>
+      <div class="field"><label>Context</label><select id="inCtx"><option value="32768">32K</option><option value="1048576" selected>1M（默认）</option><option value="2097152">2M</option></select></div>
+    </div>
+    <p class="caption" style="margin-top:8px">SRAM 的两层价值都已建模：① 预取缓冲——确定性权重按流式消费不需整层驻留，缓冲要装下「预取深度 × 每层预测专家」（Router 前必须到齐）+「归约空窗期间 MC 读满的字节」（compute 停在 all-reduce 上时 MC 继续读下一批 = 每卡带宽 × 每层归约时间）；装下后 MC 才能在计算 / 归约期间持续读，预测未命中的 (1−p) 份专家在 Router 之后串行补读；缓冲不足按覆盖比例退化为"Router 后才读专家、归约期间 MC 空转"。② 缓冲之外的容量常驻权重，直接减少 MC 读取。每次归约的 payload 按实际维度计（attention / Wup 输出 = hidden，Wdown / 专家合并 = latent，Router = 专家 logits，MLA 合并 = heads × (kvLatent + 2)）。</p>
+    <div class="grid-2" style="margin-top:12px">
+      <div>
+        <h3>规格网格（每维的候选档位，JSON）</h3>
+        <textarea id="inGrid"></textarea>
+        <p class="caption">collectiveLatencyUs 是 TP8 规模下的一次 all-reduce 延迟，缩放方式见上方选择。默认档位对应 ../communication/sram_allreduce_comm_cost.html 的物理估算：2 / 1.5 μs 消息语义，1.15 μs 内存语义两轮经交换，0.85 μs 两轮直连，0.66 μs 8 卡一步到位直连（&lt; 0.85 在结果里标为激进）。linearTflops 按 <b>Decode 1000 TPS</b> 搜下限（含 65 / 98 TF），不按 Prefill 配；H-Core 仍按 L-Core 8 倍同比计入面积。独立 H-Core 下限见总览页算力搜索。</p>
+      </div>
+      <div>
+        <h3>成本 / 面积模型（JSON）</h3>
+        <textarea id="inCost"></textarea>
+        <p class="caption">面积：SRAM 1.26 MiB/mm²；张量阵列 1600 mm² 对应 262 TFLOPS；MC PHY 每颗 12 mm² + 0.025 mm² 每 GB/s。存储成本按容量计价，带宽超基线部分按比例加溢价。</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
+      <button id="btnRun">运行搜索</button>
+      <span id="status" class="caption" style="margin:0"></span>
+    </div>
+    <div class="progress"><div id="bar"></div></div>
+  </div>
+
+  <div id="results" style="display:none">
+    <h2>搜索结果</h2>
+    <div class="stats" id="stats"></div>
+    <div class="callout warn" id="calloutSpace" style="margin-top:14px"></div>
+
+    <h2>达标设计的帕累托前沿：芯片成本 vs 最少卡数</h2>
+    <div class="grid-32">
+      <div>
+        <div class="panel" id="figPareto"></div>
+        <p class="caption">横轴：单卡芯片成本（相对分）· 纵轴：达标最少卡数。灰点为所有达标设计，深色为帕累托前沿，字母为代表点。等系统成本线为虚线。</p>
+      </div>
+      <div>
+        <h3>帕累托前沿上的设计</h3>
+        <div class="panel" style="max-height:420px;overflow:auto"><table id="tblFront"></table></div>
+      </div>
+    </div>
+
+    <h2>代表性设计</h2>
+    <div class="panel" style="overflow:auto"><table id="tblReps"></table></div>
+    <h2>32K vs 1M Context</h2>
+    <p class="caption">主搜索默认 1M。下表把同一批代表芯片在 32K / 1M 各跑一遍（KV = 1152 B × 24 层 × L，沿 TP 分片后进 MC 读取，不是只占容量）。</p>
+    <div class="panel" style="overflow:auto"><table id="tblCtx"></table></div>
+    <div class="grid-2" style="margin-top:16px">
+      <div>
+        <h3 id="figTimeTitle">每 token 时间分解（ms）</h3>
+        <div class="panel" id="figTime"></div>
+        <p class="caption">MC 净读取 = (MC 读取 − SRAM 常驻节省) × PP；归约 = 全部 TP all-reduce 时间。目标线为 1000 ms⁻¹ = 1 ms。</p>
+      </div>
+      <div>
+        <h3>每卡 Die 面积分解（mm²）</h3>
+        <div class="panel" id="figArea"></div>
+        <p class="caption">虚线为 Die 面积预算。SRAM 与 MC PHY、张量阵列争面积，这就是 SRAM 容量约束的来源。</p>
+      </div>
+    </div>
+    <div id="repDetails"></div>
+
+    <h2>SRAM 的价值：预取缓冲 → 常驻 → 预测准确率</h2>
+    <div class="grid-32">
+      <div>
+        <h3 id="sramTitle">最低系统成本方案的芯片：TPS 随 SRAM 与预测准确率的变化</h3>
+        <div class="panel" id="figSram"></div>
+        <p class="caption" id="figSramCaption"></p>
+      </div>
+      <div>
+        <h3 id="tblBufferTitle">K3 预取缓冲需求（每卡）</h3>
+        <table><thead><tr><th>TP</th><th class="num">预测专家/层</th><th class="num">归约空窗读满</th><th class="num">缓冲需求</th><th>说明</th></tr></thead><tbody id="tblBuffer"></tbody></table>
+        <div class="callout" id="calloutSram"></div>
+      </div>
+    </div>
+
+    <h2>约束的影响</h2>
+    <div class="grid-2">
+      <div>
+        <h3>归约延迟 × SRAM：达标最少卡数 / 最低系统成本</h3>
+        <div class="panel" style="overflow:auto"><table id="tblHeat"></table></div>
+        <p class="caption">每格取该组合下其余维度任选时的最优。空格 = 该组合在任何卡数与其他规格下都达不到目标或被面积约束剔除。</p>
+      </div>
+      <div>
+        <h3>MC 带宽上限的影响</h3>
+        <div class="panel"><table id="tblBw"></table></div>
+        <h3>算力档位的影响（降算力换 SRAM 面积）</h3>
+        <div class="panel"><table id="tblCompute"></table></div>
+      </div>
+    </div>
+    <div class="callout" id="calloutConclusion"></div>
+
+    <h3>成本系数敏感性：最低系统成本方案是否易主</h3>
+    <div class="panel" style="overflow:auto"><table id="tblCostSens"></table></div>
+    <p class="caption">成本系数只影响排序，不影响达标集合（面积与性能与之无关），因此无需重新搜索。"易主"表示该系数变化后最低系统成本的芯片/卡数与基线不同；若多数行不易主，说明"少卡堆芯片更便宜"的结论对成本系数不敏感。每卡固定成本（板卡、供电、机箱分摊）基线为 0，+2000 分/卡约为最省单卡芯片成本的量级，只会进一步偏向少卡。</p>
+  </div>
+
+  <h2 id="compute1m">1M Context：算力下限与制程</h2>
+  <p class="caption">同一颗路线 A 芯片（32×MC @480 GB/s · 384 MiB SRAM · 归约 1.15 μs flat），分别钉 <b>16 卡</b>和 <b>32 卡</b>。16 卡加卡摊 KV 之前过不了；32 卡才进入「算力下限 → 制程」。</p>
+  <h3>16 卡 · PP1×TP16</h3>
+  <div id="cmp1m16"><p class="caption">正在按 1M 搜索…</p></div>
+  <h3>32 卡 · PP1×TP32</h3>
+  <div id="cmp1m32"><p class="caption">正在按 1M 搜索…</p></div>
+
+  <footer>
+    建模范围：Decode、batch=1、单用户、Context 由页首选择（32K / 1M / 2M；KV 沿 TP 分片并计入每 token 读取）、专家预测准确率、SRAM 预取深度、归约缩放方式、集合通信融合、MLA LSE 合并与达标裕量按页首输入、Owner 负载不均按 balls-in-bins 期望。
+    规格网格：SRAM 10 档（128–2048 MiB，512 以下每档 64–128 MiB），配合 5% 达标裕量避免"网格粗 + 裕量"叠加把 SRAM 推荐档位抬高一档。
+    Prefill 与多用户 KV 的算力/容量需求不在本页目标内，算力档位下调的代表点需另行核对 Prefill 指标。
+  </footer>
+</main>
+
+<script>
+/* inlined from ../../src/core/design_engine.js — 单文件可离线打开；改模型请先改源文件再重新嵌入
+ * 入库副本说明（2026-09-23）：本文件从工作区 docs/1000tps/ 复制到 references/，脚本引用改为仓库内 ../src/core/；
+ * 内嵌的 design_engine 与 src/core/design_engine.js 同源。 */
+/*
+ * ../../src/core/design_engine.js — MoE Decode 部署与芯片规格设计空间探索引擎
+ *
+ * 用途：
+ *   1. 给定模型 + 芯片，自动选择「层内 TP 策略」（每类张量分片还是复制）
+ *   2. 给定模型 + 芯片 + 卡数，自动选择 PP×TP
+ *   3. 给定模型 + 芯片旋钮及其代价，给出「最少资源、最大收益」的升级/削减路径
+ *
+ * 浏览器：<script src="../src/core/design_engine.js"><\/script> 后使用 window.DesignEngine
+ * Node：   const E = require("./../../src/core/design_engine.js");  node src/core/design_engine.js 直接运行示例
+ *
+ * 建模口径与 ../explorers/k3_pp_tp_calculator.html 一致，并做了以下扩展：
+ *   - 注意力/固定权重可显式推导（MLA/GQA）而不只依赖残差
+ *   - Routed Experts 按 Owner 放置，可选考虑 Owner 负载不均（balls-in-bins 期望最大值）
+ *   - SRAM 先作预取缓冲（装下 prefetchDepth 层的权重 + 预测专家，MC 读取才能与计算/归约重叠；
+ *     预测未命中的 (1−p) 份专家在 Router 之后串行补读），缓冲之外的容量再常驻权重
+ *     （优先确定性权重，剩余按均匀路由命中率覆盖 Routed 权重）
+ *   - 归约/PP 跳数包含 payload ÷ 互联带宽项
+ *   - LM Head 只在最后一个 Stage 读取一次
+ */
+(function (root, factory) {
+  if (typeof module === "object" && module.exports) module.exports = factory();
+  else root.DesignEngine = factory();
+})(typeof self !== "undefined" ? self : this, function () {
+  "use strict";
+
+  const MIB = 1024 * 1024;
+  const MXFP4_BYTES = 17 / 32;
+
+  // ---------------------------------------------------------------------------
+  // 模型预设
+  // attention.paramsPerLayer: "derive"（按 MLA/GQA 公式推导）| "residual"（激活参数减去可推算项）| 数字
+  // ---------------------------------------------------------------------------
+  const MODEL_PRESETS = {
+    kimiK3: {
+      name: "Kimi K3（2.78T，计算器口径）",
+      totalParams: 2.78e12,
+      activeParams: 104.2e9,
+      layers: 93,
+      moeLayers: 92,
+      hidden: 7168,
+      vocab: 163840,
+      moe: { totalExperts: 896, activeExperts: 16, sharedExperts: 2, expertHidden: 3072, expertInput: "latent", latent: 3584 },
+      denseFfnHidden: 0,
+      // qkHeadDim 192 = nope 128 + rope 64；KV cache 每 token 每层存 kvLatent + ropeDim = 576 个元素（DeepSeek-V3 / K2 同构）
+      attention: { kind: "mla", heads: 96, qkHeadDim: 192, vHeadDim: 128, kvLatent: 512, ropeDim: 64, qLoraRank: 0, paramsPerLayer: "residual" },
+      linearAttention: { layers: 69, stateDim: 128 },
+      dtype: { routed: MXFP4_BYTES, dense: 2 }
+    },
+    deepseekV3: {
+      name: "DeepSeek-V3 / R1（671B）",
+      totalParams: 671e9,
+      activeParams: 37e9,
+      layers: 61,
+      moeLayers: 58,
+      hidden: 7168,
+      vocab: 129280,
+      moe: { totalExperts: 256, activeExperts: 8, sharedExperts: 1, expertHidden: 2048, expertInput: "hidden", latent: 0 },
+      denseFfnHidden: 18432,
+      attention: { kind: "mla", heads: 128, qkHeadDim: 192, vHeadDim: 128, kvLatent: 512, ropeDim: 64, qLoraRank: 1536, paramsPerLayer: "derive" },
+      linearAttention: { layers: 0, stateDim: 0 },
+      dtype: { routed: MXFP4_BYTES, dense: 2 }
+    },
+    qwen3_235b: {
+      name: "Qwen3-235B-A22B",
+      totalParams: 235e9,
+      activeParams: 22e9,
+      layers: 94,
+      moeLayers: 94,
+      hidden: 4096,
+      vocab: 151936,
+      moe: { totalExperts: 128, activeExperts: 8, sharedExperts: 0, expertHidden: 1536, expertInput: "hidden", latent: 0 },
+      denseFfnHidden: 0,
+      attention: { kind: "gqa", heads: 64, qkHeadDim: 128, vHeadDim: 128, kvHeads: 4, ropeDim: 0, qLoraRank: 0, paramsPerLayer: "derive" },
+      linearAttention: { layers: 0, stateDim: 0 },
+      dtype: { routed: MXFP4_BYTES, dense: 2 }
+    }
+  };
+
+  // 单卡 = 8 计算 Die × 16 MC，口径见 ../architecture/ucie_7reticle_architecture.html
+  const CHIP_DEFAULT = {
+    mcCount: 16,
+    mcBandwidthGBs: 320,
+    mcEfficiency: 0.7,
+    mcCapacityGB: 8,
+    sramMib: 768,
+    linearTflops: 262.144,
+    attnTflops: 2097.152,
+    utilization: 0.6,
+    lcoreArrayN: 128,
+    collectiveLatencyUs: 2,
+    collectiveRefTp: 8,
+    collectiveScaling: "log2",
+    ppHopUs: 2,
+    linkBandwidthGBs: 200
+  };
+
+  // 归约延迟：collectiveLatencyUs 按 collectiveRefTp 规模给出，"log2" 表示随 log2(TP) 缩放（树形归约），"flat" 表示不随规模变化
+  function collectiveLatency(chip, tp) {
+    switch (chip.collectiveScaling) {
+      case "flat": return chip.collectiveLatencyUs;
+      case "log2": return chip.collectiveLatencyUs * Math.log2(tp) / Math.log2(chip.collectiveRefTp);
+      default: throw new Error("未知 collectiveScaling: " + chip.collectiveScaling);
+    }
+  }
+
+  // prediction：下一层专家预测准确率
+  // prefetchDepth：SRAM 预取缓冲要装下几层的「预测专家」（2 = 当前层 + 下一层双缓冲）；确定性权重按流式消费，
+  //   缓冲只需再装下「归约空窗期间 MC 读满的字节」（compute 停在 all-reduce 上时 MC 继续读下一批权重）
+  // sramAlloc：缓冲之外的 SRAM 用于权重常驻的比例
+  // collectiveFusion：把同一层里输入相同、彼此独立的集合通信合并成一次（Wdown 的 all-gather 与 Router 的 all-gather 都吃 norm(h)）
+  // mlaContextShardMerge：MLA 潜变量 KV 按 Context 分片后，每个 softmax 注意力层需要一次 flash-decoding 式的 LSE 合并，是否计入
+  const OPTIONS_DEFAULT = {
+    prediction: 0.8,
+    prefetchDepth: 2,
+    context: 1048576,
+    sramAlloc: 1.0,
+    margin: 1.17,
+    users: 1,
+    imbalance: true,
+    collectiveFusion: false,
+    mlaContextShardMerge: true,
+    cardCounts: [8, 16, 32, 64, 128],
+    maxTp: 16,
+    maxExpertGroup: 64,
+    objective: "tps"
+  };
+
+  // 芯片旋钮：step 为一次升级的增量（better 为 "down" 的旋钮增量为负方向），cost 为一步的相对代价
+  // 默认代价为按 400 mm² Die 面积比例的粗估（SRAM 1.26 MiB/mm²，Tensor 200 mm²），请按实际回标
+  const KNOBS_DEFAULT = [
+    { id: "mcCount", label: "MC 数量/卡", unit: "颗", step: 2, min: 2, max: 32, cost: 80, better: "up" },
+    { id: "mcBandwidthGBs", label: "MC 带宽/颗", unit: "GB/s", step: 40, min: 80, max: 800, cost: 24, better: "up" },
+    { id: "mcCapacityGB", label: "MC 容量/颗", unit: "GB", step: 4, min: 2, max: 32, cost: 48, better: "up" },
+    { id: "sramMib", label: "SRAM/卡", unit: "MiB", step: 96, min: 96, max: 3072, cost: 76, better: "up" },
+    { id: "linearTflops", label: "L-Core 算力/卡", unit: "TFLOPS", step: 32.768, min: 32.768, max: 1048.576, cost: 40, better: "up" },
+    { id: "attnTflops", label: "H-Core 算力/卡", unit: "TFLOPS", step: 262.144, min: 262.144, max: 8388.608, cost: 175, better: "up" },
+    { id: "collectiveLatencyUs", label: "TP 归约延迟", unit: "μs", step: 0.25, min: 0.25, max: 5, cost: 30, better: "down" },
+    { id: "ppHopUs", label: "PP 边界延迟", unit: "μs", step: 0.25, min: 0.25, max: 5, cost: 20, better: "down" },
+    { id: "linkBandwidthGBs", label: "互联带宽/卡", unit: "GB/s", step: 100, min: 100, max: 3200, cost: 15, better: "up" }
+  ];
+
+  // 层内策略：每类张量 shard | replicate；expertGroup = 每个 Routed Expert 切成几份（1 = 纯 Owner 放置）
+  const POLICY_KEYS = ["attn", "wdown", "wup", "shared", "router", "denseFfn"];
+  const POLICY_LABELS = {
+    attn: "Attention 权重+状态",
+    wdown: "Wdown",
+    wup: "Wup",
+    shared: "Shared experts",
+    router: "Router",
+    denseFfn: "Dense FFN"
+  };
+  const OBJECTIVES = {
+    tps: "单用户 TPS/usr 最大",
+    throughput: "PP 流水吞吐最大（batch=1）",
+    perCard: "每卡流水吞吐最大",
+    balanced: "TPS × 每卡吞吐 几何平均"
+  };
+
+  // ---------------------------------------------------------------------------
+  // 工具
+  // ---------------------------------------------------------------------------
+  function clone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  function divisors(n) {
+    const out = [];
+    for (let i = 1; i <= n; i++) if (n % i === 0) out.push(i);
+    return out;
+  }
+
+  // Owner 放置下，k 个激活专家（每个切成 g 份）落到 n 张 TP 卡上，最忙那张卡的期望字节 ÷ 平均字节
+  const imbalanceCache = new Map();
+  function imbalanceFactor(k, n, g) {
+    const group = g || 1;
+    if (n <= 1 || k <= 0) return 1;
+    if (group >= n) return 1;
+    return ballsInBinsMaxRatio(k * group, n);
+  }
+
+  function ballsInBinsMaxRatio(k, n) {
+    const key = k + ":" + n;
+    if (imbalanceCache.has(key)) return imbalanceCache.get(key);
+    let seed = 20260907;
+    const rnd = () => {
+      seed = (seed * 1664525 + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    const trials = 4000;
+    const bins = new Array(n);
+    let sum = 0;
+    for (let t = 0; t < trials; t++) {
+      bins.fill(0);
+      let mx = 0;
+      for (let i = 0; i < k; i++) {
+        const b = Math.floor(rnd() * n);
+        if (++bins[b] > mx) mx = bins[b];
+      }
+      sum += mx;
+    }
+    const factor = sum / trials / (k / n);
+    imbalanceCache.set(key, factor);
+    return factor;
+  }
+
+  // ---------------------------------------------------------------------------
+  // 模型派生：把规格转成「每 token 需要读取的各类权重字节」
+  // ---------------------------------------------------------------------------
+  function deriveAttentionParamsPerLayer(spec) {
+    const a = spec.attention;
+    const h = spec.hidden;
+    const oProj = a.heads * a.vHeadDim * h;
+    switch (a.kind) {
+      case "mla": {
+        const rope = a.ropeDim || 0;
+        const qProj = a.qLoraRank
+          ? h * a.qLoraRank + a.qLoraRank * a.heads * a.qkHeadDim
+          : h * a.heads * a.qkHeadDim;
+        const kvA = h * (a.kvLatent + rope);
+        const kvB = a.kvLatent * a.heads * (a.qkHeadDim - rope + a.vHeadDim);
+        return qProj + kvA + kvB + oProj;
+      }
+      case "gqa": {
+        const qProj = h * a.heads * a.qkHeadDim;
+        const kvProj = 2 * h * a.kvHeads * a.qkHeadDim;
+        return qProj + kvProj + oProj;
+      }
+      default:
+        throw new Error("未知 attention.kind: " + a.kind);
+    }
+  }
+
+  function deriveModel(spec) {
+    const moe = spec.moe;
+    const a = spec.attention;
+    const la = spec.linearAttention || { layers: 0, stateDim: 0 };
+    const denseLayers = spec.layers - spec.moeLayers;
+    const softmaxLayers = spec.layers - la.layers;
+    const expertIn = moe.expertInput === "latent" ? moe.latent : spec.hidden;
+
+    const params = {};
+    params.routedActive = spec.moeLayers * moe.activeExperts * 3 * expertIn * moe.expertHidden;
+    params.routedTotal = spec.moeLayers * moe.totalExperts * 3 * expertIn * moe.expertHidden;
+    params.shared = spec.moeLayers * moe.sharedExperts * 3 * spec.hidden * moe.expertHidden;
+    params.wdown = moe.expertInput === "latent" ? spec.moeLayers * spec.hidden * moe.latent : 0;
+    params.wup = params.wdown;
+    params.router = spec.moeLayers * spec.hidden * moe.totalExperts;
+    params.denseFfn = denseLayers * 3 * spec.hidden * (spec.denseFfnHidden || 0);
+    params.lmHead = spec.hidden * (spec.vocab || 0);
+
+    const knownActive =
+      params.routedActive + params.shared + params.wdown + params.wup +
+      params.router + params.denseFfn + params.lmHead;
+    let attnSource;
+    if (typeof a.paramsPerLayer === "number") {
+      params.attn = a.paramsPerLayer * spec.layers;
+      attnSource = "explicit";
+    } else if (a.paramsPerLayer === "residual") {
+      params.attn = spec.activeParams - knownActive;
+      attnSource = "residual";
+    } else {
+      params.attn = deriveAttentionParamsPerLayer(spec) * spec.layers;
+      attnSource = "derived";
+    }
+    if (params.attn < 0) throw new Error("推导出的注意力参数为负，请检查模型规格");
+
+    const dense = spec.dtype.dense;
+    const bytes = {
+      routedActive: params.routedActive * spec.dtype.routed,
+      routedTotal: params.routedTotal * spec.dtype.routed,
+      attn: params.attn * dense,
+      wdown: params.wdown * dense,
+      wup: params.wup * dense,
+      shared: params.shared * dense,
+      router: params.router * dense,
+      denseFfn: params.denseFfn * dense,
+      lmHead: params.lmHead * dense
+    };
+
+    const kvPerTokenPerLayer =
+      a.kind === "mla" ? (a.kvLatent + (a.ropeDim || 0)) * dense : 2 * a.kvHeads * a.qkHeadDim * dense;
+    const kdaStateStore = la.layers * a.heads * la.stateDim * la.stateDim * dense;
+
+    const activeSum = knownActive + params.attn;
+    const totalSum = activeSum - params.routedActive + params.routedTotal;
+
+    return {
+      spec,
+      params,
+      bytes,
+      attnSource,
+      denseLayers,
+      softmaxLayers,
+      kvPerTokenPerLayer,
+      kdaStateStore,
+      attnFlopsPerToken: context =>
+        softmaxLayers * 2 * context * a.heads * (a.qkHeadDim + a.vHeadDim) +
+        la.layers * a.heads * la.stateDim * la.stateDim * 7,
+      check: {
+        activeParams: activeSum,
+        activeGap: spec.activeParams ? activeSum - spec.activeParams : 0,
+        totalParams: totalSum,
+        totalGap: spec.totalParams ? totalSum - spec.totalParams : 0
+      }
+    };
+  }
+
+  function policyKeysFor(model) {
+    const p = model.params;
+    return POLICY_KEYS.filter(key => {
+      switch (key) {
+        case "attn": return true;
+        case "wdown": return p.wdown > 0;
+        case "wup": return p.wup > 0;
+        case "shared": return p.shared > 0;
+        case "router": return true;
+        case "denseFfn": return p.denseFfn > 0;
+        default: throw new Error("未知策略键: " + key);
+      }
+    });
+  }
+
+  function expertGroupsFor(tp, maxExpertGroup) {
+    const cap = Math.min(tp, maxExpertGroup || tp);
+    const out = [];
+    for (let g = 1; g <= cap; g *= 2) out.push(g);
+    return out;
+  }
+
+  function allPolicies(model, tp, opts) {
+    const keys = policyKeysFor(model);
+    const out = [];
+    const total = 1 << keys.length;
+    for (const expertGroup of expertGroupsFor(tp, opts && opts.maxExpertGroup)) {
+      for (let mask = 0; mask < total; mask++) {
+        const policy = { expertGroup };
+        POLICY_KEYS.forEach(k => { policy[k] = "shard"; });
+        keys.forEach((k, i) => { policy[k] = (mask >> i) & 1 ? "replicate" : "shard"; });
+        out.push(policy);
+      }
+    }
+    return out;
+  }
+
+  function policySummary(model, policy) {
+    const keys = policyKeysFor(model);
+    const rep = keys.filter(k => policy[k] === "replicate").map(k => POLICY_LABELS[k]);
+    const parts = [rep.length ? "复制：" + rep.join("、") : "全部分片"];
+    parts.push(policy.expertGroup > 1 ? "专家切 " + policy.expertGroup + " 份" : "专家 Owner 整放");
+    return parts.join(" · ");
+  }
+
+  // TP 必须整除注意力头数；GQA 的 KV 头数不足时按复制处理（在状态分片中体现）
+  function tpAllowed(model, tp, opts) {
+    return tp <= opts.maxTp && model.spec.attention.heads % tp === 0;
+  }
+
+  // ---------------------------------------------------------------------------
+  // 单配置评估
+  // ---------------------------------------------------------------------------
+  function evaluate(model, chip, config, opts) {
+    const { pp, tp, policy } = config;
+    const cards = pp * tp;
+    const s = model.spec;
+    const b = model.bytes;
+    const p = model.params;
+    const dense = s.dtype.dense;
+
+    const bwCard = chip.mcCount * chip.mcBandwidthGBs * 1e9 * chip.mcEfficiency;
+    const capCard = chip.mcCount * chip.mcCapacityGB * 1e9;
+    const expertGroup = Math.min(policy.expertGroup || 1, tp);
+    const imb = opts.imbalance ? imbalanceFactor(s.moe.activeExperts, tp, expertGroup) : 1;
+
+    // 每卡每 Stage 确定性权重字节（分片 ÷ (PP×TP)，复制 ÷ PP）
+    let detCard = 0;
+    let aggregate = 0;
+    let shardedParams = 0;
+    let replicatedParams = 0;
+    let weightsCard = 0;
+    const rows = [];
+    for (const key of policyKeysFor(model)) {
+      const bytes = b[key];
+      const replicate = policy[key] === "replicate";
+      const perCard = replicate ? bytes / pp : bytes / cards;
+      detCard += perCard;
+      aggregate += replicate ? bytes * tp : bytes;
+      weightsCard += perCard;
+      if (replicate) replicatedParams += p[key]; else shardedParams += p[key];
+      rows.push({ key, label: POLICY_LABELS[key], bytes, policy: policy[key], perCard });
+    }
+
+    // Attention 状态（KV + 线性注意力循环状态）跟随 attention 策略
+    // MLA 的潜变量 KV 对所有头共享，分片只能按 Context 切；GQA 按 KV 头切，TP 超过 KV 头数后按复制处理
+    const kvStore = model.softmaxLayers * opts.context * model.kvPerTokenPerLayer;
+    const stateStore = kvStore + model.kdaStateStore;
+    const stateTraffic = kvStore + 2 * model.kdaStateStore;
+    const kvShards = s.attention.kind === "gqa" ? Math.min(tp, s.attention.kvHeads) : tp;
+    const stateDiv = policy.attn === "replicate" ? pp : pp * kvShards;
+    const stateCard = stateTraffic / stateDiv;
+    aggregate += stateTraffic * (cards / stateDiv);
+
+    // Routed experts：Owner 放置，负载不均放大最忙卡
+    // 预取模式：按预测把下一层的专家提前读入 SRAM（读 1 份），Router 出来后再补读未命中的 (1−p) 份 → 共 (2−p) 份
+    // 无预取模式：Router 出来后才读实际命中的专家（读 1 份），但读取无法与计算/归约重叠
+    const pred = opts.prediction;
+    const routedActualCard = b.routedActive / cards * imb;
+    const routedCard = routedActualCard * (2 - pred);
+    const routedTotalCard = b.routedTotal / cards;
+    aggregate += b.routedActive * (2 - pred);
+    weightsCard += routedTotalCard;
+
+    const lmCard = b.lmHead / tp;
+    weightsCard += lmCard;
+
+    const cardStageBytes = detCard + stateCard + routedCard;
+    const mcMs = cardStageBytes / bwCard * 1e3;
+    const mcNoPrefetchMs = (detCard + stateCard + routedActualCard) / bwCard * 1e3;
+    const misfetchMs = routedActualCard * (1 - pred) / bwCard * 1e3;
+    const lmMs = lmCard / bwCard * 1e3;
+
+    // 归约：每个「分片 → 需要完整向量」的边界一次；专家输出合并一次；Shared 与合并融合。
+    // 每次的 payload 按实际传输的向量维度计：attention 输出 / Wup 输出 = hidden，Wdown 输出 / 专家合并 = latent（K3）或 hidden，
+    // Router = 专家 logits，MLA Context 分片的 LSE 合并 = heads × (kvLatent + 2)。
+    // collectiveFusion：Wdown 的 all-gather 与 Router 的 all-gather 都以 norm(h) 为输入、彼此独立，可合并为一次（payload 相加）。
+    // 注意 o_proj → Wdown 之间有 RMSNorm（非线性），专家合并 → Wup 融合需要把 Wup 复制到每卡（字节 × TP），这两处不能靠线性融合省归约。
+    const latentDim = s.moe.expertInput === "latent" ? s.moe.latent : s.hidden;
+    const elemUs = elems => chip.linkBandwidthGBs > 0 ? elems * dense / (chip.linkBandwidthGBs * 1e9) * 1e6 : 0;
+    const moeCollectives = [];   // 每个 MoE 层的集合通信列表：{ name, elems }
+    const denseCollectives = [];
+    let mlaMergeCollectives = 0; // 每个 softmax 注意力层的 LSE 合并次数（0 或 1）
+    if (tp > 1) {
+      if (policy.attn === "shard") {
+        moeCollectives.push({ name: "attn", elems: s.hidden });
+        denseCollectives.push({ name: "attn", elems: s.hidden });
+        if (opts.mlaContextShardMerge && s.attention.kind === "mla" && kvShards > 1) mlaMergeCollectives = 1;
+      }
+      const wdownShard = p.wdown > 0 && policy.wdown === "shard";
+      const routerShard = policy.router === "shard";
+      if (opts.collectiveFusion && wdownShard && routerShard) moeCollectives.push({ name: "wdown+router", elems: latentDim + s.moe.totalExperts });
+      else {
+        if (wdownShard) moeCollectives.push({ name: "wdown", elems: latentDim });
+        if (routerShard) moeCollectives.push({ name: "router", elems: s.moe.totalExperts });
+      }
+      moeCollectives.push({ name: "merge", elems: latentDim });
+      if (p.wup > 0 && policy.wup === "shard") moeCollectives.push({ name: "wup", elems: s.hidden });
+      if (p.denseFfn > 0 && policy.denseFfn === "shard") denseCollectives.push({ name: "denseFfn", elems: s.hidden });
+    }
+    const perMoeLayer = moeCollectives.length;
+    const perDenseLayer = denseCollectives.length;
+    const latencyUs = tp > 1 ? collectiveLatency(chip, tp) : 0;
+    const sumUs = list => list.reduce((a, c) => a + latencyUs + elemUs(c.elems), 0);
+    const mlaMergeUs = mlaMergeCollectives * (latencyUs + elemUs(s.attention.heads * ((s.attention.kvLatent || s.attention.vHeadDim) + 2)));
+    const moeLayerUs = sumUs(moeCollectives);
+    const denseLayerUs = sumUs(denseCollectives);
+    const collectiveCount = s.moeLayers * perMoeLayer + model.denseLayers * perDenseLayer + model.softmaxLayers * mlaMergeCollectives;
+    const collectiveTotalMs = (s.moeLayers * moeLayerUs + model.denseLayers * denseLayerUs + model.softmaxLayers * mlaMergeUs) / 1e3;
+    const collectiveUs = collectiveCount > 0 ? collectiveTotalMs * 1e3 / collectiveCount : 0;  // 平均单次（含 payload）
+    const payloadUs = elemUs(s.hidden);
+    const collectiveStageMs = collectiveTotalMs / pp;
+    const hopMs = (pp - 1) * (chip.ppHopUs + payloadUs) / 1e3;
+
+    // SRAM 第一层价值：预取缓冲。确定性权重按流式消费，不需要整层驻留；缓冲要装下
+    //   ① prefetchDepth 层的「预测专家」（Router 之前必须到齐，无法流式）
+    //   ② 归约空窗期间 MC 读满的字节：compute 停在 all-reduce 上时不消费权重，MC 继续读下一批 → 每层 bwCard × 该层归约时间
+    // 装不下时 MC 在归约期间空转、专家读取退回 Router 之后
+    const layersPerStage = s.layers / pp;
+    const predictedPerLayerCard = routedActualCard / layersPerStage;
+    const perLayerCard = (detCard + stateCard + routedActualCard) / layersPerStage;
+    const readAheadBytes = bwCard * (collectiveStageMs / layersPerStage) * 1e-3;
+    const bufferNeeded = (opts.prefetchDepth || 0) * predictedPerLayerCard + (opts.prefetchDepth > 0 ? readAheadBytes : 0);
+    const sramBytes = chip.sramMib * MIB;
+    const bufferBytes = Math.min(sramBytes, bufferNeeded);
+    const prefetchRatio = bufferNeeded > 0 ? bufferBytes / bufferNeeded : 1;
+
+    // SRAM 第二层价值：缓冲之外的容量常驻权重。先覆盖确定性权重，剩余按均匀路由命中率覆盖 routed
+    const resident = (sramBytes - bufferBytes) * opts.sramAlloc;
+    function sramSavedMs(scale) {
+      const det = Math.min(detCard * scale, resident);
+      const left = Math.max(0, resident - det);
+      const hit = routedTotalCard > 0 ? Math.min(1, left / (routedTotalCard * scale)) : 0;
+      return (det + routedCard * scale * hit) / bwCard * 1e3;
+    }
+    const savedMs = sramSavedMs(1);
+
+    // 计算：专家切成 g 份后每片列数 expertHidden/g，低于 L-Core 阵列长边时阵列填不满
+    const expertSliceN = s.moe.expertHidden / expertGroup;
+    const routedUtil = chip.utilization * Math.min(1, expertSliceN / chip.lcoreArrayN);
+    const linearPeak = chip.linearTflops * 1e12;
+    const fixedFlops = 2 * (shardedParams / tp + replicatedParams) / pp;
+    const routedFlops = 2 * p.routedActive * imb / tp / pp;
+    const linearMs = (fixedFlops / (linearPeak * chip.utilization) + routedFlops / (linearPeak * routedUtil)) * 1e3;
+    const attnFlopsCard = model.attnFlopsPerToken(opts.context) / pp / (policy.attn === "replicate" ? 1 : tp);
+    const attnMs = attnFlopsCard / (chip.attnTflops * 1e12 * chip.utilization) * 1e3;
+    const computeMs = linearMs + attnMs;
+
+    const busyMs = computeMs + collectiveStageMs;
+    // 有预取缓冲：MC 读取与计算/归约重叠，但未命中补读在 Router 之后、计算之前，无法隐藏
+    // 无预取缓冲：专家读取只能在 Router 之后开始，归约期间 MC 空转；矩阵计算按权重流式进行，视为被读取掩盖
+    // 缓冲不足按覆盖比例在两者之间插值
+    function stageTime(scale) {
+      const withBuffer = Math.max(mcMs * scale - sramSavedMs(scale), (busyMs + misfetchMs) * scale);
+      const noBuffer = (mcNoPrefetchMs + collectiveStageMs) * scale;
+      return prefetchRatio * withBuffer + (1 - prefetchRatio) * noBuffer;
+    }
+    const stageWithBufferMs = Math.max(mcMs - savedMs, busyMs + misfetchMs);
+    const stageNoBufferMs = mcNoPrefetchMs + collectiveStageMs;
+    const stageNoSramMs = stageNoBufferMs;
+    const stageMs = stageTime(1);
+    const e2eNoSramMs = (pp * stageNoSramMs + hopMs + lmMs) * opts.margin;
+    const e2eMs = (pp * stageMs + hopMs + lmMs) * opts.margin;
+
+    // 瓶颈 Stage：层数最多的 Stage，或带 LM Head 的最后一个 Stage
+    const avgLayers = layersPerStage;
+    const maxScale = Math.ceil(avgLayers) / avgLayers;
+    const lastScale = Math.floor(avgLayers) / avgLayers;
+    const cycleMs = Math.max(stageTime(maxScale), stageTime(lastScale) + lmMs) * opts.margin;
+    const throughput = 1000 / cycleMs;
+
+    let bottleneck;
+    if (prefetchRatio < 1 && stageNoBufferMs > stageWithBufferMs) bottleneck = "SRAM 缓冲不足";
+    else if (mcMs - savedMs >= busyMs + misfetchMs) bottleneck = "MC 带宽";
+    else if (misfetchMs > collectiveStageMs && misfetchMs > computeMs) bottleneck = "预测未命中补读";
+    else if (collectiveStageMs > computeMs) bottleneck = "TP 归约";
+    else bottleneck = "算力";
+
+    // 容量
+    const statePerUserCard = stateStore / stateDiv;
+    const maxUsers = statePerUserCard > 0 ? Math.floor((capCard - weightsCard) / statePerUserCard) : Infinity;
+    const feasible = weightsCard + opts.users * statePerUserCard <= capCard && pp <= s.layers;
+
+    return {
+      pp, tp, cards, policy,
+      feasible,
+      tps: 1000 / e2eMs,
+      tpsNoSram: 1000 / e2eNoSramMs,
+      e2eMs, e2eNoSramMs,
+      throughput,
+      throughputPerCard: throughput / cards,
+      cycleMs,
+      mcMs, mcNoPrefetchMs, misfetchMs, savedMs, computeMs, linearMs, attnMs,
+      collectiveStageMs, collectiveTotalMs, collectiveCount, collectiveUs, collectiveLatencyUs: latencyUs,
+      perMoeLayer, perDenseLayer, mlaMergeCollectives, moeCollectives, moeLayerUs, hopMs, lmMs, expertGroup,
+      stageMs, stageWithBufferMs, stageNoBufferMs, stageNoSramMs, busyMs,
+      perLayerCard, predictedPerLayerCard, readAheadBytes, bufferNeeded, bufferBytes, prefetchRatio, residentBytes: resident,
+      cardStageBytes, detCard, stateCard, routedCard, routedActualCard, aggregate,
+      imbalance: imb,
+      weightsCard, statePerUserCard, capCard, maxUsers,
+      bottleneck,
+      rows
+    };
+  }
+
+  function score(result, objective) {
+    switch (objective) {
+      case "tps": return result.tps;
+      case "throughput": return result.throughput;
+      case "perCard": return result.throughputPerCard;
+      case "balanced": return Math.sqrt(result.tps * result.throughputPerCard);
+      default: throw new Error("未知目标: " + objective);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // 优化：给定卡数集合，搜索 PP×TP × 层内策略
+  // ---------------------------------------------------------------------------
+  function optimizeForCards(model, chip, opts, cards) {
+    const topologies = [];
+    for (const pp of divisors(cards)) {
+      const tp = cards / pp;
+      if (pp > model.spec.layers || !tpAllowed(model, tp, opts)) continue;
+      const ranked = allPolicies(model, tp, opts)
+        .map(policy => evaluate(model, chip, { pp, tp, policy }, opts))
+        .filter(r => r.feasible)
+        .sort((x, y) => score(y, opts.objective) - score(x, opts.objective));
+      if (ranked.length) topologies.push({ pp, tp, best: ranked[0], ranked });
+    }
+    topologies.sort((x, y) => score(y.best, opts.objective) - score(x.best, opts.objective));
+    return { cards, topologies, best: topologies.length ? topologies[0].best : null };
+  }
+
+  function optimize(model, chip, opts) {
+    const byCards = opts.cardCounts.map(n => optimizeForCards(model, chip, opts, n));
+    const feasible = byCards.filter(x => x.best);
+    feasible.sort((x, y) => score(y.best, opts.objective) - score(x.best, opts.objective));
+    return { byCards, best: feasible.length ? feasible[0].best : null };
+  }
+
+  // ---------------------------------------------------------------------------
+  // 芯片规格建议
+  // ---------------------------------------------------------------------------
+  function applyKnob(chip, knob, direction) {
+    const sign = (knob.better === "down" ? -1 : 1) * direction;
+    const next = chip[knob.id] + sign * knob.step;
+    if (next < knob.min - 1e-9 || next > knob.max + 1e-9) return null;
+    const out = clone(chip);
+    out[knob.id] = Math.round(next * 1e6) / 1e6;
+    return out;
+  }
+
+  function bestScore(model, chip, opts, cards) {
+    const r = optimizeForCards(model, chip, opts, cards);
+    return { score: r.best ? score(r.best, opts.objective) : 0, result: r.best };
+  }
+
+  function activeKnobs(knobs) {
+    return knobs.filter(k => !k.locked);
+  }
+
+  function sensitivity(model, chip, opts, knobs, cards) {
+    const base = bestScore(model, chip, opts, cards);
+    return {
+      base,
+      rows: activeKnobs(knobs).map(knob => {
+        const up = applyKnob(chip, knob, +1);
+        const down = applyKnob(chip, knob, -1);
+        const upScore = up ? bestScore(model, up, opts, cards).score : null;
+        const downScore = down ? bestScore(model, down, opts, cards).score : null;
+        return {
+          knob,
+          value: chip[knob.id],
+          upValue: up ? up[knob.id] : null,
+          downValue: down ? down[knob.id] : null,
+          upGain: upScore === null ? null : upScore / base.score - 1,
+          downLoss: downScore === null ? null : downScore / base.score - 1,
+          upGainPerCost: upScore === null ? null : (upScore / base.score - 1) / knob.cost
+        };
+      })
+    };
+  }
+
+  // 贪心升级：每步选「收益 ÷ 代价」最高的旋钮，直到预算耗尽或无正收益
+  function upgradePath(model, chip, opts, knobs, cards, budget, maxSteps) {
+    let current = clone(chip);
+    let spent = 0;
+    let base = bestScore(model, current, opts, cards);
+    const start = base;
+    const steps = [];
+    for (let i = 0; i < maxSteps; i++) {
+      let pick = null;
+      for (const knob of activeKnobs(knobs)) {
+        if (spent + knob.cost > budget) continue;
+        const next = applyKnob(current, knob, +1);
+        if (!next) continue;
+        const s = bestScore(model, next, opts, cards);
+        const gain = s.score / base.score - 1;
+        if (gain <= 1e-6) continue;
+        const ratio = gain / knob.cost;
+        if (!pick || ratio > pick.ratio) pick = { knob, next, s, gain, ratio };
+      }
+      if (!pick) break;
+      current = pick.next;
+      spent += pick.knob.cost;
+      base = pick.s;
+      steps.push({
+        step: i + 1,
+        knob: pick.knob,
+        value: current[pick.knob.id],
+        cost: pick.knob.cost,
+        spent,
+        gain: pick.gain,
+        score: pick.s.score,
+        cumulative: pick.s.score / start.score - 1,
+        result: pick.s.result
+      });
+    }
+    return { start, steps, final: { chip: current, score: base } };
+  }
+
+  // 贪心削减：每步选「代价节省最多且性能损失 ≤ 容忍度」的旋钮，直到再削任何一项都会超出容忍度
+  function downsizePath(model, chip, opts, knobs, cards, tolerance, maxSteps) {
+    let current = clone(chip);
+    const start = bestScore(model, current, opts, cards);
+    let saved = 0;
+    const steps = [];
+    for (let i = 0; i < maxSteps; i++) {
+      let pick = null;
+      for (const knob of activeKnobs(knobs)) {
+        const next = applyKnob(current, knob, -1);
+        if (!next) continue;
+        const s = bestScore(model, next, opts, cards);
+        if (!s.result) continue;
+        const loss = 1 - s.score / start.score;
+        if (loss > tolerance) continue;
+        const ratio = knob.cost / Math.max(loss, 1e-9);
+        if (!pick || ratio > pick.ratio) pick = { knob, next, s, loss, ratio };
+      }
+      if (!pick) break;
+      current = pick.next;
+      saved += pick.knob.cost;
+      steps.push({
+        step: i + 1,
+        knob: pick.knob,
+        value: current[pick.knob.id],
+        costSaved: pick.knob.cost,
+        saved,
+        loss: pick.loss,
+        score: pick.s.score,
+        result: pick.s.result
+      });
+    }
+    return { start, steps, final: { chip: current, score: bestScore(model, current, opts, cards) } };
+  }
+
+  // ---------------------------------------------------------------------------
+  // 格式化
+  // ---------------------------------------------------------------------------
+  function gb(bytes) { return (bytes / 1e9).toFixed(2) + " GB"; }
+  function ms(x) { return x.toFixed(3) + " ms"; }
+  function pct(x) { return (x * 100).toFixed(1) + "%"; }
+
+  // ---------------------------------------------------------------------------
+  // Node 直接运行时的示例
+  // ---------------------------------------------------------------------------
+  if (typeof require !== "undefined" && typeof module !== "undefined" && require.main === module) {
+    const presetId = process.argv[2] || "kimiK3";
+    if (!MODEL_PRESETS[presetId]) {
+      console.error("未知预设：" + presetId + "，可选：" + Object.keys(MODEL_PRESETS).join(", "));
+      process.exit(1);
+    }
+    const model = deriveModel(MODEL_PRESETS[presetId]);
+    const opts = Object.assign({}, OPTIONS_DEFAULT);
+    const chip = clone(CHIP_DEFAULT);
+    const recoCards = 64;
+    console.log("模型：" + model.spec.name + "，注意力参数来源：" + model.attnSource);
+    console.log("口径校验：激活 " + (model.check.activeParams / 1e9).toFixed(2) + "B（差 " +
+      (model.check.activeGap / 1e9).toFixed(2) + "B），总量 " + (model.check.totalParams / 1e12).toFixed(3) +
+      "T（差 " + (model.check.totalGap / 1e9).toFixed(2) + "B）");
+    const result = optimize(model, chip, opts);
+    console.log("\n各卡数最优（目标：" + OBJECTIVES[opts.objective] + "）");
+    for (const row of result.byCards) {
+      if (!row.best) { console.log("  " + row.cards + " 卡：容量不可行"); continue; }
+      const r = row.best;
+      console.log("  " + row.cards + " 卡：PP" + r.pp + "×TP" + r.tp + " · " + policySummary(model, r.policy) +
+        " · TPS " + r.tps.toFixed(0) + " · E2E " + ms(r.e2eMs) + " · 流水 " + r.throughput.toFixed(0) +
+        " tok/s · 瓶颈 " + r.bottleneck + " · 不均系数 " + r.imbalance.toFixed(2) +
+        " · 归约 " + r.perMoeLayer + "/层 × " + r.collectiveUs.toFixed(2) + " μs" +
+        " · 预取缓冲 " + (r.bufferNeeded / MIB).toFixed(0) + " MiB 覆盖 " + pct(r.prefetchRatio) +
+        " · 未命中补读 " + ms(r.misfetchMs) + "/Stage");
+      const alt = row.topologies.slice(1, 3).map(t =>
+        "PP" + t.pp + "×TP" + t.tp + " " + t.best.tps.toFixed(0) + " TPS").join("，");
+      if (alt) console.log("      次优：" + alt);
+    }
+    const sens = sensitivity(model, chip, opts, KNOBS_DEFAULT, recoCards);
+    console.log("\n" + recoCards + " 卡敏感性（每旋钮 ±1 步）");
+    for (const row of sens.rows) {
+      console.log("  " + row.knob.label.padEnd(12) + " +1步 " + (row.upGain === null ? "  —  " : pct(row.upGain).padStart(7)) +
+        "  −1步 " + (row.downLoss === null ? "  —  " : pct(row.downLoss).padStart(7)) +
+        "  收益/代价 " + (row.upGainPerCost === null ? "—" : (row.upGainPerCost * 1000).toFixed(2) + "‰/分"));
+    }
+    const up = upgradePath(model, chip, opts, KNOBS_DEFAULT, recoCards, 400, 20);
+    console.log("\n升级路径（预算 400 分）");
+    for (const st of up.steps) {
+      console.log("  #" + st.step + " " + st.knob.label + " → " + st.value + " " + st.knob.unit +
+        "（+" + st.cost + " 分，累计 " + st.spent + "）：+" + pct(st.gain) + "，累计 +" + pct(st.cumulative) +
+        "，方案 PP" + st.result.pp + "×TP" + st.result.tp);
+    }
+    const down = downsizePath(model, chip, opts, KNOBS_DEFAULT, recoCards, 0.02, 20);
+    console.log("\n削减路径（容忍损失 2%）");
+    for (const st of down.steps) {
+      console.log("  #" + st.step + " " + st.knob.label + " → " + st.value + " " + st.knob.unit +
+        "（省 " + st.costSaved + " 分，累计省 " + st.saved + "）：损失 " + pct(st.loss));
+    }
+  }
+
+  return {
+    MODEL_PRESETS, CHIP_DEFAULT, OPTIONS_DEFAULT, KNOBS_DEFAULT,
+    POLICY_KEYS, POLICY_LABELS, OBJECTIVES,
+    deriveModel, policyKeysFor, allPolicies, policySummary, expertGroupsFor, tpAllowed,
+    evaluate, score, optimizeForCards, optimize,
+    applyKnob, bestScore, sensitivity, upgradePath, downsizePath,
+    imbalanceFactor, collectiveLatency, clone, gb, ms, pct
+  };
+});
+</script>
+<script src="../src/core/k3_compute_node.js"></script>
+<script>
+  const E = window.DesignEngine;
+  const $ = id => document.getElementById(id);
+  const C = { ink: "#172033", muted: "#647083", line: "#d6d8d8", grid: "#e6e8e6", accent: "#155e75", warn: "#b45309", purple: "#6d28d9", good: "#166534", bad: "#b91c1c", panel: "#fffdf8" };
+  const REP_COLORS = ["#155e75", "#b45309", "#6d28d9", "#166534", "#b91c1c", "#0f766e", "#7c2d12", "#1d4ed8"];
+  const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const fmt = (x, d = 0) => Number(x).toLocaleString("en-US", { maximumFractionDigits: d, minimumFractionDigits: d });
+  const nice = max => { const p = Math.pow(10, Math.floor(Math.log10(max || 1))); const m = max / p; const step = m <= 1 ? .25 : m <= 2 ? .5 : m <= 5 ? 1 : 2; return Math.ceil(m / step) * step * p; };
+
+  const model = E.deriveModel(E.MODEL_PRESETS.kimiK3);
+  const BASE = E.CHIP_DEFAULT;
+
+  const GRID_DEFAULT = {
+    mcCount: [8, 16, 24, 32],
+    mcBandwidthGBs: [320, 400, 480, 560, 640],
+    mcCapacityGB: [8, 16],
+    sramMib: [128, 192, 256, 384, 512, 640, 768, 1024, 1536, 2048],
+    linearTflops: [65.536, 98.304, 131.072, 262.144, 524.288],
+    collectiveLatencyUs: [2, 1.5, 1.15, 0.85, 0.66],
+    linkBandwidthGBs: [200, 400]
+  };
+  const COLL_AGGRESSIVE_US = 0.85;
+  const COST_DEFAULT = {
+    fixedAreaMm2: 400,
+    tensorAreaMm2At262Tflops: 1600,
+    sramMibPerMm2: 1.26,
+    mcPhyBaseMm2: 12,
+    mcPhyPerGBs: 0.025,
+    areaCostPerMm2: 1,
+    memCostPerGB: 3,
+    memSpeedPremiumPerX: 0.5,
+    linkCostPer100GBs: 15,
+    collectiveCostPerUsReduced: 120,
+    bwAggressiveRatio: 1.5
+  };
+  const BOTTLENECK_HINT = {
+    "MC 带宽": "（加 SRAM 常驻 / 带宽 / 卡数有效）",
+    "TP 归约": "（只有降归约延迟或减 TP 有效）",
+    "SRAM 缓冲不足": "（先把 SRAM 加到缓冲需求，收益最陡）",
+    "预测未命中补读": "（提高预测准确率或减小每卡专家字节）",
+    "算力": "（需加算力）"
+  };
+  const DIM_LABELS = {
+    mcCount: ["MC 数", "颗"], mcBandwidthGBs: ["MC 带宽", "GB/s"], mcCapacityGB: ["MC 容量", "GB/颗"], sramMib: ["SRAM", "MiB"],
+    linearTflops: ["L-Core 算力", "TFLOPS"], collectiveLatencyUs: ["归约延迟@TP8", "μs"], linkBandwidthGBs: ["互联带宽", "GB/s"]
+  };
+  $("inGrid").value = JSON.stringify(GRID_DEFAULT, null, 2);
+  $("inCost").value = JSON.stringify(COST_DEFAULT, null, 2);
+
+  // ---------- 芯片构造、面积与成本 ----------
+  function divisors(n) { const out = []; for (let i = 1; i <= n; i++) if (n % i === 0) out.push(i); return out; }
+  let collectiveScaling = "flat";
+  function chipFrom(point) {
+    const c = E.clone(BASE);
+    Object.assign(c, point);
+    c.attnTflops = point.linearTflops * 8;
+    c.collectiveScaling = collectiveScaling;
+    return c;
+  }
+  const numInput = (id, fallback, min = -Infinity) => { const v = Number($(id).value); return Number.isFinite(v) && v >= min ? v : fallback; };
+  function areaOf(c, cost) {
+    const tensor = cost.tensorAreaMm2At262Tflops * c.linearTflops / 262.144;
+    const sram = c.sramMib / cost.sramMibPerMm2;
+    const mc = c.mcCount * (cost.mcPhyBaseMm2 + cost.mcPhyPerGBs * c.mcBandwidthGBs);
+    return { tensor, sram, mc, fixed: cost.fixedAreaMm2, total: tensor + sram + mc + cost.fixedAreaMm2 };
+  }
+  function costOf(c, area, cost) {
+    const silicon = area.total * cost.areaCostPerMm2;
+    const mem = c.mcCount * c.mcCapacityGB * cost.memCostPerGB * (1 + cost.memSpeedPremiumPerX * Math.max(0, c.mcBandwidthGBs / BASE.mcBandwidthGBs - 1));
+    const link = c.linkBandwidthGBs / 100 * cost.linkCostPer100GBs;
+    const coll = Math.max(0, BASE.collectiveLatencyUs - c.collectiveLatencyUs) * cost.collectiveCostPerUsReduced;
+    return { silicon, mem, link, coll, total: silicon + mem + link + coll };
+  }
+  function enumerate(grid) {
+    const keys = Object.keys(grid);
+    const out = [];
+    (function rec(i, acc) {
+      if (i === keys.length) { out.push(Object.assign({}, acc)); return; }
+      for (const v of grid[keys[i]]) { acc[keys[i]] = v; rec(i + 1, acc); }
+    })(0, {});
+    return out;
+  }
+
+  // ---------- 部署快筛 ----------
+  const shardAll = { attn: "shard", wdown: "shard", wup: "shard", shared: "shard", denseFfn: "shard" };
+  function screen(chip, opts, cards) {
+    let best = null;
+    for (const pp of divisors(cards)) {
+      const tp = cards / pp;
+      if (pp > model.spec.layers || !E.tpAllowed(model, tp, opts)) continue;
+      for (const g of E.expertGroupsFor(tp, opts.maxExpertGroup)) {
+        for (const router of ["shard", "replicate"]) {
+          // Wup 复制：多读 (TP−1)/TP 份 Wup 换掉每层最后一次 all-reduce，在 MC 余量大、归约慢的角落会胜出
+          for (const wup of ["shard", "replicate"]) {
+            const r = E.evaluate(model, chip, { pp, tp, policy: Object.assign({ expertGroup: g, router }, shardAll, { wup }) }, opts);
+            if (r.feasible && (!best || r.tps > best.tps)) best = r;
+          }
+        }
+      }
+    }
+    return best;
+  }
+  function minCards(chip, opts, cardList, target) {
+    for (const n of cardList) {
+      const r = screen(chip, opts, n);
+      if (r && r.tps >= target) return r;
+    }
+    return null;
+  }
+
+  // ---------- 架构图 ----------
+  function architectureFigure() {
+    const textW = t => [...t].reduce((w, ch) => w + (/[⺀-鿿豈-﫿＀-￯]/.test(ch) ? 10 : 5.6), 0);
+    const tagRow = (x, y, items) => items.map(([text, color]) => {
+      const w = textW(text) + 14;
+      const out = `<rect x="${x}" y="${y}" width="${w}" height="16" rx="8" fill="${color}"/><text x="${x + 7}" y="${y + 11.5}" font-size="10" font-weight="600" fill="#fff">${esc(text)}</text>`;
+      x += w + 6;
+      return out;
+    }).join("");
+    const label = (x, y, text, size = 11, color = C.ink, anchor = "start", weight = 400) => `<text x="${x}" y="${y}" font-size="${size}" fill="${color}" text-anchor="${anchor}" font-weight="${weight}">${esc(text)}</text>`;
+    const arrowDef = `<defs><marker id="arch-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${C.muted}"/></marker><marker id="arch-arrow-warn" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${C.warn}"/></marker></defs>`;
+    let s = `<svg viewBox="0 0 1200 430">${arrowDef}`;
+
+    // ---- 左：单卡封装 ----
+    s += `<rect x="14" y="30" width="400" height="300" rx="10" fill="#f7f5ef" stroke="${C.line}"/>`;
+    s += label(24, 50, "单卡 = 1 封装（约 6 reticle 有源中介层）", 12, C.ink, "start", 700);
+    // 上下两排 MC
+    for (let i = 0; i < 8; i++) {
+      s += `<rect x="${34 + i * 46}" y="62" width="40" height="26" rx="4" fill="#fde7c8" stroke="${C.warn}"/>${label(54 + i * 46, 79, "MC", 10, "#78350f", "middle", 600)}`;
+      s += `<rect x="${34 + i * 46}" y="262" width="40" height="26" rx="4" fill="#fde7c8" stroke="${C.warn}"/>${label(54 + i * 46, 279, "MC", 10, "#78350f", "middle", 600)}`;
+    }
+    // 8 颗计算 Die，2 行 4 列
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) {
+      const x = 34 + c * 92, y = 100 + r * 80;
+      s += `<rect x="${x}" y="${y}" width="86" height="72" rx="6" fill="${C.panel}" stroke="${C.accent}" stroke-width="1.3"/>`;
+      s += `<rect x="${x + 6}" y="${y + 6}" width="50" height="26" rx="3" fill="#dcfce7"/>${label(x + 31, y + 17, "L-Core", 8.5, C.good, "middle", 600)}${label(x + 31, y + 27, "H-Core", 8.5, C.good, "middle", 600)}`;
+      s += `<rect x="${x + 60}" y="${y + 6}" width="20" height="60" rx="3" fill="#cfe8ec"/>${label(x + 70, y + 42, "SRAM", 7.5, C.accent, "middle", 700)}`;
+      s += `<rect x="${x + 6}" y="${y + 38}" width="50" height="28" rx="3" fill="#ece9f8"/>${label(x + 31, y + 50, "NoC", 8, C.purple, "middle", 600)}${label(x + 31, y + 60, "UCIe", 8, C.purple, "middle", 600)}`;
+      // Die 到上下 MC 的连线
+      s += `<line x1="${x + 20}" y1="${y}" x2="${x + 20}" y2="${r === 0 ? 88 : y - 8}" stroke="${C.warn}" stroke-width="1" opacity=".7"/>`;
+      s += `<line x1="${x + 66}" y1="${y + 72}" x2="${x + 66}" y2="${r === 1 ? 262 : y + 80}" stroke="${C.warn}" stroke-width="1" opacity=".7"/>`;
+    }
+    s += label(24, 312, "8 × 计算 Die（约 400 mm²）· UCIe Mesh 互联 · 卡内再按 8 Die 分片", 10, C.muted);
+    // 规格标签
+    s += tagRow(24, 340, [["MC 数量 × MC 带宽 → 每卡聚合带宽", C.warn], ["MC 容量 → 权重 + KV 放得下", C.warn]]);
+    s += tagRow(24, 362, [["SRAM/卡 = 8 × Die 切片 → 预取缓冲 + 常驻", C.accent], ["L/H-Core 算力", C.good]]);
+    s += tagRow(24, 384, [["Die 面积：SRAM + 阵列 + MC PHY + 固定 ≤ 8 × 400 mm²", "#6b7280"]]);
+
+    // ---- 中：TP 组 ----
+    s += `<rect x="440" y="30" width="360" height="300" rx="10" fill="#f7f5ef" stroke="${C.line}"/>`;
+    s += label(450, 50, "TP 组：TP 张卡同时为 1 个 token 出带宽", 12, C.ink, "start", 700);
+    const tpX = [470, 560, 650, 740], tpY = 80;
+    tpX.forEach((x, i) => {
+      s += `<rect x="${x}" y="${tpY}" width="54" height="64" rx="6" fill="${C.panel}" stroke="${C.accent}" stroke-width="1.3"/>`;
+      s += label(x + 27, tpY + 22, i === 3 ? "卡 TP" : `卡 ${i + 1}`, 10, C.ink, "middle", 600);
+      s += label(x + 27, tpY + 38, "1/TP 权重", 8.5, C.muted, "middle");
+      s += label(x + 27, tpY + 50, "1/TP KV", 8.5, C.muted, "middle");
+      if (i === 2) s += label(x + 27 + 45, tpY + 36, "…", 14, C.muted, "middle");
+    });
+    // all-reduce 环
+    s += `<path d="M 497 144 L 497 170 L 767 170 L 767 144" fill="none" stroke="${C.warn}" stroke-width="1.6" stroke-dasharray="5 3"/>`;
+    tpX.forEach(x => { s += `<line x1="${x + 27}" y1="144" x2="${x + 27}" y2="170" stroke="${C.warn}" stroke-width="1.2"/>`; });
+    s += label(632, 186, `每 MoE 层 ${$("inFusion").value === "1" ? 4 : 5} 次集合通信（+MLA 层 LSE 合并）：归约延迟${collectiveScaling === "log2" ? " × log2(TP)/3" : "（内存语义，8→32 卡近似平坦）"} + payload ÷ 互联带宽`, 9.5, "#78350f", "middle");
+    // 每层数据流
+    s += label(450, 214, "每卡每层的时间线", 11, C.ink, "start", 700);
+    const flow = [["MC 读下一层", "#fde7c8", C.warn], ["SRAM 预取缓冲", "#cfe8ec", C.accent], ["计算", "#dcfce7", C.good], ["all-reduce", "#fff4d8", C.warn]];
+    flow.forEach(([t, bg, st], i) => {
+      const x = 452 + i * 88;
+      s += `<rect x="${x}" y="224" width="80" height="24" rx="4" fill="${bg}" stroke="${st}"/>${label(x + 40, 240, t, 9.5, C.ink, "middle", 600)}`;
+      if (i < 3) s += `<line x1="${x + 80}" y1="236" x2="${x + 88}" y2="236" stroke="${C.muted}" marker-end="url(#arch-arrow)"/>`;
+    });
+    s += `<path d="M 490 248 C 490 268, 740 268, 740 248" fill="none" stroke="${C.warn}" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#arch-arrow-warn)"/>`;
+    s += label(615, 276, "缓冲装得下「预测专家 + 归约空窗读满量」→ MC 在计算/归约期间继续读；否则归约期间 MC 空转", 9.5, C.muted, "middle");
+    s += label(615, 292, "Router 之后：预测未命中的 (1−p) 份专家串行补读", 9.5, C.muted, "middle");
+    s += label(450, 316, "Stage 时间 = max(MC 读取 − 常驻节省, 计算 + 归约 + 补读)", 10.5, C.accent, "start", 700);
+    s += tagRow(450, 340, [["TP 归约延迟 @TP8", C.warn], ["互联带宽", C.warn], ["PP × TP · 层内策略 · 专家切分", "#6b7280"]]);
+    s += tagRow(450, 362, [["专家预测准确率 p", C.accent], ["预取深度（层）", C.accent]]);
+
+    // ---- 右：PP 流水 ----
+    s += `<rect x="826" y="30" width="360" height="300" rx="10" fill="#f7f5ef" stroke="${C.line}"/>`;
+    s += label(836, 50, "PP 流水：Stage 串行，共 PP × TP 张卡", 12, C.ink, "start", 700);
+    const stX = [846, 938, 1030], stY = 76;
+    stX.forEach((x, i) => {
+      s += `<rect x="${x}" y="${stY}" width="76" height="110" rx="6" fill="${C.panel}" stroke="${C.purple}" stroke-width="1.3"/>`;
+      s += label(x + 38, stY + 18, i === 2 ? "Stage PP" : `Stage ${i + 1}`, 10.5, C.purple, "middle", 700);
+      s += label(x + 38, stY + 34, i === 2 ? "最后 ⌊L/PP⌋ 层" : "⌈L/PP⌉ 层", 8.5, C.muted, "middle");
+      for (let k = 0; k < 4; k++) s += `<rect x="${x + 8 + k * 16}" y="${stY + 44}" width="12" height="30" rx="2" fill="${C.accent}" opacity=".8"/>`;
+      s += label(x + 38, stY + 90, "TP 组", 9, C.accent, "middle", 600);
+      if (i === 2) s += label(x + 38, stY + 104, "+ LM Head", 8.5, C.muted, "middle");
+      if (i < 2) s += `<line x1="${x + 76}" y1="${stY + 55}" x2="${x + 92}" y2="${stY + 55}" stroke="${C.muted}" stroke-width="1.5" marker-end="url(#arch-arrow)"/>`;
+    });
+    s += label(1006, 206, "PP 边界：hidden 向量跳一次（PP 跳延迟 + payload ÷ 互联带宽）", 9.5, C.muted, "middle");
+    s += label(836, 236, "单用户 E2E = (PP × Stage + 跳 + LM Head) × 裕量", 10.5, C.purple, "start", 700);
+    s += label(836, 254, "PP 只把同样的字节串起来读：单用户延迟只靠 TP 并行带宽，", 9.5, C.muted);
+    s += label(836, 268, "PP 用来吸收卡数、摊薄每卡权重容量、换流水吞吐。", 9.5, C.muted);
+    s += label(836, 296, "目标 1000 TPS/usr ⇒ E2E ≤ 1 ms ⇒ 每层约 9 μs 预算", 10.5, C.bad, "start", 700);
+    s += tagRow(836, 340, [["PP 跳延迟", C.warn], ["卡数 N = PP × TP", "#6b7280"], ["TP ≤ 上限、TP | 头数", "#6b7280"]]);
+
+    // ---- 底部图例 ----
+    s += label(24, 418, "彩色标签 = 芯片规格维度（本页搜索空间）；灰色标签 = 部署决策 / 约束（每个芯片点单独优化）。", 10, C.muted);
+    return s + "</svg>";
+  }
+
+  // ---------- 通用 SVG ----------
+  function groupedBar({ categories, series, height = 260, suffix = "", refLine = null, refLabel = "" }) {
+    const W = 700, padL = 56, padR = 20, padB = 44;
+    const legendCols = 3, legendRows = Math.ceil(series.length / legendCols), padT = 16 + legendRows * 18;
+    const H = height + (legendRows - 1) * 18;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const max = nice(Math.max(refLine || 0, ...series.flatMap(s => s.data)) * 1.1);
+    let out = `<svg viewBox="0 0 ${W} ${H}">`;
+    series.forEach((s, i) => { const lx = padL + (i % legendCols) * 210, ly = 8 + Math.floor(i / legendCols) * 18; out += `<rect x="${lx}" y="${ly}" width="10" height="10" rx="2" fill="${s.color}"/><text x="${lx + 15}" y="${ly + 9}" font-size="11" fill="${C.muted}">${esc(s.name)}</text>`; });
+    for (let t = 0; t <= 4; t++) {
+      const y = padT + plotH - plotH * t / 4;
+      out += `<line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="${C.grid}"/><text x="${padL - 6}" y="${y + 3}" font-size="10" fill="${C.muted}" text-anchor="end">${+(max * t / 4).toFixed(2)}${esc(suffix)}</text>`;
+    }
+    const n = categories.length, k = series.length, slot = plotW / n, bw = slot * .72 / k;
+    categories.forEach((cat, i) => {
+      const x0 = padL + slot * i + slot * .14;
+      out += `<text x="${x0 + slot * .36}" y="${H - padB + 16}" font-size="11" fill="${C.ink}" text-anchor="middle">${esc(cat)}</text>`;
+      series.forEach((s, j) => {
+        const h = plotH * s.data[i] / max, x = x0 + bw * j, y = padT + plotH - h;
+        out += `<rect x="${x}" y="${y}" width="${bw - 1}" height="${h}" rx="2" fill="${s.color}"/>`;
+        if (s.data[i] > 0 && bw >= 22) out += `<text x="${x + bw / 2}" y="${y - 3}" font-size="9" fill="${C.muted}" text-anchor="middle">${+s.data[i].toFixed(2)}</text>`;
+      });
+    });
+    if (refLine) { const y = padT + plotH - plotH * refLine / max; out += `<line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="${C.bad}" stroke-dasharray="5 3"/><text x="${padL + plotW}" y="${y - 4}" font-size="10" fill="${C.bad}" text-anchor="end">${esc(refLabel)}</text>`; }
+    return out + "</svg>";
+  }
+  function stackedBar({ categories, series, height = 260, refLine = null, refLabel = "" }) {
+    const W = 700, H = height, padL = 56, padR = 20, padT = 34, padB = 44;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const totals = categories.map((_, i) => series.reduce((a, s) => a + s.data[i], 0));
+    const max = nice(Math.max(refLine || 0, ...totals) * 1.1);
+    let out = `<svg viewBox="0 0 ${W} ${H}">`;
+    series.forEach((s, i) => { out += `<rect x="${padL + i * 130}" y="8" width="10" height="10" rx="2" fill="${s.color}"/><text x="${padL + i * 130 + 15}" y="17" font-size="11" fill="${C.muted}">${esc(s.name)}</text>`; });
+    for (let t = 0; t <= 4; t++) {
+      const y = padT + plotH - plotH * t / 4;
+      out += `<line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="${C.grid}"/><text x="${padL - 6}" y="${y + 3}" font-size="10" fill="${C.muted}" text-anchor="end">${fmt(max * t / 4)}</text>`;
+    }
+    const n = categories.length, slot = plotW / n, bw = slot * .6;
+    categories.forEach((cat, i) => {
+      const x = padL + slot * i + slot * .2;
+      let y = padT + plotH;
+      out += `<text x="${x + bw / 2}" y="${H - padB + 16}" font-size="11" fill="${C.ink}" text-anchor="middle">${esc(cat)}</text>`;
+      series.forEach(s => { const h = plotH * s.data[i] / max; y -= h; out += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" fill="${s.color}"/>`; });
+      out += `<text x="${x + bw / 2}" y="${y - 4}" font-size="10" fill="${C.muted}" text-anchor="middle">${fmt(totals[i])}</text>`;
+    });
+    if (refLine) { const y = padT + plotH - plotH * refLine / max; out += `<line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="${C.bad}" stroke-dasharray="5 3"/><text x="${padL + plotW}" y="${y - 4}" font-size="10" fill="${C.bad}" text-anchor="end">${esc(refLabel)}</text>`; }
+    return out + "</svg>";
+  }
+  function lineChart({ categories, series, height = 280, refLine = null, refLabel = "" }) {
+    const W = 700, H = height, padL = 56, padR = 20, padT = 30, padB = 44;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const max = nice(Math.max(refLine || 0, ...series.flatMap(s => s.data.filter(v => v !== null))) * 1.1);
+    let out = `<svg viewBox="0 0 ${W} ${H}">`;
+    series.forEach((s, i) => { out += `<line x1="${padL + i * 170}" y1="13" x2="${padL + i * 170 + 14}" y2="13" stroke="${s.color}" stroke-width="2"/><text x="${padL + i * 170 + 19}" y="17" font-size="11" fill="${C.muted}">${esc(s.name)}</text>`; });
+    for (let t = 0; t <= 4; t++) {
+      const y = padT + plotH - plotH * t / 4;
+      out += `<line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="${C.grid}"/><text x="${padL - 6}" y="${y + 3}" font-size="10" fill="${C.muted}" text-anchor="end">${fmt(max * t / 4)}</text>`;
+    }
+    const n = categories.length, xs = i => padL + (n === 1 ? plotW / 2 : plotW * i / (n - 1));
+    categories.forEach((cat, i) => { out += `<text x="${xs(i)}" y="${H - padB + 16}" font-size="10" fill="${C.ink}" text-anchor="middle">${esc(cat)}</text>`; });
+    series.forEach(s => {
+      const pts = s.data.map((v, i) => v === null ? null : [xs(i), padT + plotH - plotH * v / max]).filter(Boolean);
+      out += `<polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="${s.color}" stroke-width="2"/>`;
+      pts.forEach(p => { out += `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="${C.panel}" stroke="${s.color}" stroke-width="2"/>`; });
+    });
+    if (refLine) { const y = padT + plotH - plotH * refLine / max; out += `<line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="${C.bad}" stroke-dasharray="5 3"/><text x="${padL + plotW}" y="${y - 4}" font-size="10" fill="${C.bad}" text-anchor="end">${esc(refLabel)}</text>`; }
+    return out + "</svg>";
+  }
+  function paretoScatter(designs, front, reps, cardList) {
+    const W = 760, H = 420, padL = 60, padR = 20, padT = 16, padB = 44;
+    const plotW = W - padL - padR, plotH = H - padT - padB;
+    const xs = designs.map(d => d.cost.total);
+    let xMin = Math.min(...xs) * 0.95, xMax = Math.max(...xs) * 1.03;
+    if (xMax - xMin < 1e-9) { xMin = xMin * 0.9 - 1; xMax = xMax * 1.1 + 1; }
+    const X = v => padL + plotW * (v - xMin) / (xMax - xMin);
+    const Y = n => padT + plotH - plotH * (cardList.indexOf(n) + 0.5) / cardList.length;
+    let out = `<svg viewBox="0 0 ${W} ${H}">`;
+    cardList.forEach(n => { out += `<line x1="${padL}" y1="${Y(n)}" x2="${padL + plotW}" y2="${Y(n)}" stroke="${C.grid}"/><text x="${padL - 8}" y="${Y(n) + 3}" font-size="11" fill="${C.muted}" text-anchor="end">${n} 卡</text>`; });
+    for (let t = 0; t <= 5; t++) { const v = xMin + (xMax - xMin) * t / 5; out += `<text x="${X(v)}" y="${H - padB + 16}" font-size="10" fill="${C.muted}" text-anchor="middle">${fmt(v)}</text>`; }
+    out += `<text x="${padL + plotW / 2}" y="${H - 6}" font-size="11" fill="${C.muted}" text-anchor="middle">单卡芯片成本（分）</text>`;
+    // 等系统成本线（穿过最低系统成本点的 1×、1.5×、2×）
+    const minSys = Math.min(...designs.map(d => d.sysCost));
+    [1, 1.5, 2].forEach(m => {
+      const pts = cardList.map(n => [X(minSys * m / n), Y(n)]).filter(p => p[0] >= padL && p[0] <= padL + plotW);
+      if (pts.length > 1) out += `<polyline points="${pts.map(p => p.join(",")).join(" ")}" fill="none" stroke="${C.muted}" stroke-dasharray="3 4" opacity=".6"/><text x="${pts[pts.length - 1][0] + 4}" y="${pts[pts.length - 1][1] - 4}" font-size="9" fill="${C.muted}">系统成本 ${m}× 最低</text>`;
+    });
+    const jitter = d => ((d.chip.sramMib / 256 + d.chip.mcCount / 8) % 5 - 2) * 3;
+    designs.forEach(d => { out += `<circle cx="${X(d.cost.total)}" cy="${Y(d.cards) + jitter(d)}" r="2.5" fill="${C.muted}" opacity=".35"/>`; });
+    front.forEach(d => { out += `<circle cx="${X(d.cost.total)}" cy="${Y(d.cards)}" r="4.5" fill="${C.accent}" stroke="#fff" stroke-width="1"/>`; });
+    reps.forEach((r, i) => {
+      const x = X(r.cost.total), y = Y(r.cards);
+      out += `<circle cx="${x}" cy="${y}" r="10" fill="${REP_COLORS[i]}" stroke="#fff" stroke-width="2"/><text x="${x}" y="${y + 4}" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">${r.letter}</text>`;
+    });
+    return out + "</svg>";
+  }
+
+  // ---------- 主流程 ----------
+  const minBy = (arr, f) => arr.reduce((b, x) => (b === null || f(x) < f(b) ? x : b), null);
+  const maxBy = (arr, f) => arr.reduce((b, x) => (b === null || f(x) > f(b) ? x : b), null);
+  function paretoFront(items) {
+    return items.filter(a => !items.some(b => b !== a && b.cost.total <= a.cost.total && b.cards <= a.cards && (b.cost.total < a.cost.total || b.cards < a.cards)));
+  }
+  function knee(front) {
+    if (!front.length) return null;
+    const cs = front.map(d => d.cost.total), ns = front.map(d => d.cards);
+    const c0 = Math.min(...cs), c1 = Math.max(...cs), n0 = Math.min(...ns), n1 = Math.max(...ns);
+    return minBy(front, d => Math.hypot(c1 > c0 ? (d.cost.total - c0) / (c1 - c0) : 0, n1 > n0 ? (d.cards - n0) / (n1 - n0) : 0));
+  }
+  function specLine(chip) {
+    return `${chip.mcCount}×MC @${chip.mcBandwidthGBs} GB/s ×${chip.mcCapacityGB} GB · SRAM ${chip.sramMib} MiB · ${fmt(chip.linearTflops)} TFLOPS · 归约 ${chip.collectiveLatencyUs} μs · 互联 ${chip.linkBandwidthGBs} GB/s`;
+  }
+  function policyText(r) { return E.policySummary(model, r.policy); }
+
+  $("figArch").innerHTML = architectureFigure();
+  $("btnRun").addEventListener("click", run);
+  window.addEventListener("load", run);
+
+  function run() {
+    let grid, cost;
+    try { grid = JSON.parse($("inGrid").value); cost = JSON.parse($("inCost").value); }
+    catch (e) { $("status").textContent = "JSON 解析失败：" + e.message; return; }
+    const target = numInput("inTarget", 1000, 1);
+    const guard = numInput("inGuard", 0, 0) / 100;
+    const targetEff = target * (1 + guard);
+    const cardList = [...new Set($("inCards").value.split(/[,，\s]+/).map(Number).filter(n => Number.isInteger(n) && n > 0))].sort((a, b) => a - b);
+    if (!cardList.length) { $("status").textContent = "候选卡数为空"; return; }
+    const bwCap = BASE.mcBandwidthGBs * numInput("inBwCap", 1.5, 0.1);
+    const dieArea = numInput("inDie", 3200, 1);
+    collectiveScaling = $("inScaling").value;
+    const opts = Object.assign({}, E.OPTIONS_DEFAULT, {
+      maxTp: numInput("inMaxTp", 32, 1), objective: "tps",
+      prediction: Math.min(1, numInput("inPred", 80, 0) / 100),
+      prefetchDepth: numInput("inDepth", 2, 0),
+      collectiveFusion: $("inFusion").value === "1",
+      mlaContextShardMerge: $("inMlaMerge").value === "1",
+      context: Number($("inCtx").value) || 1048576
+    });
+    $("figArch").innerHTML = architectureFigure();
+
+    const points = enumerate(grid);
+    const pruned = { area: 0, bw: 0 };
+    const candidates = [];
+    for (const point of points) {
+      const chip = chipFrom(point);
+      if (chip.mcBandwidthGBs > bwCap + 1e-9) { pruned.bw++; continue; }
+      const area = areaOf(chip, cost);
+      if (area.total > dieArea + 1e-9) { pruned.area++; continue; }
+      candidates.push({ point, chip, area, cost: costOf(chip, area, cost) });
+    }
+
+    $("btnRun").disabled = true;
+    $("results").style.display = "none";
+    const designs = [];
+    let i = 0;
+    const t0 = performance.now();
+    (function tick() {
+      const end = Math.min(candidates.length, i + 40);
+      for (; i < end; i++) {
+        const c = candidates[i];
+        const r = minCards(c.chip, opts, cardList, targetEff);
+        if (r) designs.push(Object.assign(c, { cards: r.cards, screenResult: r, sysCost: r.cards * c.cost.total, margin: r.tps / target - 1 }));
+      }
+      $("bar").style.width = (100 * i / candidates.length).toFixed(1) + "%";
+      $("status").textContent = `已评估 ${i} / ${candidates.length} 个通过物理约束的芯片点（网格 ${points.length}，面积剔除 ${pruned.area}，带宽剔除 ${pruned.bw}），达标 ${designs.length}`;
+      if (i < candidates.length) { setTimeout(tick, 0); return; }
+      $("status").textContent += ` · 用时 ${((performance.now() - t0) / 1000).toFixed(1)} s`;
+      $("btnRun").disabled = false;
+      render({ grid, cost, target, targetEff, guard, cardList, bwCap, dieArea, opts, points, pruned, candidates, designs });
+    })();
+  }
+
+  function kvSysGB(context) {
+    return model.kvPerTokenPerLayer * model.softmaxLayers * context / 1e9;
+  }
+  function evalAtContext(chip, cards, opts, context) {
+    const o = Object.assign({}, opts, { context });
+    const pack = E.optimizeForCards(model, chip, o, cards);
+    const best = pack && pack.best;
+    return best && best.feasible ? best : null;
+  }
+  function nStarAtContext(chip, opts, context, cardList, targetEff) {
+    const o = Object.assign({}, opts, { context });
+    for (const n of cardList) {
+      const r = screen(chip, o, n);
+      if (r && r.feasible && r.tps >= targetEff) return r;
+    }
+    return null;
+  }
+  function renderContextCompare(reps, opts, cardList, targetEff) {
+    if (!$("tblCtx")) return;
+    if (!reps.length) { $("tblCtx").innerHTML = ""; return; }
+    const kv32 = kvSysGB(32768), kv1m = kvSysGB(1048576);
+    const cell = (x, ctx) => {
+      if (!x) return `<td class="num" style="color:${C.bad}">不可行</td>`;
+      const ok = x.tps >= targetEff;
+      return `<td class="num"><b style="color:${ok ? C.good : C.bad}">${fmt(x.tps)}</b><br><span class="caption">${x.bottleneck} · KV/卡 ${(kvSysGB(ctx) / x.cards).toFixed(2)} GB · 读 ${x.mcMs.toFixed(3)} ms</span></td>`;
+    };
+    $("tblCtx").innerHTML = `<thead><tr><th></th><th>代表点</th><th class="num">32K（系统 KV ${kv32.toFixed(2)} GB）</th><th class="num">1M（系统 KV ${kv1m.toFixed(1)} GB）</th><th>1M 达标最少卡</th></tr></thead><tbody>` +
+      reps.map((r, i) => {
+        const a = evalAtContext(r.chip, r.cards, opts, 32768);
+        const b = evalAtContext(r.chip, r.cards, opts, 1048576);
+        const n1 = nStarAtContext(r.chip, opts, 1048576, cardList, targetEff);
+        return `<tr><td><span class="badge" style="background:${REP_COLORS[i]}">${r.letter}</span></td>` +
+          `<td>${r.cards} 卡 · PP${r.full.pp}×TP${r.full.tp}</td>` +
+          cell(a, 32768) + cell(b, 1048576) +
+          `<td>${n1 ? n1.cards + " 卡 · " + fmt(n1.tps) + " TPS · " + n1.bottleneck : "候选卡数内不达标"}</td></tr>`;
+      }).join("") + "</tbody>";
+  }
+
+  function render(ctx) {
+    const { grid, cost, target, targetEff, guard, cardList, dieArea, opts, points, pruned, designs } = ctx;
+    $("results").style.display = "";
+    const targetText = guard > 0 ? `${fmt(targetEff)} TPS（目标 ${target} × ${(1 + guard).toFixed(2)}）` : `${target} TPS`;
+    if (!designs.length) {
+      $("stats").innerHTML = `<div class="stat"><div class="v">0</div><div class="l">达标设计</div></div>`;
+      $("calloutSpace").innerHTML = `网格内没有任何芯片在 ≤ ${cardList[cardList.length - 1]} 卡下达到 ${targetText}/usr。请放宽归约延迟下限、卡数、带宽上限或达标裕量。`;
+      if ($("tblCtx")) $("tblCtx").innerHTML = "";
+      return;
+    }
+    const front = paretoFront(designs).sort((a, b) => a.cards - b.cards || a.cost.total - b.cost.total);
+    const minSys = Math.min(...designs.map(d => d.sysCost));
+    const minSramGridGlobal = Math.min(...grid.sramMib);
+    const tpsAtSramGlobal = (rep, sram) => { const r = screen(Object.assign(E.clone(rep.chip), { sramMib: sram }), opts, rep.cards); return r ? r.tps : 0; };
+    const archetypes = [
+      { name: "最少卡数", pick: () => minBy(designs, d => d.cards * 1e9 + d.sysCost) },
+      { name: "最低系统成本", pick: () => minBy(designs, d => d.sysCost) },
+      { name: "最省单卡", pick: () => minBy(designs, d => d.cost.total * 1e4 + d.cards) },
+      { name: "带宽保守（MC 带宽不涨）", pick: () => minBy(designs.filter(d => d.chip.mcBandwidthGBs <= BASE.mcBandwidthGBs), d => d.sysCost) },
+      { name: "少 SRAM（≤ 256 MiB）", pick: () => minBy(designs.filter(d => d.chip.sramMib <= 256), d => d.sysCost) },
+      { name: "归约延迟保守（≥ 1.5 μs）", pick: () => minBy(designs.filter(d => d.chip.collectiveLatencyUs >= 1.5), d => d.sysCost) },
+      { name: "帕累托膝点", pick: () => knee(front) },
+      { name: "最大裕量（系统成本 ≤ 1.15× 最低）", pick: () => maxBy(designs.filter(d => d.sysCost <= 1.15 * minSys), d => d.margin) }
+    ];
+    const reps = [];
+    const missing = [];
+    for (const a of archetypes) {
+      const d = a.pick();
+      if (!d) { missing.push(a.name); continue; }
+      const found = reps.find(r => r === d);
+      if (found) found.roles.push(a.name); else { d.roles = [a.name]; reps.push(d); }
+    }
+    reps.sort((a, b) => a.cards - b.cards || a.cost.total - b.cost.total);
+    reps.forEach((r, i) => {
+      r.letter = String.fromCharCode(65 + i);
+      r.full = E.optimizeForCards(model, r.chip, opts, r.cards).best;
+      r.binding = bindingAnalysis(r, ctx);
+    });
+    renderContextCompare(reps, opts, cardList, targetEff);
+
+    // 统计
+    const minCardsAll = Math.min(...designs.map(d => d.cards));
+    $("stats").innerHTML = [
+      [fmt(points.length), "网格芯片点"],
+      [`${fmt(pruned.area)} / ${fmt(pruned.bw)}`, "面积剔除 / 带宽剔除"],
+      [fmt(designs.length), `达标设计（≥ ${targetText}）`],
+      [minCardsAll + " 卡", "达标最少卡数"],
+      [fmt(minSys), "最低系统成本（分）"]
+    ].map(([v, l]) => `<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+
+    // 空间结构说明：哪些维度在达标集合中被"锁死"
+    const locked = [];
+    for (const key of Object.keys(grid)) {
+      const vals = [...new Set(designs.map(d => d.chip[key]))].sort((a, b) => a - b);
+      if (vals.length < grid[key].length) locked.push(`${DIM_LABELS[key][0]} 只剩 {${vals.join(", ")}} ${DIM_LABELS[key][1]}（网格 ${grid[key].length} 档中的 ${vals.length} 档）`);
+    }
+    const collNeeded = Math.max(...designs.map(d => d.chip.collectiveLatencyUs));
+    const scalingText = collectiveScaling === "log2" ? "log₂(TP)/3 缩放（消息语义树形）" : "不随 TP 缩放（内存语义两轮，8→32 卡近似平坦）";
+    $("calloutSpace").innerHTML = `<strong>达标集合的形状</strong><p>${target} TPS/usr 意味着单 token 端到端 ≤ ${(1000 / target).toFixed(2)} ms，扣除 ${opts.margin} 建模裕量后 ${(1000 / target / opts.margin).toFixed(2)} ms 要摊到 ${model.spec.layers} 层，每层约 ${(1000 / target / opts.margin / model.spec.layers * 1000).toFixed(1)} μs${guard > 0 ? `；达标判据另加 ${(guard * 100).toFixed(0)}% 裕量，即 TPS ≥ ${fmt(targetEff)}` : ""}。每 MoE 层 ${opts.collectiveFusion ? "4" : "5"} 次 all-reduce${opts.mlaContextShardMerge ? `（MLA 注意力层另加 1 次 LSE 合并，共 ${model.softmaxLayers} 次）` : ""}，归约延迟按 ${scalingText}，所以归约延迟本身就是硬门槛：达标设计中归约延迟最宽松的是 ${collNeeded} μs@TP8。</p>${locked.length ? `<p>被目标锁定的维度：${locked.join("；")}。</p>` : ""}${missing.length ? `<p>无可行设计的原型：${missing.join("、")}。</p>` : ""}`;
+
+    // 帕累托
+    $("figPareto").innerHTML = paretoScatter(designs, front, reps, cardList);
+    $("tblFront").innerHTML = `<thead><tr><th>卡数</th><th class="num">芯片成本</th><th class="num">系统成本</th><th>规格</th><th class="num">TPS</th></tr></thead><tbody>` +
+      front.map(d => { const rep = reps.find(r => r === d); return `<tr><td>${rep ? `<span class="badge" style="background:${REP_COLORS[reps.indexOf(rep)]}">${rep.letter}</span>` : ""}${d.cards}</td><td class="num">${fmt(d.cost.total)}</td><td class="num">${fmt(d.sysCost)}</td><td class="mono">${esc(specLine(d.chip))}</td><td class="num">${fmt(d.screenResult.tps)}</td></tr>`; }).join("") + "</tbody>";
+
+    // 代表表
+    $("tblReps").innerHTML = `<thead><tr><th></th><th>原型</th><th class="num">MC 数</th><th class="num">MC 带宽</th><th class="num">容量/卡</th><th class="num">SRAM</th><th class="num">算力</th><th class="num">归约</th><th class="num">互联</th><th class="num">卡数</th><th>部署</th><th class="num">TPS</th><th>瓶颈</th><th class="num">面积</th><th class="num">芯片成本</th><th class="num">系统成本</th></tr></thead><tbody>` +
+      reps.map((r, i) => {
+        const c = r.chip, f = r.full;
+        const aggressive = c.mcBandwidthGBs > BASE.mcBandwidthGBs * cost.bwAggressiveRatio;
+        const collAggressive = c.collectiveLatencyUs < COLL_AGGRESSIVE_US;
+        return `<tr><td><span class="badge" style="background:${REP_COLORS[i]}">${r.letter}</span></td><td>${r.roles.map(x => `<span class="tag info">${esc(x)}</span>`).join("")}</td>` +
+          `<td class="num">${c.mcCount}</td><td class="num">${c.mcBandwidthGBs}${aggressive ? ' <span class="tag warn">激进</span>' : ""}</td><td class="num">${c.mcCount * c.mcCapacityGB} GB</td><td class="num">${c.sramMib} MiB</td><td class="num">${fmt(c.linearTflops)}</td><td class="num">${c.collectiveLatencyUs} μs${collAggressive ? ' <span class="tag warn">激进</span>' : ""}</td><td class="num">${c.linkBandwidthGBs}</td>` +
+          `<td class="num">${r.cards}</td><td>PP${f.pp}×TP${f.tp}<br><span class="caption">${esc(policyText(f))}</span></td><td class="num">${fmt(f.tps)}<br><span class="caption">+${(f.tps / target * 100 - 100).toFixed(0)}%</span></td><td>${f.bottleneck}</td><td class="num">${fmt(r.area.total)} / ${fmt(dieArea)}</td><td class="num">${fmt(r.cost.total)}</td><td class="num">${fmt(r.sysCost)}<br><span class="caption">${(r.sysCost / minSys).toFixed(2)}× 最低</span></td></tr>`;
+      }).join("") + "</tbody>";
+
+    // 时间与面积分解
+    const cats = reps.map(r => `${r.letter} · ${r.cards} 卡`);
+    $("figTimeTitle").textContent = `每 token 时间分解（ms，各分项已乘 ${opts.margin} 建模裕量；E2E = (PP × max(MC 净读取, 计算+归约+补读) 逐 Stage 取大 + 跳 + LM Head) × ${opts.margin}，分项之和不等于 E2E）`;
+    $("figTime").innerHTML = groupedBar({
+      categories: cats, refLine: 1000 / target, refLabel: `目标 ${(1000 / target).toFixed(2)} ms`, suffix: "", height: 280,
+      series: [
+        { name: "MC 净读取 ×PP", color: C.accent, data: reps.map(r => +(Math.max(0, r.full.mcMs - r.full.savedMs) * r.full.pp * opts.margin).toFixed(3)) },
+        { name: "计算 ×PP", color: C.good, data: reps.map(r => +(r.full.computeMs * r.full.pp * opts.margin).toFixed(3)) },
+        { name: "TP 归约（总）", color: C.warn, data: reps.map(r => +(r.full.collectiveTotalMs * opts.margin).toFixed(3)) },
+        { name: "未命中补读 ×PP", color: C.bad, data: reps.map(r => +(r.full.misfetchMs * r.full.pp * opts.margin).toFixed(3)) },
+        { name: "E2E（实际）", color: C.purple, data: reps.map(r => +r.full.e2eMs.toFixed(3)) }
+      ]
+    });
+    $("figArea").innerHTML = stackedBar({
+      categories: cats, refLine: dieArea, refLabel: `预算 ${fmt(dieArea)} mm²`, height: 280,
+      series: [
+        { name: "张量阵列", color: C.good, data: reps.map(r => r.area.tensor) },
+        { name: "SRAM", color: C.accent, data: reps.map(r => r.area.sram) },
+        { name: "MC PHY", color: C.warn, data: reps.map(r => r.area.mc) },
+        { name: "固定", color: "#9ca3af", data: reps.map(r => r.area.fixed) }
+      ]
+    });
+
+    // 代表详情
+    $("repDetails").innerHTML = reps.map((r, i) => {
+      const c = r.chip, f = r.full;
+      const sramCover = f.mcMs > 0 ? f.savedMs / f.mcMs : 0;
+      const bind = r.binding.map(b => `<tr><td>${esc(b.label)}</td><td class="num">${b.value} ${esc(b.unit)}</td><td class="num">${b.next === null ? "—" : b.next + " " + esc(b.unit)}</td><td>${b.tagHtml}</td><td class="num">${b.save === null ? "—" : fmt(b.save)}</td></tr>`).join("");
+      return `<div class="panel rep"><h3><span class="badge" style="background:${REP_COLORS[i]}">${r.letter}</span>${r.roles.join(" · ")} — ${r.cards} 卡 · PP${f.pp}×TP${f.tp} · ${fmt(f.tps)} TPS/usr</h3>
+        <div class="spec">
+          <div>MC<b>${c.mcCount} × ${c.mcBandwidthGBs} GB/s</b>${fmt(c.mcCount * c.mcBandwidthGBs * BASE.mcEfficiency / 1000, 1)} TB/s 有效</div>
+          <div>容量/卡<b>${c.mcCount * c.mcCapacityGB} GB</b>权重占 ${E.gb(f.weightsCard)}</div>
+          <div>SRAM<b>${c.sramMib} MiB</b>缓冲 ${(f.bufferNeeded / 1048576).toFixed(0)} MiB 覆盖 ${(f.prefetchRatio * 100).toFixed(0)}% · 常驻 ${(f.residentBytes / 1048576).toFixed(0)} MiB 抵消 ${(sramCover * 100).toFixed(0)}% MC 读取</div>
+          <div>算力<b>${fmt(c.linearTflops)} TFLOPS</b>计算占 Stage ${(f.computeMs / f.stageMs * 100).toFixed(0)}%</div>
+          <div>归约<b>${c.collectiveLatencyUs} μs @TP8</b>TP${f.tp} 平均 ${f.collectiveUs.toFixed(2)} μs × ${f.perMoeLayer}/MoE 层${f.mlaMergeCollectives ? ` + ${model.softmaxLayers} 次 MLA 合并` : ""}，共 ${f.collectiveCount} 次</div>
+          <div>互联<b>${c.linkBandwidthGBs} GB/s</b>PP 跳 ${(f.hopMs * 1000).toFixed(0)} μs</div>
+          <div>面积<b>${fmt(r.area.total)} mm²</b>SRAM ${fmt(r.area.sram)} · MC ${fmt(r.area.mc)}</div>
+          <div>成本<b>${fmt(r.cost.total)} / 卡</b>系统 ${fmt(r.sysCost)}（${(r.sysCost / minSys).toFixed(2)}×）</div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <h3>部署方案（全策略空间复核）</h3>
+            <table><tbody>
+              <tr><td>拓扑</td><td>PP${f.pp} × TP${f.tp} = ${f.cards} 卡</td></tr>
+              <tr><td>层内策略</td><td>${esc(policyText(f))}</td></tr>
+              <tr><td>不均系数</td><td>${f.imbalance.toFixed(2)}</td></tr>
+              <tr><td>每卡每 Stage 字节</td><td>${E.gb(f.cardStageBytes)}（确定性 ${E.gb(f.detCard)} · 状态 ${E.gb(f.stateCard)} · Routed ${E.gb(f.routedCard)}）</td></tr>
+              <tr><td>Stage 时间</td><td>MC ${f.mcMs.toFixed(3)} − 常驻 ${f.savedMs.toFixed(3)} = ${Math.max(0, f.mcMs - f.savedMs).toFixed(3)} ms ｜ 计算 ${f.computeMs.toFixed(3)} + 归约 ${f.collectiveStageMs.toFixed(3)} + 未命中补读 ${f.misfetchMs.toFixed(3)} = ${(f.busyMs + f.misfetchMs).toFixed(3)} ms → 取大 ${f.stageWithBufferMs.toFixed(3)} ms${f.prefetchRatio < 1 ? `；缓冲只覆盖 ${(f.prefetchRatio * 100).toFixed(0)}%，与无缓冲 ${f.stageNoBufferMs.toFixed(3)} ms 按覆盖比例线性插值 → ${f.stageMs.toFixed(3)} ms（模型假设；真实系统更接近阶跃：装不下整层就基本不能预取，实际会更差）` : ""}</td></tr>
+              <tr><td>E2E</td><td>(${f.pp} × ${f.stageMs.toFixed(3)} + 跳 ${f.hopMs.toFixed(3)} + LM Head ${f.lmMs.toFixed(3)}) × ${opts.margin} = ${f.e2eMs.toFixed(3)} ms → ${fmt(f.tps)} TPS/usr，裕量 +${(f.tps / target * 100 - 100).toFixed(1)}%${c.sramMib > minSramGridGlobal ? `（若 SRAM 降到 ${minSramGridGlobal} MiB：${fmt(tpsAtSramGlobal(r, minSramGridGlobal))} TPS）` : ""}</td></tr>
+              <tr><td>瓶颈</td><td>${f.bottleneck}${BOTTLENECK_HINT[f.bottleneck] || ""}</td></tr>
+              <tr><td>流水吞吐</td><td>${fmt(f.throughput)} tok/s（batch=1），每卡 ${f.throughputPerCard.toFixed(1)} tok/s</td></tr>
+            </tbody></table>
+          </div>
+          <div>
+            <h3>紧约束分析：每个规格降一档（更便宜的相邻档位）</h3>
+            <table><thead><tr><th>规格</th><th class="num">当前</th><th class="num">降至</th><th>结果</th><th class="num">省/卡</th></tr></thead><tbody>${bind}</tbody></table>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+
+    // SRAM 价值：在最低系统成本方案的芯片上扫 SRAM × 预测准确率
+    const cheapestRep = reps.find(r => r.roles.includes("最低系统成本")) || reps[0];
+    const minSramGrid = minSramGridGlobal;
+    const tpsAtSram = tpsAtSramGlobal;
+    const sramSweep = [...new Set([minSramGrid, 192, 256, 384, 512, 640, 768, 1024, 1536].filter(s => s >= minSramGrid))].sort((a, b) => a - b);
+    const predLevels = [0.7, 0.8, 0.9];
+    $("sramTitle").textContent = `方案 ${cheapestRep.letter} 的芯片（${cheapestRep.cards} 卡）：TPS 随 SRAM 与预测准确率的变化`;
+    $("figSram").innerHTML = lineChart({
+      categories: sramSweep.map(s => `${s}`), refLine: target, refLabel: `目标 ${target}`, height: 300,
+      series: predLevels.map((pv, i) => ({
+        name: `预测准确率 ${Math.round(pv * 100)}%`, color: [C.warn, C.accent, C.good][i],
+        data: sramSweep.map(s => {
+          const chip = Object.assign(E.clone(cheapestRep.chip), { sramMib: s });
+          const r = screen(chip, Object.assign({}, opts, { prediction: pv }), cheapestRep.cards);
+          return r ? Math.round(r.tps) : null;
+        })
+      }))
+    });
+    const f0 = cheapestRep.full;
+    const minSramTps = tpsAtSram(cheapestRep, minSramGrid);
+    const minSramRatio = Math.min(1, minSramGrid * 1048576 / f0.bufferNeeded);
+    $("figSramCaption").textContent = `横轴：SRAM/卡 · 纵轴：该卡数下重新优化部署后的 TPS/usr。` +
+      (minSramRatio < 1
+        ? `曲线第一段（${minSramGrid} MiB 只覆盖缓冲需求的 ${(minSramRatio * 100).toFixed(0)}%）陡峭：每 MiB 换来的是"归约期间 MC 不再空转"；缓冲装满后进入常驻段，斜率由 MC 带宽决定；`
+        : `方案 ${cheapestRep.letter} 用 TP${f0.tp}，缓冲需求只有 ${(f0.bufferNeeded / 1048576).toFixed(0)} MiB（预测专家 ${(f0.predictedPerLayerCard * opts.prefetchDepth / 1048576).toFixed(0)} + 归约空窗读满 ${(f0.readAheadBytes / 1048576).toFixed(0)}），网格最小档 ${minSramGrid} MiB 已装满，因此曲线没有陡峭段，全程处于常驻段，斜率由 MC 带宽决定（若该方案瓶颈是归约，则曲线接近平坦）；`) +
+      `预测准确率只影响未命中补读与多读字节，是三者中最平缓的一项。`;
+    $("tblBufferTitle").textContent = `K3 预取缓冲需求（每卡，预取深度 ${opts.prefetchDepth} 层，${cheapestRep.letter} 的芯片）`;
+    $("tblBuffer").innerHTML = [4, 8, 16, 32].filter(tp => E.tpAllowed(model, tp, Object.assign({}, opts, { maxTp: 32 }))).map(tp => {
+      const r = E.evaluate(model, cheapestRep.chip, { pp: 1, tp, policy: Object.assign({ expertGroup: tp, router: "shard" }, shardAll) }, opts);
+      return `<tr><td>TP${tp}</td><td class="num">${(r.predictedPerLayerCard / 1048576).toFixed(1)} MiB</td><td class="num">${(r.readAheadBytes / 1048576).toFixed(0)} MiB</td><td class="num">${(r.bufferNeeded / 1048576).toFixed(0)} MiB</td><td class="caption">${opts.prefetchDepth} × ${(r.predictedPerLayerCard / 1048576).toFixed(1)} + 每卡 ${fmt(cheapestRep.chip.mcCount * cheapestRep.chip.mcBandwidthGBs * BASE.mcEfficiency / 1000, 1)} TB/s × 每层归约 ${(r.collectiveStageMs / (model.spec.layers / r.pp) * 1000).toFixed(2)} μs（${r.perMoeLayer} 次/层）；整层权重 ${(r.perLayerCard / 1048576).toFixed(0)} MiB 按流式消费不需驻留</td></tr>`;
+    }).join("");
+    const minSramDesigns = designs.filter(d => d.chip.sramMib === minSramGrid);
+    const minSramText = minSramDesigns.length
+      ? `网格最小档 ${minSramGrid} MiB 的设计只有在 ≥ ${Math.min(...minSramDesigns.map(d => d.cards))} 卡、归约 ≤ ${Math.max(...minSramDesigns.map(d => d.chip.collectiveLatencyUs))} μs 时才能达标（最低系统成本 ${(minBy(minSramDesigns, d => d.sysCost).sysCost / minSys).toFixed(2)}× 全局最低）。`
+      : `网格最小档 ${minSramGrid} MiB 在任何卡数与规格下都达不到目标。`;
+    $("calloutSram").innerHTML = `<strong>SRAM 的价值在模型里如何体现</strong><p>方案 ${cheapestRep.letter} 的预取缓冲需求 ${(f0.bufferNeeded / 1048576).toFixed(0)} MiB = ${opts.prefetchDepth} 层预测专家 ${(f0.predictedPerLayerCard * opts.prefetchDepth / 1048576).toFixed(0)} MiB + 归约空窗读满 ${(f0.readAheadBytes / 1048576).toFixed(0)} MiB（每卡 ${fmt(cheapestRep.chip.mcCount * cheapestRep.chip.mcBandwidthGBs * BASE.mcEfficiency / 1000, 1)} TB/s × 每层 ${(f0.collectiveStageMs / (model.spec.layers / f0.pp) * 1000).toFixed(1)} μs 归约）。${minSramRatio < 1 ? `若 SRAM 只有 ${minSramGrid} MiB（覆盖 ${(minSramRatio * 100).toFixed(0)}%）：专家读取部分退回到 Router 之后、归约期间 MC 部分空转，TPS 从 ${fmt(f0.tps)} 掉到 ${fmt(minSramTps)}（模型按覆盖比例在"有缓冲 / 无缓冲"两态间线性插值，是简化假设；真实系统更接近阶跃）。` : `网格最小档 ${minSramGrid} MiB 已装满缓冲，SRAM 从 ${minSramGrid} 到 ${cheapestRep.chip.sramMib} MiB 的 TPS 差（${fmt(minSramTps)} → ${fmt(f0.tps)}）全部来自常驻权重抵消 MC 读取。`}装下缓冲后 MC 读取与计算/归约完全重叠，这是 SRAM 的第一层价值；缓冲需求随归约延迟和每卡带宽变化——归约越慢、带宽越高，空窗期间读满的字节越多。${minSramText}</p><p>预测专家本身很小（TP${f0.tp} 下每层每卡约 ${(f0.predictedPerLayerCard / 1048576).toFixed(1)} MiB），确定性权重按流式消费不需要整层驻留；准确率从 ${Math.round(predLevels[0] * 100)}% 提到 ${Math.round(predLevels[predLevels.length - 1] * 100)}% 减少的是未命中补读（当前 ${Math.round(opts.prediction * 100)}% 下 ${(f0.misfetchMs * 1000).toFixed(0)} μs/Stage，与 (1−p) 成正比）和 (2−p) 倍的多读字节。缓冲之外的 SRAM 再做常驻，斜率由 MC 带宽决定。</p>`;
+
+    // 约束影响：归约 × SRAM
+    const collVals = grid.collectiveLatencyUs.slice().sort((a, b) => b - a), sramVals = grid.sramMib.slice().sort((a, b) => a - b);
+    $("tblHeat").innerHTML = `<thead><tr><th>归约延迟 ＼ SRAM</th>${sramVals.map(s => `<th class="num">${s} MiB</th>`).join("")}</tr></thead><tbody>` +
+      collVals.map(cl => `<tr><td>${cl} μs</td>` + sramVals.map(s => {
+        const sub = designs.filter(d => d.chip.collectiveLatencyUs === cl && d.chip.sramMib === s);
+        if (!sub.length) return `<td class="num" style="color:#b0b5bd">—</td>`;
+        const mc = Math.min(...sub.map(d => d.cards)), ms = minBy(sub, d => d.sysCost);
+        return `<td class="num">${mc} 卡<br><span class="caption">${fmt(ms.sysCost)}</span></td>`;
+      }).join("") + "</tr>").join("") + "</tbody>";
+
+    // 带宽上限
+    const ratios = [1, 1.25, 1.5, 1.75, 2];
+    $("tblBw").innerHTML = `<thead><tr><th>MC 带宽 ≤</th><th class="num">达标设计数</th><th class="num">最少卡数</th><th class="num">最低系统成本</th><th>最低成本设计</th></tr></thead><tbody>` +
+      ratios.map(x => {
+        const sub = designs.filter(d => d.chip.mcBandwidthGBs <= BASE.mcBandwidthGBs * x + 1e-9);
+        if (!sub.length) return `<tr><td>${BASE.mcBandwidthGBs * x} GB/s（${x}×）</td><td class="num">0</td><td class="num">—</td><td class="num">—</td><td>—</td></tr>`;
+        const ms = minBy(sub, d => d.sysCost);
+        return `<tr><td>${BASE.mcBandwidthGBs * x} GB/s（${x}×）</td><td class="num">${sub.length}</td><td class="num">${Math.min(...sub.map(d => d.cards))}</td><td class="num">${fmt(ms.sysCost)}<span class="caption">（${(ms.sysCost / minSys).toFixed(2)}×）</span></td><td class="mono">${ms.cards} 卡 · ${esc(specLine(ms.chip))}</td></tr>`;
+      }).join("") + "</tbody>";
+
+    // 算力档位
+    $("tblCompute").innerHTML = `<thead><tr><th>L-Core 算力</th><th class="num">达标设计数</th><th class="num">最少卡数</th><th class="num">最低系统成本</th><th class="num">该档 SRAM 面积上限</th></tr></thead><tbody>` +
+      grid.linearTflops.slice().sort((a, b) => a - b).map(t => {
+        const sub = designs.filter(d => d.chip.linearTflops === t);
+        const room = dieArea - cost.fixedAreaMm2 - cost.tensorAreaMm2At262Tflops * t / 262.144 - Math.min(...grid.mcCount) * (cost.mcPhyBaseMm2 + cost.mcPhyPerGBs * Math.min(...grid.mcBandwidthGBs));
+        const ms = sub.length ? minBy(sub, d => d.sysCost) : null;
+        return `<tr><td>${fmt(t)} TFLOPS</td><td class="num">${sub.length}</td><td class="num">${sub.length ? Math.min(...sub.map(d => d.cards)) : "—"}</td><td class="num">${ms ? fmt(ms.sysCost) : "—"}</td><td class="num">${fmt(Math.max(0, room * cost.sramMibPerMm2))} MiB</td></tr>`;
+      }).join("") + "</tbody>";
+
+    // 结论
+    const fewest = reps.find(r => r.roles.includes("最少卡数")), cheapest = reps.find(r => r.roles.includes("最低系统成本")), kneeRep = reps.find(r => r.roles.includes("帕累托膝点"));
+    const bwCons = reps.find(r => r.roles.includes("带宽保守（MC 带宽不涨）"));
+    const collCons = designs.filter(d => d.chip.collectiveLatencyUs >= 1.5);
+    const conc = [];
+    conc.push(`<strong>结论</strong>`);
+    conc.push(`<p>归约延迟是达标的入场券：${collCons.length ? `保持 ≥ 1.5 μs@TP8 仍有 ${collCons.length} 个达标设计，但最少也要 ${Math.min(...collCons.map(d => d.cards))} 卡、系统成本 ${(minBy(collCons, d => d.sysCost).sysCost / minSys).toFixed(2)}× 最低值` : `归约延迟 ≥ 1.5 μs@TP8 的芯片在任何卡数与规格下都达不到 ${targetText}`}。原因是每 token ${cheapest ? cheapest.full.collectiveCount : "数百"} 次 all-reduce 的串行延迟无法被 MC 读取掩盖后，直接决定端到端下限${opts.collectiveFusion ? "（已按 Wdown/Router all-gather 融合计为每 MoE 层 4 次；o_proj→Wdown 之间有 RMSNorm、专家合并→Wup 融合需复制 Wup，这两处不能再省）" : "（打开集合通信融合可把每 MoE 层 5 次降到 4 次）"}。${collectiveScaling === "flat" ? "本页按内存语义 all-reduce 建模（8→32 卡延迟近似平坦），若换成消息语义树形（log₂ 缩放），大 TP 的归约延迟会再高 30–70%，达标集合会明显缩小。" : "本页按 log₂(TP) 缩放建模，对 TP16/32 偏保守；内存语义两轮 all-reduce 可让 8→32 卡近似平坦，切到 flat 可看到更宽松的达标集合。"}</p>`);
+    const lever = c => {
+      const out = [];
+      if (c.mcCount > BASE.mcCount) out.push(`${c.mcCount} 颗 MC`);
+      if (c.mcBandwidthGBs > BASE.mcBandwidthGBs) out.push(`MC 带宽 ${c.mcBandwidthGBs} GB/s`);
+      if (c.sramMib > BASE.sramMib) out.push(`SRAM ${c.sramMib} MiB`);
+      if (c.collectiveLatencyUs < BASE.collectiveLatencyUs) out.push(`归约延迟 ${c.collectiveLatencyUs} μs`);
+      if (c.linearTflops < BASE.linearTflops) out.push(`算力降到 ${fmt(c.linearTflops)} TFLOPS 腾出面积`);
+      return out.length ? out.join("、") : "基线规格";
+    };
+    if (fewest) conc.push(`<p><b>${fewest.letter}（最少卡数${fewest === cheapest ? "，同时也是最低系统成本" : ""}）</b>：${fewest.cards} 卡达标，靠 ${lever(fewest.chip)}。少卡意味着每卡承担更多字节，每卡必须有更高的 MC 聚合带宽或 SRAM 常驻；单卡成本 ${fmt(fewest.cost.total)} 分、系统成本 ${(fewest.sysCost / minSys).toFixed(2)}× 最低，瓶颈在 ${fewest.full.bottleneck}。</p>`);
+    if (cheapest && cheapest !== fewest) conc.push(`<p><b>${cheapest.letter}（最低系统成本）</b>：${cheapest.cards} 卡 × ${fmt(cheapest.cost.total)} 分，靠 ${lever(cheapest.chip)}。用卡数换单卡规格，瓶颈在 ${cheapest.full.bottleneck}。</p>`);
+    if (kneeRep && kneeRep !== cheapest && kneeRep !== fewest) conc.push(`<p><b>${kneeRep.letter}（膝点）</b>：${kneeRep.cards} 卡、单卡 ${fmt(kneeRep.cost.total)} 分，是"再少卡就要大幅堆芯片、再省芯片就要大幅加卡"的转折点。</p>`);
+    if (bwCons) conc.push(`<p><b>${bwCons.letter}（带宽保守）</b>：MC 带宽保持 ${BASE.mcBandwidthGBs} GB/s 也能达标，代价是 ${bwCons.cards} 卡、${bwCons.chip.mcCount} 颗 MC 和 ${bwCons.chip.sramMib} MiB SRAM（系统成本 ${(bwCons.sysCost / minSys).toFixed(2)}× 最低）：单颗带宽不涨就只能用 MC 数量和 SRAM 常驻补聚合带宽。</p>`);
+    else conc.push(`<p>MC 带宽不提高时在网格内无法达标，至少要 ${Math.min(...designs.map(d => d.chip.mcBandwidthGBs))} GB/s。</p>`);
+    const collRep = reps.find(r => r.roles.includes("归约延迟保守（≥ 1.5 μs）"));
+    if (collRep) {
+      const cf = collRep.full, moreCards = cheapest && collRep.cards > cheapest.cards;
+      conc.push(`<p><b>${collRep.letter}（归约延迟保守）</b>：归约延迟停在 ${collRep.chip.collectiveLatencyUs} μs 时，TP${cf.tp} 下每层 ${cf.perMoeLayer} 次 × ${cf.collectiveUs.toFixed(2)} μs 归约占 Stage ${(cf.collectiveStageMs / cf.stageMs * 100).toFixed(0)}%（瓶颈：${cf.bottleneck}），要 ${collRep.cards} 卡、${collRep.chip.sramMib} MiB SRAM 才达标，系统成本 ${(collRep.sysCost / minSys).toFixed(2)}× 最低。${moreCards ? `与 ${cheapest.letter} 相比多 ${collRep.cards - cheapest.cards} 卡：归约延迟每差 ${(collRep.chip.collectiveLatencyUs - cheapest.chip.collectiveLatencyUs).toFixed(2)} μs 等价于 ${(collRep.cards / cheapest.cards).toFixed(1)}× 卡数。` : cheapest ? `与 ${cheapest.letter} 同为 ${collRep.cards} 卡，但归约延迟多出的 ${(collRep.chip.collectiveLatencyUs - cheapest.chip.collectiveLatencyUs).toFixed(2)} μs 要用 ${(() => { const d = []; if (collRep.chip.sramMib > cheapest.chip.sramMib) d.push(`${collRep.chip.sramMib - cheapest.chip.sramMib} MiB 额外 SRAM 常驻`); if (collRep.chip.linearTflops > cheapest.chip.linearTflops) d.push(`算力 ${Math.round(cheapest.chip.linearTflops)} → ${Math.round(collRep.chip.linearTflops)} TFLOPS（计算与归约串行，归约变慢只能压缩计算时间）`); if (collRep.chip.mcCount * collRep.chip.mcBandwidthGBs > cheapest.chip.mcCount * cheapest.chip.mcBandwidthGBs) d.push("更高的 MC 聚合带宽"); return d.length ? d.join("、") : "更高的其他规格"; })()}换回来，系统成本 +${((collRep.sysCost / cheapest.sysCost - 1) * 100).toFixed(0)}%。` : ""}</p>`);
+    }
+    const cheapChip = reps.find(r => r.roles.includes("最省单卡"));
+    if (cheapChip && cheapChip !== cheapest) conc.push(`<p><b>${cheapChip.letter}（最省单卡）</b>：单卡 ${fmt(cheapChip.cost.total)} 分是网格内能达标的最简芯片，但要 ${cheapChip.cards} 卡（PP${cheapChip.full.pp}×TP${cheapChip.full.tp}），系统成本 ${(cheapChip.sysCost / minSys).toFixed(1)}× 最低。单用户延迟目标下 PP 不能并行带宽，所以"很多便宜卡"是最贵的路线。</p>`);
+    const sramReq = reps.map(r => `${r.letter} ${(r.full.bufferNeeded / 1048576).toFixed(0)} MiB`).join("、");
+    const fewCardReps = reps.filter(r => r.cards <= 32);
+    conc.push(`<p><b>SRAM</b>：预取缓冲需求 = 预测专家 + 归约空窗读满量（各方案：${sramReq}），${minSramRatio < 1 ? `少卡方案（${fewCardReps.map(r => r.letter).join("、")}）的 SRAM 下限由它决定——缓冲不足时归约期间 MC 空转、专家读取串行，方案 ${cheapestRep.letter} 在 ${minSramGrid} MiB 下会从 ${fmt(f0.tps)} 掉到 ${fmt(minSramTps)} TPS，任何带宽都补不回来。` : `网格最小档 ${minSramGrid} MiB 已能装下，所以 SRAM 不再是硬门槛；方案 ${cheapestRep.letter} 选 ${cheapestRep.chip.sramMib} MiB 是为了常驻权重抵消 MC 读取（${minSramGrid} MiB 时 ${fmt(minSramTps)} TPS，${cheapestRep.chip.sramMib} MiB 时 ${fmt(f0.tps)}），属于"用 SRAM 换 MC 带宽"的折中而非必需。`}${minSramText}超过缓冲的部分是常驻，在 MC 受限的方案里继续线性换 TPS，在归约受限的方案里没有收益。${(() => { const p = opts.prediction, p2 = Math.min(1, p + 0.1); const gain = p < 1 ? f0.misfetchMs * (p2 - p) / (1 - p) : 0; return `预测准确率 ${Math.round(p * 100)}% → ${Math.round(p2 * 100)}% 的收益是每 Stage 少 ${(gain * 1000).toFixed(0)} μs 补读和少 ${Math.round((p2 - p) * 100)}% 专家字节，属于第二阶量。`; })()}</p>`);
+    conc.push(`<p>紧约束表里标为「必需」的规格是各方案的真正门槛；标为「有余量」的可以削减以换取面积或成本。所有成本系数为面积比例的粗估，用真实的面积/功耗/BOM 回标后重新运行即可；下方"成本系数敏感性"表给出系数变化时最低成本方案是否易主。</p>`);
+    $("calloutConclusion").innerHTML = conc.join("");
+
+    // 成本系数敏感性：达标集合不变（面积/性能与成本系数无关），只重算每个设计的成本，看最低系统成本方案是否易主
+    const baseCheapest = minBy(designs, d => d.sysCost);
+    const variants = [
+      ["基线", {}],
+      ["硅片单价 ×0.5", { areaCostPerMm2: cost.areaCostPerMm2 * 0.5 }],
+      ["硅片单价 ×2", { areaCostPerMm2: cost.areaCostPerMm2 * 2 }],
+      ["存储单价 ×0.5", { memCostPerGB: cost.memCostPerGB * 0.5 }],
+      ["存储单价 ×4", { memCostPerGB: cost.memCostPerGB * 4 }],
+      ["高速存储溢价 ×4", { memSpeedPremiumPerX: cost.memSpeedPremiumPerX * 4 }],
+      ["归约延迟改善成本 ×0.5", { collectiveCostPerUsReduced: cost.collectiveCostPerUsReduced * 0.5 }],
+      ["归约延迟改善成本 ×10", { collectiveCostPerUsReduced: cost.collectiveCostPerUsReduced * 10 }],
+      ["互联成本 ×4", { linkCostPer100GBs: cost.linkCostPer100GBs * 4 }],
+      ["每卡固定成本 +2000 分", { perCardFixed: 2000 }]
+    ];
+    $("tblCostSens").innerHTML = `<thead><tr><th>成本系数变化</th><th class="num">最低系统成本方案</th><th class="num">相对基线最低</th><th>规格</th><th>基线最低成本方案在该系数下</th></tr></thead><tbody>` +
+      variants.map(([name, patch]) => {
+        const c2 = Object.assign({}, cost, patch);
+        const sysOf = d => { const k = costOf(d.chip, d.area, c2); return d.cards * (k.total + (patch.perCardFixed || 0)); };
+        const best = minBy(designs, sysOf);
+        const same = best === baseCheapest;
+        const rep = reps.find(r => r === best);
+        return `<tr><td>${esc(name)}</td><td class="num">${rep ? `<span class="badge" style="background:${REP_COLORS[reps.indexOf(rep)]}">${rep.letter}</span>` : ""}${best.cards} 卡${same ? "" : ' <span class="tag warn">易主</span>'}</td><td class="num">${(sysOf(best) / minSys).toFixed(2)}×</td><td class="mono">${esc(specLine(best.chip))}</td><td class="num">${(sysOf(baseCheapest) / sysOf(best)).toFixed(2)}× 该系数下最低</td></tr>`;
+      }).join("") + "</tbody>";
+  }
+
+  function bindingAnalysis(design, ctx) {
+    const { grid, cost, targetEff, cardList, opts } = ctx;
+    const rows = [];
+    for (const key of Object.keys(grid)) {
+      const values = grid[key];
+      const [label, unit] = DIM_LABELS[key] || [key, ""];
+      const idx = values.indexOf(design.chip[key]);
+      let cheaper = null;
+      for (const v of [values[idx - 1], values[idx + 1]]) {
+        if (v === undefined) continue;
+        const chip = chipFrom(Object.assign({}, design.point, { [key]: v }));
+        const area = areaOf(chip, cost);
+        const k = costOf(chip, area, cost);
+        if (k.total < design.cost.total - 1e-9 && (!cheaper || k.total < cheaper.k.total)) cheaper = { v, chip, k };
+      }
+      if (!cheaper) { rows.push({ key, label, unit, value: design.chip[key], next: null, save: null, tagHtml: `<span class="tag info">已是最省档</span>` }); continue; }
+      const r = minCards(cheaper.chip, opts, cardList, targetEff);
+      const save = design.cost.total - cheaper.k.total;
+      let tagHtml;
+      if (!r) tagHtml = `<span class="tag bad">必需</span>降一档在任何卡数下都不达标`;
+      else if (r.cards > design.cards) tagHtml = `<span class="tag warn">有代价</span>需加到 ${r.cards} 卡（系统成本 ${fmt(r.cards * cheaper.k.total)}）`;
+      else tagHtml = `<span class="tag ok">有余量</span>仍 ${design.cards} 卡达标，${fmt(r.tps)} TPS`;
+      rows.push({ key, label, unit, value: design.chip[key], next: cheaper.v, save, tagHtml });
+    }
+    return rows;
+  }
+
+  function fillCompute1m() {
+    const CN = window.K3ComputeNode;
+    if (!CN) return;
+    const opts = CN.decodeOpts(E, CN.CTX_1M);
+    const phy = 32 * (12 + 0.025 * 480);
+    const base = Object.assign({}, E.CHIP_DEFAULT, {
+      mcCount: 32, mcBandwidthGBs: 480, mcCapacityGB: 8, sramMib: 384,
+      collectiveLatencyUs: 1.15, collectiveScaling: "flat"
+    });
+    const notes = {
+      16: {
+        caption: "16 卡 PP1×TP16。右上角最大算力仍过不了：墙在 MC 读 1M KV，不是阵列。",
+        extra: "1M 约 883 TPS。加卡到 32 才离开这条带宽墙。制程表按代表点阵列，只说明「就算过了线也不需要 N3」。"
+      },
+      32: {
+        caption: "32 卡 PP1×TP32。KV 按 TP32 切开后读数不再盖住忙侧，墙交给 393 次归约。",
+        extra: "过线最少约 L 98 + H 512 = 610 TF/卡，每 Die 约 76 TF。TSMC 12nm、400 mm² / 128 TF 够用，不必 N7。"
+      }
+    };
+    [16, 32].forEach(cards => {
+      const el = $("cmp1m" + cards);
+      if (!el) return;
+      const evalAt = (lin, attn) => {
+        const r = CN.familyAScreen(E, model, Object.assign({}, base, { linearTflops: lin, attnTflops: attn }), opts, cards);
+        return r ? { tps: r.tps, bot: r.bottleneck } : { tps: 0, bot: "不可行" };
+      };
+      const hi = evalAt(524.288, 8388);
+      const sweep = hi.tps >= CN.TARGET ? CN.sweepFamilyA(evalAt) : { cells: [], minL: null, minH: null, minSum: null };
+      const pick = sweep.minSum || { lin: 131.072, attn: 1048.576 };
+      const process = CN.judgeProcess({ linTf: pick.lin, attnTf: pick.attn, sramMib: 384, phyMm2: phy, fixedMm2: 400, budgetMm2: 3200 });
+      const n = notes[cards];
+      CN.renderBlock(el, {
+        caption: n.caption, extra: n.extra,
+        passed: !!sweep.minSum, process, sweep,
+        baseTps: evalAt(131.072, 1048.576).tps,
+        phyMm2: phy, fixedMm2: 400
+      });
+    });
+  }
+  window.addEventListener("load", fillCompute1m);
+</script>
+</body>
+</html>
