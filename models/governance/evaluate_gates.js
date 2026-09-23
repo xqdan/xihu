@@ -128,9 +128,14 @@ function evaluateQuantificationGate(detail, matrix, register, directionGate) {
     ),
     sharedManifestAcrossRooflineAndReplay: sharedManifest,
     p0P1Separated: [...new Set(detail.operatorLedger.map(row => row.physicalProfile))].every(profile => ['P0', 'P1'].includes(profile)),
+    // P0 and P1 must be sourced from different spec files (physical primary vs searched
+    // executable candidate). Equal numbers for a core class are allowed; copied sources are not.
     p0P1DistinctResources: Boolean(detail.sizing && detail.sizing.availableResources &&
       detail.sizing.availableResources.P0 && detail.sizing.availableResources.P1 &&
-      ['L', 'H', 'V'].some(core => detail.sizing.availableResources.P0[core].peakFlops !== detail.sizing.availableResources.P1[core].peakFlops)),
+      ['L', 'H', 'V'].every(core =>
+        detail.sizing.availableResources.P0[core].source &&
+        detail.sizing.availableResources.P1[core].source &&
+        detail.sizing.availableResources.P0[core].source !== detail.sizing.availableResources.P1[core].source)),
     mc320Mc640Separated: [...new Set(detail.operatorLedger.map(row => row.mcProfile))].every(profile => ['MC320', 'MC640'].includes(profile)),
     provenanceComplete,
     ...coverage,

@@ -21,20 +21,32 @@ assert.strictEqual(score.candidateSummaries.length, 12);
 assert(score.candidateSummaries.every(item => item.accountedModelCount === 3));
 assert(score.candidateSummaries.every(item => item.rankingEligible === true));
 
-// P0 and P1 must carry distinct core-class capacities in the scorecard, sourced from the two spec files.
+// P0 and P1 capacities must each be derived from their own spec file. Equality of a
+// single core class is allowed (the search may pick the same H shape); what is
+// forbidden is copying one profile's numbers into the other.
 const packageSpec = read('docs/design/spec/k3_7r_package_baseline.json');
 const mcSpec = read('docs/design/spec/k3_mc_baseline.json');
-assert.notStrictEqual(score.resourceProfiles.P0.peakByCore.L, score.resourceProfiles.P1.peakByCore.L);
-assert.notStrictEqual(score.resourceProfiles.P0.peakByCore.H, score.resourceProfiles.P1.peakByCore.H);
-assert.strictEqual(score.resourceProfiles.P0.lCoresPerDie, packageSpec.compute.lCoresPerDie);
-assert.strictEqual(score.resourceProfiles.P0.ghz, packageSpec.compute.frequencyGHzCandidate);
-assert.strictEqual(score.resourceProfiles.P1.lCoresPerDie, mcSpec.computeDieCandidate.lCores);
-assert.strictEqual(score.resourceProfiles.P1.ghz, mcSpec.computeDieCandidate.frequencyGHz);
+const RES = require('../models/planning/resource_profiles');
+const peak = (shape, cores, ghz) => cores * shape.engines * shape.rows * shape.cols * 2 * ghz * 1e9 * 8;
+const p0 = score.resourceProfiles.P0, p1 = score.resourceProfiles.P1;
+assert.strictEqual(p0.lCoresPerDie, packageSpec.compute.lCoresPerDie);
+assert.strictEqual(p0.hCoresPerDie, packageSpec.compute.hCoresPerDie);
+assert.strictEqual(p0.ghz, packageSpec.compute.frequencyGHzCandidate);
+assert.strictEqual(p0.peakByCore.L, peak(RES.P0_ENGINE.L, p0.lCoresPerDie, p0.ghz));
+assert.strictEqual(p0.peakByCore.H, peak(RES.P0_ENGINE.H, p0.hCoresPerDie, p0.ghz));
+const cand = mcSpec.computeDieCandidate;
+assert.strictEqual(p1.lCoresPerDie, cand.lCores);
+assert.strictEqual(p1.hCoresPerDie, cand.hCores);
+assert.strictEqual(p1.ghz, cand.frequencyGHz);
+assert.deepStrictEqual(p1.engine.L, {engines: cand.lCore.tensorEngines, rows: cand.lCore.tensorShape[0], cols: cand.lCore.tensorShape[1]});
+assert.deepStrictEqual(p1.engine.H, {engines: cand.hCore.tensorEngines, rows: cand.hCore.tensorShape[0], cols: cand.hCore.tensorShape[1]});
 // P1 package peak must be the searched candidate's die peak x 8, not a stale engine shape.
-assert(Math.abs((score.resourceProfiles.P1.peakByCore.L + score.resourceProfiles.P1.peakByCore.H) / 8 / 1e12 - mcSpec.computeDieCandidate.bf16DenseTflops) < 1e-6, 'P1 peak must match k3_mc_baseline.json');
+assert(Math.abs((p1.peakByCore.L + p1.peakByCore.H) / 8 / 1e12 - cand.bf16DenseTflops) < 1e-6, 'P1 peak must match k3_mc_baseline.json; rerun npm run model:planning');
+assert.deepStrictEqual(score.resourceProfiles, JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(RES.coreProfiles).map(([k, v]) => [k, {id: v.id, lCoresPerDie: v.lCoresPerDie, hCoresPerDie: v.hCoresPerDie, ghz: v.ghz, engine: v.engine, peakByCore: v.peakByCore, source: v.source}])))), 'scorecard resource profiles are stale; rerun npm run model:planning');
 const p0k3 = score.candidates.find(c => c.candidateId === 'P0-7R-balanced-MC640-TP32' && c.modelId === 'K3');
 const p1k3 = score.candidates.find(c => c.candidateId === 'P1-compact-MC640-TP32' && c.modelId === 'K3');
-assert.notStrictEqual(p0k3.computeTimeUs, p1k3.computeTimeUs, 'P0 and P1 compute time must differ');
+assert(p0k3 && p1k3);
+assert.strictEqual(p0k3.workloadUnits.effectiveFlopsPerSecond, p0.peakByCore[score.candidates.find(c => c === p0k3).workloadUnits.computeOperatorId === 'attention' ? 'H' : 'L'] * 0.6 * 0.85);
 
 // D-Gate is recomputed by the validator, and the register state is derived from it.
 const {evaluateDirectionGate} = require('../models/governance/evaluate_gates');

@@ -40,10 +40,16 @@ for (const row of detail.operatorLedger) {
   assert(row.bytes && Number.isFinite(row.bytes.total) && row.bytes.total > 0);
   assert(row.workloadStatus, 'ledger rows must carry the workload provenance status');
 }
-// P0 and P1 ledger rows for the same operator must use different peak capacity.
-const p0 = detail.operatorLedger.find(r => r.physicalProfile === 'P0' && r.modelId === 'K3' && r.tp === 32 && r.mcProfile === 'MC640' && r.coreClass === 'L');
-const p1 = detail.operatorLedger.find(r => r.physicalProfile === 'P1' && r.modelId === 'K3' && r.tp === 32 && r.mcProfile === 'MC640' && r.coreClass === 'L');
-assert.notStrictEqual(p0.availablePeakFlops, p1.availablePeakFlops);
+// P0 and P1 ledger rows must use each profile's own peak capacity (from models/planning/resource_profiles.js).
+const RES = require('../models/planning/resource_profiles');
+for (const profile of ['P0', 'P1']) {
+  for (const row of detail.operatorLedger.filter(r => r.physicalProfile === profile)) {
+    assert.strictEqual(row.availablePeakFlops, RES.coreProfiles[profile].peakByCore[row.coreClass], `${profile} ${row.operatorId} peak is stale; rerun npm run model:planning`);
+  }
+  for (const core of ['L', 'H', 'V']) {
+    assert.strictEqual(detail.sizing.availableResources[profile][core].peakFlops, RES.coreProfiles[profile].peakByCore[core]);
+  }
+}
 assert.strictEqual(detail.blockedCases.length, 0);
 assert.strictEqual(detail.summary.length, 3);
 assert.strictEqual(detail.sizing.targetTpsPerUser, 1000);
@@ -51,7 +57,6 @@ assert.strictEqual(detail.sizing.utilizationAssumption, 0.6);
 assert.strictEqual(detail.sizing.dutyCycleAssumption, 0.85);
 assert(detail.sizing.availableResources.P0.L.peakFlops > 0);
 assert(detail.sizing.availableResources.P1.L.peakFlops > 0);
-assert.notStrictEqual(detail.sizing.availableResources.P0.L.peakFlops, detail.sizing.availableResources.P1.L.peakFlops);
 assert.strictEqual(detail.agentRuns.Q2.status, 'COMPLETE');
 assert.strictEqual(detail.agentRuns.Q8.status, 'PLANNING_ONLY');
 assert.strictEqual(detail.agentRuns.Q9.status, 'COMPLETE');
