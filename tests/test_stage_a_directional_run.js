@@ -30,6 +30,8 @@ assert.strictEqual(score.resourceProfiles.P0.lCoresPerDie, packageSpec.compute.l
 assert.strictEqual(score.resourceProfiles.P0.ghz, packageSpec.compute.frequencyGHzCandidate);
 assert.strictEqual(score.resourceProfiles.P1.lCoresPerDie, mcSpec.computeDieCandidate.lCores);
 assert.strictEqual(score.resourceProfiles.P1.ghz, mcSpec.computeDieCandidate.frequencyGHz);
+// P1 package peak must be the searched candidate's die peak x 8, not a stale engine shape.
+assert(Math.abs((score.resourceProfiles.P1.peakByCore.L + score.resourceProfiles.P1.peakByCore.H) / 8 / 1e12 - mcSpec.computeDieCandidate.bf16DenseTflops) < 1e-6, 'P1 peak must match k3_mc_baseline.json');
 const p0k3 = score.candidates.find(c => c.candidateId === 'P0-7R-balanced-MC640-TP32' && c.modelId === 'K3');
 const p1k3 = score.candidates.find(c => c.candidateId === 'P1-compact-MC640-TP32' && c.modelId === 'K3');
 assert.notStrictEqual(p0k3.computeTimeUs, p1k3.computeTimeUs, 'P0 and P1 compute time must differ');

@@ -250,7 +250,7 @@ const direction = {
   confidence: 'E1',
   manifestHash,
   inputHashes: sourceInputs,
-  resourceProfiles: Object.fromEntries(Object.entries(coreProfiles).map(([key, value]) => [key, {id: value.id, lCoresPerDie: value.lCoresPerDie, hCoresPerDie: value.hCoresPerDie, ghz: value.ghz, peakByCore: value.peakByCore, source: value.source}])),
+  resourceProfiles: Object.fromEntries(Object.entries(coreProfiles).map(([key, value]) => [key, {id: value.id, lCoresPerDie: value.lCoresPerDie, hCoresPerDie: value.hCoresPerDie, ghz: value.ghz, engine: value.engine, peakByCore: value.peakByCore, source: value.source}])),
   mcProfiles: Object.fromEntries(Object.entries(mcProfiles).map(([key, value]) => [key, {rawPayloadTBs: value.rawPayloadTBs, sustainedAssumption: value.sustainedAssumption, effectiveBytesPerSecond: value.effectiveBytesPerSecond, classification: value.classification}])),
   candidates,
   candidateSummaries,
