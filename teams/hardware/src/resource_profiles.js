@@ -6,7 +6,7 @@
  * is a measured or signed-off figure.
  *
  *  P0  7-reticle physical primary: 8 L + 8 H cores per die, 1.0 GHz candidate
- *      (docs/architecture/12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md §3.1,
+ *      (teams/hardware/docs/12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md §3.1,
  *       teams/hardware/inputs/k3_7r_package_baseline.json: compute.frequencyGHzCandidate)
  *  P1  compact executable: the searched K3 candidate in
  *      teams/hardware/inputs/k3_mc_baseline.json#/computeDieCandidate (cores per die,
@@ -14,7 +14,7 @@
  *      profile follows the search; see doc 21 / ADR-0005)
  *
  * P0 engine shapes: L = 8 engines x (1x256), H = 8 engines x (16x128) BF16 MAC
- * per cycle, 2 FLOP per MAC, 512 vector lanes per core (docs/architecture/02_AI_CORE.md).
+ * per cycle, 2 FLOP per MAC, 512 vector lanes per core (teams/hardware/docs/02_AI_CORE.md).
  */
 const fs = require('fs');
 const path = require('path');
@@ -23,7 +23,7 @@ const root = path.resolve(__dirname, '../../..');
 const read = relativePath => JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/^﻿/, ''));
 
 const DIES_PER_PACKAGE = 8;
-// P0 engine shapes (docs/architecture/02_AI_CORE.md, 12_7_RETICLE): L = 8 x (1x256), H = 8 x (16x128), 512 vector lanes.
+// P0 engine shapes (teams/hardware/docs/02_AI_CORE.md, 12_7_RETICLE): L = 8 x (1x256), H = 8 x (16x128), 512 vector lanes.
 // P1 engine shapes come from the searched candidate in k3_mc_baseline.json (they change when the search moves).
 const P0_ENGINE = {L: {engines: 8, rows: 1, cols: 256}, H: {engines: 8, rows: 16, cols: 128}, vectorLanesPerCore: 512};
 

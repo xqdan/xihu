@@ -10,10 +10,10 @@
 
 | Team | Directory | Ownership |
 |---|---|---|
-| Hardware | `teams/hardware/`（`inputs/` 硬件基线规格，`src/` resource profiles 与 compute node） | Package/floorplan, AI Core, SRAM/TMA, MC, NoC/Die-to-Die, PPA/RAS |
-| Software | `teams/software/` | Deployment/runtime, compiler, kernels, fusion, collective overlap, scheduler, profiler |
-| Model | `teams/model/`（`inputs/` manifest/profile，`src/design_engine.js` 为 K3 唯一形状来源，`src/workload_derivation.js`） | Model manifest, workload/operator ledger, scenarios, routing/sparsity, golden traces, model KPI |
-| Architecture Council | `teams/council/`（ADR、运行模型文档、agent roster），`integration/`（跨团队代码），`docs/architecture/` | Requirements, contracts, ADR, candidate integration, D-Gate |
+| Hardware | `teams/hardware/`（`inputs/` 硬件基线规格，`src/` resource profiles 与 compute node，`docs/` 硬件单元设计文档） | Package/floorplan, AI Core, SRAM/TMA, MC, NoC/Die-to-Die, PPA/RAS |
+| Software | `teams/software/`（`docs/` 编译器 / runtime / 固件与优化策略） | Deployment/runtime, compiler, kernels, fusion, collective overlap, scheduler, profiler |
+| Model | `teams/model/`（`inputs/` manifest/profile，`src/design_engine.js` 为 K3 唯一形状来源，`src/workload_derivation.js`，`docs/deployment/` 逐模型部署方案） | Model manifest, workload/operator ledger, scenarios, routing/sparsity, golden traces, model KPI |
+| Architecture Council | `teams/council/`（ADR、运行模型文档、agent roster），`integration/`（跨团队代码），`docs/architecture/`（系统级文档与跨团队 contracts） | Requirements, contracts, ADR, candidate integration, D-Gate |
 | V&V | `teams/vv/`, `tests/` | Independent schema, conservation, traceability, regression, Q-Gate |
 
 目录规则（由 `tests/structure/test_project_structure.js` 强制）：
@@ -21,6 +21,7 @@
 - `teams/<team>/` 只依赖本团队目录，不 require 其他团队、`integration/` 或 `out/`；跨团队组合一律放在 `integration/`。
 - 每个专业团队的对外承诺写在 `teams/<team>/contract.json`，由 `integration/pipelines/generate_team_contracts.js` 合成到 `out/contracts/`。
 - `out/` 只放 pipeline 生成物，不手工编辑；`archive/` 只读，不被活代码引用。
+- 设计文档放在签核它的团队目录：硬件单元设计 `teams/hardware/docs/`，软件设计 `teams/software/docs/`，模型部署方案 `teams/model/docs/deployment/`；`docs/architecture/` 只放系统级、跨团队文档。
 
 D1–D7 and Q1–Q9 remain compatibility aliases for the flow, but new work items must use `HW-*`, `SW-*`, `MODEL-*`, `ARCH-*`, or `VV-*` IDs.
 

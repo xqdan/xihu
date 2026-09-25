@@ -21,6 +21,7 @@
 | `src/design_engine.js` | K3 形状唯一来源（`MODEL_PRESETS.kimiK3`，工程 preset）与形状推导 |
 | `src/workload_derivation.js` | GLM-5.2 / DeepSeek-V4-Pro 规划算子行推导（manifest `shape` + 显式 ASSUMPTION） |
 | `inputs/` | 正式 manifest、model profiles、manifest qualification matrix、多模型 TP 矩阵 |
+| `docs/deployment/` | 逐模型部署方案（K3、GLM-5.2、DeepSeek-V4-Pro）：切分、dtype、KV/index 布局、集合通信次数；字段来源是 `inputs/formal_model_manifests.json` |
 | `docs/` | manifest qualification 报告 |
 | `contract.json` | 对外 workload contract 的静态部分；`integration/pipelines/generate_team_contracts.js` 合成到 `out/contracts/model_workload_contract.json` |
 

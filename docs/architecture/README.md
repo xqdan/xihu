@@ -45,18 +45,16 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 - [19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md](../../teams/council/docs/19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md)：详细设计按 B0-B5 工作包组织，定义 Q1-Q9 的输入、输出、约束、并行关系和方向回流。
 - [detailed/README.md](../../teams/council/docs/detailed/README.md)：Q0-Q9 详细设计规格、任务卡、handoff packet 和产物目录。
 
+文档按签核团队存放：本目录只放系统级、跨团队的文档；硬件单元设计在 `teams/hardware/docs/`，
+软件设计在 `teams/software/docs/`，模型部署方案在 `teams/model/docs/deployment/`。
+原 `08_SCHEDULER_AND_SOFTWARE.md` 已于 2026-09-25 拆成下表中的软件、硬件和 Tile IR 契约三份。
+
+#### 系统级（本目录，Council）
+
 | 文档 | 负责范围 |
 | --- | --- |
 | [00_CURRENT_STATE.md](00_CURRENT_STATE.md) | 已确定事项、冲突、证据等级和当前性能 |
 | [01_SYSTEM_ARCHITECTURE.md](01_SYSTEM_ARCHITECTURE.md) | 系统边界、卡/Die/MC 分层和端到端数据流 |
-| [02_AI_CORE.md](02_AI_CORE.md) | L/H AI Core、Tensor、Vector 和执行接口 |
-| [03_TMA_AND_SRAM.md](03_TMA_AND_SRAM.md) | TMA、本地 SRAM、共享 SRAM、bank 与生命周期 |
-| [04_MEMORY_SUBSYSTEM_MC.md](04_MEMORY_SUBSYSTEM_MC.md) | Memory Cube、容量、带宽、地址映射和 MC 控制器 |
-| [05_ON_DIE_NOC.md](05_ON_DIE_NOC.md) | 单 Die NoC 拓扑、位宽、VC、QoS 和流控 |
-| [06_MULTIDIE_AND_SCALEOUT.md](06_MULTIDIE_AND_SCALEOUT.md) | 8 Die 卡内扩展、TP32 和板间物理拓扑 |
-| [07_COLLECTIVE_RDMA.md](07_COLLECTIVE_RDMA.md) | 远端 SRAM 语义、归约引擎、epoch 和可靠性 |
-| [08_SCHEDULER_AND_SOFTWARE.md](08_SCHEDULER_AND_SOFTWARE.md) | 编译器、tile 描述符、调度器、固件和 PMU |
-| [09_PACKAGE_POWER_RAS.md](09_PACKAGE_POWER_RAS.md) | 封装、I/O 岸线、功耗、时钟、散热和 RAS |
 | [10_TILE_SIMULATION.md](10_TILE_SIMULATION.md) | 算子/tile 模型、资源竞争、校准和签核标准 |
 | [11_PLAN_AND_DELIVERABLES.md](11_PLAN_AND_DELIVERABLES.md) | 分阶段设计计划、里程碑、交付物和退出条件 |
 | [21_TPS_DESIGN_BASELINE.md](21_TPS_DESIGN_BASELINE.md) | 支撑 TPS/usr 发布点的软硬件设计基线：时间账、单元规格、软件机制、逐项回退、敏感度与变更控制（ADR-0005） |
@@ -64,9 +62,44 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | [OPEN_ISSUES.md](OPEN_ISSUES.md) | 阻塞项、责任子系统和关闭证据 |
 | [teams/hardware/inputs/k3_mc_baseline.json](../../teams/hardware/inputs/k3_mc_baseline.json) | 当前机器可读基线与回归数值（P1） |
 | [teams/hardware/inputs/k3_7r_package_baseline.json](../../teams/hardware/inputs/k3_7r_package_baseline.json) | 7-reticle package 的面积、SRAM、MC 容量、带宽和 PPA 规划基线（P0） |
-| [12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md](12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md) | 7-reticle 单芯片、Compute Die 面积和集成存储规划 |
 | [13_MULTI_MODEL_ARCHITECTURE.md](13_MULTI_MODEL_ARCHITECTURE.md) | K3 / GLM-5.2 / DeepSeek-V4-Pro 多模型架构调整 |
 | [14_TPS_OBSERVATION_METRICS.md](14_TPS_OBSERVATION_METRICS.md) | TPS 观测指标矩阵和证据状态 |
+| [contracts/TILE_IR.md](contracts/TILE_IR.md) | Tile IR 契约：编译器、硬件调度器、模拟器和 RTL 共用的 tile descriptor |
+| [contracts/](contracts/README.md) | 其他跨团队接口 contract |
+
+#### 硬件单元设计（`teams/hardware/docs/`，Hardware）
+
+| 文档 | 负责范围 |
+| --- | --- |
+| [02_AI_CORE.md](../../teams/hardware/docs/02_AI_CORE.md) | L/H AI Core、Tensor、Vector 和执行接口 |
+| [03_TMA_AND_SRAM.md](../../teams/hardware/docs/03_TMA_AND_SRAM.md) | TMA、本地 SRAM、共享 SRAM、bank 与生命周期 |
+| [04_MEMORY_SUBSYSTEM_MC.md](../../teams/hardware/docs/04_MEMORY_SUBSYSTEM_MC.md) | Memory Cube、容量、带宽、地址映射和 MC 控制器 |
+| [05_ON_DIE_NOC.md](../../teams/hardware/docs/05_ON_DIE_NOC.md) | 单 Die NoC 拓扑、位宽、VC、QoS 和流控 |
+| [06_MULTIDIE_AND_SCALEOUT.md](../../teams/hardware/docs/06_MULTIDIE_AND_SCALEOUT.md) | 8 Die 卡内扩展、TP32 和板间物理拓扑 |
+| [07_COLLECTIVE_RDMA.md](../../teams/hardware/docs/07_COLLECTIVE_RDMA.md) | 远端 SRAM 语义、归约引擎、epoch 和可靠性 |
+| [08_ON_DIE_SCHEDULER_AND_PMU.md](../../teams/hardware/docs/08_ON_DIE_SCHEDULER_AND_PMU.md) | Die Dispatcher、Core Tile Scheduler、硬件侧低开销要求和 PMU |
+| [09_PACKAGE_POWER_RAS.md](../../teams/hardware/docs/09_PACKAGE_POWER_RAS.md) | 封装、I/O 岸线、功耗、时钟、散热和 RAS |
+| [12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md](../../teams/hardware/docs/12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md) | 7-reticle 单芯片、Compute Die 面积和集成存储规划 |
+
+#### 软件设计（`teams/software/docs/`，Software）
+
+| 文档 | 负责范围 |
+| --- | --- |
+| [COMPILER_RUNTIME_AND_FIRMWARE.md](../../teams/software/docs/COMPILER_RUNTIME_AND_FIRMWARE.md) | 编译器、TP Group / Card runtime 调度、静态/动态划分、固件 |
+| [SOFTWARE_OPTIMIZATION_STRATEGY.md](../../teams/software/docs/SOFTWARE_OPTIMIZATION_STRATEGY.md) | 可兑现的软件优化清单 |
+| [SW-05_COLLECTIVE_STRATEGY_REVISION.md](../../teams/software/docs/SW-05_COLLECTIVE_STRATEGY_REVISION.md) | 集合通信策略（当前有效） |
+
+#### 模型部署方案（`teams/model/docs/deployment/`，Model）
+
+| 文档 | 负责范围 |
+| --- | --- |
+| [deployment/README.md](../../teams/model/docs/deployment/README.md) | 三个模型共同的部署决定与机器可读来源 |
+| [K3.md](../../teams/model/docs/deployment/K3.md) · [GLM-5.2.md](../../teams/model/docs/deployment/GLM-5.2.md) · [DeepSeek-V4-Pro.md](../../teams/model/docs/deployment/DeepSeek-V4-Pro.md) | 逐模型的切分、dtype、KV/index 布局、集合通信次数和未闭合项 |
+
+#### 运行模型（`teams/council/docs/`，Council）
+
+| 文档 | 负责范围 |
+| --- | --- |
 | [15_MODELING_REVIEW_BY_AGENT.md](../../teams/council/docs/15_MODELING_REVIEW_BY_AGENT.md) | 按 agent 的建模评审 |
 | [16_ARITHMETIC_INTENSITY_AGENT.md](../../teams/council/docs/16_ARITHMETIC_INTENSITY_AGENT.md) | 算术强度 / Roofline / sizing agent |
 | [17_TWO_STAGE_ARCHITECTURE_OPERATING_MODEL.md](../../teams/council/docs/17_TWO_STAGE_ARCHITECTURE_OPERATING_MODEL.md) | Stage A 方向 / Stage B 量化两阶段流程 |

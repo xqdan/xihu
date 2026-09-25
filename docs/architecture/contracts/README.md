@@ -10,4 +10,9 @@
 - `collective_overlap_contract.md`：通信计算 overlap、资源占用和 critical path；
 - `test_acceptance_contract.md`：模型场景、软件实现、硬件 profile 和验收指标。
 
+## Current contracts
+
+- [`TILE_IR.md`](TILE_IR.md)：Tile IR / tile descriptor，编译器（Software）与片上调度器（Hardware）之间的接口；
+- [`CONTRACT_PACK.md`](CONTRACT_PACK.md)：contract 生命周期与生成规则。
+
 接口变更必须由三团队 review，并由 Architecture Council 记录 ADR；V&V 必须增加回归测试。

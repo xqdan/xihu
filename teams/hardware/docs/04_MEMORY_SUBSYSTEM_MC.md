@@ -19,7 +19,7 @@
 ## 2. 参考器件
 
 参考：
-[MemoryCube reference provenance](../../references/README.md)。
+[MemoryCube reference provenance](../../../references/README.md)。
 
 KGD 规格摘录：
 

@@ -2,7 +2,7 @@
 
 > 本文的单元级数字基于 2026-09-20 的 P1 候选（4 L + 4 H、1.2 GHz），只作对照。
 > 当前发布点的 L/H core、向量单元与 reduce 规格见
-> [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md) 第 3.2 节（`teams/hardware/inputs/k3_mc_baseline.json#tpsDesign`）。
+> [`docs/architecture/21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md) 第 3.2 节（`teams/hardware/inputs/k3_mc_baseline.json#tpsDesign`）。
 
 ## 1. 目标与边界
 

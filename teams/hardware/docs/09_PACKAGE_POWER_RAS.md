@@ -21,7 +21,7 @@
 ```
 
 相对 5,248 mm² 工程 placement window 预留约 448 mm²，用于 die 间距、RDL、
-keep-out、PDN、时钟、热扩散和维修余量。当前 P1 搜索使用的 Die 面积（见 `00_CURRENT_STATE.md` 第 2 节）
+keep-out、PDN、时钟、热扩散和维修余量。当前 P1 搜索使用的 Die 面积（见 [`docs/architecture/00_CURRENT_STATE.md`](../../../docs/architecture/00_CURRENT_STATE.md) 第 2 节）
 是 compact executable profile，不能覆盖 7R 主候选的 8 L + 8 H / 96 MiB
 物理规划；两者需要独立 floorplan 和 PPA budget。
 

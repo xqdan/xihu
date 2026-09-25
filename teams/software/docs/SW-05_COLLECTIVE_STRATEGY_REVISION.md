@@ -80,7 +80,7 @@
 | `HIGH_LEVEL_ARCHITECTURE.md:87,:117`、`k3_1000tps_metric_summary.html` | **1.15 µs @TP8 flat** | 一次完整 all-reduce（spec 基线） |
 | `integration/detailed/tiered_memory_engine.js:40` | 1.15 µs flat | 同上 |
 | `integration/detailed/k3_operator_sram_sim.js:11` | `tauUs = 1.15` | 模拟器原生默认 |
-| `07_COLLECTIVE_RDMA.md:40` | one-way **0.05 µs** | 标记 `MODEL`，无推导 |
+| `teams/hardware/docs/07_COLLECTIVE_RDMA.md:43` | one-way **0.05 µs** | 标记 `MODEL`，无推导 |
 | `k3_sram_memory_rdma_model.js:6` | `MEM.oneWayUs = 0.10` | 另一默认 |
 | `k3_rdma_final_tuning_model.js:15` | `OPT.oneWayUs = 0.05` | **发布 859.18 所用** |
 

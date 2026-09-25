@@ -89,7 +89,7 @@ assert.deepEqual(archiveViolations, [], `Live code must not require archive/:\n$
 assert.deepEqual(teamViolations, [], `Team directories must not depend on other teams, integration/ or out/:\n${teamViolations.join('\n')}`);
 
 for (const required of [
-  'teams/model/inputs', 'teams/model/src', 'teams/hardware/inputs', 'teams/hardware/src', 'teams/software/docs',
+  'teams/model/inputs', 'teams/model/src', 'teams/model/docs/deployment', 'teams/hardware/inputs', 'teams/hardware/src', 'teams/hardware/docs', 'teams/software/docs',
   'teams/council/adr', 'teams/council/docs', 'teams/council/inputs', 'teams/vv',
   'integration/detailed', 'integration/planning', 'integration/governance', 'integration/pipelines', 'integration/templates',
   'out', 'docs/architecture', 'archive', 'tests/unit', 'tests/regression', 'tests/governance', 'tests/structure',

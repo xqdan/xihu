@@ -18,6 +18,7 @@
 
 | Path | Content |
 |---|---|
+| `docs/` | 硬件单元设计：02 AI Core、03 TMA/SRAM、04 MC、05 NoC、06 多 Die/Scale-out、07 Collective/RDMA、08 片上调度器与 PMU、09 封装/功耗/RAS、12 7-reticle 单芯片（编号沿用原 docs/architecture/ 序号） |
 | `inputs/k3_7r_package_baseline.json` | P0 7R physical primary 封装基线（手工维护） |
 | `inputs/k3_mc_baseline.json` | P1 compact executable 基线。**混合文件**：规格字段手工维护；`computeDieCandidate`、`modelResults`、`collectiveCount`、`tauBasis`、`sramAccounting`、`acceptance.reason`、`tpsDesign` 由 `integration/pipelines/sync_baseline_spec.js` 从 Final Tuning 结果重写（`npm run baseline:sync`），不要手改这些字段 |
 | `src/resource_profiles.js` | P0/P1 × MC320/MC640 资源 profile，从上面两个 spec 推导 |

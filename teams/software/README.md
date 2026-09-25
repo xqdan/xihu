@@ -27,7 +27,7 @@
 
 | Path | Content |
 |---|---|
-| `docs/` | 软件优化策略、SW-05 collective 策略修订与 all-reduce fusion |
+| `docs/` | 编译器 / runtime / 固件设计（`COMPILER_RUNTIME_AND_FIRMWARE.md`）、软件优化策略、SW-05 collective 策略修订与 all-reduce fusion |
 | `contract.json` | 对外 execution contract 的静态部分；合成到 `out/contracts/software_execution_contract.json` |
 
 ## Review and handoff

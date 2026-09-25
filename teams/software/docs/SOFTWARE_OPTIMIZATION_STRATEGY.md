@@ -68,8 +68,8 @@ D1+D3 后 busy 降到 621.2 µs（busy ceiling 1375 TPS），此时**绑定约�
 **动作**：把 TMA fill/drain 从 op 边界解耦，做成跨 op 的流水队列，使 N+1 个 op 的权重搬运与第 N 个 op 的 kernel 重叠。
 
 **实现前提**：
-1. Tile IR 需带 `dependency token` 与 `output event`，使调度器能表达跨 op 依赖（`08_SCHEDULER_AND_SOFTWARE.md` §2 已列出这两个字段，但模型未实现）；
-2. Local SRAM 需支持至少双缓冲的 tile 生命周期（`03_TMA_AND_SRAM.md` §5 的 generation-tagged slot 已定义）；
+1. Tile IR 需带 `dependency token` 与 `output event`，使调度器能表达跨 op 依赖（[`TILE_IR.md`](../../../docs/architecture/contracts/TILE_IR.md) §1 已列出这两个字段，但模型未实现）；
+2. Local SRAM 需支持至少双缓冲的 tile 生命周期（[`03_TMA_AND_SRAM.md`](../../hardware/docs/03_TMA_AND_SRAM.md) §5 的 generation-tagged slot 已定义）；
 3. 需要「reduce-done」flip 之外的独立「tma-done」事件，否则流水退化为串行。
 
 **未计价代价**：Local SRAM 容量。当前模型 `lLocalBytes = 2×w/NL + 2×activation/NL + write/NL×2`（`k3_architecture_search.js:65`）按双缓冲计，跨 op 流水需要更多在途 tile。**本项在模型中未作容量复核**，需 SW-04 补算。
@@ -81,7 +81,7 @@ D1+D3 后 busy 降到 621.2 µs（busy ceiling 1375 TPS），此时**绑定约�
 **动作**：允许 collective 与后续 compute op 并行，即释放单槽互斥。
 
 **实现前提**：
-1. collective 的 mailbox/epoch 生命周期与 compute 的 tile 生命周期必须可独立推进（`07_COLLECTIVE_RDMA.md` §4 已定义状态机）；
+1. collective 的 mailbox/epoch 生命周期与 compute 的 tile 生命周期必须可独立推进（[`07_COLLECTIVE_RDMA.md`](../../hardware/docs/07_COLLECTIVE_RDMA.md) §4 已定义状态机）；
 2. 需要 `partial-ready` 的 consumer wavefront 模型——当前 `OPT.partialThresholdAttention/LSE/Router` 三个阈值在 `F.mapped()` 中是**惰性的**（实测扰动零影响），即模型没有真正的 partial-ready 时序；
 3. NoC/共享 SRAM 的**资源配置必须独立**，否则 overlap 会重复计数（`AGENTS.md`：「overlap 不能重复计算；通信资源独立」）。
 

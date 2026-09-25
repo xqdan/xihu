@@ -129,7 +129,7 @@ Stretch 路线。
 ```
 
 注意：7R 面积和 16 个 MC 的集成并不自动证明 1000 TPS/usr。当前 P1 模型已经
-显示 320 GB/s/MC 点明显不达标（数值见 `00_CURRENT_STATE.md` 第 3 节），接近目标的结果依赖 640 GB/s/MC
+显示 320 GB/s/MC 点明显不达标（数值见 [`docs/architecture/00_CURRENT_STATE.md`](../../../docs/architecture/00_CURRENT_STATE.md) 第 3 节），接近目标的结果依赖 640 GB/s/MC
 或等效的字节削减、复用和算法/调度变化。
 
 ## 4. 单芯片数据流和互联
@@ -250,7 +250,7 @@ SRAM 影响；P2 用于关闭 1000 TPS/usr 的 MC 带宽阻塞。
 ## 7. 必须新增的详细设计文档
 
 ```text
-docs/architecture/
+teams/hardware/docs/
 ├── 12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md  # 本文
 ├── 13_COMPUTE_DIE_AREA_AND_FLOORPLAN.md
 ├── 14_INTEGRATED_MEMORY_HIERARCHY.md

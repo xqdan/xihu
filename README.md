@@ -15,9 +15,9 @@ RTL/IP 团队和多个 agent 可以在清晰的模块边界内并发工作。
 
 ```text
 teams/                       团队拥有的输入、代码、文档和对外 contract
-├── model/                   manifest、profile；K3 唯一形状来源 src/design_engine.js；workload 推导
-├── hardware/                7R 封装与 P1 基线规格（inputs/）、resource profiles（src/）
-├── software/                部署、kernel、fusion、collective 策略文档
+├── model/                   manifest、profile；K3 唯一形状来源 src/design_engine.js；workload 推导；模型部署方案（docs/deployment/）
+├── hardware/                7R 封装与 P1 基线规格（inputs/）、resource profiles（src/）、硬件单元设计文档（docs/）
+├── software/                编译器 / runtime / 固件设计，kernel、fusion、collective 策略文档
 ├── council/                 Architecture Council：ADR（adr/）、运行模型文档、agent roster
 └── vv/                      独立验证职责说明（测试在 tests/）
 
@@ -29,7 +29,7 @@ integration/                 跨团队代码（Council 拥有）
 └── templates/               HTML 报告模板
 
 out/                         生成物（JSON / HTML / 运行报告），不手工编辑
-docs/                        架构规格（architecture/，含跨团队 contracts/）与项目概览（overview/）
+docs/                        系统级架构文档（architecture/，含跨团队 contracts/）与项目概览（overview/）
 tests/                       unit / regression / governance / structure 四组测试
 archive/                     只读历史：RDMA 变体、SRAM HTML 模型、旧运行报告
 references/                  外部资料来源说明；供应商原始文件不默认入库
