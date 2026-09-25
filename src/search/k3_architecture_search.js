@@ -44,9 +44,37 @@ function physical(x){
  if(dieArea>LIMITS.dieArea)reasons.push('die area');if(diePower>LIMITS.diePower)reasons.push('die power');if(cardPower>LIMITS.cardPower)reasons.push('card power');if(packageArea>LIMITS.packageArea*LIMITS.packageUtil)reasons.push('package area');if(shoreline>edgeBudget)reasons.push('PHY shoreline');
  return {lTF,hTF,vectorTOP,localMiB,totalMiB,lRead,hRead,sharedRead,sharedWrite,meshSide,nocTB,coreTma,uciePortGB,mcDieGB,dieCutGB,rdmaDieGB,rdmaCardGB,reduceTOP,area,power,dieArea,diePower,mcPower,cardPower,packageArea,shoreline,edgeBudget,feasible:!reasons.length,reasons};
 }
-// basis: a countBasis string, or {countBasis, commOverlap, tmaLane, kvPrefetch, dmaPreempt} forwarded to build().
+// basis: a countBasis string, or an object whose simulator keys
+// {countBasis, commOverlap, tmaLane, kvPrefetch, dmaPreempt} are forwarded to
+// build() and whose mapping keys are consumed here:
+//  pvMerge 'tile' (historical): every context tile merges its token-partitioned
+//   PV partials and gathers the die partials onto one die over the ring.
+//   'layer': FlashDecoding-style -- each H core carries its m/l/O accumulator
+//   (already reserved in hLocalBytes) across the context tiles of a layer, the
+//   partials are merged once on the layer's last tile, and the cross-die step
+//   is a bidirectional-ring reduce-scatter by heads (each die ends with ht/D
+//   heads, which feed the head-sharded output projection whose partial sums
+//   already go to the attention output all-reduce).
+//  softmaxFusion: the online softmax runs on the H-core vector lanes inside the
+//   fused QK/softmax/PV kernel, pipelined by score blocks of hCols tokens; only
+//   one block (the pipeline fill), or any excess over the QK matrix time, stays exposed.
+//  epilogueFusion: elementwise ops (EPILOGUE_OPS) run in the epilogue of the
+//   preceding kernel on the same data: no separate shared->local stage or
+//   launch; the flush is kept only when a collective reads the result next.
+//   Their vector time and shared-SRAM bytes stay booked. Ops that follow a
+//   collective (the residual adds) head a chain and keep their stage.
+//  kvCache 'fp8' (forwarded to the simulator): KV tiles are stored, fetched and
+//   staged in local SRAM in the FlashMLA FP8 layout; QK and PV each dequantize
+//   the FP8 latent in-kernel on the H-core vector lanes (same rate as weight
+//   unpack), overlapped with the BF16 matrix work. That vector time is taken out
+//   of the budget the fused online softmax may hide under QK.
+const SIM_KEYS=['countBasis','commOverlap','tmaLane','kvPrefetch','dmaPreempt','kvCache'];
+const EPILOGUE_OPS=/^(Attention RMSNorm|MoE RMSNorm|SiLU x up|Shared SiLU x up|Expert weighted sum|Dispatch local pack|RoPE|KV append source)$/;
 function mappedPlan(x,batch,p=physical(x),basis){
- const extra=typeof basis==='string'?{countBasis:basis}:{...(basis&&basis.countBasis?{countBasis:basis.countBasis}:{}),...(basis&&'commOverlap' in basis?{commOverlap:basis.commOverlap}:{}),...(basis&&'tmaLane' in basis?{tmaLane:basis.tmaLane}:{}),...(basis&&basis.kvPrefetch?{kvPrefetch:basis.kvPrefetch}:{}),...(basis&&'dmaPreempt' in basis?{dmaPreempt:basis.dmaPreempt}:{})};
+ const b0=typeof basis==='string'?{countBasis:basis}:(basis||{});
+ const extra=Object.fromEntries(SIM_KEYS.filter(k=>b0[k]!==undefined).map(k=>[k,b0[k]]));
+ const pvMerge=b0.pvMerge||'tile',softmaxFusion=!!b0.softmaxFusion,epilogueFusion=!!b0.epilogueFusion;
+ if(!['tile','layer'].includes(pvMerge))throw Error('Invalid pvMerge '+pvMerge);
  const D=LIMITS.dies,NL=D*x.nL,NH=D*x.nH,B=batch;
  // Shared SRAM holds backing objects; LOCAL SRAM is never added to this pool.
  // Keep physical capacity reserve separate from timing/imbalance margin.
@@ -61,7 +89,7 @@ function mappedPlan(x,batch,p=physical(x),basis){
  // claiming one shared->local KV read would hide actual reload traffic.
  const tokensPerCore=Math.ceil(B*x.kvTile/NH),ht=x.headTile;
  // Two KV slabs, FP32 double score, output accumulator and Q/work/control.
- const hLocalBytes=(2*tokensPerCore*576*2+2*ht*tokensPerCore*4+ht*512*4+ht*576*2+65536)*TECH.layoutImbalance;
+ const hLocalBytes=(2*tokensPerCore*plan.kvBytesPerToken+2*ht*tokensPerCore*4+ht*512*4+ht*576*2+65536)*TECH.layoutImbalance;
  let lLocalBytes=0;
  for(const o of plan.ops)if(o.unit==='L'){
   const w=o.inputs.reduce((a,id)=>a+plan.jobs[id].bytes,0),activation=Math.max(0,o.read-w);
@@ -90,6 +118,10 @@ function mappedPlan(x,batch,p=physical(x),basis){
   o.duration=Object.values(timing).reduce((a,b)=>a+b,0);
   for(const[k,v]of Object.entries(timing))services[k]=(services[k]||0)+v;
  }
+ // pvMerge 'layer': the last PV op of each (layer, head tile) carries the merge.
+ const lastPV=new Set();
+ if(pvMerge==='layer'){const last={};for(const o of plan.ops)if(o.name.startsWith('PV'))last[o.layer+'|'+o.detail.split(';')[1]]=o.id;for(const id of Object.values(last))lastPV.add(id);}
+ let qkKernel=0,qkDequant=0;
  for(const o of plan.ops){
   const oldRead=o.read,oldWrite=o.write;
   if(o.unit==='COMM'){
@@ -111,13 +143,19 @@ function mappedPlan(x,batch,p=physical(x),basis){
   const kv=o.inputs.find(id=>plan.jobs[id].kind==='kv');
   if(kv!==undefined){
    sharedR=seenKV.has(kv)?0:plan.jobs[kv].bytes;seenKV.add(kv);sharedW=0;
-   if(o.name.startsWith('PV')){
+   if(o.name.startsWith('PV')&&(pvMerge==='tile'||lastPV.has(o.id))){
     // Token partition across cores => explicit FP32 m/l/O partial merge.
-    sharedW=Math.max(B,NH)*ht*(512+2)*4;
-    reduceRead=sharedW;reduceWrite=Math.max(B,D)*ht*(512+2)*4;
+    const part=ht*(512+2)*4;
+    sharedW=Math.max(B,NH)*part;
+    reduceRead=sharedW;reduceWrite=Math.max(B,D)*part;
     reduceUs=Math.max(sharedW/4*8/(D*p.reduceTOP*1e6),reduceRead/(D*p.sharedRead*1e6),reduceWrite/(D*p.sharedWrite*1e6));
-    const ringBytes=Math.max(0,D-B)*ht*(512+2)*4;
-    dieUs=ringBytes?3*TECH.ucieHopUs+ringBytes/(p.dieCutGB*1000):0;
+    if(pvMerge==='tile'){
+     const ringBytes=Math.max(0,D-B)*part;
+     dieUs=ringBytes?3*TECH.ucieHopUs+ringBytes/(p.dieCutGB*1000):0;
+    }else{
+     // Bidirectional-ring reduce-scatter: D-1 steps, each moving part/D split over both directions.
+     dieUs=B<D?(D-1)*(TECH.ucieHopUs+part/D/2/(p.uciePortGB*1000)):0;
+    }
    }
   }
   let fill=1,peak=0;
@@ -133,8 +171,13 @@ function mappedPlan(x,batch,p=physical(x),basis){
   }
   const alu=o.flops/(peak*1e6),readTime=oldRead/(cores*localRead*1e6),writeTime=oldWrite/(cores*localRead*.5*1e6);
   const wparams=o.inputs.reduce((s,id)=>s+(plan.jobs[id].params||0),0);
-  const unpack=wparams/(NL*x.vectorLanes*TECH.unpackParamsPerLaneCycle*x.ghz*1000);
-  const kernel=Math.max(alu,readTime,writeTime,unpack)*TECH.layoutImbalance;
+  const kvDequant=o.unit==='H'&&kv!==undefined?(plan.jobs[kv].dequant||0):0;
+  const unpack=wparams/(NL*x.vectorLanes*TECH.unpackParamsPerLaneCycle*x.ghz*1000)+kvDequant/(cores*x.vectorLanes*TECH.unpackParamsPerLaneCycle*x.ghz*1000);
+  let kernel=Math.max(alu,readTime,writeTime,unpack)*TECH.layoutImbalance;
+  if(o.name.startsWith('QK')){qkKernel=kernel;qkDequant=kvDequant?unpack*TECH.layoutImbalance:0;}
+  if(softmaxFusion&&o.name==='Online softmax')kernel=Math.max(kernel/Math.max(1,Math.ceil(tokensPerCore/x.hCols)),kernel-(qkKernel-qkDequant));
+  const prev=plan.ops[o.id-1],next=plan.ops[o.id+1];
+  const fused=epilogueFusion&&EPILOGUE_OPS.test(o.name)&&prev&&prev.unit!=='COMM';
   const names=['matrix/vector','local SRAM read','local SRAM write','unpack'];const times=[alu,readTime,writeTime,unpack];const limiter=names[times.indexOf(Math.max(...times))];limiters[limiter]=(limiters[limiter]||0)+kernel;
   // The global op stays serialized; local double-buffer chunks pipeline only within it.
   const chunkMiB=domain==='H'?x.hMiB:x.lMiB;
@@ -145,15 +188,15 @@ function mappedPlan(x,batch,p=physical(x),basis){
   // must not get free SRAM bandwidth simply by having more engines.
   const pipelined=Math.max(nominalPipeline,(oldWrite+sharedR)/(cores*localRead*.5*1e6),oldRead/(cores*localRead*1e6));
   const flush=sharedW?Math.max(sharedW/(D*p.sharedWrite*1e6),sharedW/(D*p.nocTB*1e6),sharedW/(cores*p.coreTma*1e6),sharedW/(cores*localRead*1e6))+meshLatency:0;
-  const localTma=Math.max(0,pipelined-kernel)+flush;
+  const localTma=fused?(next&&next.unit==='COMM'?flush:0):Math.max(0,pipelined-kernel)+flush,launch=fused?0:TECH.launchUs;
   // tmaLane: the DMA-sourced (weight/expert/KV/state) share of the first
   // shared->local stage becomes a separate TMA fill that the simulator may
   // issue ahead of the op into the domain's free double-buffer half. The rest
   // (activation fill, local-port excess, flush) stays in the op as localTma.
   const dmaBytes=Math.min(sharedR,o.inputs.reduce((s,id)=>s+(plan.jobs[id].kind!=='write'?plan.jobs[id].bytes:0),0));
-  const tmaFill=extra.tmaLane&&sharedR?Math.min(localTma-flush,stage/chunks)*dmaBytes/sharedR:0;
-  const timing=extra.tmaLane?{kernel,localTma:localTma-tmaFill,tmaFill,reduce:reduceUs,dieLink:dieUs,launch:TECH.launchUs}:{kernel,localTma,reduce:reduceUs,dieLink:dieUs,launch:TECH.launchUs};
-  record(o,timing,{domain,fill,limiter,chunks,sharedR,sharedW,
+  const tmaFill=extra.tmaLane&&sharedR&&!fused?Math.min(localTma-flush,stage/chunks)*dmaBytes/sharedR:0;
+  const timing=extra.tmaLane?{kernel,localTma:localTma-tmaFill,tmaFill,reduce:reduceUs,dieLink:dieUs,launch}:{kernel,localTma,reduce:reduceUs,dieLink:dieUs,launch};
+  record(o,timing,{domain,fill,limiter,chunks,sharedR,sharedW,fused,
    localReadBytes:oldRead+sharedW,localWriteBytes:oldWrite+sharedR,localReadTBs:cores*localRead,localWriteTBs:cores*localRead*.5});
   // The filled tile holds one double-buffer half of its domain until the last
   // consumer of its inputs finishes (KV tiles are reused across head tiles);
@@ -225,7 +268,7 @@ function search({samples=192,generations=4,offspring=48,polish=2,seed=20260919}=
  for(const id of new Set(Object.values(selected))){const detailed=evaluate(rows[id].x,{details:true});rows[id]=Object.assign(detailed,{id});}
  return {version:'2026-09-19',seed,options:{samples,generations,offspring,polish},elapsedSeconds:(Date.now()-start)/1000,limits:LIMITS,tech:TECH,space:SPACE,baseline,attempted,physicalReject,mappingReject,rejected,history,selected,frontIds:front.map(r=>r.id),rows};
 }
-module.exports={LIMITS,TECH,SPACE,BASE,physical,mappedPlan,evaluate,dominates,pareto,rng,search};
+module.exports={LIMITS,TECH,SPACE,BASE,EPILOGUE_OPS,physical,mappedPlan,evaluate,dominates,pareto,rng,search};
 if(require.main===module){
  const opt={};for(let i=2;i<process.argv.length;i+=2){const k=process.argv[i].replace(/^--/,'');if(!['samples','generations','offspring','polish','seed'].includes(k))throw Error('Unknown '+k);opt[k]=Number(process.argv[i+1]);if(!Number.isInteger(opt[k])||opt[k]<0)throw Error('Invalid '+k);}
  const result=search(opt);result.inputHash=crypto.createHash('sha256').update(fs.readFileSync(__filename)).update(fs.readFileSync('src/simulation/k3_operator_sram_sim.js')).update(fs.readFileSync('src/core/design_engine.js')).digest('hex');

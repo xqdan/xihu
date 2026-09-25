@@ -20,7 +20,10 @@ const OPT={
   // Per-collective latency floor (spec basis, ADR-0004); applied after all other COMM scaling.
   tauUs:1.15,
   // Scheduling and fusion switches
-  phaseFusionFactor:3,commitBatchSize:16,ackBatchSize:16,overlapDepth:4,
+  // Prefetch lookahead is the searched x.depth (layers). The earlier fixed
+  // overlapDepth 4 is gone -- a fixed deep lookahead over-prefetched and
+  // thrashed shared SRAM once the bytes per layer shrank.
+  phaseFusionFactor:3,commitBatchSize:16,ackBatchSize:16,
   tilePartialReady:true,partialThresholdAttention:.20,partialThresholdLSE:.25,partialThresholdRouter:.18,partialRelease:true,
   reduceStartThreshold:.2,          // single definition (an earlier duplicate key .25 was silently overridden)
   launchBatching:true,launchScale:.45, // applied exactly once per non-COMM op; duration is reduced by the same amount
@@ -53,13 +56,24 @@ const OPT={
   // services.tmaHidden (negative).
   tmaLane:true,
   // Cross-layer KV prefetch (2026-09-25), forwarded to the simulator. KV
-  // context tiles of the next overlapDepth layers may be fetched ahead, bounded
+  // context tiles of the next x.depth layers may be fetched ahead, bounded
   // by shared-SRAM capacity.
   kvPrefetch:'window',
   // DMA preemption (2026-09-25), forwarded to the simulator. With DMA striped
   // at stripeKiB, the Top-k-released routed-expert demand fetch (and any fetch
   // the next op needs) parks an in-flight prefetch instead of queueing behind it.
-  dmaPreempt:true
+  dmaPreempt:true,
+  // Attention and small-op mapping (2026-09-25), consumed by A.mappedPlan.
+  // pvMerge 'layer' merges the PV partials once per layer (local m/l/O carried
+  // across context tiles) with a cross-die ring reduce-scatter by heads.
+  // softmaxFusion pipelines the online softmax on the H-core vector lanes under
+  // the QK matrix time. epilogueFusion folds elementwise ops into the adjacent
+  // kernel (no separate stage, flush or launch; vector time and bytes kept).
+  pvMerge:'layer',softmaxFusion:true,epilogueFusion:true,
+  // KV cache format (2026-09-25), forwarded to the simulator. 'fp8' stores the
+  // MLA latent in the FlashMLA FP8 layout (656 B/token/layer instead of 1152);
+  // QK/PV stay BF16 and dequantize in-kernel on the H-core vector lanes.
+  kvCache:'fp8'
 };
 
 // Named empirical factors, all neutral since 2026-09-25 (previous ASSUMPTION
@@ -133,7 +147,7 @@ function chargeSharedPortCost(p,x,extraCardTBs){
 
 function mapped(x){
   const c=OPT,p0=A.physical(x);if(!p0.feasible)return {feasible:false,reasons:p0.reasons};
-  const m=A.mappedPlan(x,1,p0,{countBasis:c.countBasis,commOverlap:c.commOverlap,tmaLane:c.tmaLane,kvPrefetch:c.kvPrefetch,dmaPreempt:c.dmaPreempt});if(!m.feasible)return m;
+  const m=A.mappedPlan(x,1,p0,{countBasis:c.countBasis,commOverlap:c.commOverlap,tmaLane:c.tmaLane,kvPrefetch:c.kvPrefetch,dmaPreempt:c.dmaPreempt,pvMerge:c.pvMerge,softmaxFusion:c.softmaxFusion,epilogueFusion:c.epilogueFusion,kvCache:c.kvCache});if(!m.feasible)return m;
   let reserve=0,wire=0,req=0,ph=0;const protocol={};
   for(const o of m.plan.ops)if(o.unit==='COMM'){
     const q=collective(o.name,o.mapping.payload,p0,x,c);reserve=Math.max(reserve,q.workspace);
@@ -144,7 +158,7 @@ function mapped(x){
   }
   m.plan.scratchReserve+=reserve;m.plan.minCapacity+=reserve;m.plan.rdmaReserve=reserve;
   const pc=m.plan.c;
-  pc.batch=1;pc.depth=c.overlapDepth;
+  pc.batch=1;pc.depth=x.depth;
   // Shared-SRAM port scaling (card-level TB/s in plan.c)
   const baseRead=pc.sramReadTBs,baseWrite=pc.sramWriteTBs;
   pc.sramWriteTBs*=c.localWriteRatio;

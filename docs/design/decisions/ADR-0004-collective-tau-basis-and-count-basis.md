@@ -93,7 +93,7 @@ decision 3).**
   393-count ceiling is 845.72 TPS.
 - Same day, cross-layer KV prefetch (`OPT.kvPrefetch='window'`, review item 8)
   and DMA preemption (`OPT.dmaPreempt`): KV context tiles of the next
-  `overlapDepth` layers are prefetched like weights, and the routed-expert
+  `x.depth` layers are prefetched like weights, and the routed-expert
   demand fetch released by Top-k parks an in-flight prefetch instead of queueing
   behind it. Prediction prefetch timing and accuracy (0.8) are unchanged; the
   predicted tiles already landed about 20 µs before Top-k. Published point:
@@ -102,6 +102,22 @@ decision 3).**
   per L core and 16 MiB shared per die. On this candidate: both off 707.00,
   preemption off 767.85, cross-layer KV off 802.94. The previous candidate
   scores 843.72 with both on. The 393-count ceiling is 874.42 TPS.
+- Same day, attention and small-op mapping (`OPT.pvMerge='layer'`,
+  `softmaxFusion`, `epilogueFusion`), the prefetch depth searched as `x.depth`
+  (1..4) instead of a fixed 4, a finer H-core grid and a pairwise polish so
+  card power can move between blocks. Published point: 1007.27 TPS/usr (raw
+  848.53 µs = compute 550.64 − tmaHidden 142.57 + comm 451.95 + wait 21.29 −
+  overlap 32.78), 8 L + 4 H/Die with 5×(48×128) H engines, 0.8 GHz, 2048
+  reduce lanes. On this candidate: pvMerge=tile 919.97, softmax fusion off
+  975.19, epilogue fusion off 979.98, all three off 870.60. The 393-count
+  ceiling is 1033.19 TPS. The raw margin to the 854.70 µs budget is 6.2 µs,
+  so τ is now the sensitivity: 393 × 0.016 µs consumes it.
+- Same day, FP8 KV cache (`OPT.kvCache='fp8'`, FlashMLA layout, 656 B per
+  token per layer, BF16 compute with in-kernel dequant). Published point:
+  1031.52 TPS/usr (raw 828.59 µs = compute 519.81 − tmaHidden 132.39 + comm
+  451.95 + wait 21.82 − overlap 32.61), KV tile 32768 and 4096 reduce lanes.
+  The 393-count ceiling is 1059.42 TPS; the raw margin is 26.1 µs, i.e. τ may
+  rise by about 0.066 µs before the point misses 1000.
 
 ## Consequences
 
@@ -112,11 +128,11 @@ decision 3).**
   collective; the tail add reads two operands instead of three) and the
   remainder labelled `UNEXPLAINED` per
   docs/design/teams/14_TPS_OBSERVATION_METRICS.md §7.1.
-- **The count axis is not sufficient.** At the spec τ the analytic ceiling is
-  874.42 TPS at 393 reductions (`spec.tauBasis.ceilingTpsByCount["393"]`,
+- **The count axis is not the lever.** At the spec τ the analytic ceiling is
+  1059.42 TPS at 393 reductions (874.42 before the attention/small-op mapping) (`spec.tauBasis.ceilingTpsByCount["393"]`,
   with GAIN = 1, shared-expert overlap and TMA lanes, DMA wait taken as 0),
   against the 854.70 μs raw budget. The fully-replicated structural floor of
-  209 reductions evaluates to 1116.02 TPS, but only as an optimistic bound: it
+  209 reductions evaluates to 1436.08 TPS, but only as an optimistic bound: it
   holds the hidden TMA at today's value although fewer collectives leave less
   time to hide fills under, and it ignores DMA wait. The `tauBasis` block carries this
   table so the ordering of the two workstreams is visible: τ first, then count.

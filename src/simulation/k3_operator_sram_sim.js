@@ -42,7 +42,14 @@ const DEFAULT={tp:32,batch:8,context:1048576,depth:2,prediction:.8,union:'worst'
  // demand fetch released by Top-k, may park an in-flight prefetch at a stripe
  // boundary (the residual stripe is ignored); the parked job keeps its SRAM
  // reservation and resumes in consumer order.
- dmaPreempt:false};
+ dmaPreempt:false,
+ // KV cache storage format. 'bf16' = 576 BF16 elements per token per layer
+ // (historical). 'fp8' = the FlashMLA FP8 layout (DeepSeek-V3.2): the 512-wide
+ // latent in FP8 E4M3 with one FP32 scale per 128 elements, the 64-wide RoPE
+ // part kept in BF16, 656 bytes per token. Compute stays BF16: the latent is
+ // dequantized in the QK and PV kernels (jobs carry the element count as
+ // `dequant`; the mapper books it on the vector lanes).
+ kvCache:'bf16'};
 function build(input={}){
  const c={...DEFAULT,...input},m=E.deriveModel(E.MODEL_PRESETS.kimiK3),s=m.spec;
  if(c.tp!==32||!Number.isInteger(c.batch)||c.batch<1||!Number.isInteger(c.depth)||c.depth<0||c.depth>4||c.prediction<0||c.prediction>1||c.context%c.tp||!['worst','expected'].includes(c.union))throw Error('Invalid input / only TP32 mapped');
@@ -52,8 +59,10 @@ function build(input={}){
  if(typeof c.tmaLane!=='boolean')throw Error('Invalid tmaLane');
  if(!['layer','window'].includes(c.kvPrefetch))throw Error('Invalid kvPrefetch '+c.kvPrefetch);
  if(typeof c.dmaPreempt!=='boolean')throw Error('Invalid dmaPreempt');
+ if(!['bf16','fp8'].includes(c.kvCache))throw Error('Invalid kvCache '+c.kvCache);
  const B=c.batch,H=s.hidden,I=s.moe.latent,F=s.moe.expertHidden,K=s.moe.activeExperts,TP=c.tp;
  const qDim=s.attention.kvLatent+s.attention.ropeDim,vDim=s.attention.kvLatent;
+ const kvFp8=c.kvCache==='fp8',kvBytes=kvFp8?s.attention.kvLatent+s.attention.kvLatent/128*4+s.attention.ropeDim*2:qDim*2;
  const nctx=c.context/TP,localHeads=s.attention.heads/TP;
  const U=c.union==='worst'?Math.min(s.moe.totalExperts,B*K):s.moe.totalExperts*(1-(1-K/s.moe.totalExperts)**B);
  const Q=B*s.attention.heads*qDim*2,O=B*s.attention.heads*(vDim+2)*4;
@@ -129,10 +138,10 @@ function build(input={}){
    if(c.countBasis==='reference-393')op('Q / new-KV all-gather',{read:Q+B*qDim*2,write:Q+B*qDim*2});
    else collective('Q / new-KV all-gather',Q+B*qDim*2);
    op('RoPE',{flops:6*B*s.attention.heads*s.attention.ropeDim,read:Q,write:Q,arena:'soft'});
-   const kvout=job(B*qDim*2,'write','KV append');
-   op('KV append source',{read:B*qDim*2,write:B*qDim*2,outputs:[kvout],arena:'soft'});
+   const kvout=job(B*kvBytes,'write','KV append');
+   op('KV append source',{read:B*qDim*2,write:B*kvBytes,outputs:[kvout],arena:'soft'});
    for(let pos=0;pos<nctx;pos+=c.kvTile){
-    const len=Math.min(c.kvTile,nctx-pos),kid=job(B*len*qDim*2,'kv','KV context tile');
+    const len=Math.min(c.kvTile,nctx-pos),kid=job(B*len*kvBytes,'kv','KV context tile',kvFp8?{dequant:B*len*vDim}:{});
     for(let h=0;h<s.attention.heads;h+=c.headTile){
      const nh=Math.min(c.headTile,s.attention.heads-h),score=B*nh*len*4;
      const info=`context ${pos}..${pos+len-1}; heads ${h}..${h+nh-1}`;
@@ -197,8 +206,8 @@ function build(input={}){
  let minTransfer=0;
  for(const o of ops){const bytes=o.inputs.reduce((a,id)=>a+jobs[id].bytes,0)+o.outputs.reduce((a,id)=>a+jobs[id].bytes,0);minTransfer=Math.max(minTransfer,bytes);}
  const weightStore=(m.bytes.routedTotal+m.bytes.attn+m.bytes.wdown+m.bytes.wup+m.bytes.shared+m.bytes.router+m.bytes.lmHead)/TP;
- const stateStore=(m.softmaxLayers*c.context*m.kvPerTokenPerLayer+m.kdaStateStore)*B/TP;
- return {c,model:m,ops,jobs,layers,layerJobs,expertJobs,scratch,scratchReserve,U,minCapacity:scratchReserve+minTransfer,
+ const stateStore=(m.softmaxLayers*c.context*kvBytes+m.kdaStateStore)*B/TP;
+ return {c,model:m,ops,jobs,layers,layerJobs,expertJobs,scratch,scratchReserve,U,minCapacity:scratchReserve+minTransfer,kvBytesPerToken:kvBytes,
   backingBytes:weightStore+stateStore,weightStore,stateStore};
 }
 function simulate(plan,sramMiB,{trace=false}={}){
@@ -211,7 +220,7 @@ function simulate(plan,sramMiB,{trace=false}={}){
  // double-buffer halves (two per domain) held by filled tiles until release.
  const fillState=new Array(ops.length).fill(null),fills=[],holders={L:[],H:[]},nextFill={};
  for(const dom of ['L','H']){const a=nextFill[dom]=new Int32Array(ops.length+1);a[ops.length]=ops.length;for(let k=ops.length-1;k>=0;k--)a[k]=ops[k].tma&&ops[k].tma.domain===dom?k:a[k+1];}
- let tmaPre=0,tmaExposed=0,preemptions=0;const parked=[];
+ let tmaPre=0,tmaExposed=0,preemptions=0,tmaCancels=0;const parked=[];
  let t=0,index=0,running=null,comm=null,dma=null,used=0,peakReserved=0,peakLive=0,wait=0,compute=0,coll=0,overlap=0,dmaBusy=0;
  let readBytes=0,writeBytes=0,predBytes=0,wrongBytes=0,evictBytes=0,stallCapacityUs=0;
  let iterations=0;const layerStats=layers.map(l=>({...l,start:null,end:null,wait:0,compute:0,comm:0,readBytes:0,writeBytes:0,peak:0,operators:{}}));
@@ -222,6 +231,20 @@ function simulate(plan,sramMiB,{trace=false}={}){
  function required(o){let ids=[...o.inputs];for(const id of o.inputs){const j=js[id];if(j.kind==='expert'&&js[j.pred].adopted)ids.push(j.pred);}return ids;}
  function evictFor(bytes,pinned){
   if(pool-used+1e-6>=bytes)return true;
+  if(evictReady(bytes,pinned))return true;
+  // Last resort: a completed TMA fill of a later op keeps that op's inputs
+  // pinned, and that op cannot issue before the head op, so the head op could
+  // wait forever. Cancel such fills, farthest first; the op refills later.
+  if(tl)for(let k=ops.length-1;k>index&&pool-used+1e-6<bytes;k--){
+   if(fillState[k]!=='done')continue;
+   fillState[k]=null;tmaCancels++;const dom=ops[k].tma.domain;holders[dom]=holders[dom].filter(h=>h.op!==k);
+   const still=new Set();for(let q=index;q<ops.length;q++)if(q!==k&&fillState[q])for(const id of required(ops[q]))still.add(id);
+   for(const id of required(ops[k]))if(!still.has(id))js[id].tmaPin=false;
+   if(evictReady(bytes,pinned))return true;
+  }
+  return pool-used+1e-6>=bytes;
+ }
+ function evictReady(bytes,pinned){
   const choices=js.filter(j=>j.status==='ready'&&j.reserved>0&&!pinned.has(j.id)&&!j.tmaPin&&j.consumer>index&&j.kind!=='write'&&
    !(j.kind==='prediction'&&j.adopted&&(pinned.has(j.actual)||(js[j.actual].status==='filling'||js[j.actual].status==='paused')))).sort((a,b)=>b.consumer-a.consumer);
   for(const j of choices){
@@ -412,7 +435,7 @@ function simulate(plan,sramMiB,{trace=false}={}){
  if(Math.abs(t-(compute-tmaHidden+coll+wait-overlap))>1e-5)throw Error('Timeline conservation');
  for(const st of layerStats){st.duration=st.end-st.start;st.peakMiB=st.peak/MiB;delete st.peak;}
  return {sramMiB,feasible:true,rawUs:t,e2eUs:t*c.margin,tps:1e6/(t*c.margin),tokensPerSecond:c.batch*1e6/(t*c.margin),
-  computeUs:compute,commUs:coll,waitUs:wait,overlapUs:overlap,tmaFillUs:tmaPre,tmaExposedUs:tmaExposed,tmaHiddenUs:tmaHidden,dmaPreemptions:preemptions,dmaBusyUs:dmaBusy,readBytes,writeBytes,predBytes,wrongBytes,evictBytes,stallCapacityUs,
+  computeUs:compute,commUs:coll,waitUs:wait,overlapUs:overlap,tmaFillUs:tmaPre,tmaExposedUs:tmaExposed,tmaHiddenUs:tmaHidden,dmaPreemptions:preemptions,tmaCancels,dmaBusyUs:dmaBusy,readBytes,writeBytes,predBytes,wrongBytes,evictBytes,stallCapacityUs,
   peakReservedMiB:peakReserved/MiB,peakLiveMiB:peakLive/MiB,scratchMiB:scratchReserve/MiB,minMiB:plan.minCapacity/MiB,
   layerStats,events,occupancy};
 }

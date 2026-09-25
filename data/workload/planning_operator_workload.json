@@ -9,8 +9,8 @@
   },
   "sourceHashes": {
     "designEngine": "dc3a2e4d91dfa3ff3a1d75e3d338fbca535c22da826a1eb67c543a194b0c6e5a",
-    "finalTuningResults": "20c97983b89fd1b2aa91dabd295990e96351b302d5a11a06be1269e9a417b726",
-    "directionalWorkloadBaseline": "6a6f1e56cd54bd96eb26f404b8e6d89fb47e1e214a5e955f830f41c97398f04c"
+    "finalTuningResults": "edb7c076d886c3087746705d792e40f88ae5f2240caa5e3f38feb1a6ea04a263",
+    "directionalWorkloadBaseline": "7b7e77680bb26c69f3cbfd1b829df47b06f8b397215687883f4fc481236faeaf"
   },
   "provenance": {
     "K3": {
@@ -23,9 +23,9 @@
         "calibratedGlobalFlopsPerToken": 1755347919872,
         "derivedGlobalFlopsPerToken": 1755347919872,
         "flopsRatioDerivedOverCalibrated": 1,
-        "calibratedGlobalMemoryBytesPerToken": 170090066124.798,
+        "calibratedGlobalMemoryBytesPerToken": 157607817420.79718,
         "derivedGlobalMemoryBytesPerToken": 166413968384,
-        "bytesRatioDerivedOverCalibrated": 0.9783873460422975,
+        "bytesRatioDerivedOverCalibrated": 1.0558738209012264,
         "note": "Derived bytes count each weight/KV byte once. The calibrated baseline is the RDMA tile simulator read traffic, which includes expert prefetch mis-prediction (2-p) re-reads and tile re-loads, so it is expected to be somewhat larger."
       }
     },

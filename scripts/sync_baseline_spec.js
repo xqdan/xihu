@@ -59,8 +59,9 @@ spec.tilePlan = {
   ...spec.tilePlan,
   weightTileMiB: x.weightTileMiB,
   kvTileTokens: x.kvTile,
+  kvCacheFormat: O.OPT.kvCache,
   headTile: x.headTile,
-  optimizedOverlapDepth: O.OPT.overlapDepth,
+  optimizedOverlapDepth: x.depth,
   rdmaStripeKiB: O.OPT.stripeKiB,
   partialReadyThresholds: {attention: O.OPT.partialThresholdAttention, lse: O.OPT.partialThresholdLSE, router: O.OPT.partialThresholdRouter}
 };
@@ -131,7 +132,7 @@ spec.tauBasis = {
   ceilingTpsByCount: Object.fromEntries([510, 485, 393, 301, 209].map(n => [n, ceiling(n)])),
   overlapUs: replay.overlapUs,
   tmaHiddenUs: replay.tmaHiddenUs,
-  note: 'ceiling(N) = 1e6 / ((computeUs - tmaHiddenUs + N x 1.15us - overlapUs) x 1.17), analytic given the simulator conservation identity raw = compute - tmaHidden + comm + wait - overlap, with DMA wait taken as zero; overlapUs is the shared-expert compute hidden under collectives and tmaHiddenUs the shared->local fills hidden on the TMA lanes, both held at their observed values (fewer collectives leave less time to hide fills under, so the ceiling is optimistic). The published point now uses the spec tau as a per-collective floor; the count axis alone cannot reach 1000 TPS.',
+  note: 'ceiling(N) = 1e6 / ((computeUs - tmaHiddenUs + N x 1.15us - overlapUs) x 1.17), analytic given the simulator conservation identity raw = compute - tmaHidden + comm + wait - overlap, with DMA wait taken as zero; overlapUs is the shared-expert compute hidden under collectives and tmaHiddenUs the shared->local fills hidden on the TMA lanes, both held at their observed values (fewer collectives leave less time to hide fills under, so the ceiling is optimistic). The published point uses the spec tau as a per-collective floor; after the 2026-09-25 attention/small-op mapping (layer PV merge, softmax and epilogue fusion) the 393 ceiling is above 1000 TPS, so the remaining margin is DMA wait, not the collective count.',
   blocker: 'B-008 (tau basis unified at 1.15 us on 2026-09-25; physical derivation still depends on B-004/B-005)',
   adr: 'docs/design/decisions/ADR-0004-collective-tau-basis-and-count-basis.md'
 };

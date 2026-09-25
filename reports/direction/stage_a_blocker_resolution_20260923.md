@@ -2,11 +2,11 @@
 
 Run ID: `stage-a-20260923-calibrated-workload`
 Manifest hash: `68303686e210999ec31ea08df9310e76d36677f184422b0754fe87cae051c319`
-Source commit: `1f12c5ac4a00b784bc52e8433c4d4eaa55b5fbac`
+Source commit: `e6a63f2052ccb9840f268294fa4a86ceac5d7ca1`
 
 ## Workload calibration
 
-- K3 operator rows are derived from `src/core/design_engine.js` (kimiK3 preset), FLOP ratio vs calibrated baseline 1.000, byte ratio 0.978.
+- K3 operator rows are derived from `src/core/design_engine.js` (kimiK3 preset), FLOP ratio vs calibrated baseline 1.000, byte ratio 1.056.
 - GLM-5.2 and DeepSeek-V4-Pro rows are ratio-scaled planning placeholders, still UNVERIFIED.
 
 ## D-Gate (independent validator)

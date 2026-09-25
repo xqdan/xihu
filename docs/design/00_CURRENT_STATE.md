@@ -11,7 +11,7 @@
 | Profile | 用途 | 规格 |
 |---|---|---|
 | P0 7R physical primary | 封装、面积、集成存储和 PPA 主规划 | 8 L + 8 H/Die，1.0 GHz 候选，96 MiB data SRAM/Die，400 mm²/Die |
-| P1 compact executable | 当前搜索/回归模型 | 由 Final Tuning 搜索决定，权威值在 `spec/k3_mc_baseline.json#computeDieCandidate`；2026-09-25 按 GAIN=1、τ=1.15 μs、reference-393 口径重新搜索后为 8 L + 4 H/Die、1.0 GHz、80 MiB data SRAM/Die（同日早些时候的候选是 8 L + 8 H；2026-09-23 是 24 L + 8 H、88 MiB；2026-09-20 是 4 L + 4 H、1.2 GHz、44 MiB） |
+| P1 compact executable | 当前搜索/回归模型 | 由 Final Tuning 搜索决定，权威值在 `spec/k3_mc_baseline.json#computeDieCandidate`；2026-09-25 按 GAIN=1、τ=1.15 μs、reference-393 口径重新搜索并加入注意力/小算子映射后为 8 L + 4 H/Die（H core 5×(48×128) engine）、0.8 GHz、40 MiB data SRAM/Die、FP8 KV cache（KV tile 32K，reduce 4096 lane）（同日早些时候的候选是 8 L + 4 H、1.0 GHz、80 MiB，再早是 8 L + 8 H；2026-09-23 是 24 L + 8 H、88 MiB；2026-09-20 是 4 L + 4 H、1.2 GHz、44 MiB） |
 
 P1 的性能回归结果不能直接宣称为 P0 7R 物理主候选的最终性能；需要先完成
 P0 的 tile、kernel、MC、NoC、floorplan 和 PPA 模型。本文第 2、3 节的数字全部是 **P1** 结果。
@@ -48,12 +48,12 @@ K3 preset 来自
 | --- | ---: | --- |
 | 工艺/频率 | 工艺未锁；`computeDieCandidate.frequencyGHz`（当前 1.0 GHz） | `MODEL` |
 | L Core | `computeDieCandidate.lCores`（当前 8，每 Core 8×(1×256) engine） | `MODEL` |
-| H Core | `computeDieCandidate.hCores`（当前 4，每 Core 4×(32×128) engine） | `MODEL` |
+| H Core | `computeDieCandidate.hCores`（当前 4，每 Core 5×(48×128) engine） | `MODEL` |
 | BF16 Dense peak | `computeDieCandidate.bf16DenseTflops` | 推导值 |
 | Vector peak | `computeDieCandidate.vectorTops` | 推导值 |
-| Local SRAM | `lCore/hCore.localSramMiB`（当前 L 2 MiB/Core、H 4 MiB/Core，32 MiB/Die） | `MODEL` |
-| Shared SRAM | `sharedSramMiB` / `sharedSramSlices`（当前 48 MiB，16 slices） | `MODEL` |
-| 总数据 SRAM | `physicalDataSramMiB`（当前 80 MiB/Die） | 推导值 |
+| Local SRAM | `lCore/hCore.localSramMiB`（当前 L 1 MiB/Core、H 4 MiB/Core，24 MiB/Die） | `MODEL` |
+| Shared SRAM | `sharedSramMiB` / `sharedSramSlices`（当前 16 MiB，16 slices） | `MODEL` |
+| 总数据 SRAM | `physicalDataSramMiB`（当前 40 MiB/Die） | 推导值 |
 | NoC | 抽象 mesh，`dataNocBytesPerCyclePerDirection` | `MODEL` |
 | TMA | `tmaEngines` × `tmaBytesPerCyclePerEngine` | `MODEL` |
 | Reduce | `reduceLanes` | `MODEL` |
@@ -67,7 +67,12 @@ K3 preset 来自
 移动到 8 L + 4 H、1.0 GHz、80 MiB/Die（32 MiB local + 48 MiB shared）；加入独立 TMA 通道后，
 local SRAM 可提前装载下一块权重，搜索移动到 8 L + 4 H、1.0 GHz、72 MiB/Die（48 MiB local + 24 MiB shared，
 weight tile 4 MiB）；再允许 KV 跨层预取和 DMA 抢占后，shared SRAM 的压力变小，搜索移动到
-8 L + 4 H、1.0 GHz、48 MiB/Die（32 MiB local + 16 MiB shared，L core 64 bank，weight tile 8 MiB）。
+8 L + 4 H、1.0 GHz、48 MiB/Die（32 MiB local + 16 MiB shared，L core 64 bank，weight tile 8 MiB）；
+加入注意力/小算子映射、搜索预取深度并细化 H core 网格后，卡功耗预算从 reduce lane 和频率挪给 H core 矩阵单元，
+搜索移动到 8 L + 4 H（H core 5×(48×128) engine）、0.8 GHz、reduce 2048 lane、40 MiB/Die
+（24 MiB local + 16 MiB shared），H 矩阵算力 196.6 TF/Die（原 131.1），卡功耗 2136 W；
+KV cache 改为 FP8 后，H core local SRAM 可放下 32K token 的 KV tile，搜索把 KV tile 提到 32768、
+reduce lane 回到 4096（卡功耗 2241 W，die 面积 396.7 mm²），其余不变。
 02、03、05 号文档的单元级描述仍基于 2026-09-20 的候选，在 P1 候选稳定前只作对照，
 不作为当前规格。
 
@@ -118,7 +123,7 @@ expert 和 KV tile 处部分转化为 DMA 等待，由下面两项处理。
 
 KV 跨层预取与 DMA 抢占（2026-09-25，review 第 8 项）：
 - `OPT.kvPrefetch='window'`：历史 KV 不依赖当前 token，KV context tile 与权重一样
-  可提前到后续 `overlapDepth` 层取入 shared SRAM，只受容量约束（此前只允许层内）。
+  可提前到后续 `x.depth` 层取入 shared SRAM，只受容量约束（此前只允许层内）。
 - `OPT.dmaPreempt=true`：DMA 按 stripe 切分，Top-k 之后释放的 routed expert
   未命中部分（或下一个算子需要的数据）可暂停正在进行的预取，被暂停的任务保留
   SRAM 预留并按消费顺序恢复。
@@ -127,6 +132,41 @@ KV 跨层预取与 DMA 抢占（2026-09-25，review 第 8 项）：
 - 两项需要一起用：只开跨层 KV 预取时，大 KV 块会挡住 expert 未命中取数。
   在发布候选上，两项都关 707.00，只关抢占 767.85，只关跨层 KV 802.94，
   都开 860.03 TPS。
+
+注意力与小算子映射（2026-09-25，review 优化空间）：
+- `OPT.pvMerge='layer'`：PV 的 m/l/O 累加器跨 context tile 留在 local SRAM，每个
+  (层, head tile) 只在最后一个 context tile 合并一次；跨 Die 由汇聚到单 Die 改为
+  按 head 的双向环 reduce-scatter。
+- `OPT.softmaxFusion`：online softmax 在 H core 向量单元上按 score 块与 QK 矩阵流水，
+  只暴露首块或超出 QK 的部分。
+- `OPT.epilogueFusion`：RMSNorm、SiLU×up、加权和、dispatch pack、RoPE、KV append
+  并入相邻 kernel：去掉独立的 shared→local 阶段、launch 和 TMA 装载，向量时间与字节照记；
+  紧跟集合通信的算子（残差加）不融合，下一个是集合通信时 flush 保留。
+- 预取深度 `x.depth`（1–4 层）进入搜索，不再固定为 4；H core 网格加入 nH 5/6、
+  hEngines 5/6、hRows 48，局部搜索增加成对相邻步（用于在卡功耗上限处挪预算）。
+- 发布点 1007.27 TPS/usr（raw 848.53 µs = compute 550.64 − tmaHidden 142.57 +
+  comm 451.95 + wait 21.29 − overlap 32.78），离 854.70 µs 预算只余 6.2 µs。
+  在该候选上逐项关闭：pvMerge=tile 919.97，softmax 融合关 975.19，逐元素融合关
+  979.98，三项都关 870.60；depth 1 为 955.20，depth 2–4 相同。MC320 为 543.54。
+- 这些都是模型内的映射改动，仍需 kernel/RTL 证据（B-003 的精神同样适用）。
+
+FP8 KV cache（2026-09-25，`OPT.kvCache='fp8'`，计算仍为 BF16）：
+- 按 FlashMLA（DeepSeek-V3.2）的 FP8 布局存储：512 维 latent 为 FP8 E4M3，每 128
+  元素一个 FP32 scale，64 维 RoPE 保持 BF16，每 token 每层 656 B（原 1152 B）。
+  KV 的 DMA、shared SRAM 占用、local 装载和后备存储随之缩小；new-KV append 按 FP8 写回。
+- QK/PV 仍是 BF16 矩阵乘，latent 在 kernel 内于 H core 向量单元反量化（与权重 unpack
+  同速率），与矩阵计算重叠；这部分向量时间从 online softmax 可藏在 QK 下的预算中扣除。
+- 发布点 1031.52 TPS/usr（raw 828.59 µs = compute 519.81 − tmaHidden 132.39 +
+  comm 451.95 + wait 21.82 − overlap 32.61），离 854.70 µs 预算余 26.1 µs
+  （τ 可再高约 0.066 µs 仍达标）。KV 读取 5.36 → 4.97 GB/token，DMA busy 837 → 780 µs。
+- 归因：上一候选（KV tile 16K、reduce 2048）只换 FP8 为 1009.41（+2.1）；FP8 把 H local
+  的 KV 双缓冲减半，使 32K KV tile 可行（BF16 下该点因 H local tile 不可行），再把卡功耗
+  挪回 reduce 4096 得 1031.52。在新候选上：pvMerge=tile 1012.80，softmax 融合关 995.28，
+  逐元素融合关 1003.75，depth 1 为 961.77。MC320 为 584.75。
+- FP8 KV 是精度口径变更（B-001），需模型侧给出精度评估后才算冻结。
+- 模拟器修正：TMA 通道为后续算子提前装满的 tile 会钉住其输入，当 head 算子需要的 DMA
+  装不下时会死锁（大 KV tile + 半窗口时出现）。现在作为最后手段取消最远的已完成装载，
+  该算子稍后重新装载（`tmaCancels` 计数；发布点为 0）。
 
 ### 3.1 集合通信计数口径
 
@@ -139,8 +179,8 @@ shared 专家计算之后，每 rank 先把 Wup 与 Shared down 的部分和本�
 仓库早先口径为 510 次，可用 `countBasis='repo-510'` 复现。
 
 **次数轴不是当前杠杆**：发布点自 2026-09-25 起使用 spec 的每次集合通信成本
-基准（1.15 µs），393 次的解析天花板约 874.42 TPS（已扣除 shared 专家重叠和 TMA 掩盖）。
-降到 209 次时解析值为 1116.02 TPS，但这是乐观上界：它假设 DMA 等待为 0，并把 TMA
+基准（1.15 µs），393 次的解析天花板约 1059.42 TPS（已扣除 shared 专家重叠和 TMA 掩盖，DMA 等待取 0）。
+降到 209 次时解析值为 1436.08 TPS，但这是乐观上界：它假设 DMA 等待为 0，并把 TMA
 掩盖量按当前观测值固定，而通信越少，可藏在通信下的装载越少。对照表见
 `spec/k3_mc_baseline.json#tauBasis.ceilingTpsByCount`。
 

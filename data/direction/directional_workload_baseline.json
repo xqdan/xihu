@@ -15,7 +15,7 @@
       "status": "CALIBRATED_DIRECTIONAL_BASELINE",
       "confidence": "E1",
       "globalFlopsPerToken": 1755347919872,
-      "globalMemoryBytesPerToken": 170090066124.798,
+      "globalMemoryBytesPerToken": 157607817420.79718,
       "tpScaling": {
         "compute": "globalFlopsPerToken / tp",
         "memory": "globalMemoryBytesPerToken / tp",
@@ -29,10 +29,10 @@
       "softwareOverheadUsPerToken": 0,
       "calibration": {
         "observedTp": 32,
-        "observedReadBytesPerRank": 5315314566.399938,
-        "observedRawLatencyUs": 1568.313347941857,
-        "observedE2eLatencyUs": 1834.9266170919727,
-        "observedTpsPerUser": 544.9809222260993,
+        "observedReadBytesPerRank": 4925244294.399912,
+        "observedRawLatencyUs": 1461.6613246283407,
+        "observedE2eLatencyUs": 1710.1437498151586,
+        "observedTpsPerUser": 584.74616540749,
         "source": "data/rdma/k3_rdma_final_tuning_results.json (MC320 replay of search.best)",
         "flopDerivation": "2 x 104.2B active parameters + 1.546948T long-context attention/state FLOP from src/core/design_engine.js"
       },
