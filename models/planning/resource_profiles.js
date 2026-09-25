@@ -8,12 +8,13 @@
  *  P0  7-reticle physical primary: 8 L + 8 H cores per die, 1.0 GHz candidate
  *      (docs/design/12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md §3.1,
  *       docs/design/spec/k3_7r_package_baseline.json: compute.frequencyGHzCandidate)
- *  P1  compact executable: 4 L + 4 H cores per die, 1.2 GHz
- *      (docs/design/02_AI_CORE.md §2, docs/design/spec/k3_mc_baseline.json)
+ *  P1  compact executable: the searched K3 candidate in
+ *      docs/design/spec/k3_mc_baseline.json#/computeDieCandidate (cores per die,
+ *      engine shapes and the fixed 1.0 GHz clock are read from the spec, so this
+ *      profile follows the search; see doc 21 / ADR-0005)
  *
- * Tensor engine shapes are common to both profiles: L = 8 engines x (1x256),
- * H = 8 engines x (16x128) BF16 MAC per cycle, 2 FLOP per MAC, 512 vector
- * lanes per core (docs/design/02_AI_CORE.md).
+ * P0 engine shapes: L = 8 engines x (1x256), H = 8 engines x (16x128) BF16 MAC
+ * per cycle, 2 FLOP per MAC, 512 vector lanes per core (docs/design/02_AI_CORE.md).
  */
 const fs = require('fs');
 const path = require('path');
@@ -45,8 +46,10 @@ function buildProfile(id, {lCoresPerDie, hCoresPerDie, ghz, powerWPerDie, engine
     computeTF: (L + H) / 1e12,
     vectorTOPS: V / 1e12,
     powerW: powerWPerDie * DIES_PER_PACKAGE,
-    // INDEXER and REDUCE have no dedicated unit yet; they are budgeted on the vector lanes.
-    peakByCore: {L, H, V, INDEXER: V, REDUCE: V},
+    // Lightning-indexer scoring is a low-precision dot product over every cached
+    // index key, mapped to the H tensor engines (same as QK). REDUCE has no
+    // dedicated unit and is budgeted on the vector lanes.
+    peakByCore: {L, H, V, INDEXER: H, REDUCE: V},
     source
   };
 }

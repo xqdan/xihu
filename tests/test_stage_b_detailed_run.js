@@ -19,17 +19,35 @@ assert.strictEqual(detail.provenance.inputHashes.runner, hashFile('models/formal
   'detailed_architecture_run.json was generated with a different formal_detailed_run.js; run `npm run model:planning`');
 assert.strictEqual(detail.runId, IDS.stageBRunId);
 assert.strictEqual(detail.stage, 'quantification');
-assert.strictEqual(detail.runMode, 'PLANNING_QUANTIFICATION');
+assert.strictEqual(detail.provenance.inputHashes.tokenTime, hashFile('models/planning/token_time.js'),
+  'detailed_architecture_run.json was generated with a different token_time.js; run `npm run model:planning`');
+const formal = register.decisionState === 'D_GATE_PASSED';
+const sweep = (register.exploratorySweeps || []).find(x => x.active);
+assert.strictEqual(detail.runMode, formal ? 'PLANNING_QUANTIFICATION' : 'EXPLORATORY_AFTER_BLOCKED_D_GATE');
 assert.strictEqual(detail.agentId, 'Q1-Q9-orchestrator');
 // Candidates come from the register, never from the runner.
 assert.deepStrictEqual(detail.selectedCandidates, register.formalSelectedCandidates);
 assert.strictEqual(detail.candidateSelection.source, 'data/governance/candidate_register.json');
-assert.strictEqual(detail.candidateSelection.formal, true);
-assert.strictEqual(detail.candidateSelection.exploratory, false);
+assert.strictEqual(detail.candidateSelection.formal, formal);
+assert.strictEqual(detail.candidateSelection.exploratory, !formal);
+// A blocked D-Gate studies the active exploratory sweep and never records a formal selection.
+assert.deepStrictEqual(detail.studiedCandidates, formal ? register.formalSelectedCandidates : sweep.candidateIds);
+if (!formal) {
+  assert.deepStrictEqual(detail.selectedCandidates, []);
+  assert.strictEqual(detail.candidateSelection.exploratorySweep, sweep.sweepId);
+  assert.strictEqual(detail.candidateSelection.decisionRecord, sweep.decisionRecord);
+}
 assert.strictEqual(detail.candidateSelection.decision, register.decisionState);
-assert.deepStrictEqual(detail.manifestStatus, {K3: 'UNVERIFIED_PLANNING_MANIFEST', 'GLM-5.2': 'UNVERIFIED_PLANNING_MANIFEST', 'DeepSeek-V4-Pro': 'UNVERIFIED_PLANNING_MANIFEST'});
-assert.strictEqual(detail.operatorLedger.length, 180);
-assert.deepStrictEqual([...new Set(detail.operatorLedger.map(row => row.modelId))].sort(), ['DeepSeek-V4-Pro', 'GLM-5.2', 'K3']);
+const workload = read('data/workload/planning_operator_workload.json');
+const manifestModels = read('data/workload/formal_model_manifests.json').models;
+const blockedIds = manifestModels.filter(m => workload.provenance[m.modelId].status === 'BLOCKED_CONFIG').map(m => m.modelId);
+const comparableIds = manifestModels.map(m => m.modelId).filter(id => !blockedIds.includes(id));
+assert.deepStrictEqual(detail.manifestStatus, Object.fromEntries(manifestModels.map(m => [m.modelId, m.status])));
+for (const id of blockedIds) assert.strictEqual(detail.manifestStatus[id], 'BLOCKED_CONFIG');
+// BLOCKED_CONFIG models have no ledger rows: comparable models x 5 operators x 12 slots.
+assert.strictEqual(detail.operatorLedger.length, comparableIds.length * 5 * 12);
+assert.deepStrictEqual([...new Set(detail.operatorLedger.map(row => row.modelId))].sort(), [...comparableIds].sort());
+assert(detail.operatorLedger.every(row => !('ep' in row)), 'TP-only slots carry no EP field');
 assert.deepStrictEqual([...new Set(detail.operatorLedger.map(row => row.physicalProfile))].sort(), ['P0', 'P1']);
 assert.deepStrictEqual([...new Set(detail.operatorLedger.map(row => row.mcProfile))].sort(), ['MC320', 'MC640']);
 assert.deepStrictEqual([...new Set(detail.operatorLedger.map(row => row.tp))].sort((a, b) => a - b), [8, 16, 32]);
@@ -45,6 +63,7 @@ for (const row of detail.operatorLedger) {
   assert(Number.isFinite(row.requiredToAvailableBandwidthRatio) && row.requiredToAvailableBandwidthRatio > 0);
   assert(row.bytes && Number.isFinite(row.bytes.total) && row.bytes.total > 0);
   assert(row.workloadStatus, 'ledger rows must carry the workload provenance status');
+  assert(Number.isFinite(row.computeTimeUs) && Number.isFinite(row.memoryTimeUs));
 }
 // P0 and P1 ledger rows must use each profile's own peak capacity (from models/planning/resource_profiles.js).
 const RES = require('../models/planning/resource_profiles');
@@ -56,7 +75,13 @@ for (const profile of ['P0', 'P1']) {
     assert.strictEqual(detail.sizing.availableResources[profile][core].peakFlops, RES.coreProfiles[profile].peakByCore[core]);
   }
 }
-assert.strictEqual(detail.blockedCases.length, 0);
+assert.deepStrictEqual(detail.blockedCases.map(c => c.modelId), blockedIds);
+assert(detail.blockedCases.every(c => c.status === 'BLOCKED_CONFIG' && c.missingConfig.length > 0));
+for (const id of blockedIds) assert.strictEqual(detail.summary.find(x => x.modelId === id).status, 'BLOCKED_CONFIG');
+// Token-time block: formula, stored calibration and MTP exclusion are explicit.
+for (const [key, value] of Object.entries(detail.tokenTime.calibration)) assert.deepStrictEqual(value, workload.calibration[key], `tokenTime.calibration.${key} is stale`);
+assert.strictEqual(detail.tokenTime.mtpApplied, false);
+assert.strictEqual(detail.tokenTime.slots.length, comparableIds.length * 12);
 assert.strictEqual(detail.summary.length, 3);
 assert.strictEqual(detail.sizing.targetTpsPerUser, 1000);
 assert.strictEqual(detail.sizing.utilizationAssumption, 0.6);
@@ -69,7 +94,7 @@ assert.strictEqual(detail.agentRuns.Q9.status, 'COMPLETE');
 assert.strictEqual(detail.observationMatrix.requiredSlots, 18);
 assert.strictEqual(detail.observationMatrix.all18SlotsAccounted, true);
 assert(detail.provenance.manifestHash);
-assert.strictEqual(detail.evidenceKind, 'SYNTHETIC_BOTTLENECK_BOUND');
+assert.strictEqual(detail.evidenceKind, 'CALIBRATED_PLANNING_TOKEN_TIME');
 assert.strictEqual(detail.qGate.provenanceComplete, true);
 assert.strictEqual(detail.qGate.p0P1DistinctResources, true);
 assert.strictEqual(detail.qGate.observationMatrixCompleteOrBlocked, false);
@@ -77,13 +102,21 @@ assert.strictEqual(detail.qGate.decision, 'BLOCKED_BY_D_GATE_MANIFEST_EVENT_MODE
 // Performance acceptance is computed from the slots, not written as a literal.
 const target = detail.sizing.targetTpsPerUser;
 const gateTps = detail.sizing.architectureGateTpsPerUser;
-assert.strictEqual(detail.performanceAcceptance.all18SlotsMeetTarget, matrix.observations.every(o => o.tpsPerUser >= target));
-assert.strictEqual(detail.performanceAcceptance.all18SlotsMeetArchitectureGate, matrix.observations.every(o => o.tpsPerUser >= gateTps));
-assert(['PERFORMANCE_MISS_REQUIRES_DIRECTION_BACKFLOW', 'SELECTED_CANDIDATES_ABOVE_TARGET_OTHERS_MISS_NOT_VALIDATED', 'PLANNING_BOUND_ABOVE_GATE_NOT_VALIDATED'].includes(detail.performanceAcceptance.status));
-assert.strictEqual(replay.eventCount, 720);
+// A BLOCKED_CONFIG slot (null TPS) never meets the target.
+const meets = (o, x) => o.tpsPerUser !== null && o.tpsPerUser >= x;
+const comparable = matrix.observations.filter(o => o.status !== 'BLOCKED_CONFIG');
+const acc = detail.performanceAcceptance;
+assert.strictEqual(acc.all18SlotsMeetTarget, matrix.observations.every(o => meets(o, target)));
+assert.strictEqual(acc.all18SlotsMeetArchitectureGate, matrix.observations.every(o => meets(o, gateTps)));
+assert.strictEqual(acc.comparableSlotsMeetTarget, comparable.every(o => meets(o, target)));
+assert.strictEqual(acc.selectedCandidateSlotsMeetTarget, formal ? acc.selectedCandidateSlotsMeetTarget : null);
+assert.strictEqual(acc.coverageStatus, comparable.length === matrix.observations.length ? 'COMPLETE' : 'BLOCKED_CONFIG_PARTIAL_COVERAGE');
+assert(['PERFORMANCE_MISS_REQUIRES_DIRECTION_BACKFLOW', 'STUDIED_CANDIDATES_ABOVE_TARGET_OTHERS_MISS_NOT_VALIDATED', 'PLANNING_ESTIMATE_ABOVE_GATE_NOT_VALIDATED'].includes(acc.status));
+assert.strictEqual(replay.eventCount, detail.operatorLedger.length * 4);
 assert.strictEqual(replay.events.length, replay.eventCount);
 assert(replay.events.every(e => e.status === 'SYNTHETIC_PLACEHOLDER'), 'synthetic events must not be labelled REPLAYED');
 assert.strictEqual(gate.quantificationGate.decision, detail.qGate.decision);
-assert(report.includes('PLANNING_QUANTIFICATION'));
+assert(report.includes(detail.runMode));
+if (blockedIds.length) assert(report.includes('BLOCKED_CONFIG'));
 assert(report.includes(`All 18 slots meet target: **${detail.performanceAcceptance.all18SlotsMeetTarget ? 'yes' : 'no'}**`));
 console.log(`PASS Stage B planning: register-driven candidates, distinct P0/P1 capacity, computed acceptance (${detail.performanceAcceptance.status}) and Q-Gate block are explicit`);

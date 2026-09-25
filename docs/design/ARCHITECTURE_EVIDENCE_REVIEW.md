@@ -455,6 +455,23 @@ raw（÷0.70 持续效率）                                  = 7.4292e12 B/s
 | 339.90 | 同上 | K3 | 32 | — | — | **无** | 原域最优 | 同上 |
 | 1260.79 … 1294.84 | `data/sram/sram_tps_architecture_analysis.json` | K3 | 32 | — | — | **无** | 敏感度原始输出（口径未文档化） | 本地页面模型 |
 
+
+## 附录 C：2026-09-25 跟进（ADR-0006）
+
+本评审正文保留 2026-09-24 的原始记录，不改写。以下条目已在 2026-09-25 处理，数值以现行产物为准：
+
+| 评审条目 | 处理 | 现行产物 |
+|---|---|---|
+| §4 / §5 平面 A 取最慢单算子的 `max` 上界，与平面 B 相差 1.9–2.4× | 改为规划 token 时间：`raw = max(访存 × kMemory, 计算 × kCompute + 集合通信 × τ)`，×1.17；kMemory 1.1553、kCompute 1.4139 在 K3 P1/MC640/TP32 详细点（1101.77）上标定，规划回放 1102.41；MC320 样本外 551.21 对 586.46（0.94） | `models/planning/token_time.js`、`planning_operator_workload.json#/calibration` |
+| 附录 B 的 GLM-5.2 / DeepSeek-V4-Pro 数值（按 K3 比例缩放） | GLM-5.2 改为 `BLOCKED_CONFIG`，无 TPS；DeepSeek-V4-Pro 由 manifest `shape` 推导，公布字段以外全部 `ASSUMPTION`，MTP 不计入，无 EP dispatch 行 | `formal_model_manifests.json`、`tps_observation_matrix.json` |
+| K3 规划 KV 按 BF16 1152 B/token/层 | 改为 FP8 FlashMLA 656 B，与详细模型一致 | `planning_operator_workload.json#/provenance/K3` |
+| §7.3 两个 DEPRECATED runner 可覆盖 Gate 证据 | 已删除 | `models/detailed_run.js`、`models/direction/run_directional_tps.js`（不再存在） |
+| §9-2 `ep` 写死 | 删除；槽位只有 TP | `models/formal_detailed_run.js` |
+| §8.5 `optimisticGapFactor` 命名 | 改为 `gapFactor`（目标 ÷ 规划估算），BLOCKED_CONFIG 模型为 null | `direction_feedback.json` |
+
+后果：GLM-5.2 缺配置使 D-Gate 为 `BLOCKED_MODEL_CONFIG_INCOMPLETE`；Stage B 以 `EXPLORATORY_AFTER_BLOCKED_D_GATE` 运行，Q-Gate 仍阻塞。
+
+同日追加（ADR-0007）：GLM-5.2 改由公开 HF `config.json` 推导（含 MTP 总参数 753.3B 对公布 753B），不再 `BLOCKED_CONFIG`；D-Gate 按现有规则为 `PASS`，Stage B 转 `PLANNING_QUANTIFICATION`，Q-Gate 仍阻塞。
 ---
 
 *本评审为只读静态审查的产物；所有结论均可由附录 A 的复算与正文引用的文件位置独立验证。未修改任何被评审文件。*

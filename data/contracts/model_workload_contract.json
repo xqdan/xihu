@@ -59,12 +59,13 @@
   ],
   "shapeSources": {
     "K3": "src/core/design_engine.js#MODEL_PRESETS.kimiK3 (engineering preset, single source of truth; not vendor-confirmed)",
-    "GLM-5.2": "UNVERIFIED planning manifest",
-    "DeepSeek-V4-Pro": "UNVERIFIED planning manifest"
+    "GLM-5.2": "data/workload/formal_model_manifests.json#/models/1/shape (public HF config.json fields + explicit ASSUMPTION fields for the deployment layout; not vendor-confirmed)",
+    "DeepSeek-V4-Pro": "data/workload/formal_model_manifests.json#/models/2/shape (reported fields + explicit ASSUMPTION fields; not vendor-confirmed)"
   },
   "evidencePolicy": "All values remain UNVERIFIED until source and shape reconciliation are supplied.",
   "blockers": [
-    "Verified model shape/config sources are missing for GLM-5.2 and DeepSeek-V4-Pro; K3 uses the repository engineering preset.",
+    "GLM-5.2 deployment layout (FP8 KV/index-key bytes, TP mapping, collectives per layer) is ASSUMPTION; shape fields follow the public config.json.",
+    "DeepSeek-V4-Pro rests on ASSUMPTION fields (DeepSeek-V3/V3.2 dimensions) pending the vendor config; K3 uses the repository engineering preset.",
     "Model qualification matrix status: BLOCKED; 0/45 fields verified."
   ],
   "outputs": [

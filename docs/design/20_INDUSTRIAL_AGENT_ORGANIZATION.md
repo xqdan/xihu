@@ -50,7 +50,8 @@ Hardware Team       Software Team       Model Team
 - 跨团队接口进入 Integration Review；
 - 架构方向变化必须由 Architecture Council 记录 ADR；
 - 模型配置未确认时只能标记为 `UNVERIFIED_PLANNING_MANIFEST`；
-- 合成事件只能标记为 `SYNTHETIC_BOTTLENECK_BOUND`；
+- 模型配置缺失时标记为 `BLOCKED_CONFIG`，不出 TPS；
+- 合成事件只能标记为 `SYNTHETIC_PLACEHOLDER`，规划 TPS 标记为 `CALIBRATED_PLANNING_TOKEN_TIME`（ADR-0006），均不驱动时序；
 - Q-Gate 只能由 V&V 根据独立证据通过；
 - 任何团队不能同时生产并签核自己的关键性能结果。
 

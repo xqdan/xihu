@@ -27,7 +27,13 @@ if (direction.decision === 'PASS') {
   assert.deepStrictEqual(register.formalSelectedCandidates, []);
 }
 assert.strictEqual(status.directionGate.threeModelRowsAccounted, true);
-assert.strictEqual(status.directionGate.threeModelComparable, true);
+// A BLOCKED_CONFIG model is accounted for but not comparable, and must block the D-Gate.
+assert.strictEqual(status.directionGate.threeModelComparable, direction.blockedModels.length === 0);
+if (direction.blockedModels.length) {
+  assert.notStrictEqual(direction.decision, 'PASS', 'a BLOCKED_CONFIG model cannot pass the D-Gate');
+  assert(direction.failedChecks.includes('threeModelComparable'));
+}
+assert.strictEqual(direction.decision === 'PASS', direction.failedChecks.length === 0);
 
 const quant = evaluateQuantificationGate(detail, matrix, register, direction);
 assert.deepStrictEqual(status.quantificationGate, quant, 'committed Q-Gate must equal the validator recomputation');

@@ -230,6 +230,31 @@ shared 专家计算之后，每 rank 先把 Wup 与 Shared down 的部分和本�
 掩盖量按当前观测值固定，而通信越少，可藏在通信下的装载越少。对照表见
 `spec/k3_mc_baseline.json#tauBasis.ceilingTpsByCount`。
 
+### 3.1 多模型规划 TPS/usr（ADR-0006）
+
+规划链路（`npm run model:planning`）不再取“最慢单算子”的上界，改为规划 token 时间
+（`models/planning/token_time.js`）：
+
+```text
+raw = max(访存道 × kMemory, 计算 × kCompute + 集合通信次数 × max(τ, 字节/网络带宽))
+e2e = raw × 1.17，TPS/usr = 1e6 / e2e
+```
+
+kMemory = 1.1553、kCompute = 1.4139，在 K3 详细模型发布点（P1/MC640/TP32，1101.77）上一次性标定，
+规划回放 1102.41；MC320 未参与拟合，规划 551.21 对详细模型 586.46（0.94）。
+数值存于 `data/workload/planning_operator_workload.json#/calibration`。
+
+| 模型 | 工作负载来源 | TP32 / MC640（P1） | 瓶颈 | 状态 |
+| --- | --- | ---: | --- | --- |
+| K3 | `design_engine` preset 推导，FP8 KV 656 B/token/层 | 1102.4 | 访存 | `PLANNING_ESTIMATE` |
+| DeepSeek-V4-Pro | manifest `shape.reported` + 显式 `ASSUMPTION`，expert hidden 由 49B 激活反解，MTP 不计入 | 2372.9 | 集合通信（244 × 1.15 μs） | `PLANNING_ESTIMATE` |
+| GLM-5.2 | 公开 HF `config.json`（78 层、21 个 full indexer 层、256 专家 top-8，含 MTP 总参数 753.3B 对公布 753B）+ 显式 `ASSUMPTION`（FP8 KV 656 B、索引键 132 B、每层集合通信 full 4 / shared 3），MTP 不计入 | 2598.6 | 集合通信（255 × 1.15 μs） | `PLANNING_ESTIMATE` |
+
+三个模型均可比，D-Gate 按现有校验规则为 `PASS`（范围 `PLANNING_COMPARISON_ONLY_NOT_ARCHITECTURE_FREEZE`），
+候选登记为 `P0-7R-balanced-MC640-TP32`、`P1-compact-MC640-TP32`、`P0-7R-balanced-MC320-TP32`；
+Stage B 按 `PLANNING_QUANTIFICATION` 运行，Q-Gate 仍阻塞（无事件时序回放）。以上均为规划估算，
+不是事件时序结果；把 K3 的标定系数用于其他模型是 `ASSUMPTION`（ADR-0006、ADR-0007）。
+
 ## 4. 必须纠正的口径
 
 ### 4.1 SRAM 峰值不是每 Die

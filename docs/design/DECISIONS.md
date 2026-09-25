@@ -91,3 +91,26 @@
 - 决策：支撑 TPS/usr 发布点的软硬件设计统一写入 [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md)，数值来自 `spec/k3_mc_baseline.json#tpsDesign`（由 `npm run baseline:sync` 重算），`tests/test_tps_design_baseline.js` 强制一致；任何 OPT/GAIN/TECH/LIMITS/调度语义/搜索空间变更须同一次提交重新搜索、同步并更新文档 21。
 - 详细记录：[decisions/ADR-0005-tps-design-baseline.md](decisions/ADR-0005-tps-design-baseline.md)
 - 状态：`BASELINE`（按 ADR-0003 不得标为 `FROZEN`）
+
+## ADR-013：规划 token 时间、DeepSeek-V4-Pro 推导工作负载与 GLM-5.2 BLOCKED_CONFIG
+
+- 日期：2026-09-25
+- 决策：
+  1. 规划 TPS/usr 改为规划 token 时间：`raw = max(访存 × kMemory, 计算 × kCompute + 集合通信 × τ)`，再乘 1.17；kMemory/kCompute 在 K3 详细模型发布点（1101.77）上标定，MC320 做样本外核对；
+  2. K3 规划 KV 按 FP8 FlashMLA 布局 656 B/token/层；
+  3. DeepSeek-V4-Pro 由 manifest `shape` 推导，公布字段以外全部标 `ASSUMPTION`，不含 EP dispatch，MTP 不计入 TPS/usr；
+  4. GLM-5.2 标 `BLOCKED_CONFIG`，不出 TPS、不参与排名；D-Gate 因此阻塞，Stage B 按 `EXPLORATORY_AFTER_BLOCKED_D_GATE` 运行；
+  5. 旧 runner `models/detailed_run.js`、`models/direction/run_directional_tps.js` 已删除（先加抛错守卫，同日删除）。
+- 详细记录：[decisions/ADR-0006-planning-token-time-and-blocked-glm.md](decisions/ADR-0006-planning-token-time-and-blocked-glm.md)
+- 状态：`PLANNING_ESTIMATE`（不构成 D-Gate/Q-Gate 证据）；第 4 项由 ADR-014 取代
+
+## ADR-014：GLM-5.2 工作负载改由公开 config 推导
+
+- 日期：2026-09-25
+- 决策：
+  1. GLM-5.2 形状取公开 HF `config.json`（78 层、hidden 6144、256 专家 top-8、expert hidden 2048、MLA 64 头、indexer 32×128 top-k 2048，21 个 full indexer 层、57 个 shared 层复用上一 full 层的 top-k），写入 manifest `shape.config`；
+  2. 部署布局（FP8 KV 656 B、索引键 132 B、无 EP、每层集合通信 full 4 / shared 3、MTP 不计入）写入 `shape.assumptions`，逐项标 `ASSUMPTION`；
+  3. 含 MTP 总参数 753.3B 对公布 753B（1.0004），测试要求误差 < 0.5%；
+  4. 三模型可比后 D-Gate 按现有规则为 `PASS`，Stage B 转 `PLANNING_QUANTIFICATION`，Q-Gate 仍阻塞。
+- 详细记录：[decisions/ADR-0007-glm-5.2-config-derived-workload.md](decisions/ADR-0007-glm-5.2-config-derived-workload.md)
+- 状态：`PLANNING_ESTIMATE`（不构成 Q-Gate 证据）

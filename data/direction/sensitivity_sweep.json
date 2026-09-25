@@ -1,7 +1,7 @@
 {
   "schemaVersion": "directional-sensitivity-sweep-v0.1",
-  "runId": "stage-a-20260923-calibrated-workload",
-  "manifestHash": "68303686e210999ec31ea08df9310e76d36677f184422b0754fe87cae051c319",
+  "runId": "stage-a-20260925-token-time",
+  "manifestHash": "491512cae387601c4b4ac8e3f53b69856e557098240c5bd5634995fad3d7e121",
   "dimensions": [
     {
       "name": "bandwidth",
@@ -45,7 +45,7 @@
     }
   ],
   "sampleCount": 243,
-  "feasibleCount": 162,
+  "feasibleCount": 132,
   "selectedCandidates": [
     "P0-7R-balanced-MC640-TP32",
     "P1-compact-MC640-TP32",
@@ -53,7 +53,7 @@
   ],
   "summary": {
     "complete": true,
-    "scope": "K3/P0/MC320/TP32 planning-only; excludes area, power and real collective latency",
+    "scope": "K3/P1/MC640/TP32 (the calibration slot) planning token time; excludes area and power",
     "dimensions": [
       "bandwidth",
       "computeCapacity",
@@ -62,9 +62,9 @@
       "network"
     ],
     "sampleCount": 243,
-    "feasibleCount": 162,
-    "minComputeRatio": 0.03731969309462915,
-    "minBandwidthRatio": 0.6461545297619049,
+    "feasibleCount": 132,
+    "minTpsPerUser": 734.9416290231355,
+    "maxTpsPerUser": 1366.105372730594,
     "selectedSensitivity": [
       {
         "axes": {
@@ -74,8 +74,10 @@
           "bytes": 1,
           "network": 1
         },
-        "maxComputeRatio": 0.0451764705882353,
-        "maxBandwidthRatio": 0.9692317946428571,
+        "tpsPerUser": 1102.412443534703,
+        "bound": "memory",
+        "memoryLaneUs": 775.3004419656203,
+        "serialLaneUs": 753.3986824792771,
         "feasible": true
       }
     ]
@@ -89,9 +91,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.9692317946428574,
-      "feasible": true
+      "tpsPerUser": 947.7187555387195,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 901.8507333591918,
+      "feasible": false
     },
     {
       "axes": {
@@ -101,8 +105,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1083.4588539020997,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 788.863233359192,
       "feasible": true
     },
     {
@@ -113,8 +119,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 713.538233359192,
       "feasible": true
     },
     {
@@ -125,8 +133,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 901.8507333591918,
       "feasible": false
     },
     {
@@ -137,8 +147,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 788.863233359192,
       "feasible": false
     },
     {
@@ -149,8 +161,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 713.538233359192,
       "feasible": false
     },
     {
@@ -161,8 +175,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 901.8507333591918,
       "feasible": false
     },
     {
@@ -173,8 +189,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 788.863233359192,
       "feasible": false
     },
     {
@@ -185,8 +203,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 713.538233359192,
       "feasible": false
     },
     {
@@ -197,9 +217,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.9692317946428574,
-      "feasible": true
+      "tpsPerUser": 929.4439398320093,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 919.5830087991494,
+      "feasible": false
     },
     {
       "axes": {
@@ -209,8 +231,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1059.6399873008518,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 806.5955087991495,
       "feasible": true
     },
     {
@@ -221,8 +245,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 731.2705087991494,
       "feasible": true
     },
     {
@@ -233,8 +259,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 919.5830087991494,
       "feasible": false
     },
     {
@@ -245,8 +273,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 806.5955087991495,
       "feasible": false
     },
     {
@@ -257,8 +287,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 731.2705087991494,
       "feasible": false
     },
     {
@@ -269,8 +301,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 919.5830087991494,
       "feasible": false
     },
     {
@@ -281,8 +315,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 806.5955087991495,
       "feasible": false
     },
     {
@@ -293,8 +329,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 731.2705087991494,
       "feasible": false
     },
     {
@@ -305,9 +343,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.9692317946428574,
-      "feasible": true
+      "tpsPerUser": 911.8605757023189,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 937.3152842391069,
+      "feasible": false
     },
     {
       "axes": {
@@ -317,8 +357,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1036.8458652522354,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 824.3277842391069,
       "feasible": true
     },
     {
@@ -329,8 +371,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 749.0027842391069,
       "feasible": true
     },
     {
@@ -341,8 +385,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 937.3152842391069,
       "feasible": false
     },
     {
@@ -353,8 +399,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 824.3277842391069,
       "feasible": false
     },
     {
@@ -365,8 +413,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 749.0027842391069,
       "feasible": false
     },
     {
@@ -377,8 +427,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 937.3152842391069,
       "feasible": false
     },
     {
@@ -389,8 +441,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 824.3277842391069,
       "feasible": false
     },
     {
@@ -401,8 +455,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 749.0027842391069,
       "feasible": false
     },
     {
@@ -413,8 +469,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1003.9786815989821,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 851.313748355313,
       "feasible": true
     },
     {
@@ -425,8 +483,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 738.3262483553132,
       "feasible": true
     },
     {
@@ -437,8 +497,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 663.0012483553131,
       "feasible": true
     },
     {
@@ -449,8 +511,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 851.313748355313,
       "feasible": false
     },
     {
@@ -461,8 +525,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 738.3262483553132,
       "feasible": false
     },
     {
@@ -473,8 +539,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 663.0012483553131,
       "feasible": false
     },
     {
@@ -485,8 +553,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 851.313748355313,
       "feasible": false
     },
     {
@@ -497,8 +567,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 738.3262483553132,
       "feasible": false
     },
     {
@@ -509,8 +581,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 663.0012483553131,
       "feasible": false
     },
     {
@@ -521,9 +595,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.9692317946428574,
-      "feasible": true
+      "tpsPerUser": 986.5125644721351,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 866.386182479277,
+      "feasible": false
     },
     {
       "axes": {
@@ -533,8 +609,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 753.3986824792771,
       "feasible": true
     },
     {
@@ -545,8 +623,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 678.0736824792771,
       "feasible": true
     },
     {
@@ -557,8 +637,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 866.386182479277,
       "feasible": false
     },
     {
@@ -569,8 +651,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 753.3986824792771,
       "feasible": false
     },
     {
@@ -581,8 +665,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 678.0736824792771,
       "feasible": false
     },
     {
@@ -593,8 +679,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 866.386182479277,
       "feasible": false
     },
     {
@@ -605,8 +693,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 753.3986824792771,
       "feasible": false
     },
     {
@@ -617,8 +707,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 678.0736824792771,
       "feasible": false
     },
     {
@@ -629,9 +721,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.9692317946428574,
-      "feasible": true
+      "tpsPerUser": 969.643768410253,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 881.4586166032408,
+      "feasible": false
     },
     {
       "axes": {
@@ -641,8 +735,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 768.471116603241,
       "feasible": true
     },
     {
@@ -653,8 +749,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 693.1461166032409,
       "feasible": true
     },
     {
@@ -665,8 +763,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 881.4586166032408,
       "feasible": false
     },
     {
@@ -677,8 +777,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 768.471116603241,
       "feasible": false
     },
     {
@@ -689,8 +791,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 693.1461166032409,
       "feasible": false
     },
     {
@@ -701,8 +805,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 881.4586166032408,
       "feasible": false
     },
     {
@@ -713,8 +819,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 768.471116603241,
       "feasible": false
     },
     {
@@ -725,8 +833,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 693.1461166032409,
       "feasible": false
     },
     {
@@ -737,8 +847,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1050.0522308151062,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 813.960324656794,
       "feasible": true
     },
     {
@@ -749,8 +861,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 700.972824656794,
       "feasible": true
     },
     {
@@ -761,8 +875,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 625.647824656794,
       "feasible": true
     },
     {
@@ -773,8 +889,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 813.960324656794,
       "feasible": false
     },
     {
@@ -785,8 +903,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 700.972824656794,
       "feasible": false
     },
     {
@@ -797,8 +917,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 625.647824656794,
       "feasible": false
     },
     {
@@ -809,8 +931,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 813.960324656794,
       "feasible": false
     },
     {
@@ -821,8 +945,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 700.972824656794,
       "feasible": false
     },
     {
@@ -833,8 +959,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 625.647824656794,
       "feasible": false
     },
     {
@@ -845,8 +973,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1033.4121330371593,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 827.0667891124147,
       "feasible": true
     },
     {
@@ -857,8 +987,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 714.0792891124147,
       "feasible": true
     },
     {
@@ -869,8 +1001,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 638.7542891124147,
       "feasible": true
     },
     {
@@ -881,8 +1015,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 827.0667891124147,
       "feasible": false
     },
     {
@@ -893,8 +1029,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 714.0792891124147,
       "feasible": false
     },
     {
@@ -905,8 +1043,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 638.7542891124147,
       "feasible": false
     },
     {
@@ -917,8 +1057,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 827.0667891124147,
       "feasible": false
     },
     {
@@ -929,8 +1071,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 714.0792891124147,
       "feasible": false
     },
     {
@@ -941,8 +1085,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 638.7542891124147,
       "feasible": false
     },
     {
@@ -953,8 +1099,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1017.2911968705545,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 840.1732535680355,
       "feasible": true
     },
     {
@@ -965,8 +1113,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 727.1857535680356,
       "feasible": true
     },
     {
@@ -977,8 +1127,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.9692317946428574,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656204,
+      "serialLaneUs": 651.8607535680355,
       "feasible": true
     },
     {
@@ -989,8 +1141,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 840.1732535680355,
       "feasible": false
     },
     {
@@ -1001,8 +1155,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 727.1857535680356,
       "feasible": false
     },
     {
@@ -1013,8 +1169,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 1.2115397433035715,
+      "tpsPerUser": 881.9299548277626,
+      "bound": "memory",
+      "memoryLaneUs": 969.1255524570254,
+      "serialLaneUs": 651.8607535680355,
       "feasible": false
     },
     {
@@ -1025,8 +1183,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 840.1732535680355,
       "feasible": false
     },
     {
@@ -1037,8 +1197,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 727.1857535680356,
       "feasible": false
     },
     {
@@ -1049,8 +1211,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 1.4538476919642855,
+      "tpsPerUser": 734.9416290231355,
+      "bound": "memory",
+      "memoryLaneUs": 1162.9506629484304,
+      "serialLaneUs": 651.8607535680355,
       "feasible": false
     },
     {
@@ -1061,9 +1225,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.7753854357142859,
-      "feasible": true
+      "tpsPerUser": 947.7187555387195,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 901.8507333591918,
+      "feasible": false
     },
     {
       "axes": {
@@ -1073,8 +1239,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1083.4588539020997,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 788.863233359192,
       "feasible": true
     },
     {
@@ -1085,8 +1253,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1197.8346986076667,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 713.538233359192,
       "feasible": true
     },
     {
@@ -1097,9 +1267,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.9692317946428571,
-      "feasible": true
+      "tpsPerUser": 947.7187555387195,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 901.8507333591918,
+      "feasible": false
     },
     {
       "axes": {
@@ -1109,8 +1281,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1083.4588539020997,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 788.863233359192,
       "feasible": true
     },
     {
@@ -1121,8 +1295,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 713.538233359192,
       "feasible": true
     },
     {
@@ -1133,8 +1309,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 901.8507333591918,
       "feasible": false
     },
     {
@@ -1145,8 +1323,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 788.863233359192,
       "feasible": false
     },
     {
@@ -1157,8 +1337,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 713.538233359192,
       "feasible": false
     },
     {
@@ -1169,9 +1351,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.7753854357142859,
-      "feasible": true
+      "tpsPerUser": 929.4439398320093,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 919.5830087991494,
+      "feasible": false
     },
     {
       "axes": {
@@ -1181,8 +1365,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1059.6399873008518,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 806.5955087991495,
       "feasible": true
     },
     {
@@ -1193,8 +1379,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1168.788901530291,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 731.2705087991494,
       "feasible": true
     },
     {
@@ -1205,9 +1393,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.9692317946428571,
-      "feasible": true
+      "tpsPerUser": 929.4439398320093,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 919.5830087991494,
+      "feasible": false
     },
     {
       "axes": {
@@ -1217,8 +1407,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1059.6399873008518,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 806.5955087991495,
       "feasible": true
     },
     {
@@ -1229,8 +1421,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 731.2705087991494,
       "feasible": true
     },
     {
@@ -1241,8 +1435,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 919.5830087991494,
       "feasible": false
     },
     {
@@ -1253,8 +1449,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 806.5955087991495,
       "feasible": false
     },
     {
@@ -1265,8 +1463,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 731.2705087991494,
       "feasible": false
     },
     {
@@ -1277,9 +1477,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.7753854357142859,
-      "feasible": true
+      "tpsPerUser": 911.8605757023189,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 937.3152842391069,
+      "feasible": false
     },
     {
       "axes": {
@@ -1289,8 +1491,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1036.8458652522354,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 824.3277842391069,
       "feasible": true
     },
     {
@@ -1301,8 +1505,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1141.1183945986581,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 749.0027842391069,
       "feasible": true
     },
     {
@@ -1313,9 +1519,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.9692317946428571,
-      "feasible": true
+      "tpsPerUser": 911.8605757023189,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 937.3152842391069,
+      "feasible": false
     },
     {
       "axes": {
@@ -1325,8 +1533,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1036.8458652522354,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 824.3277842391069,
       "feasible": true
     },
     {
@@ -1337,8 +1547,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 749.0027842391069,
       "feasible": true
     },
     {
@@ -1349,8 +1561,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 911.8605757023189,
+      "bound": "collective",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 937.3152842391069,
       "feasible": false
     },
     {
@@ -1361,8 +1575,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 824.3277842391069,
       "feasible": false
     },
     {
@@ -1373,8 +1589,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 749.0027842391069,
       "feasible": false
     },
     {
@@ -1385,8 +1603,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1003.9786815989821,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 851.313748355313,
       "feasible": true
     },
     {
@@ -1397,8 +1617,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1157.6194894936707,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 738.3262483553132,
       "feasible": true
     },
     {
@@ -1409,8 +1631,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1289.1391333290624,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 663.0012483553131,
       "feasible": true
     },
     {
@@ -1421,8 +1645,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1003.9786815989821,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 851.313748355313,
       "feasible": true
     },
     {
@@ -1433,8 +1659,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 738.3262483553132,
       "feasible": true
     },
     {
@@ -1445,8 +1673,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 663.0012483553131,
       "feasible": true
     },
     {
@@ -1457,8 +1687,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 851.313748355313,
       "feasible": false
     },
     {
@@ -1469,8 +1701,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 738.3262483553132,
       "feasible": false
     },
     {
@@ -1481,8 +1715,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 663.0012483553131,
       "feasible": false
     },
     {
@@ -1493,9 +1729,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.7753854357142859,
-      "feasible": true
+      "tpsPerUser": 986.5125644721351,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 866.386182479277,
+      "feasible": false
     },
     {
       "axes": {
@@ -1505,8 +1743,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1134.4602460522144,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 753.3986824792771,
       "feasible": true
     },
     {
@@ -1517,8 +1757,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1260.4837450345608,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 678.0736824792771,
       "feasible": true
     },
     {
@@ -1529,9 +1771,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.9692317946428571,
-      "feasible": true
+      "tpsPerUser": 986.5125644721351,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 866.386182479277,
+      "feasible": false
     },
     {
       "axes": {
@@ -1541,8 +1785,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 753.3986824792771,
       "feasible": true
     },
     {
@@ -1553,8 +1799,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 678.0736824792771,
       "feasible": true
     },
     {
@@ -1565,8 +1813,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 866.386182479277,
       "feasible": false
     },
     {
@@ -1577,8 +1827,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 753.3986824792771,
       "feasible": false
     },
     {
@@ -1589,8 +1841,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 678.0736824792771,
       "feasible": false
     },
     {
@@ -1601,9 +1855,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.7753854357142859,
-      "feasible": true
+      "tpsPerUser": 969.643768410253,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 881.4586166032408,
+      "feasible": false
     },
     {
       "axes": {
@@ -1613,8 +1869,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1112.2094718130231,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 768.471116603241,
       "feasible": true
     },
     {
@@ -1625,8 +1883,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1233.0745772468756,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 693.1461166032409,
       "feasible": true
     },
     {
@@ -1637,9 +1897,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.9692317946428571,
-      "feasible": true
+      "tpsPerUser": 969.643768410253,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 881.4586166032408,
+      "feasible": false
     },
     {
       "axes": {
@@ -1649,8 +1911,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 768.471116603241,
       "feasible": true
     },
     {
@@ -1661,8 +1925,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 693.1461166032409,
       "feasible": true
     },
     {
@@ -1673,8 +1939,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 881.4586166032408,
       "feasible": false
     },
     {
@@ -1685,8 +1953,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 768.471116603241,
       "feasible": false
     },
     {
@@ -1697,8 +1967,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 693.1461166032409,
       "feasible": false
     },
     {
@@ -1709,8 +1981,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1050.0522308151062,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 813.960324656794,
       "feasible": true
     },
     {
@@ -1721,8 +1995,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1219.306690126437,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 700.972824656794,
       "feasible": true
     },
     {
@@ -1733,8 +2009,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1366.105372730594,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 625.647824656794,
       "feasible": true
     },
     {
@@ -1745,8 +2023,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1050.0522308151062,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 813.960324656794,
       "feasible": true
     },
     {
@@ -1757,8 +2037,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 700.972824656794,
       "feasible": true
     },
     {
@@ -1769,8 +2051,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 625.647824656794,
       "feasible": true
     },
     {
@@ -1781,8 +2065,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 813.960324656794,
       "feasible": false
     },
     {
@@ -1793,8 +2079,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 700.972824656794,
       "feasible": false
     },
     {
@@ -1805,8 +2093,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 625.647824656794,
       "feasible": false
     },
     {
@@ -1817,8 +2107,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1033.4121330371593,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 827.0667891124147,
       "feasible": true
     },
     {
@@ -1829,8 +2121,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1196.9271028196738,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 714.0792891124147,
       "feasible": true
     },
     {
@@ -1841,8 +2135,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1338.0745448903522,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 638.7542891124147,
       "feasible": true
     },
     {
@@ -1853,8 +2149,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1033.4121330371593,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 827.0667891124147,
       "feasible": true
     },
     {
@@ -1865,8 +2163,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 714.0792891124147,
       "feasible": true
     },
     {
@@ -1877,8 +2177,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 638.7542891124147,
       "feasible": true
     },
     {
@@ -1889,8 +2191,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 827.0667891124147,
       "feasible": false
     },
     {
@@ -1901,8 +2205,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 714.0792891124147,
       "feasible": false
     },
     {
@@ -1913,8 +2219,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 638.7542891124147,
       "feasible": false
     },
     {
@@ -1925,8 +2233,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1017.2911968705545,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 840.1732535680355,
       "feasible": true
     },
     {
@@ -1937,8 +2247,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1175.3542344678083,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 727.1857535680356,
       "feasible": true
     },
     {
@@ -1949,8 +2261,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.7753854357142859,
+      "tpsPerUser": 1311.1709057840196,
+      "bound": "collective",
+      "memoryLaneUs": 620.2403535724964,
+      "serialLaneUs": 651.8607535680355,
       "feasible": true
     },
     {
@@ -1961,8 +2275,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1017.2911968705545,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 840.1732535680355,
       "feasible": true
     },
     {
@@ -1973,8 +2289,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 727.1857535680356,
       "feasible": true
     },
     {
@@ -1985,8 +2303,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.9692317946428571,
+      "tpsPerUser": 1102.412443534703,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656203,
+      "serialLaneUs": 651.8607535680355,
       "feasible": true
     },
     {
@@ -1997,8 +2317,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 840.1732535680355,
       "feasible": false
     },
     {
@@ -2009,8 +2331,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 727.1857535680356,
       "feasible": false
     },
     {
@@ -2021,8 +2345,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 1.1630781535714285,
+      "tpsPerUser": 918.6770362789193,
+      "bound": "memory",
+      "memoryLaneUs": 930.3605303587443,
+      "serialLaneUs": 651.8607535680355,
       "feasible": false
     },
     {
@@ -2033,9 +2359,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.6461545297619049,
-      "feasible": true
+      "tpsPerUser": 947.7187555387195,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 901.8507333591918,
+      "feasible": false
     },
     {
       "axes": {
@@ -2045,8 +2373,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1083.4588539020997,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 788.863233359192,
       "feasible": true
     },
     {
@@ -2057,8 +2387,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1197.8346986076667,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 713.538233359192,
       "feasible": true
     },
     {
@@ -2069,9 +2401,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.807693162202381,
-      "feasible": true
+      "tpsPerUser": 947.7187555387195,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 901.8507333591918,
+      "feasible": false
     },
     {
       "axes": {
@@ -2081,8 +2415,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1083.4588539020997,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 788.863233359192,
       "feasible": true
     },
     {
@@ -2093,8 +2429,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1197.8346986076667,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 713.538233359192,
       "feasible": true
     },
     {
@@ -2105,9 +2443,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.969231794642857,
-      "feasible": true
+      "tpsPerUser": 947.7187555387195,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 901.8507333591918,
+      "feasible": false
     },
     {
       "axes": {
@@ -2117,8 +2457,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1083.4588539020997,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 788.863233359192,
       "feasible": true
     },
     {
@@ -2129,8 +2471,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05049134948096885,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 713.538233359192,
       "feasible": true
     },
     {
@@ -2141,9 +2485,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.6461545297619049,
-      "feasible": true
+      "tpsPerUser": 929.4439398320093,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 919.5830087991494,
+      "feasible": false
     },
     {
       "axes": {
@@ -2153,8 +2499,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1059.6399873008518,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 806.5955087991495,
       "feasible": true
     },
     {
@@ -2165,8 +2513,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1168.788901530291,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 731.2705087991494,
       "feasible": true
     },
     {
@@ -2177,9 +2527,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.807693162202381,
-      "feasible": true
+      "tpsPerUser": 929.4439398320093,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 919.5830087991494,
+      "feasible": false
     },
     {
       "axes": {
@@ -2189,8 +2541,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1059.6399873008518,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 806.5955087991495,
       "feasible": true
     },
     {
@@ -2201,8 +2555,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1168.788901530291,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 731.2705087991494,
       "feasible": true
     },
     {
@@ -2213,9 +2569,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.969231794642857,
-      "feasible": true
+      "tpsPerUser": 929.4439398320093,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 919.5830087991494,
+      "feasible": false
     },
     {
       "axes": {
@@ -2225,8 +2583,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1059.6399873008518,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 806.5955087991495,
       "feasible": true
     },
     {
@@ -2237,8 +2597,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05314878892733564,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 731.2705087991494,
       "feasible": true
     },
     {
@@ -2249,9 +2611,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.6461545297619049,
-      "feasible": true
+      "tpsPerUser": 911.8605757023189,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 937.3152842391069,
+      "feasible": false
     },
     {
       "axes": {
@@ -2261,8 +2625,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1036.8458652522354,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 824.3277842391069,
       "feasible": true
     },
     {
@@ -2273,8 +2639,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1141.1183945986581,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 749.0027842391069,
       "feasible": true
     },
     {
@@ -2285,9 +2653,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.807693162202381,
-      "feasible": true
+      "tpsPerUser": 911.8605757023189,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 937.3152842391069,
+      "feasible": false
     },
     {
       "axes": {
@@ -2297,8 +2667,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1036.8458652522354,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 824.3277842391069,
       "feasible": true
     },
     {
@@ -2309,8 +2681,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1141.1183945986581,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 749.0027842391069,
       "feasible": true
     },
     {
@@ -2321,9 +2695,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.969231794642857,
-      "feasible": true
+      "tpsPerUser": 911.8605757023189,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 937.3152842391069,
+      "feasible": false
     },
     {
       "axes": {
@@ -2333,8 +2709,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1036.8458652522354,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 824.3277842391069,
       "feasible": true
     },
     {
@@ -2345,8 +2723,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.05580622837370242,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 749.0027842391069,
       "feasible": true
     },
     {
@@ -2357,8 +2737,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1003.9786815989821,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 851.313748355313,
       "feasible": true
     },
     {
@@ -2369,8 +2751,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1157.6194894936707,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 738.3262483553132,
       "feasible": true
     },
     {
@@ -2381,8 +2765,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1289.1391333290624,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 663.0012483553131,
       "feasible": true
     },
     {
@@ -2393,8 +2779,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1003.9786815989821,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 851.313748355313,
       "feasible": true
     },
     {
@@ -2405,8 +2793,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1157.6194894936707,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 738.3262483553132,
       "feasible": true
     },
     {
@@ -2417,8 +2807,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1289.1391333290624,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 663.0012483553131,
       "feasible": true
     },
     {
@@ -2429,8 +2821,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1003.9786815989821,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 851.313748355313,
       "feasible": true
     },
     {
@@ -2441,8 +2835,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 738.3262483553132,
       "feasible": true
     },
     {
@@ -2453,8 +2849,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.042917647058823526,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 663.0012483553131,
       "feasible": true
     },
     {
@@ -2465,9 +2863,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.6461545297619049,
-      "feasible": true
+      "tpsPerUser": 986.5125644721351,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 866.386182479277,
+      "feasible": false
     },
     {
       "axes": {
@@ -2477,8 +2877,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1134.4602460522144,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 753.3986824792771,
       "feasible": true
     },
     {
@@ -2489,8 +2891,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1260.4837450345608,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 678.0736824792771,
       "feasible": true
     },
     {
@@ -2501,9 +2905,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.807693162202381,
-      "feasible": true
+      "tpsPerUser": 986.5125644721351,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 866.386182479277,
+      "feasible": false
     },
     {
       "axes": {
@@ -2513,8 +2919,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1134.4602460522144,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 753.3986824792771,
       "feasible": true
     },
     {
@@ -2525,8 +2933,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1260.4837450345608,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 678.0736824792771,
       "feasible": true
     },
     {
@@ -2537,9 +2947,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.969231794642857,
-      "feasible": true
+      "tpsPerUser": 986.5125644721351,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 866.386182479277,
+      "feasible": false
     },
     {
       "axes": {
@@ -2549,8 +2961,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 753.3986824792771,
       "feasible": true
     },
     {
@@ -2561,8 +2975,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.0451764705882353,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 678.0736824792771,
       "feasible": true
     },
     {
@@ -2573,9 +2989,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.6461545297619049,
-      "feasible": true
+      "tpsPerUser": 969.643768410253,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 881.4586166032408,
+      "feasible": false
     },
     {
       "axes": {
@@ -2585,8 +3003,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1112.2094718130231,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 768.471116603241,
       "feasible": true
     },
     {
@@ -2597,8 +3017,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1233.0745772468756,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 693.1461166032409,
       "feasible": true
     },
     {
@@ -2609,9 +3031,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.807693162202381,
-      "feasible": true
+      "tpsPerUser": 969.643768410253,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 881.4586166032408,
+      "feasible": false
     },
     {
       "axes": {
@@ -2621,8 +3045,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1112.2094718130231,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 768.471116603241,
       "feasible": true
     },
     {
@@ -2633,8 +3059,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1233.0745772468756,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 693.1461166032409,
       "feasible": true
     },
     {
@@ -2645,9 +3073,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.969231794642857,
-      "feasible": true
+      "tpsPerUser": 969.643768410253,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 881.4586166032408,
+      "feasible": false
     },
     {
       "axes": {
@@ -2657,8 +3087,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 768.471116603241,
       "feasible": true
     },
     {
@@ -2669,8 +3101,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04743529411764706,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 693.1461166032409,
       "feasible": true
     },
     {
@@ -2681,8 +3115,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1050.0522308151062,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 813.960324656794,
       "feasible": true
     },
     {
@@ -2693,8 +3129,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1219.306690126437,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 700.972824656794,
       "feasible": true
     },
     {
@@ -2705,8 +3143,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1366.105372730594,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 625.647824656794,
       "feasible": true
     },
     {
@@ -2717,8 +3157,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1050.0522308151062,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 813.960324656794,
       "feasible": true
     },
     {
@@ -2729,8 +3171,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1219.306690126437,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 700.972824656794,
       "feasible": true
     },
     {
@@ -2741,8 +3185,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1322.8949322416436,
+      "bound": "memory",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 625.647824656794,
       "feasible": true
     },
     {
@@ -2753,8 +3199,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1050.0522308151062,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 813.960324656794,
       "feasible": true
     },
     {
@@ -2765,8 +3213,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 700.972824656794,
       "feasible": true
     },
     {
@@ -2777,8 +3227,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.03731969309462915,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 625.647824656794,
       "feasible": true
     },
     {
@@ -2789,8 +3241,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1033.4121330371593,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 827.0667891124147,
       "feasible": true
     },
     {
@@ -2801,8 +3255,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1196.9271028196738,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 714.0792891124147,
       "feasible": true
     },
     {
@@ -2813,8 +3269,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1338.0745448903522,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 638.7542891124147,
       "feasible": true
     },
     {
@@ -2825,8 +3283,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1033.4121330371593,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 827.0667891124147,
       "feasible": true
     },
     {
@@ -2837,8 +3297,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1196.9271028196738,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 714.0792891124147,
       "feasible": true
     },
     {
@@ -2849,8 +3311,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1322.8949322416436,
+      "bound": "memory",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 638.7542891124147,
       "feasible": true
     },
     {
@@ -2861,8 +3325,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1033.4121330371593,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 827.0667891124147,
       "feasible": true
     },
     {
@@ -2873,8 +3339,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 714.0792891124147,
       "feasible": true
     },
     {
@@ -2885,8 +3353,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.039283887468030694,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 638.7542891124147,
       "feasible": true
     },
     {
@@ -2897,8 +3367,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1017.2911968705545,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 840.1732535680355,
       "feasible": true
     },
     {
@@ -2909,8 +3381,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1175.3542344678083,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 727.1857535680356,
       "feasible": true
     },
     {
@@ -2921,8 +3395,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.6461545297619049,
+      "tpsPerUser": 1311.1709057840196,
+      "bound": "collective",
+      "memoryLaneUs": 516.8669613104137,
+      "serialLaneUs": 651.8607535680355,
       "feasible": true
     },
     {
@@ -2933,8 +3409,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1017.2911968705545,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 840.1732535680355,
       "feasible": true
     },
     {
@@ -2945,8 +3423,10 @@
         "bytes": 1,
         "network": 1
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1175.3542344678083,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 727.1857535680356,
       "feasible": true
     },
     {
@@ -2957,8 +3437,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.807693162202381,
+      "tpsPerUser": 1311.1709057840196,
+      "bound": "collective",
+      "memoryLaneUs": 646.0837016380169,
+      "serialLaneUs": 651.8607535680355,
       "feasible": true
     },
     {
@@ -2969,8 +3451,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1017.2911968705545,
+      "bound": "collective",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 840.1732535680355,
       "feasible": true
     },
     {
@@ -2981,8 +3465,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 727.1857535680356,
       "feasible": true
     },
     {
@@ -2993,8 +3479,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "maxComputeRatio": 0.04124808184143223,
-      "maxBandwidthRatio": 0.969231794642857,
+      "tpsPerUser": 1102.4124435347032,
+      "bound": "memory",
+      "memoryLaneUs": 775.3004419656202,
+      "serialLaneUs": 651.8607535680355,
       "feasible": true
     }
   ]

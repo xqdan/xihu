@@ -2,8 +2,12 @@
 /* Stage A: directional candidate comparison with the formal planning manifest.
  *
  * Inputs : data/workload/formal_model_manifests.json (hash-bound)
- *          data/workload/planning_operator_workload.json (K3 shape-derived)
+ *          data/workload/planning_operator_workload.json (K3 shape-derived,
+ *            GLM-5.2 derived from its public config.json, DeepSeek-V4-Pro
+ *            shape-derived with assumptions; a model without config is BLOCKED_CONFIG,
+ *            plus the K3-calibrated token-time factors)
  *          models/planning/resource_profiles.js (P0 and P1 are distinct)
+ *          models/planning/token_time.js (planning token time per slot)
  * Outputs: data/direction/directional_tps_scorecard.json
  *          data/direction/sensitivity_sweep.json
  *          data/governance/candidate_register.json
@@ -22,6 +26,7 @@ const crypto = require('crypto');
 const {execFileSync} = require('child_process');
 const {evaluateDirectionGate, writeGateStatus} = require('./governance/evaluate_gates');
 const RES = require('./planning/resource_profiles');
+const TT = require('./planning/token_time');
 const IDS = require('./planning/run_ids');
 
 const root = path.resolve(__dirname, '..');
@@ -51,58 +56,18 @@ const sourceInputs = {
   operatorWorkload: hashFile('data/workload/planning_operator_workload.json'),
   runner: hashFile('models/resolve_architecture_blockers.js'),
   resourceProfiles: hashFile('models/planning/resource_profiles.js'),
+  tokenTime: hashFile('models/planning/token_time.js'),
   gateValidator: hashFile('models/governance/evaluate_gates.js'),
   modelProfiles: hashFile('data/workload/model_profiles.json'),
   packageSpec: hashFile('docs/design/spec/k3_7r_package_baseline.json'),
   mcSpec: hashFile('docs/design/spec/k3_mc_baseline.json')
 };
 
-const {coreProfiles, mcProfiles, utilization, dutyCycle, networkBandwidth} = RES;
+const {coreProfiles, mcProfiles} = RES;
+const calibration = workload.calibration;
 const target = profile.policy.sharedDecodeTargetTpsPerUser;
 const architectureGate = profile.policy.sharedArchitectureGateTpsPerUser;
 const runId = IDS.stageARunId;
-
-function rowsFor(modelId, tp, physicalProfile, mcProfile, variation) {
-  const rows = [];
-  for (const [operatorId, coreClass, globalFlops, globalBytes, bytesClass] of workload.operators[modelId]) {
-    const flops = globalFlops * variation.compute / tp;
-    const bytes = globalBytes * variation.bytes / tp;
-    const bandwidth = bytesClass === 'collective'
-      ? networkBandwidth * variation.network
-      : mcProfiles[mcProfile].effectiveBytesPerSecond * variation.bandwidth;
-    const peak = coreProfiles[physicalProfile].peakByCore[coreClass] * variation.computeCapacity;
-    const intensity = flops / bytes;
-    const ridgePoint = peak / bandwidth;
-    const rooflinePerformance = Math.min(peak, intensity * bandwidth);
-    const requiredEffectiveFlops = flops * target;
-    const requiredPeakFlops = requiredEffectiveFlops / (utilization * dutyCycle);
-    const requiredMemoryBandwidth = bytes * target;
-    const requiredNetworkBandwidth = bytesClass === 'collective' ? bytes * target : 0;
-    rows.push({
-      operatorId,
-      operatorClass: operatorId,
-      coreClass,
-      flops,
-      bytes: {[bytesClass]: bytes, total: bytes},
-      arithmeticIntensity: intensity,
-      networkIntensity: bytesClass === 'collective' ? flops / (bytes * 1.25) : intensity,
-      ridgePoint,
-      rooflineBound: intensity < ridgePoint ? 'bandwidth' : 'compute',
-      rooflinePerformance,
-      requiredEffectiveFlops,
-      requiredPeakFlops,
-      availablePeakFlops: peak,
-      requiredToAvailableRatio: requiredPeakFlops / peak,
-      requiredMemoryBandwidth,
-      availableMemoryBandwidth: bandwidth,
-      requiredToAvailableBandwidthRatio: requiredMemoryBandwidth / bandwidth,
-      requiredNetworkBandwidth,
-      availableNetworkBandwidth: bytesClass === 'collective' ? bandwidth : 0,
-      requiredToAvailableNetworkRatio: bytesClass === 'collective' ? requiredNetworkBandwidth / bandwidth : 0
-    });
-  }
-  return rows;
-}
 
 const axes = [
   {name: 'bandwidth', values: [0.80, 1.00, 1.20]},
@@ -111,59 +76,68 @@ const axes = [
   {name: 'bytes', values: [0.80, 1.00, 1.20]},
   {name: 'network', values: [0.80, 1.00, 1.20]}
 ];
+// Sensitivity sweep around the published K3 point (P1/MC640/TP32, the calibration slot).
+const SWEEP_SLOT = calibration.slot;
+const k3Model = TT.planningModel(workload, 'K3');
 const sweep = [];
 for (const bandwidth of axes[0].values) {
   for (const computeCapacity of axes[1].values) {
     for (const compute of axes[2].values) {
       for (const bytes of axes[3].values) {
         for (const network of axes[4].values) {
-          const rows = rowsFor('K3', 32, 'P0', 'MC320', {bandwidth, computeCapacity, compute, bytes, network});
-          const maxCompute = Math.max(...rows.map(row => row.requiredToAvailableRatio));
-          const maxBandwidth = Math.max(...rows.map(row => row.requiredToAvailableBandwidthRatio));
-          sweep.push({axes: {bandwidth, computeCapacity, compute, bytes, network}, maxComputeRatio: maxCompute, maxBandwidthRatio: maxBandwidth, feasible: maxCompute <= 1 && maxBandwidth <= 1});
+          const t = TT.slotTime(k3Model, SWEEP_SLOT, calibration, {bandwidth, computeCapacity, compute, bytes, network});
+          sweep.push({axes: {bandwidth, computeCapacity, compute, bytes, network}, tpsPerUser: t.tpsPerUser, bound: t.bound, memoryLaneUs: t.memoryLaneUs, serialLaneUs: t.serialLaneUs, feasible: t.tpsPerUser >= target});
         }
       }
     }
   }
 }
 
-const nominal = {bandwidth: 1, computeCapacity: 1, compute: 1, bytes: 1, network: 1};
 const candidates = [];
 for (const physicalProfile of ['P0', 'P1']) {
   for (const mcProfile of ['MC320', 'MC640']) {
     for (const tp of [8, 16, 32]) {
+      const slot = {tp, physicalProfile, mcProfile};
       for (const model of manifest.models) {
-        const operatorRows = rowsFor(model.modelId, tp, physicalProfile, mcProfile, nominal);
-        const maxComputeRatio = Math.max(...operatorRows.map(row => row.requiredToAvailableRatio));
-        const maxBandwidthRatio = Math.max(...operatorRows.map(row => row.requiredToAvailableBandwidthRatio));
-        const bottleneck = maxBandwidthRatio > maxComputeRatio ? 'memory' : 'compute';
-        const tps = target / Math.max(maxComputeRatio, maxBandwidthRatio);
-        const computeRow = operatorRows.reduce((a,b) => a.requiredToAvailableRatio > b.requiredToAvailableRatio ? a : b);
-        const memoryRow = operatorRows.reduce((a,b) => a.requiredToAvailableBandwidthRatio > b.requiredToAvailableBandwidthRatio ? a : b);
-        const workloadUnits = {
-          flopsPerToken: computeRow.flops, bytesPerToken: memoryRow.bytes.total,
-          effectiveFlopsPerSecond: computeRow.availablePeakFlops * utilization * dutyCycle,
-          effectiveBytesPerSecond: memoryRow.availableMemoryBandwidth,
-          computeOperatorId: computeRow.operatorId, bandwidthOperatorId: memoryRow.operatorId,
-          source: 'data/workload/planning_operator_workload.json',
-          scope: 'dominant_operator_per_rank_not_model_total'
-        };
-        candidates.push({
-          workloadUnits,
-          computeTimeUs: workloadUnits.flopsPerToken / workloadUnits.effectiveFlopsPerSecond * 1e6,
-          memoryTimeUs: workloadUnits.bytesPerToken / workloadUnits.effectiveBytesPerSecond * 1e6,
+        const base = {
           candidateId: RES.candidateIdFor(physicalProfile, mcProfile, tp),
           modelId: model.modelId,
           tp,
           physicalProfile,
           mcProfile,
-          tpsPerUser: tps,
-          maxComputeRatio,
-          maxBandwidthRatio,
-          bottleneck,
-          status: 'PLANNING_ESTIMATE',
           confidence: model.confidence,
           manifestHash
+        };
+        const planning = TT.planningModel(workload, model.modelId);
+        if (!planning) {
+          candidates.push({...base, tpsPerUser: null, bottleneck: null, status: 'BLOCKED_CONFIG', blocker: model.blockers[0]});
+          continue;
+        }
+        const t = TT.slotTime(planning, slot, calibration);
+        candidates.push({
+          ...base,
+          workloadUnits: {
+            flopsPerToken: planning.rows.reduce((a, r) => a + r[2], 0) / tp,
+            memoryBytesPerToken: planning.rows.filter(r => r[4] !== 'collective').reduce((a, r) => a + r[3], 0) / tp,
+            collectiveBytesPerToken: planning.rows.filter(r => r[4] === 'collective').reduce((a, r) => a + r[3], 0) / tp,
+            collectivesPerToken: t.collectivesPerToken,
+            effectiveBytesPerSecond: mcProfiles[mcProfile].effectiveBytesPerSecond,
+            source: 'data/workload/planning_operator_workload.json',
+            scope: 'model_total_per_rank'
+          },
+          memoryTimeUs: t.memoryUs,
+          computeTimeUs: t.computeUs,
+          computeTimeUsByCore: t.computeUsByCore,
+          commTimeUs: t.commUs,
+          memoryLaneUs: t.memoryLaneUs,
+          serialLaneUs: t.serialLaneUs,
+          rawLatencyUsPerToken: t.rawUs,
+          e2eLatencyUsPerToken: t.e2eUs,
+          tpsPerUser: t.tpsPerUser,
+          uncalibratedTpsPerUser: t.uncalibratedTpsPerUser,
+          bottleneck: t.bound,
+          boundingOperatorId: TT.boundingOperator(planning, slot, t),
+          status: 'PLANNING_ESTIMATE'
         });
       }
     }
@@ -173,21 +147,23 @@ for (const physicalProfile of ['P0', 'P1']) {
 const candidateIds = [...new Set(candidates.map(item => item.candidateId))];
 const candidateSummaries = candidateIds.map(candidateId => {
   const rows = candidates.filter(item => item.candidateId === candidateId);
-  const worst = rows.reduce((a, b) => a.tpsPerUser < b.tpsPerUser ? a : b);
+  const comparable = rows.filter(row => row.status !== 'BLOCKED_CONFIG');
+  const worst = comparable.reduce((a, b) => a.tpsPerUser < b.tpsPerUser ? a : b);
   return {
     candidateId,
     physicalProfile: rows[0].physicalProfile,
     mcProfile: rows[0].mcProfile,
     tp: rows[0].tp,
     accountedModelCount: rows.length,
-    comparableModelCount: rows.length,
-    comparableModels: rows.map(row => row.modelId),
-    blockedModels: [],
+    comparableModelCount: comparable.length,
+    comparableModels: comparable.map(row => row.modelId),
+    blockedModels: rows.filter(row => row.status === 'BLOCKED_CONFIG').map(row => row.modelId),
     minTpsPerUser: worst.tpsPerUser,
-    geomeanTpsPerUser: Math.exp(rows.reduce((sum, row) => sum + Math.log(row.tpsPerUser), 0) / rows.length),
+    geomeanTpsPerUser: Math.exp(comparable.reduce((sum, row) => sum + Math.log(row.tpsPerUser), 0) / comparable.length),
     worstModel: worst.modelId,
-    meetsTargetModels: rows.filter(row => row.tpsPerUser >= target).map(row => row.modelId),
-    rankingEligible: true
+    meetsTargetModels: comparable.filter(row => row.tpsPerUser >= target).map(row => row.modelId),
+    rankingBasis: 'comparable models only; BLOCKED_CONFIG models are excluded, not assumed',
+    rankingEligible: comparable.length > 0
   };
 });
 
@@ -207,12 +183,12 @@ const selected = selectCandidates(candidateSummaries);
 
 const sweepSummary = {
   complete: true,
-  scope: 'K3/P0/MC320/TP32 planning-only; excludes area, power and real collective latency',
+  scope: `K3/${SWEEP_SLOT.physicalProfile}/${SWEEP_SLOT.mcProfile}/TP${SWEEP_SLOT.tp} (the calibration slot) planning token time; excludes area and power`,
   dimensions: axes.map(axis => axis.name),
   sampleCount: sweep.length,
   feasibleCount: sweep.filter(item => item.feasible).length,
-  minComputeRatio: Math.min(...sweep.map(item => item.maxComputeRatio)),
-  minBandwidthRatio: Math.min(...sweep.map(item => item.maxBandwidthRatio)),
+  minTpsPerUser: Math.min(...sweep.map(item => item.tpsPerUser)),
+  maxTpsPerUser: Math.max(...sweep.map(item => item.tpsPerUser)),
   selectedSensitivity: sweep.filter(item => Object.values(item.axes).every(v => v === 1))
 };
 
@@ -228,8 +204,10 @@ const env = {
   status: 'DIRECTIONAL_ESTIMATE_WITH_FORMAL_PLANNING_MANIFEST',
   assumptions: [
     'Formal planning manifests are frozen in data/workload/formal_model_manifests.json.',
-    'K3 planning operators are derived from src/core/design_engine.js (kimiK3 preset) and reconciled to the calibrated directional baseline.',
-    'GLM-5.2 and DeepSeek-V4-Pro values are architecture planning inputs pending external confirmation.',
+    'K3 planning operators are derived from src/core/design_engine.js (kimiK3 preset) and reconciled to the detailed plan of the published point.',
+    'Planning token time = max(memory lane x kMemory, compute x kCompute + collectives x tau) x 1.17; kMemory/kCompute are fitted on the K3 detailed point.',
+    'DeepSeek-V4-Pro rows are derived from its manifest shape block; fields outside shape.reported are ASSUMPTIONs.',
+    'GLM-5.2 rows are derived from its public config.json; the FP8 KV/index-key layout, TP mapping and collectives per layer are ASSUMPTIONs.',
     'MC320 and MC640 remain separate physical bandwidth profiles.',
     'P0 and P1 use distinct core-class peak capacities (models/planning/resource_profiles.js).'
   ]
@@ -274,11 +252,19 @@ const register = {
   selectionBasis: {
     targetTpsPerUser: target,
     architectureGateTpsPerUser: architectureGate,
-    policy: 'rank by worst-model planning TPS bound; take the two best overall plus the best MC320 reference candidate; at most three',
+    policy: 'rank by worst comparable-model planning TPS; take the two best overall plus the best MC320 reference candidate; at most three',
+    blockedModels: dGate.blockedModels,
     ranking: candidateSummaries.slice().sort(byBound).map(item => ({candidateId: item.candidateId, minTpsPerUser: item.minTpsPerUser, worstModel: item.worstModel})),
     selected: selected.map(candidateId => candidates.filter(item => item.candidateId === candidateId))
   },
   exploratorySweeps: [{
+    sweepId: 'ADR-0006-exploratory-after-blocked-d-gate',
+    runMode: 'EXPLORATORY_AFTER_BLOCKED_D_GATE',
+    active: dGate.decision !== 'PASS',
+    candidateIds: selected,
+    allowedModels: manifest.models.filter(model => TT.planningModel(workload, model.modelId)).map(model => model.modelId),
+    decisionRecord: 'docs/design/decisions/ADR-0006-planning-token-time-and-blocked-glm.md'
+  }, {
     sweepId: 'ADR-0002-formal-manifest-sensitivity-sweep',
     runMode: 'FORMAL_DIRECTIONAL_SWEEP',
     candidateIds,
@@ -315,6 +301,9 @@ write('data/direction/directional_resource_envelope.json', env);
 const gateStatus = writeGateStatus();
 
 const k3 = workload.provenance.K3.reconciliation;
+const ds = workload.provenance['DeepSeek-V4-Pro'].derivation;
+const glm = workload.provenance['GLM-5.2'].derivation;
+const fmt = (v, d = 2) => (v === null ? 'BLOCKED_CONFIG' : v.toFixed(d));
 const report = [
   '# Stage A blocker resolution run',
   '',
@@ -322,10 +311,15 @@ const report = [
   `Manifest hash: \`${manifestHash}\``,
   `Source commit: \`${sourceCommit}\``,
   '',
-  '## Workload calibration',
+  '## Planning token time (models/planning/token_time.js)',
   '',
-  `- K3 operator rows are derived from \`src/core/design_engine.js\` (kimiK3 preset), FLOP ratio vs calibrated baseline ${k3.flopsRatioDerivedOverCalibrated.toFixed(3)}, byte ratio ${k3.bytesRatioDerivedOverCalibrated.toFixed(3)}.`,
-  '- GLM-5.2 and DeepSeek-V4-Pro rows are ratio-scaled planning placeholders, still UNVERIFIED.',
+  '`raw = max(memory lane x kMemory, compute x kCompute + collectives x max(tau, bytes/network))`, `e2e = raw x 1.17`, `TPS/usr = 1e6 / e2e`.',
+  '',
+  `- Calibration on the K3 detailed point (${calibration.slot.physicalProfile}/${calibration.slot.mcProfile}/TP${calibration.slot.tp}): kMemory ${calibration.kMemory.toFixed(4)}, kCompute ${calibration.kCompute.toFixed(4)}; planning ${calibration.calibratedTpsPerUser.toFixed(2)} vs detailed ${calibration.detailedTpsPerUser.toFixed(2)} TPS/usr (raw residual ${calibration.rawResidualUs.toFixed(2)} us).`,
+  `- Out-of-fit check at MC320: planning ${calibration.validation.planningTpsPerUser.toFixed(2)} vs detailed ${calibration.validation.detailedTpsPerUser.toFixed(2)} TPS/usr (ratio ${calibration.validation.planningOverDetailed.toFixed(3)}).`,
+  `- K3 rows are derived from \`src/core/design_engine.js\` (kimiK3 preset) with absorbed MLA and FP8 KV; FLOP ratio vs detailed plan ${k3.flopsRatioDerivedOverCalibrated.toFixed(3)}, byte ratio ${k3.bytesRatioDerivedOverCalibrated.toFixed(3)}.`,
+  `- DeepSeek-V4-Pro rows are derived from the manifest shape block (reported fields + ASSUMPTIONs); expert hidden solved from 49B active = ${ds.expertHidden.toFixed(1)}, implied total / reported 1600B = ${ds.impliedTotalOverReported.toFixed(3)}; MTP excluded.`,
+  `- GLM-5.2 rows are derived from the public config.json (78 layers, 21 full-indexer layers, 256 experts top-8); parameters with MTP / reported 753B = ${glm.totalWithMtpOverReported.toFixed(4)}, active ${(glm.activeParams / 1e9).toFixed(2)}B; MTP excluded. Applying the K3 factors to GLM-5.2 and DeepSeek-V4-Pro is a planning ASSUMPTION.`,
   '',
   '## D-Gate (independent validator)',
   '',
@@ -333,24 +327,34 @@ const report = [
   JSON.stringify(gateStatus.directionGate, null, 2),
   '```',
   '',
-  `- Planning sweep: ${sweep.length} samples; K3/P0/MC320/TP32 only. This does not cover all D2-D6 physical axes.`,
+  `- Planning sweep: ${sweep.length} samples around K3/${SWEEP_SLOT.physicalProfile}/${SWEEP_SLOT.mcProfile}/TP${SWEEP_SLOT.tp}; ${sweepSummary.feasibleCount} reach ${target} TPS/usr. This does not cover all D2-D6 physical axes.`,
+  `- Blocked models: ${dGate.blockedModels.length ? dGate.blockedModels.join(', ') : 'none'}. A BLOCKED_CONFIG model keeps the three-model comparison open, blocks the D-Gate and sends Stage B to EXPLORATORY_AFTER_BLOCKED_D_GATE (ADR-0006).`,
   `- Candidate register state: \`${register.decisionState}\` (derived from the validator, not written by this runner).`,
   '',
   '## Remaining qualification',
   '',
   '- External model/license confirmation remains a qualification risk, not an implicit configuration.',
   '- Event-level Q3-Q8 replay and fine TPS remain required before silicon sign-off.',
-  '- Planning TPS values are single-operator bottleneck bounds and are not comparable with the RDMA tile simulator results.',
+  '- Planning TPS values are calibrated to the K3 detailed point but are not event-timed; they do not replace the detailed model.',
   '',
-  '## Candidate ranking (worst-model planning TPS bound)',
+  '## Planning TPS/usr per slot',
   '',
-  '| Candidate | worst model | min TPS bound |',
+  '| Candidate | Model | memory lane us | compute us | collective us | bound | TPS/usr |',
+  '|---|---|---:|---:|---:|---|---:|',
+  ...candidates.map(c => c.status === 'BLOCKED_CONFIG'
+    ? `| ${c.candidateId} | ${c.modelId} | - | - | - | - | BLOCKED_CONFIG |`
+    : `| ${c.candidateId} | ${c.modelId} | ${c.memoryLaneUs.toFixed(1)} | ${(c.computeTimeUs * calibration.kCompute).toFixed(1)} | ${c.commTimeUs.toFixed(1)} | ${c.bottleneck} | ${fmt(c.tpsPerUser)} |`),
+  '',
+  '## Candidate ranking (worst comparable-model planning TPS)',
+  '',
+  '| Candidate | worst model | min TPS |',
   '|---|---|---:|',
   ...register.selectionBasis.ranking.map(item => `| ${item.candidateId} | ${item.worstModel} | ${item.minTpsPerUser.toFixed(2)} |`),
   '',
   '## Selected candidates',
   '',
   ...(register.formalSelectedCandidates.length ? register.formalSelectedCandidates.map(candidateId => `- \`${candidateId}\``) : ['- none (D-Gate blocked)']),
+  ...(register.formalSelectedCandidates.length ? [] : ['', `Exploratory Stage B candidates (policy-ranked, not formally selected): ${selected.map(id => `\`${id}\``).join(', ')}`]),
   ''
 ].join('\n');
 fs.mkdirSync(path.join(root, 'reports/direction'), {recursive: true});

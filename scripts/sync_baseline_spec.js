@@ -20,7 +20,6 @@ const write = (p, v) => fs.writeFileSync(path.join(root, p), `${JSON.stringify(v
 const O = require('../src/rdma/k3_rdma_final_tuning_model.js');
 const A = require('../src/search/k3_architecture_search.js');
 const P = require('../src/search/k3_physical_basis.js');
-const E = require('../src/core/design_engine.js');
 const T = require('../src/rdma/k3_tps_design_baseline.js');
 
 const results = read('data/rdma/k3_rdma_final_tuning_results.json');
@@ -164,10 +163,11 @@ write('docs/design/spec/k3_mc_baseline.json', spec);
 // Directional workload baseline: the K3 calibration block mirrors the MC320 point.
 const baseline = read('data/direction/directional_workload_baseline.json');
 const k3 = baseline.models.find(m => m.modelId === 'K3');
-const preset = E.MODEL_PRESETS.kimiK3;
-const model = E.deriveModel(preset);
-const attentionFlops = model.attnFlopsPerToken(spec.goal.contextTokens);
-k3.globalFlopsPerToken = 2 * preset.activeParams + attentionFlops;
+// FLOP/token is the detailed plan's own operator FLOP (absorbed MLA attention,
+// the same count the tile simulator times), summed over the TP ranks.
+const planOps = O.mapped(x).plan.ops;
+const opFlops = unit => planOps.filter(o => unit ? o.unit === unit : true).reduce((a, o) => a + (o.flops || 0), 0) * spec.goal.tpCards;
+k3.globalFlopsPerToken = opFlops();
 k3.globalMemoryBytesPerToken = reference.readBytes * spec.goal.tpCards;
 k3.collectiveReference = {...k3.collectiveReference, tp: spec.goal.tpCards, latencyUsPerToken: reference.commUs};
 k3.calibration = {
@@ -177,7 +177,7 @@ k3.calibration = {
   observedE2eLatencyUs: reference.e2eUs,
   observedTpsPerUser: reference.tps,
   source: 'data/rdma/k3_rdma_final_tuning_results.json (MC320 replay of search.best)',
-  flopDerivation: `2 x ${preset.activeParams / 1e9}B active parameters + ${(attentionFlops / 1e12).toFixed(6)}T long-context attention/state FLOP from src/core/design_engine.js`
+  flopDerivation: `sum of operator FLOP in O.mapped(search.best.x).plan x TP${spec.goal.tpCards}: L ${(opFlops('L') / 1e12).toFixed(6)}T, H ${(opFlops('H') / 1e12).toFixed(6)}T (absorbed-MLA QK/PV over the full context), V ${(opFlops('V') / 1e12).toFixed(6)}T`
 };
 baseline.asOf = results.version.slice(0, 10);
 write('data/direction/directional_workload_baseline.json', baseline);

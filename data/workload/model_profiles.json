@@ -53,8 +53,8 @@
       "sourceClass": "public-model-card",
       "contextTokens": 1048576,
       "reportedParameterCountB": 753,
-      "layerCount": 96,
-      "layerCountSource": "data/workload/formal_model_manifests.json#/models/1 (planning assumption, not confirmed)",
+      "layerCount": 78,
+      "layerCountSource": "https://huggingface.co/zai-org/GLM-5.2/raw/main/config.json (num_hidden_layers)",
       "features": [
         "sparse_moe",
         "long_context",
@@ -67,8 +67,11 @@
         "reportedFlopReductionAt1MContext": 2.9,
         "reportedMtpAcceptanceGainMax": 0.2,
         "activeParameterCountB": null,
-        "expertCount": null,
-        "activeExpertsPerToken": null
+        "expertCount": 256,
+        "activeExpertsPerToken": 8,
+        "sharedExperts": 1,
+        "indexerTopK": 2048,
+        "activeParameterCountNote": "Not stated in the model card; derived from config.json in data/workload/planning_operator_workload.json#/provenance/GLM-5.2/derivation"
       },
       "architectureInputs": {
         "longContextState": "must model KV/state plus index cache separately",
@@ -85,8 +88,11 @@
       },
       "evidence": [
         "https://huggingface.co/zai-org/GLM-5.2",
-        "https://github.com/zai-org/GLM-5.2"
-      ]
+        "https://github.com/zai-org/GLM-5.2",
+        "https://huggingface.co/zai-org/GLM-5.2/raw/main/config.json"
+      ],
+      "hiddenSize": 6144,
+      "attentionHeads": 64
     },
     {
       "id": "DeepSeek-V4-Pro",

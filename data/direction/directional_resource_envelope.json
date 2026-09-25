@@ -1,6 +1,6 @@
 {
   "schemaVersion": "directional-resource-envelope-v0.1",
-  "runId": "stage-a-20260923-calibrated-workload",
+  "runId": "stage-a-20260925-token-time",
   "stage": "direction",
   "agentId": "D1-D6",
   "candidateId": "direction-input-envelope",
@@ -133,8 +133,10 @@
   },
   "assumptions": [
     "Formal planning manifests are frozen in data/workload/formal_model_manifests.json.",
-    "K3 planning operators are derived from src/core/design_engine.js (kimiK3 preset) and reconciled to the calibrated directional baseline.",
-    "GLM-5.2 and DeepSeek-V4-Pro values are architecture planning inputs pending external confirmation.",
+    "K3 planning operators are derived from src/core/design_engine.js (kimiK3 preset) and reconciled to the detailed plan of the published point.",
+    "Planning token time = max(memory lane x kMemory, compute x kCompute + collectives x tau) x 1.17; kMemory/kCompute are fitted on the K3 detailed point.",
+    "DeepSeek-V4-Pro rows are derived from its manifest shape block; fields outside shape.reported are ASSUMPTIONs.",
+    "GLM-5.2 rows are derived from its public config.json; the FP8 KV/index-key layout, TP mapping and collectives per layer are ASSUMPTIONs.",
     "MC320 and MC640 remain separate physical bandwidth profiles.",
     "P0 and P1 use distinct core-class peak capacities (models/planning/resource_profiles.js)."
   ],

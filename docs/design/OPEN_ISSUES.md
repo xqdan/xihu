@@ -12,6 +12,7 @@
 | B-006 | P1 的 1.0 GHz（固定）、面积、功耗（见 `00_CURRENT_STATE.md` 第 2 节）和 P0 的 1.0 GHz 候选均未回标；2026-09-25 起 P1 面积按三星 SF4 级 4 nm 由公开节点数据缩放（逻辑 ×1.277 按 CPP×MMP，SRAM ×1.248 按 HD bitcell，PHY ×1；SF4/SF4X 节距未公开，取 SF4E），矩阵密度取 3.2 TF/mm²（N4 口径 @1 GHz，原 1.6），均为 `ASSUMPTION`（`src/search/k3_physical_basis.js`） | PPA 可能不收敛；发布点 Die 373.7 mm²，逻辑系数若按 CPP×MMP 偏乐观、矩阵密度若只有 2.5 TF/mm² 以下，面积可能超 400 mm² | synthesis/floorplan/IP macro；三星 SF4 PDK 的 SRAM compiler 与 MAC 阵列宏 |
 | B-007 | reference-393 口径：2026-09-25 决定接受。合并后的 `Wup + Shared output all-reduce` 已移到 shared 专家计算之后（此前排在之前，shared 部分和未被归约）；`Q / new-KV all-gather` 按参考页作本地算子 | 已接受；若供应商结构说明否定 shared 与 Wup 输出同宽相加，须回退 `repo-510` | 供应商 shared 专家结构说明或权重 manifest 的输出张量宽度（确认性，不阻塞） |
 | B-008 | τ 口径：2026-09-25 决定发布点每次集合通信下限取 spec 的 1.15 μs（`OPT.tauUs`）；1.15 μs 本身尚无物理推导 | 通信 451.95 μs（393 × 1.15，五类协议时间均低于 τ），占 raw 预算的 53%；393 次的天花板约 1134.46 TPS（含 shared 专家重叠和 TMA 掩盖，假设 DMA 等待为 0）；发布点 1101.77 离预算余 78.95 μs，τ 可到约 1.35 μs（每次余 0.201 μs）仍达标 | 由 B-004/B-005 给出 τ 的物理推导并回标（ADR-0004） |
+| B-009 | 2026-09-25 关闭：GLM-5.2 形状改取公开 HF `config.json`（ADR-0007），含 MTP 总参数 753.3B 对公布 753B；剩余部署布局（FP8 KV 656 B、索引键 132 B、每层集合通信 full 4 / shared 3、无 EP）为 `ASSUMPTION`，并入 O-016 | 已关闭；6 个观测槽位有规划 TPS，D-Gate 的 `threeModelComparable` 成立 | 部署布局的确认性证据（不阻塞） |
 
 ## P1 关键问题
 
@@ -31,6 +32,7 @@
 | O-012 | Dense/Attention/Shared 权重能否用 FP8 | Workload/AI Core |
 | O-013 | 1M KV/state 的正式布局和精度 | Workload/Memory |
 | O-014 | LM Head 的精度和分片 | Workload/AI Core |
+| O-016 | 规划 token 时间的 kMemory/kCompute 只在 K3 一个详细点上标定；DeepSeek-V4-Pro 的 MLA/indexer 维度、dense 层数、词表、FP4 专家字节数、每层 4 次集合通信均为 `ASSUMPTION`，隐含总参数为公布 1.6T 的 1.16 倍；GLM-5.2 的 KV/索引键字节、TP 映射与每层集合通信次数同为 `ASSUMPTION`（ADR-0006、ADR-0007） | Workload/Modeling |
 | O-015 | 卡功耗上限是否包含 optics/VRM/host I/O；2026-09-25 起 P1 按液冷（冷板）取 Die 300 W、卡 2800 W（原风冷 2400 W），冷板、VRM 与供电方案尚未建模 | Package/Power |
 
 ## P2 风险项

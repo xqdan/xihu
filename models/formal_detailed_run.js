@@ -1,13 +1,18 @@
 'use strict';
-/* Stage B: formal planning quantification for the D-Gate selected candidates.
+/* Stage B: planning quantification.
  *
  * Reads the candidate register (never hard-codes candidates), the hash-bound
  * manifest and the shape-derived planning workload. P0 and P1 use distinct
  * core-class capacities from models/planning/resource_profiles.js.
  *
- * Evidence kind stays SYNTHETIC_BOTTLENECK_BOUND: Q3-Q8 events are placeholders
- * and do not drive latency. Performance acceptance is COMPUTED from the 18
- * planning slots, not written as a literal.
+ * With D-Gate passed the register's formal selection is used. With D-Gate
+ * blocked the run is EXPLORATORY_AFTER_BLOCKED_D_GATE (ADR-0001, ADR-0006): it
+ * takes the register's active exploratory sweep and claims no formal selection.
+ *
+ * Slot TPS/usr is the calibrated planning token time (models/planning/token_time.js).
+ * BLOCKED_CONFIG models get no ledger rows and no TPS. Q3-Q8 events are
+ * placeholders and do not drive latency. Performance acceptance is COMPUTED
+ * from the slots, not written as a literal.
  */
 const fs = require('fs');
 const path = require('path');
@@ -15,6 +20,7 @@ const crypto = require('crypto');
 const {execFileSync} = require('child_process');
 const {writeGateStatus} = require('./governance/evaluate_gates');
 const RES = require('./planning/resource_profiles');
+const TT = require('./planning/token_time');
 const IDS = require('./planning/run_ids');
 
 const root = path.resolve(__dirname, '..');
@@ -44,17 +50,26 @@ const targetTps = profiles.policy.sharedDecodeTargetTpsPerUser;
 const architectureGateTps = profiles.policy.sharedArchitectureGateTpsPerUser;
 const {coreProfiles, mcProfiles, utilization, dutyCycle, networkBandwidth} = RES;
 const opTemplates = workload.operators;
+const calibration = workload.calibration;
 
 const runId = IDS.stageBRunId;
-const selected = register.formalSelectedCandidates;
-if (register.decisionState !== 'D_GATE_PASSED' || selected.length === 0) {
-  throw new Error(`Formal Stage B requires D_GATE_PASSED with selected candidates; register state is ${register.decisionState}`);
+const formal = register.decisionState === 'D_GATE_PASSED' && register.formalSelectedCandidates.length > 0;
+const exploratorySweep = (register.exploratorySweeps || []).find(sweep => sweep.runMode === 'EXPLORATORY_AFTER_BLOCKED_D_GATE' && sweep.active);
+if (!formal && !exploratorySweep) {
+  throw new Error(`Stage B needs D_GATE_PASSED or an active EXPLORATORY_AFTER_BLOCKED_D_GATE sweep; register state is ${register.decisionState}`);
 }
+const runMode = formal ? 'PLANNING_QUANTIFICATION' : 'EXPLORATORY_AFTER_BLOCKED_D_GATE';
+const selected = formal ? register.formalSelectedCandidates : [];
+const studied = formal ? selected : exploratorySweep.candidateIds;
+const planningModels = Object.fromEntries(manifest.models.map(model => [model.modelId, TT.planningModel(workload, model.modelId)]));
+const comparableModels = manifest.models.filter(model => planningModels[model.modelId]);
+const blockedModels = manifest.models.filter(model => !planningModels[model.modelId]);
 const inputHashes = {
   directionalScorecard: hashFile('data/direction/directional_tps_scorecard.json'),
   modelProfiles: hashFile('data/workload/model_profiles.json'),
   operatorWorkload: hashFile('data/workload/planning_operator_workload.json'),
   resourceProfiles: hashFile('models/planning/resource_profiles.js'),
+  tokenTime: hashFile('models/planning/token_time.js'),
   runner: hashFile('models/formal_detailed_run.js'),
   gateValidator: hashFile('models/governance/evaluate_gates.js'),
   manifest: manifestHash,
@@ -86,7 +101,6 @@ function ledgerRows(modelId, candidateId) {
       phase: 'decode',
       tp,
       cp: 1,
-      ep: modelId === 'K3' ? 1 : 6,
       physicalProfile: physical,
       mcProfile: mc,
       operatorId,
@@ -113,6 +127,9 @@ function ledgerRows(modelId, candidateId) {
       requiredNetworkBandwidth,
       availableNetworkBandwidth: byteClass === 'collective' ? bandwidth : 0,
       requiredToAvailableNetworkRatio: byteClass === 'collective' ? requiredNetworkBandwidth / bandwidth : 0,
+      // Uncalibrated per-rank lane contributions (token_time.js sums these per slot).
+      computeTimeUs: flops / (peak * utilization * dutyCycle) * 1e6,
+      memoryTimeUs: byteClass === 'collective' ? 0 : bytes / bandwidth * 1e6,
       confidence: manifest.models.find(model => model.modelId === modelId).confidence,
       status: 'MODEL_REPLAY_ESTIMATE'
     };
@@ -120,16 +137,28 @@ function ledgerRows(modelId, candidateId) {
 }
 
 const ledger = [];
+const slotTimes = [];
 for (const physicalProfile of ['P0', 'P1']) {
   for (const mcProfile of ['MC320', 'MC640']) {
     for (const tp of [8, 16, 32]) {
       const candidateId = RES.candidateIdFor(physicalProfile, mcProfile, tp);
-      for (const model of manifest.models) {
+      for (const model of comparableModels) {
         ledger.push(...ledgerRows(model.modelId, candidateId));
+        const slot = {tp, physicalProfile, mcProfile};
+        const t = TT.slotTime(planningModels[model.modelId], slot, calibration);
+        slotTimes.push({
+          candidateId, modelId: model.modelId, ...slot,
+          memoryUs: t.memoryUs, computeUs: t.computeUs, commUs: t.commUs,
+          collectivesPerToken: t.collectivesPerToken, perCollectiveUs: t.perCollectiveUs,
+          memoryLaneUs: t.memoryLaneUs, serialLaneUs: t.serialLaneUs,
+          rawUs: t.rawUs, e2eUs: t.e2eUs, tpsPerUser: t.tpsPerUser, bound: t.bound,
+          boundingOperatorId: TT.boundingOperator(planningModels[model.modelId], slot, t)
+        });
       }
     }
   }
 }
+const slotTimeOf = (modelId, candidateId) => slotTimes.find(x => x.modelId === modelId && x.candidateId === candidateId);
 
 const eventTrace = [];
 for (const row of ledger) {
@@ -183,48 +212,56 @@ for (const row of ledger) {
   });
 }
 
-const byModelTpMc = new Map();
-for (const row of ledger) {
-  const key = `${row.modelId}:${row.tp}:${row.mcProfile}:${row.physicalProfile}`;
-  const previous = byModelTpMc.get(key);
-  const ratio = Math.max(row.requiredToAvailableRatio, row.requiredToAvailableBandwidthRatio);
-  if (!previous || ratio > previous.ratio) byModelTpMc.set(key, {row, ratio});
-}
-
 const observations = matrix.observations.map(observation => {
   const physical = observation.physicalProfile;
   if (!['P0','P1'].includes(physical)) throw new Error('Missing/invalid physicalProfile');
-  const selectedCandidate = RES.candidateIdFor(physical, observation.mcProfile, observation.tp);
-  const result = byModelTpMc.get(`${observation.modelId}:${observation.tp}:${observation.mcProfile}:${physical}`);
+  const candidateId = RES.candidateIdFor(physical, observation.mcProfile, observation.tp);
+  const common = {...observation, physicalProfile: physical, sourceSelector: `${candidateId}#/model/${observation.modelId}/tp${observation.tp}/${observation.mcProfile}`, manifestHash, runId};
+  const blocked = blockedModels.find(model => model.modelId === observation.modelId);
+  if (blocked) {
+    return {
+      ...common,
+      status: 'BLOCKED_CONFIG',
+      evidenceKind: 'NONE',
+      tpsPerUser: null,
+      rawLatencyUsPerToken: null,
+      e2eLatencyUsPerToken: null,
+      latencyScope: 'not computed: model config is missing',
+      boundingOperatorId: null,
+      boundingResource: null,
+      source: 'data/workload/formal_model_manifests.json',
+      blocker: blocked.blockers[0]
+    };
+  }
+  const result = slotTimeOf(observation.modelId, candidateId);
   if (!result) {
     throw new Error(`Missing replay coverage for ${observation.modelId} TP${observation.tp} ${observation.mcProfile} ${physical}`);
   }
-  const tpsPerUser = targetTps / result.ratio;
-  const e2eLatencyUsPerToken = 1e6 / tpsPerUser;
   return {
-    ...observation,
-    physicalProfile: physical,
+    ...common,
     status: 'PLANNING_ESTIMATE',
-    evidenceKind: 'SYNTHETIC_BOTTLENECK_BOUND',
-    tpsPerUser,
-    rawLatencyUsPerToken: e2eLatencyUsPerToken,
-    latencyScope: 'optimistic_single_operator_bottleneck_no_schedule_or_margin',
-    e2eLatencyUsPerToken,
-    boundingOperatorId: result.row.operatorId,
-    boundingResource: result.row.requiredToAvailableBandwidthRatio >= result.row.requiredToAvailableRatio ? 'memory_bandwidth' : 'compute',
-    source: 'data/detailed/formal_event_replay.json',
-    sourceSelector: `${selectedCandidate}#/model/${observation.modelId}/tp${observation.tp}/${observation.mcProfile}`,
-    blocker: null,
-    manifestHash,
-    runId
+    evidenceKind: 'CALIBRATED_PLANNING_TOKEN_TIME',
+    tpsPerUser: result.tpsPerUser,
+    rawLatencyUsPerToken: result.rawUs,
+    e2eLatencyUsPerToken: result.e2eUs,
+    latencyScope: 'planning token time: max(memory x kMemory, compute x kCompute + collectives x tau) x 1.17 margin; calibrated on the K3 detailed point; not event-timed',
+    boundingOperatorId: result.boundingOperatorId,
+    boundingResource: {memory: 'memory_bandwidth', compute: 'compute', collective: 'collective_latency'}[result.bound],
+    source: 'data/detailed/detailed_architecture_run.json',
+    blocker: null
   };
 });
+const comparableObservations = observations.filter(item => item.status !== 'BLOCKED_CONFIG');
+const blockedObservations = observations.filter(item => item.status === 'BLOCKED_CONFIG');
 
 const summary = manifest.models.map(model => {
+  const modelObservations = comparableObservations.filter(item => item.modelId === model.modelId);
+  if (!planningModels[model.modelId]) {
+    return {modelId: model.modelId, operatorCount: 0, minTpsPerUser: null, targetMet: null, status: 'BLOCKED_CONFIG', blocker: model.blockers[0], confidence: model.confidence};
+  }
   const rows = ledger.filter(row => row.modelId === model.modelId);
   const worstCompute = rows.reduce((a, b) => a.requiredToAvailableRatio > b.requiredToAvailableRatio ? a : b);
   const worstBandwidth = rows.reduce((a, b) => a.requiredToAvailableBandwidthRatio > b.requiredToAvailableBandwidthRatio ? a : b);
-  const modelObservations = observations.filter(item => item.modelId === model.modelId);
   return {
     modelId: model.modelId,
     operatorCount: rows.length,
@@ -232,9 +269,12 @@ const summary = manifest.models.map(model => {
     worstOperator: worstCompute.operatorId,
     maxRequiredToAvailableBandwidthRatio: worstBandwidth.requiredToAvailableBandwidthRatio,
     worstBandwidthOperator: worstBandwidth.operatorId,
+    collectivesPerToken: planningModels[model.modelId].collectivesPerToken,
     minTpsPerUser: Math.min(...modelObservations.map(item => item.tpsPerUser)),
+    maxTpsPerUser: Math.max(...slotTimes.filter(item => item.modelId === model.modelId).map(item => item.tpsPerUser)),
     targetMet: modelObservations.every(item => item.tpsPerUser >= targetTps),
-    status: 'MODEL_REPLAY_ESTIMATE',
+    status: 'PLANNING_ESTIMATE',
+    workloadStatus: workload.provenance[model.modelId].status,
     confidence: model.confidence
   };
 });
@@ -251,69 +291,91 @@ const eventArtifact = {
 write('data/detailed/formal_event_replay.json', eventArtifact);
 write('data/workload/tps_observation_matrix.json', {
   ...matrix,
-  status: 'PLANNING_ESTIMATES_COMPLETE',
+  status: blockedObservations.length ? 'PLANNING_ESTIMATES_WITH_BLOCKED_CONFIG' : 'PLANNING_ESTIMATES_COMPLETE',
   common: {...matrix.common, physicalProfile: 'P0'},
-  observationStates: [...new Set([...matrix.observationStates, 'PLANNING_ESTIMATE'])],
+  observationStates: [...new Set([...matrix.observationStates, 'PLANNING_ESTIMATE', 'BLOCKED_CONFIG'])],
   currentCoverage: {
     totalRequired: 18,
     modelObserved: 0,
-    planningEstimated: observations.length,
+    planningEstimated: comparableObservations.length,
+    blockedConfig: blockedObservations.length,
     siliconObserved: 0,
-    pendingModelRun: observations.length,
+    pendingModelRun: comparableObservations.length,
     percentComplete: 0,
-    planningPercentComplete: 100,
-    note: '18 planning bounds; zero validated timing observations. No silicon result.'
+    planningPercentComplete: comparableObservations.length / observations.length * 100,
+    note: `${comparableObservations.length} calibrated planning estimates, ${blockedObservations.length} BLOCKED_CONFIG slots; zero validated timing observations. No silicon result.`
   },
   observations
 });
 
-const allMeetTarget = observations.every(item => item.tpsPerUser >= targetTps);
-const allMeetGate = observations.every(item => item.tpsPerUser >= architectureGateTps);
-const selectedSlotsMeetTarget = observations
-  .filter(item => selected.includes(RES.candidateIdFor(item.physicalProfile, item.mcProfile, item.tp)))
-  .every(item => item.tpsPerUser >= targetTps);
-const performanceStatus = allMeetGate
-  ? 'PLANNING_BOUND_ABOVE_GATE_NOT_VALIDATED'
-  : (selectedSlotsMeetTarget ? 'SELECTED_CANDIDATES_ABOVE_TARGET_OTHERS_MISS_NOT_VALIDATED' : 'PERFORMANCE_MISS_REQUIRES_DIRECTION_BACKFLOW');
+// Acceptance over all 18 slots cannot hold while any slot is BLOCKED_CONFIG.
+const comparableMeetTarget = comparableObservations.every(item => item.tpsPerUser >= targetTps);
+const comparableMeetGate = comparableObservations.every(item => item.tpsPerUser >= architectureGateTps);
+const allMeetTarget = blockedObservations.length === 0 && comparableMeetTarget;
+const allMeetGate = blockedObservations.length === 0 && comparableMeetGate;
+const studiedSlots = slotTimes.filter(item => studied.includes(item.candidateId));
+const selectedSlotsMeetTarget = selected.length ? slotTimes.filter(item => selected.includes(item.candidateId)).every(item => item.tpsPerUser >= targetTps) : null;
+const studiedSlotsMeetTarget = studiedSlots.length ? studiedSlots.every(item => item.tpsPerUser >= targetTps) : null;
+const performanceStatus = comparableMeetGate
+  ? 'PLANNING_ESTIMATE_ABOVE_GATE_NOT_VALIDATED'
+  : (studiedSlotsMeetTarget ? 'STUDIED_CANDIDATES_ABOVE_TARGET_OTHERS_MISS_NOT_VALIDATED' : 'PERFORMANCE_MISS_REQUIRES_DIRECTION_BACKFLOW');
+const coverageStatus = blockedObservations.length ? 'BLOCKED_CONFIG_PARTIAL_COVERAGE' : 'COMPLETE';
 
 const detail = {
-  schemaVersion: 'detailed-architecture-run-v0.4',
+  schemaVersion: 'detailed-architecture-run-v0.5',
   runId,
   stage: 'quantification',
-  runMode: 'PLANNING_QUANTIFICATION',
-  evidenceKind: 'SYNTHETIC_BOTTLENECK_BOUND',
+  runMode,
+  evidenceKind: 'CALIBRATED_PLANNING_TOKEN_TIME',
   agentId: 'Q1-Q9-orchestrator',
   sourceDirectionalRunId: directional.runId,
   selectedCandidates: selected,
-  candidateSelection: {source: 'data/governance/candidate_register.json', formal: true, exploratory: false, decision: register.decisionState},
+  studiedCandidates: studied,
+  candidateSelection: {
+    source: 'data/governance/candidate_register.json',
+    formal,
+    exploratory: !formal,
+    decision: register.decisionState,
+    exploratorySweep: formal ? null : exploratorySweep.sweepId,
+    decisionRecord: formal ? null : exploratorySweep.decisionRecord
+  },
   manifestStatus: Object.fromEntries(manifest.models.map(model => [model.modelId, model.status])),
   manifestHash,
+  tokenTime: {
+    source: 'models/planning/token_time.js',
+    formula: 'raw = max(memoryUs x kMemory, computeUs x kCompute + collectivesPerToken x max(tau, bytes/network)); e2e = raw x margin; TPS/usr = 1e6 / e2e',
+    calibration: {kMemory: calibration.kMemory, kCompute: calibration.kCompute, margin: calibration.margin, tauUs: calibration.tauUs, slot: calibration.slot, source: calibration.source, detailedTpsPerUser: calibration.detailedTpsPerUser, calibratedTpsPerUser: calibration.calibratedTpsPerUser, validation: calibration.validation},
+    mtpApplied: false,
+    slots: slotTimes
+  },
   operatorLedger: ledger,
-  blockedCases: [],
+  blockedCases: blockedModels.map(model => ({modelId: model.modelId, status: 'BLOCKED_CONFIG', missingConfig: model.missingConfig || [], blocker: model.blockers[0]})),
   summary,
   agentRuns: {
     Q1: {status: 'COMPLETE', output: 'formal model manifest, operator inventory and shared hash'},
-    Q2: {status: 'COMPLETE', output: 'three-model arithmetic intensity, Roofline, compute/bandwidth/network sizing ledger (K3 shape-derived; GLM/DeepSeek unverified)'},
+    Q2: {status: 'COMPLETE', output: `arithmetic intensity, Roofline and sizing ledger for ${comparableModels.map(m => m.modelId).join(', ')}; ${blockedModels.map(m => m.modelId).join(', ') || 'no model'} BLOCKED_CONFIG`},
     Q3: {status: 'PLANNING_ONLY', output: 'tile and memory event placeholders'},
     Q4: {status: 'PLANNING_ONLY', output: 'collective packet and NoC event placeholders'},
     Q5: {status: 'PLANNING_ONLY', output: 'kernel cycle placeholders'},
     Q6: {status: 'PLANNING_ONLY', output: 'scheduler overlap and stall placeholders'},
     Q7: {status: 'PLANNING_ONLY', output: 'planning PPA and thermal envelope reconciliation'},
-    Q8: {status: 'PLANNING_ONLY', output: 'optimistic bottleneck bounds; no dependency-aware timing replay'},
+    Q8: {status: 'PLANNING_ONLY', output: 'K3-calibrated planning token time; no dependency-aware timing replay'},
     Q9: {status: 'COMPLETE', output: 'independent gate validator executed after artifact generation'}
   },
   observationMatrix: {
     requiredSlots: 18,
     accountedSlots: observations.length,
     all18SlotsAccounted: observations.length === 18,
-    status: 'PLANNING_COVERAGE_ONLY'
+    planningEstimatedSlots: comparableObservations.length,
+    blockedConfigSlots: blockedObservations.length,
+    status: blockedObservations.length ? 'PLANNING_COVERAGE_WITH_BLOCKED_CONFIG' : 'PLANNING_COVERAGE_ONLY'
   },
   provenance: {
     sourceCommit,
     manifestHash,
     inputHashes,
     seed: IDS.seed,
-    toolVersion: 'node-formal-stage-b-v0.4',
+    toolVersion: 'node-formal-stage-b-v0.5',
     eventArtifact: 'data/detailed/formal_event_replay.json'
   },
   sizing: {
@@ -330,23 +392,30 @@ const detail = {
     architectureGateTpsPerUser: architectureGateTps,
     all18SlotsMeetTarget: allMeetTarget,
     all18SlotsMeetArchitectureGate: allMeetGate,
+    comparableSlotsMeetTarget: comparableMeetTarget,
+    comparableSlotsMeetArchitectureGate: comparableMeetGate,
     selectedCandidateSlotsMeetTarget: selectedSlotsMeetTarget,
+    studiedCandidateSlotsMeetTarget: studiedSlotsMeetTarget,
+    coverageStatus,
     status: performanceStatus,
-    feedback: allMeetGate
-      ? 'Planning bounds clear the gate for every slot; this proves nothing until validated event timing replaces the synthetic bound.'
-      : 'Slots below target need byte reduction, more TP ranks or an implementable bandwidth route before architecture freeze; planning bounds are optimistic.'
+    feedback: (blockedObservations.length ? `${blockedObservations.length} slots are BLOCKED_CONFIG and have no TPS. ` : '') + (comparableMeetGate
+      ? 'Calibrated planning estimates clear the gate for every comparable slot; this proves nothing until validated event timing replaces them.'
+      : 'Slots below target need byte reduction, more TP ranks or an implementable bandwidth route before architecture freeze.')
   },
   qGate: null,
   assumptions: [
-    'All three manifests are architecture planning manifests; external vendor/license confirmation remains a qualification risk.',
-    'K3 operator rows are shape-derived from the repository engineering preset and reconciled to the calibrated RDMA baseline; GLM-5.2 and DeepSeek-V4-Pro rows are unverified ratio-scaled placeholders.',
-    'PLANNING_ESTIMATE is a synthetic single-operator bottleneck bound, not an event-timed observation.',
+    'All manifests are architecture planning manifests; external vendor/license confirmation remains a qualification risk.',
+    'K3 operator rows are shape-derived from the repository engineering preset (absorbed MLA, FP8 KV) and reconciled to the detailed plan of the published point.',
+    'DeepSeek-V4-Pro rows are derived from its manifest shape block; fields outside shape.reported are ASSUMPTIONs. MTP is excluded.',
+    'GLM-5.2 rows are derived from its public config.json; the FP8 KV/index-key layout, TP mapping and collectives per layer are ASSUMPTIONs. MTP is excluded.',
+    'PLANNING_ESTIMATE is the K3-calibrated planning token time, not an event-timed observation; applying the K3 factors to other models is an ASSUMPTION.',
+    'Expert parallelism is not modelled: every model shards experts over the TP ranks (no all-to-all dispatch).',
     'MC320 and MC640 remain separate profiles; MC640 is not the default manufacturing claim.',
     'P0 and P1 use distinct core-class peak capacities but share utilization and duty-cycle assumptions.',
     'Q3-Q8 synthetic events are placeholders and do not drive latency.'
   ],
   nextActions: [
-    'Replace planning operator templates for GLM-5.2 and DeepSeek-V4-Pro with vendor-verified layer traces.',
+    'Replace the DeepSeek-V4-Pro ASSUMPTION fields with the vendor config and confirm the GLM-5.2 deployment layout (KV/index-key bytes, collectives per layer).',
     'Replace synthetic Q3-Q8 events with the dependency-aware tile/packet/kernel replay.',
     'Repeat formal replay after PPA and bandwidth direction update.'
   ]
@@ -358,7 +427,7 @@ detail.qGate = gate.quantificationGate;
 write('data/detailed/detailed_architecture_run.json', detail);
 
 const report = [
-  '# Stage B Formal Detailed Architecture Run',
+  '# Stage B Planning Quantification Run',
   '',
   `Run ID: \`${runId}\``,
   `Manifest hash: \`${manifestHash}\``,
@@ -369,22 +438,39 @@ const report = [
   '',
   `- D-Gate: \`${gate.directionGate.decision}\``,
   `- Q-Gate: \`${gate.quantificationGate.decision}\``,
-  '- Planning artifacts only. Q-Gate blocked: synthetic events do not establish fine TPS or PPA closure.',
+  '- Planning artifacts only. Q-Gate blocked: planning token time and synthetic events do not establish fine TPS or PPA closure.',
+  ...(formal ? [] : [`- D-Gate is blocked, so this is an exploratory run (\`${exploratorySweep.sweepId}\`, ${exploratorySweep.decisionRecord}); studied candidates ${studied.map(id => `\`${id}\``).join(', ')} are not formally selected.`]),
+  ...blockedModels.map(model => `- ${model.modelId}: BLOCKED_CONFIG, no TPS. Missing: ${(model.missingConfig || []).join('; ')}.`),
   '',
-  '## Performance acceptance (planning bounds, not validated)',
+  '## Planning token time',
+  '',
+  `- \`raw = max(memory x ${calibration.kMemory.toFixed(4)}, compute x ${calibration.kCompute.toFixed(4)} + collectives x max(${calibration.tauUs} us, bytes/network))\`, \`e2e = raw x ${calibration.margin}\`.`,
+  `- Calibrated on the K3 detailed point (${calibration.slot.physicalProfile}/${calibration.slot.mcProfile}/TP${calibration.slot.tp}): planning ${calibration.calibratedTpsPerUser.toFixed(2)} vs detailed ${calibration.detailedTpsPerUser.toFixed(2)}; MC320 out-of-fit ${calibration.validation.planningTpsPerUser.toFixed(2)} vs ${calibration.validation.detailedTpsPerUser.toFixed(2)}.`,
+  '',
+  '## Performance acceptance (planning estimates, not validated)',
   '',
   `- Target: ${targetTps} TPS/usr; architecture gate: ${architectureGateTps} TPS/usr`,
   `- All 18 slots meet target: **${allMeetTarget ? 'yes' : 'no'}**`,
   `- All 18 slots meet architecture gate: **${allMeetGate ? 'yes' : 'no'}**`,
-  `- Selected candidate slots meet target: **${selectedSlotsMeetTarget ? 'yes' : 'no'}**`,
+  `- Comparable slots meet target: **${comparableMeetTarget ? 'yes' : 'no'}**; coverage: \`${coverageStatus}\``,
+  `- Selected candidate slots meet target: **${selectedSlotsMeetTarget === null ? 'n/a (no formal selection)' : (selectedSlotsMeetTarget ? 'yes' : 'no')}**`,
+  `- Studied candidate slots meet target: **${studiedSlotsMeetTarget === null ? 'n/a' : (studiedSlotsMeetTarget ? 'yes' : 'no')}**`,
   `- Status: \`${performanceStatus}\``,
   `- Feedback: ${detail.performanceAcceptance.feedback}`,
   '',
   '## Planning slots',
   '',
-  '| Model | TP | MC | Profile | bound TPS | bounding operator | resource |',
+  '| Model | TP | MC | Profile | TPS/usr | bounding operator | resource |',
   '|---|---:|---|---|---:|---|---|',
-  ...observations.map(item => `| ${item.modelId} | ${item.tp} | ${item.mcProfile} | ${item.physicalProfile} | ${item.tpsPerUser.toFixed(2)} | ${item.boundingOperatorId} | ${item.boundingResource} |`),
+  ...observations.map(item => item.status === 'BLOCKED_CONFIG'
+    ? `| ${item.modelId} | ${item.tp} | ${item.mcProfile} | ${item.physicalProfile} | BLOCKED_CONFIG | - | - |`
+    : `| ${item.modelId} | ${item.tp} | ${item.mcProfile} | ${item.physicalProfile} | ${item.tpsPerUser.toFixed(2)} | ${item.boundingOperatorId} | ${item.boundingResource} |`),
+  '',
+  '## Planning slots on P1 (token-time lanes, us)',
+  '',
+  '| Model | TP | MC | memory lane | compute x k | collectives | bound | TPS/usr |',
+  '|---|---:|---|---:|---:|---:|---|---:|',
+  ...slotTimes.filter(item => item.physicalProfile === 'P1').map(item => `| ${item.modelId} | ${item.tp} | ${item.mcProfile} | ${item.memoryLaneUs.toFixed(1)} | ${(item.computeUs * calibration.kCompute).toFixed(1)} | ${item.commUs.toFixed(1)} (${item.collectivesPerToken} x ${item.perCollectiveUs.toFixed(2)}) | ${item.bound} | ${item.tpsPerUser.toFixed(2)} |`),
   '',
   '## Agent outputs',
   '',

@@ -91,8 +91,9 @@ MC640结果必须标为`STRETCH`或`MODEL`，除非供应商或物理实现完�
 |---|---:|---|---:|---:|---:|---:|---|
 | K3 | 32 | P1 | 320 GB/s/MC | 见 `spec/k3_mc_baseline.json#modelResults.referenceMc320GBs` | 同左 | 同左 | MODEL_OBSERVED |
 | K3 | 32 | P1 | 640 GB/s/MC | 见 `spec/k3_mc_baseline.json#modelResults.stretchMc640GBs` | 同左 | 同左 | MODEL_OBSERVED |
-| GLM-5.2 | 8/16/32 | P0 | 320/640 | 规划上界 | — | — | PLANNING_ESTIMATE |
-| DeepSeek-V4-Pro | 8/16/32 | P0 | 320/640 | 规划上界 | — | — | PLANNING_ESTIMATE |
+| K3 | 8/16/32 | P0 | 320/640 | 规划 token 时间（K3 标定） | 同左 | 同左 | PLANNING_ESTIMATE |
+| GLM-5.2 | 8/16/32 | P0 | 320/640 | 规划 token 时间（K3 标定；形状取公开 config，部署布局含 ASSUMPTION） | 同左 | 同左 | PLANNING_ESTIMATE |
+| DeepSeek-V4-Pro | 8/16/32 | P0 | 320/640 | 规划 token 时间（K3 标定，含 ASSUMPTION） | 同左 | 同左 | PLANNING_ESTIMATE |
 
 K3 P1 结果来自：
 
@@ -101,7 +102,7 @@ data/rdma/k3_rdma_final_tuning_results.json
 docs/design/spec/k3_mc_baseline.json
 ```
 
-数值由 `tests/test_design_baseline.js` 回归，本文不再重复抄写，避免多处漂移。K3 MC640 是否达到 1000 目标以 `spec/k3_mc_baseline.json#acceptance.currentStatus` 为准；即使达到，也是 P1 模型结果而非架构门槛（1050）闭合，不能写成“已经达标”。规划上界（`data/workload/tps_observation_matrix.json`）与 P1 tile 模拟结果不是同一口径，不可直接比较。
+数值由 `tests/test_design_baseline.js` 回归，本文不再重复抄写，避免多处漂移。K3 MC640 是否达到 1000 目标以 `spec/k3_mc_baseline.json#acceptance.currentStatus` 为准；即使达到，也是 P1 模型结果而非架构门槛（1050）闭合，不能写成“已经达标”。规划估算（`data/workload/tps_observation_matrix.json`）是 ADR-0006 的规划 token 时间：`max(访存 × kMemory, 计算 × kCompute + 集合通信 × τ) × 1.17`，系数在 K3 P1/MC640/TP32 详细点上标定（规划 1102.41 对 1101.77），MC320 样本外偏差约 −6%。它与 P1 tile 模拟不是同一个模型，只在标定点对齐；其余槽位不得当作 `MODEL_OBSERVED`。
 
 ## 6. 不同Agent对TPS的责任
 

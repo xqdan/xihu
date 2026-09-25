@@ -14,7 +14,7 @@
       "modelId": "K3",
       "status": "CALIBRATED_DIRECTIONAL_BASELINE",
       "confidence": "E1",
-      "globalFlopsPerToken": 1755347919872,
+      "globalFlopsPerToken": 5486416421887.996,
       "globalMemoryBytesPerToken": 157589100339.19836,
       "tpScaling": {
         "compute": "globalFlopsPerToken / tp",
@@ -34,7 +34,7 @@
         "observedE2eLatencyUs": 1705.1506250422553,
         "observedTpsPerUser": 586.4584543522183,
         "source": "data/rdma/k3_rdma_final_tuning_results.json (MC320 replay of search.best)",
-        "flopDerivation": "2 x 104.2B active parameters + 1.546948T long-context attention/state FLOP from src/core/design_engine.js"
+        "flopDerivation": "sum of operator FLOP in O.mapped(search.best.x).plan x TP32: L 0.208400T, H 5.257951T (absorbed-MLA QK/PV over the full context), V 0.020066T"
       },
       "limitations": [
         "TP8 and TP16 byte scaling is directional, not observed.",

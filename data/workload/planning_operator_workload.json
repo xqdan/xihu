@@ -1,6 +1,6 @@
 {
-  "schemaVersion": "planning-operator-workload-v0.2",
-  "status": "K3_SHAPE_DERIVED; GLM-5.2 AND DEEPSEEK-V4-PRO UNVERIFIED",
+  "schemaVersion": "planning-operator-workload-v0.4",
+  "status": "K3_SHAPE_DERIVED; GLM-5.2 SHAPE_DERIVED_FROM_CONFIG; DEEPSEEK-V4-PRO SHAPE_DERIVED_WITH_ASSUMPTIONS",
   "generatedBy": "scripts/generate_planning_operator_workload.js",
   "units": {
     "flops": "global FLOP/token",
@@ -9,42 +9,144 @@
   },
   "sourceHashes": {
     "designEngine": "dc3a2e4d91dfa3ff3a1d75e3d338fbca535c22da826a1eb67c543a194b0c6e5a",
+    "finalTuningModel": "ab7b81e2fdb3493ecd7d624bee67ffa465f5cc7faa470c5598cc6c799241f567",
     "finalTuningResults": "e479cdb719f21274d801f248ecdf053dc16b0472900b655cdf3e737a297b8318",
-    "directionalWorkloadBaseline": "cb539820d27e0bde067d3136eb596427e2c0204adf91863146cd5362aab38d8d"
+    "formalModelManifests": "491512cae387601c4b4ac8e3f53b69856e557098240c5bd5634995fad3d7e121",
+    "tokenTime": "521c181846d79908ac90744ae52f49189a73dff6956993e37c427c98d0e02079",
+    "resourceProfiles": "cb33bbf2bc3fc5b97d52419f966193762784ad0bb9891aa5038ce8660c1fc9ca"
   },
   "provenance": {
     "K3": {
       "status": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
       "shapeSource": "src/core/design_engine.js#MODEL_PRESETS.kimiK3",
       "attentionParameterSource": "residual",
+      "attentionFlopBasis": "absorbed MLA: 24 layers x 2 x context x 96 heads x (576 + 512)",
+      "kvBytesPerTokenPerLayer": 656,
+      "kvBytesSource": "src/rdma/k3_rdma_final_tuning_model.js mapped(best.x).plan.kvBytesPerToken (OPT.kvCache = fp8)",
       "context": 1048576,
-      "collectiveSource": "data/rdma/k3_rdma_final_tuning_results.json#/search/best/wireBytes x TP32",
+      "collectiveSource": "data/rdma/k3_rdma_final_tuning_results.json#/search/best/wireBytes x TP32; collectiveCount on the reference-393 basis",
       "reconciliation": {
-        "calibratedGlobalFlopsPerToken": 1755347919872,
-        "derivedGlobalFlopsPerToken": 1755347919872,
-        "flopsRatioDerivedOverCalibrated": 1,
-        "calibratedGlobalMemoryBytesPerToken": 157589100339.19836,
-        "derivedGlobalMemoryBytesPerToken": 166413968384,
-        "bytesRatioDerivedOverCalibrated": 1.0559992285367883,
-        "note": "Derived bytes count each weight/KV byte once. The calibrated baseline is the RDMA tile simulator read traffic, which includes expert prefetch mis-prediction (2-p) re-reads and tile re-loads, so it is expected to be somewhat larger."
+        "source": "src/rdma/k3_rdma_final_tuning_model.js mapped(best.x).plan (per rank x TP32)",
+        "detailedGlobalFlopsPerToken": 5486416421887.996,
+        "derivedGlobalFlopsPerToken": 5466199663616,
+        "flopsRatioDerivedOverCalibrated": 0.996315125080309,
+        "detailedGlobalReadBytesPerToken": 158880578969.59955,
+        "derivedGlobalMemoryBytesPerToken": 153931719680,
+        "bytesRatioDerivedOverCalibrated": 0.9688517040805442,
+        "note": "Derived bytes count each weight/KV/state byte once. The detailed read traffic also carries expert prefetch mis-prediction re-reads, so it is somewhat larger; the calibrated kMemory absorbs the gap together with the DMA efficiency."
       }
     },
     "GLM-5.2": {
-      "status": "UNVERIFIED_RATIO_SCALED_FROM_K3",
-      "flopsScale": 0.06094958055111111,
-      "bytesScale": 0.0205196015270037,
-      "note": "Hand-authored operator mix rescaled to the derived K3 totals; replace with shape-derived rows once the manifest is confirmed."
+      "status": "SHAPE_DERIVED_FROM_CONFIG",
+      "shapeSource": "data/workload/formal_model_manifests.json#/models/1/shape",
+      "configSource": "https://huggingface.co/zai-org/GLM-5.2/raw/main/config.json",
+      "assumptions": [
+        "bytesPerParam",
+        "kvBytesPerTokenPerLayer",
+        "indexKeyBytesPerToken",
+        "sparseAttention",
+        "parallelism",
+        "collectivesPerLayer",
+        "collectiveMessageBytes",
+        "mtp"
+      ],
+      "derivation": {
+        "attentionParamsPerLayer": 165019648,
+        "indexerParamsPerFullLayer": 9371648,
+        "denseFfnParamsPerLayer": 226492416,
+        "expertParams": 37748736,
+        "moeLayers": 75,
+        "fullIndexerLayers": 21,
+        "sharedIndexerLayers": 57,
+        "totalParams": 743375831040,
+        "mtpParams": 9952886784,
+        "totalParamsWithMtp": 753328717824,
+        "totalWithMtpOverReported": 1.00043654425498,
+        "activeParams": 41249341440,
+        "activeParamsExcludingEmbedding": 40297758720,
+        "mtpApplied": false
+      },
+      "note": "Shape fields come from the public config.json; the FP8 KV layout, index-key bytes, TP mapping and collectives per layer are ASSUMPTION. Shared indexer layers reuse the previous full layer top-k. MTP is excluded from TPS/usr."
     },
     "DeepSeek-V4-Pro": {
-      "status": "UNVERIFIED_RATIO_SCALED_FROM_K3",
-      "flopsScale": 0.06094958055111111,
-      "bytesScale": 0.0205196015270037,
-      "note": "Hand-authored operator mix rescaled to the derived K3 totals; replace with shape-derived rows once the manifest is confirmed."
+      "status": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+      "shapeSource": "data/workload/formal_model_manifests.json#/models/2/shape",
+      "assumptions": [
+        "denseLayers",
+        "denseFfnHidden",
+        "vocab",
+        "mla",
+        "indexer",
+        "expertHidden",
+        "bytesPerParam",
+        "kvBytesPerTokenPerLayer",
+        "sparseAttention",
+        "parallelism",
+        "collectivesPerLayer",
+        "collectiveMessageBytes",
+        "mtp"
+      ],
+      "derivation": {
+        "attentionParamsPerLayer": 187105280,
+        "indexerParamsPerLayer": 13959168,
+        "denseFfnParamsPerLayer": 396361728,
+        "moeLayers": 58,
+        "expertHidden": 3840.8457072484166,
+        "expertHiddenBasis": "solved from reportedActiveParams = 49B (embedding included)",
+        "activeParams": 49000000000,
+        "impliedTotalParams": 1859780904448,
+        "impliedTotalOverReported": 1.16236306528,
+        "mtpApplied": false
+      },
+      "note": "Every field outside shape.reported is an ASSUMPTION (DeepSeek-V3/V3.2 dimensions). MTP is excluded from TPS/usr."
+    }
+  },
+  "collectivesPerToken": {
+    "K3": 393,
+    "GLM-5.2": 255,
+    "DeepSeek-V4-Pro": 244
+  },
+  "calibration": {
+    "slot": {
+      "tp": 32,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640"
+    },
+    "source": "data/rdma/k3_rdma_final_tuning_results.json#/search/best",
+    "detailedTpsPerUser": 1101.771070241925,
+    "detailedRawUs": 775.7517671190814,
+    "detailedDmaBusyUs": 775.3004419656203,
+    "detailedSerialComputeUs": 301.44868247927707,
+    "detailedCommUs": 451.94999999999703,
+    "planningMemoryUs": 671.0890401785714,
+    "planningComputeUs": 213.2020751474418,
+    "planningCommUs": 451.95,
+    "kMemory": 1.1552869970269803,
+    "kCompute": 1.4139106398040804,
+    "margin": 1.17,
+    "tauUs": 1.15,
+    "definition": "kMemory = detailed DMA busy / planning memory lane; kCompute = (detailed compute - hidden TMA - comm overlap) / planning compute; collectives are charged at the same tau in both models and are not scaled",
+    "calibratedRawUs": 775.3004419656203,
+    "calibratedTpsPerUser": 1102.412443534703,
+    "rawResidualUs": -0.4513251534610845,
+    "uncalibratedTpsPerUser": 1273.6027613763827,
+    "validation": {
+      "slot": {
+        "tp": 32,
+        "physicalProfile": "P1",
+        "mcProfile": "MC320"
+      },
+      "detailedTpsPerUser": 586.4584543522183,
+      "planningTpsPerUser": 551.2062217673515,
+      "planningOverDetailed": 0.9398896335737795,
+      "note": "Not fitted: same kMemory/kCompute replayed against the detailed model with mcGBs = 320."
     }
   },
   "limitations": [
     "K3 rows are derived from the repository engineering preset, which is itself not vendor-confirmed.",
-    "GLM-5.2 and DeepSeek-V4-Pro rows are not derived from verified model shapes.",
+    "DeepSeek-V4-Pro rows rest on ASSUMPTION fields (DeepSeek-V3/V3.2 dimensions); the expert hidden size is solved from the reported 49B active parameters.",
+    "GLM-5.2 rows follow the public config.json; its KV/index-key byte layout, TP mapping and collectives per layer are ASSUMPTION fields.",
+    "kMemory/kCompute are fitted on K3 only; applying them to GLM-5.2 and DeepSeek-V4-Pro is a planning ASSUMPTION.",
     "Collective FLOP is a planning estimate (one accumulate per transported element)."
   ],
   "operators": {
@@ -66,8 +168,8 @@
       [
         "attention",
         "H",
-        1546188226560,
-        28991029248,
+        5257039970304,
+        16508780544,
         "kv_state"
       ],
       [
@@ -89,36 +191,36 @@
       [
         "dense_projection",
         "L",
-        274273112480,
-        24623521832.404438,
+        35297034240,
+        18718064640,
         "weight"
       ],
       [
         "routed_moe",
         "L",
-        1340890772124.4443,
-        120244864948.24168,
+        45298483200,
+        22649241600,
         "expert"
       ],
       [
         "indexer",
         "INDEXER",
-        121899161102.22223,
-        12311760916.202219,
+        180388626432,
+        2906652672,
         "index"
       ],
       [
         "sparse_attention",
         "H",
-        304747902755.55554,
-        33857342519.556103,
+        22246588416,
+        104792064,
         "kv_state"
       ],
       [
-        "collective_dispatch",
+        "collective_reduce",
         "REDUCE",
-        18284874165.333332,
-        2462352183.2404437,
+        100270080,
+        200540160,
         "collective"
       ]
     ],
@@ -126,36 +228,36 @@
       [
         "dense_projection",
         "L",
-        316937818865.7778,
-        28522246122.53514,
+        38661533842.28571,
+        19330766921.142857,
         "weight"
       ],
       [
         "routed_moe",
         "L",
-        1523739513777.7778,
-        140148878429.43527,
+        57485108077.71429,
+        15269481833.142857,
         "expert"
       ],
       [
         "indexer",
         "INDEXER",
-        182848741653.33334,
-        17441661297.953144,
+        1047972020224,
+        8443133952,
         "index"
       ],
       [
         "sparse_attention",
         "H",
-        426647063857.7778,
-        47195083512.108505,
+        34795945984,
+        81952768,
         "kv_state"
       ],
       [
-        "expert_dispatch",
+        "collective_reduce",
         "REDUCE",
-        30474790275.555557,
-        4103920305.4007397,
+        111935488,
+        223870976,
         "collective"
       ]
     ]

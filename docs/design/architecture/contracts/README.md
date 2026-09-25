@@ -49,4 +49,4 @@ freshness, and generator reproducibility in a temporary directory.
 
 ## Gate rule
 
-只有 `VALIDATED_EVENT_TIMING` 且通过 VV-02/VV-03 独立检查，才允许 Q-Gate 进入 PASS。`UNVERIFIED_PLANNING_MANIFEST` 和 `SYNTHETIC_BOTTLENECK_BOUND` 只能用于架构规划和 backflow。
+只有 `VALIDATED_EVENT_TIMING` 且通过 VV-02/VV-03 独立检查，才允许 Q-Gate 进入 PASS。`UNVERIFIED_PLANNING_MANIFEST`、`CALIBRATED_PLANNING_TOKEN_TIME`（ADR-0006 的规划 token 时间，取代原 `SYNTHETIC_BOTTLENECK_BOUND`）只能用于架构规划和 backflow；`BLOCKED_CONFIG` 的模型不出 TPS。

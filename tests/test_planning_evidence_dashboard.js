@@ -30,15 +30,31 @@ assert.strictEqual(evaluateQuantificationGate(sharedCapacity,matrix,register,{de
 for (const row of detail.operatorLedger) {
  assert.strictEqual(row.rooflineBound,row.arithmeticIntensity < row.ridgePoint ? 'bandwidth' : 'compute');
 }
+// Every comparable slot is recomputed from the planning workload and the stored calibration.
+const TT = require('../models/planning/token_time');
+const workload = read('data/workload/planning_operator_workload.json');
 for (const obs of matrix.observations) {
  const rows = detail.operatorLedger.filter(r=>r.modelId===obs.modelId && r.tp===obs.tp && r.mcProfile===obs.mcProfile && r.physicalProfile===obs.physicalProfile);
+ assert.strictEqual(obs.manifestHash,detail.manifestHash);
+ const model = TT.planningModel(workload,obs.modelId);
+ if (!model) {
+  assert.strictEqual(obs.status,'BLOCKED_CONFIG');
+  assert.strictEqual(rows.length,0,'no ledger rows for a BLOCKED_CONFIG model');
+  assert.strictEqual(obs.tpsPerUser,null);
+  assert(obs.blocker);
+  continue;
+ }
  assert.strictEqual(rows.length,5);
  assert.strictEqual(obs.sourceSelector,`${rows[0].candidateId}#/model/${obs.modelId}/tp${obs.tp}/${obs.mcProfile}`);
- assert.strictEqual(obs.manifestHash,detail.manifestHash);
- const ratio = Math.max(...rows.map(r=>Math.max(r.requiredToAvailableRatio,r.requiredToAvailableBandwidthRatio)));
- assert(Math.abs(obs.tpsPerUser-detail.sizing.targetTpsPerUser/ratio)<1e-10);
+ const t = TT.slotTime(model,{tp:obs.tp,physicalProfile:obs.physicalProfile,mcProfile:obs.mcProfile},workload.calibration);
+ assert(Math.abs(obs.tpsPerUser-t.tpsPerUser)<1e-9*t.tpsPerUser);
+ assert(Math.abs(obs.rawLatencyUsPerToken-t.rawUs)<1e-9*t.rawUs);
  assert(Math.abs(obs.tpsPerUser*obs.e2eLatencyUsPerToken-1e6)<1e-7);
+ // The ledger carries the same per-operator lane inputs as the token time.
+ assert(Math.abs(rows.reduce((x,r)=>x+r.computeTimeUs,0)-t.computeUs)<1e-9*t.computeUs);
+ assert(Math.abs(rows.filter(r=>r.operatorClass!=='collective_reduce').reduce((x,r)=>x+r.memoryTimeUs,0)-t.memoryUs)<1e-9*t.memoryUs);
  assert(rows.some(r=>r.operatorId===obs.boundingOperatorId));
+ assert.strictEqual(obs.boundingOperatorId,TT.boundingOperator(model,obs,t));
 }
 const html = fs.readFileSync('reports/dashboard/architecture_global_dashboard.html','utf8');
 const match = html.match(/<script id="dashboard-source-hashes" type="application\/json">([^<]+)<\/script>/);
@@ -51,4 +67,4 @@ assert.strictEqual(feedback.runId,detail.runId);
 assert.strictEqual(feedback.blockers.length,5);
 assert(feedback.blockers.every(b=>b.id && b.exit));
 assert(!html.includes('28.05×') && !html.includes('167.06×'));
-console.log('PASS planning evidence guards, mutation rejection, exact slot/ledger linkage, Roofline classification and dashboard freshness');
+console.log('PASS planning evidence guards, mutation rejection, token-time recomputation of every comparable slot, BLOCKED_CONFIG slots without TPS, Roofline classification and dashboard freshness');

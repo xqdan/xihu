@@ -1,9 +1,10 @@
 {
   "schemaVersion": "timing-evidence-status-v0.1",
-  "asOf": "2026-09-23",
-  "current": "SYNTHETIC_BOTTLENECK_BOUND",
+  "asOf": "2026-09-25",
+  "current": "CALIBRATED_PLANNING_TOKEN_TIME",
   "validatedSlots": 0,
   "planningSlots": 18,
+  "blockedConfigSlots": 0,
   "siliconSlots": 0,
   "qGate": "BLOCKED",
   "exitCriteria": [
@@ -13,6 +14,7 @@
     "independent VV-02/VV-03 report"
   ],
   "blockers": [
-    "Synthetic event records do not drive latency."
+    "Planning token time is calibrated on one K3 detailed point and is not event-timed; synthetic event records do not drive latency.",
+    "GLM-5.2 and DeepSeek-V4-Pro apply the K3-fitted factors as a planning ASSUMPTION."
   ]
 }

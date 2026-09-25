@@ -20,6 +20,19 @@ assert.strictEqual(score.candidateCount, 36);
 assert.strictEqual(score.candidateSummaries.length, 12);
 assert(score.candidateSummaries.every(item => item.accountedModelCount === 3));
 assert(score.candidateSummaries.every(item => item.rankingEligible === true));
+// A BLOCKED_CONFIG model is accounted for but never ranked or assumed.
+const planningWorkload = read('data/workload/planning_operator_workload.json');
+const blockedIds = Object.keys(planningWorkload.provenance).filter(id => planningWorkload.provenance[id].status === 'BLOCKED_CONFIG');
+for (const summary of score.candidateSummaries) {
+  assert.deepStrictEqual(summary.blockedModels, blockedIds);
+  assert.strictEqual(summary.comparableModelCount + summary.blockedModels.length, summary.accountedModelCount);
+  const rows = score.candidates.filter(c => c.candidateId === summary.candidateId && !blockedIds.includes(c.modelId));
+  assert.strictEqual(summary.minTpsPerUser, Math.min(...rows.map(r => r.tpsPerUser)));
+}
+for (const row of score.candidates.filter(c => blockedIds.includes(c.modelId))) {
+  assert.strictEqual(row.status, 'BLOCKED_CONFIG');
+  assert.strictEqual(row.tpsPerUser, null);
+}
 
 // P0 and P1 capacities must each be derived from their own spec file. Equality of a
 // single core class is allowed (the search may pick the same H shape); what is
@@ -56,7 +69,25 @@ assert.deepStrictEqual(score.resourceProfiles, JSON.parse(JSON.stringify(Object.
 const p0k3 = score.candidates.find(c => c.candidateId === 'P0-7R-balanced-MC640-TP32' && c.modelId === 'K3');
 const p1k3 = score.candidates.find(c => c.candidateId === 'P1-compact-MC640-TP32' && c.modelId === 'K3');
 assert(p0k3 && p1k3);
-assert.strictEqual(p0k3.workloadUnits.effectiveFlopsPerSecond, p0.peakByCore[score.candidates.find(c => c === p0k3).workloadUnits.computeOperatorId === 'attention' ? 'H' : 'L'] * 0.6 * 0.85);
+// TPS/usr is the calibrated planning token time of the slot.
+const TT = require('../models/planning/token_time');
+const k3Model = TT.planningModel(planningWorkload, 'K3');
+for (const row of [p0k3, p1k3]) {
+  const t = TT.slotTime(k3Model, row, planningWorkload.calibration);
+  assert(Math.abs(row.tpsPerUser - t.tpsPerUser) < 1e-9 * t.tpsPerUser);
+  assert.strictEqual(row.bottleneck, t.bound);
+}
+// The K3 calibration slot (P1/MC640/TP32) replays the detailed published point.
+assert(Math.abs(p1k3.tpsPerUser - planningWorkload.calibration.calibratedTpsPerUser) < 1e-9 * p1k3.tpsPerUser);
+assert.strictEqual(score.inputHashes.tokenTime, hashFile('models/planning/token_time.js'),
+  'scorecard was generated with a different models/planning/token_time.js; run `npm run model:planning`');
+if (score.dGate.decision !== 'PASS') {
+  const sweep = register.exploratorySweeps.find(x => x.active);
+  assert(sweep && sweep.runMode === 'EXPLORATORY_AFTER_BLOCKED_D_GATE', 'a blocked D-Gate needs an active exploratory sweep for Stage B');
+  assert(sweep.candidateIds.length > 0 && sweep.candidateIds.length <= 3);
+  assert(sweep.allowedModels.every(id => !blockedIds.includes(id)));
+  assert(fs.existsSync(path.join(root, sweep.decisionRecord)), `missing decision record ${sweep.decisionRecord}`);
+}
 
 // D-Gate is recomputed by the validator, and the register state is derived from it.
 const {evaluateDirectionGate} = require('../models/governance/evaluate_gates');

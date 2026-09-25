@@ -25,16 +25,32 @@ function evaluateDirectionGate(env, score, register) {
   const selectionResolvable = formalSelectionRecorded &&
     selected.every(id => summaries.some(item => item.candidateId === id));
   const sensitivitySweep = Boolean(score.sensitivitySweep && score.sensitivitySweep.complete);
+  // A BLOCKED_CONFIG row has no bottleneck by construction; every other row must be classified.
   const bottleneckClassification = (score.candidates || []).length > 0 &&
-    score.candidates.every(item => Boolean(item.bottleneck));
-  const pass = Boolean(
-    env.packageEnvelope.areaConservation &&
-    allModelsComparable &&
-    bottleneckClassification &&
-    sensitivitySweep &&
-    candidateCountLe3 && formalSelectionRecorded && selectionResolvable
-  );
-  const decision = pass ? 'PASS' : 'BLOCKED_PENDING_SENSITIVITY_SWEEP_AND_FORMAL_MANIFEST';
+    score.candidates.every(item => item.status === 'BLOCKED_CONFIG' || Boolean(item.bottleneck));
+  const blockedModels = [...new Set(summaries.flatMap(item => item.blockedModels || []))].sort();
+  const checks = {
+    areaConservation: Boolean(env.packageEnvelope.areaConservation),
+    threeModelComparable: allModelsComparable,
+    bottleneckClassification,
+    sensitivitySweep,
+    candidateCountLe3,
+    formalSelectionRecorded,
+    selectionResolvable
+  };
+  const failedChecks = Object.keys(checks).filter(key => !checks[key]);
+  const pass = failedChecks.length === 0;
+  // The first failed check names the root cause (the selection checks fail as a consequence).
+  const blockReason = {
+    areaConservation: 'BLOCKED_AREA_CONSERVATION',
+    threeModelComparable: 'BLOCKED_MODEL_CONFIG_INCOMPLETE',
+    bottleneckClassification: 'BLOCKED_BOTTLENECK_UNCLASSIFIED',
+    sensitivitySweep: 'BLOCKED_PENDING_SENSITIVITY_SWEEP',
+    candidateCountLe3: 'BLOCKED_TOO_MANY_CANDIDATES',
+    formalSelectionRecorded: 'BLOCKED_NO_FORMAL_SELECTION',
+    selectionResolvable: 'BLOCKED_UNRESOLVABLE_SELECTION'
+  };
+  const decision = pass ? 'PASS' : blockReason[failedChecks[0]];
   const expectedRegisterState = pass ? 'D_GATE_PASSED' : 'D_GATE_BLOCKED';
 
   return {
@@ -42,12 +58,14 @@ function evaluateDirectionGate(env, score, register) {
     areaConservation: Boolean(env.packageEnvelope.areaConservation),
     threeModelRowsAccounted: allModelsAccounted,
     threeModelComparable: allModelsComparable,
+    blockedModels,
     bottleneckClassification,
     sensitivitySweep,
     candidateCountLe3,
     formalSelectionRecorded,
     selectionResolvable,
     registerConsistent: register.decisionState === expectedRegisterState,
+    failedChecks,
     decision
   };
 }
