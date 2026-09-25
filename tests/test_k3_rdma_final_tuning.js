@@ -99,9 +99,10 @@ assert.equal(O.OPT.kvCache,'fp8');assert.equal(mm0.plan.kvBytesPerToken,512+512/
  const x=b.x,qk=mm0.plan.ops.find(o=>/^QK/.test(o.name)),j=mm0.plan.jobs[qk.inputs[0]];
  assert(qk.timing.kernel>=j.dequant/(A.LIMITS.dies*x.nH*x.vectorLanes*A.TECH.unpackParamsPerLaneCycle*x.ghz*1000)-1e-12);
  // Same candidate on BF16 KV: either the local KV staging no longer fits or raw is longer and more bytes move.
- const saved=O.OPT.kvCache;O.OPT.kvCache='bf16';const r=O.evaluate(b.x),r16=O.evaluate({...b.x,kvTile:16384});O.OPT.kvCache=saved;const f16=O.evaluate({...b.x,kvTile:16384});
+ // The common tile is the largest one BF16 KV still fits at this candidate.
+ const saved=O.OPT.kvCache;O.OPT.kvCache='bf16';const r=O.evaluate(b.x),tile=[32768,16384,8192,4096].find(t=>O.evaluate({...b.x,kvTile:t}).feasible),rc=O.evaluate({...b.x,kvTile:tile});O.OPT.kvCache=saved;const fc=O.evaluate({...b.x,kvTile:tile});
  assert(!r.feasible||r.rawUs>b.rawUs,'FP8 KV must not lose to BF16 KV at the published point');
- assert(r16.rawUs>f16.rawUs&&r16.readBytes>f16.readBytes,'FP8 KV must shorten raw and cut DMA bytes at a common KV tile');}
+ assert(tile&&rc.rawUs>fc.rawUs&&rc.readBytes>fc.readBytes,'FP8 KV must shorten raw and cut DMA bytes at a common KV tile');}
 // TMA fills pinned for a later op are cancelled rather than deadlocking the head op
 // (large FP8 KV tile with a half window used to deadlock); the published point needs none.
 assert.equal(b.tmaCancels,0);
@@ -147,8 +148,15 @@ const ceiling=N=>1e6/((b.computeUs-b.tmaHiddenUs+N*spec.tauBasis.specNsPerCollec
 assert(Math.abs(spec.tauBasis.ceilingTpsByCount[393]-ceiling(393))<1e-6,'spec ceiling table must recompute');
 assert(ceiling(393)>=b.tps-1e-9,'the analytic ceiling (DMA wait taken as zero) bounds the published point');
 // Shared-SRAM port scaling is charged: area and power exceed the unscaled physical() result, and limits still hold.
-assert(O.OPT.chargeSharedPortCost===true);const p0=A.physical(b.x);
+assert(O.OPT.chargeSharedPortCost===true);const P=require('../src/search/k3_physical_basis.js'),p0=P.resize(A.physical(b.x));
 assert(b.p.dieArea>p0.dieArea&&b.p.diePower>p0.diePower&&b.p.cardPower>p0.cardPower,'shared-port cost must be charged');
-assert(b.p.dieArea<=A.LIMITS.dieArea&&b.p.diePower<=A.LIMITS.diePower&&b.p.cardPower<=A.LIMITS.cardPower);
+assert(b.p.dieArea<=P.BASIS.limits.dieArea&&b.p.diePower<=P.BASIS.limits.diePower&&b.p.cardPower<=P.BASIS.limits.cardPower);
+// Physical basis (2026-09-25): SF4 area, 3.2 TF/mm2 matrix density, liquid-cooled limits.
+// Only area terms change: logic x1.277, SRAM x1.248, PHY x1, matrix also x(1.6/3.2); power is unchanged.
+{const n4=A.physical(b.x),q=P.resize(n4),S=P.PROCESS.SF4;
+ assert.equal(P.BASIS.process,'SF4');assert.equal(P.BASIS.matrixTFPerMm2,3.2);assert.equal(P.BASIS.cooling,'liquid');
+ assert.deepStrictEqual([P.BASIS.limits.diePower,P.BASIS.limits.cardPower,P.BASIS.limits.dieArea],[300,2800,400]);
+ assert(Math.abs(q.area.matrix-n4.area.matrix*S.logic*A.TECH.matrixTFPerMm2/3.2)<1e-9&&Math.abs(q.area.sram-n4.area.sram*S.sram)<1e-9&&q.area.ucie===n4.area.ucie&&q.area.rdma===n4.area.rdma);
+ assert(Math.abs(q.area.noc-n4.area.noc*S.logic)<1e-9&&q.diePower===n4.diePower&&q.cardPower===n4.cardPower,'the basis rescales area only');}
 assert(b.localPortModel&&b.localPortModel.chargedCost&&b.localPortModel.chargedCost.powerWPerDie>0);
 console.log('PASS final tuning',b.tps.toFixed(2),'TPS',b.rawUs.toFixed(2),'us raw; GAIN=1, tau floor, fold order, shared-expert overlap, TMA lanes, cross-layer KV prefetch, DMA preemption, FP8 KV cache, single launch batching and charged shared-port cost verified');

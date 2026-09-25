@@ -1,5 +1,8 @@
 # Collective 与 RDMA-to-SRAM 子系统设计
 
+> 当前发布点的集合通信口径（reference-393、τ = 1.15 µs 下限）、协议参数和计算通信重叠见
+> [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md) 第 2.2、4.2、4.3 节。
+
 ## 1. 目标
 
 为 Decode 中大量小型同步点提供低软件开销、可验证的远端 SRAM 语义：

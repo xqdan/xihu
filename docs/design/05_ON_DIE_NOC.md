@@ -1,5 +1,8 @@
 # 单 Die NoC 子系统设计
 
+> 当前发布点的 NoC 规格（6×6 抽象 mesh、256 B/cycle × 4 lane）见
+> [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md) 第 3.4 节；本文下列数字是早期抽象基线，只作对照。
+
 ## 1. 当前抽象基线
 
 当前搜索模型对单 Die 使用：

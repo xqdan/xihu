@@ -117,7 +117,25 @@ decision 3).**
   1031.52 TPS/usr (raw 828.59 µs = compute 519.81 − tmaHidden 132.39 + comm
   451.95 + wait 21.82 − overlap 32.61), KV tile 32768 and 4096 reduce lanes.
   The 393-count ceiling is 1059.42 TPS; the raw margin is 26.1 µs, i.e. τ may
-  rise by about 0.066 µs before the point misses 1000.
+  rise by about 0.066 µs before the point misses 1000. That point ran at
+  0.8 GHz and was withdrawn the same day (next item).
+- Same day, frequency fixed at 1.0 GHz: compute may be sized only by core and
+  engine counts and shapes, not by lowering the clock (`EXT.ghz = [1]`).
+  Published point: 1015.08 TPS/usr (raw 842.01 µs = compute 502.36 −
+  tmaHidden 110.34 + comm 453.44 + wait 23.70 − overlap 27.16), 4 L + 5 H/Die
+  with 5×(32×128) H engines, 2 MiB H local SRAM, KV tile 16384, 64 UCIe lanes.
+  The LSE merge now exceeds τ (1.21 µs protocol time) because the halved UCIe
+  lengthens its card-local phase. The 393-count ceiling is 1046.39 TPS; the
+  raw margin is 12.70 µs, i.e. τ may rise by about 0.032 µs before the point
+  misses 1000.
+- Same day, physical basis (ADR-0005 decision 6: Samsung SF4 area, matrix
+  density 3.2 TF/mm², liquid cooling at die 300 W / card 2800 W). Published
+  point: 1101.77 TPS/usr (raw 775.75 µs = compute 434.62 − tmaHidden 106.91 +
+  comm 451.95 + wait 22.35 − overlap 26.27), 8 L + 4 H/Die with 5×(48×128) H
+  engines, 4 MiB H local SRAM, KV tile 32768, 128 UCIe lanes. All five
+  collective groups are below τ again, so comm = 393 × 1.15 µs. The 393-count
+  ceiling is 1134.46 TPS; the raw margin is 78.95 µs, i.e. τ may rise to about
+  1.35 µs (0.201 µs per collective) before the point misses 1000.
 
 ## Consequences
 
@@ -129,10 +147,10 @@ decision 3).**
   remainder labelled `UNEXPLAINED` per
   docs/design/teams/14_TPS_OBSERVATION_METRICS.md §7.1.
 - **The count axis is not the lever.** At the spec τ the analytic ceiling is
-  1059.42 TPS at 393 reductions (874.42 before the attention/small-op mapping) (`spec.tauBasis.ceilingTpsByCount["393"]`,
+  1046.39 TPS at 393 reductions (874.42 before the attention/small-op mapping) (`spec.tauBasis.ceilingTpsByCount["393"]`,
   with GAIN = 1, shared-expert overlap and TMA lanes, DMA wait taken as 0),
   against the 854.70 μs raw budget. The fully-replicated structural floor of
-  209 reductions evaluates to 1436.08 TPS, but only as an optimistic bound: it
+  209 reductions evaluates to 1412.24 TPS, but only as an optimistic bound: it
   holds the hidden TMA at today's value although fewer collectives leave less
   time to hide fills under, and it ignores DMA wait. The `tauBasis` block carries this
   table so the ordering of the two workstreams is visible: τ first, then count.

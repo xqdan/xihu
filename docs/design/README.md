@@ -3,7 +3,7 @@
 - `AGENT_WORKSTREAM_PLAN.md`：并行 agent workstream、依赖图、合并顺序和签核闸门。
 - `AGENT_METRICS_MATRIX.md`：A0–A13 按模块拆解的量化指标、交付物、依赖和退出条件。
 
-版本：2026-09-23。
+版本：2026-09-25。
 
 本目录把现有搜索、模拟器和历史方案整理成一套可逐步冻结的芯片设计文档。
 目标交付深度为**单元级**：明确 Tensor Core、Vector Core、TMA、SRAM、
@@ -17,6 +17,8 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
    `src/core/design_engine.js#MODEL_PRESETS.kimiK3`。
 2. 当前 P1 Final Tuning 搜索结果见 `00_CURRENT_STATE.md` 第 3 节和
    `spec/k3_mc_baseline.json#modelResults`；是否达标以 `acceptance.currentStatus` 为准。
+   支撑该结果的全部软硬件设计、逐项回退和变更控制见
+   [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md)（`spec/k3_mc_baseline.json#tpsDesign`）。
 3. 该结果使用的是每颗 MC **640 GB/s** 的 Stretch 搜索假设（ADR-011）。
    本地 Memory Cube 参考规格给出的 KGD 最大单向带宽是
    **320 GB/s/颗**。在相同 Compute Die 和优化参数下，320 GB/s 点明显不达标。
@@ -57,6 +59,7 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | [09_PACKAGE_POWER_RAS.md](09_PACKAGE_POWER_RAS.md) | 封装、I/O 岸线、功耗、时钟、散热和 RAS |
 | [10_TILE_SIMULATION.md](10_TILE_SIMULATION.md) | 算子/tile 模型、资源竞争、校准和签核标准 |
 | [11_PLAN_AND_DELIVERABLES.md](11_PLAN_AND_DELIVERABLES.md) | 分阶段设计计划、里程碑、交付物和退出条件 |
+| [21_TPS_DESIGN_BASELINE.md](21_TPS_DESIGN_BASELINE.md) | 支撑 TPS/usr 发布点的软硬件设计基线：时间账、单元规格、软件机制、逐项回退、敏感度与变更控制（ADR-0005） |
 | [DECISIONS.md](DECISIONS.md) | 架构决策记录 |
 | [OPEN_ISSUES.md](OPEN_ISSUES.md) | 阻塞项、责任子系统和关闭证据 |
 | [spec/k3_mc_baseline.json](spec/k3_mc_baseline.json) | 当前机器可读基线与回归数值（P1） |

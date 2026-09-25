@@ -11,7 +11,7 @@
 | Profile | 用途 | 规格 |
 |---|---|---|
 | P0 7R physical primary | 封装、面积、集成存储和 PPA 主规划 | 8 L + 8 H/Die，1.0 GHz 候选，96 MiB data SRAM/Die，400 mm²/Die |
-| P1 compact executable | 当前搜索/回归模型 | 由 Final Tuning 搜索决定，权威值在 `spec/k3_mc_baseline.json#computeDieCandidate`；2026-09-25 按 GAIN=1、τ=1.15 μs、reference-393 口径重新搜索并加入注意力/小算子映射后为 8 L + 4 H/Die（H core 5×(48×128) engine）、0.8 GHz、40 MiB data SRAM/Die、FP8 KV cache（KV tile 32K，reduce 4096 lane）（同日早些时候的候选是 8 L + 4 H、1.0 GHz、80 MiB，再早是 8 L + 8 H；2026-09-23 是 24 L + 8 H、88 MiB；2026-09-20 是 4 L + 4 H、1.2 GHz、44 MiB） |
+| P1 compact executable | 当前搜索/回归模型 | 由 Final Tuning 搜索决定，权威值在 `spec/k3_mc_baseline.json#computeDieCandidate`；2026-09-25 按 GAIN=1、τ=1.15 μs、reference-393 口径重新搜索并加入注意力/小算子映射、FP8 KV cache，频率固定 1.0 GHz、面积按三星 SF4 估算、改用液冷（Die 300 W / 卡 2800 W）后为 8 L + 4 H/Die（H core 5×(48×128) engine）、1.0 GHz、40 MiB data SRAM/Die、KV tile 32K、UCIe 128 lane、reduce 4096 lane（同日在风冷上限下发布过 4 L + 5 H、30 MiB、UCIe 64 lane 的 1015.08 点；还短暂发布过 8 L + 4 H、0.8 GHz、40 MiB 的降频点，已撤回；更早是 8 L + 4 H、1.0 GHz、80 MiB，再早是 8 L + 8 H；2026-09-23 是 24 L + 8 H、88 MiB；2026-09-20 是 4 L + 4 H、1.2 GHz、44 MiB） |
 
 P1 的性能回归结果不能直接宣称为 P0 7R 物理主候选的最终性能；需要先完成
 P0 的 tile、kernel、MC、NoC、floorplan 和 PPA 模型。本文第 2、3 节的数字全部是 **P1** 结果。
@@ -38,6 +38,9 @@ K3 preset 来自
 
 ## 2. 当前最佳 Compute Die 候选（P1）
 
+> 支撑当前 TPS/usr 发布点的软硬件设计（逐单元规格、时间账、软件机制、逐项回退、敏感度、证据等级与变更控制）
+> 已汇总为 [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md)（ADR-0005，`spec/k3_mc_baseline.json#tpsDesign`）。
+
 当前 Final Tuning 搜索候选的**权威数值**在
 [`spec/k3_mc_baseline.json`](spec/k3_mc_baseline.json) 的 `computeDieCandidate` 中，
 由 `npm run baseline:sync` 从
@@ -46,7 +49,8 @@ K3 preset 来自
 
 | 项目 | 值 | 状态 |
 | --- | ---: | --- |
-| 工艺/频率 | 工艺未锁；`computeDieCandidate.frequencyGHz`（当前 1.0 GHz） | `MODEL` |
+| 工艺/频率 | 面积按三星 SF4 级 4 nm 估算（`computeDieCandidate.physicalBasis`：逻辑 ×1.277、SRAM ×1.248、PHY ×1，矩阵密度 3.2 TF/mm² @N4 口径）；`frequencyGHz` 固定 1.0 GHz，不参与搜索 | `ASSUMPTION`（B-006） |
+| 散热/功耗上限 | 液冷（冷板）：Die 300 W、卡 2800 W（`physicalBasis.limits`；原风冷 260 W / 2400 W） | `ASSUMPTION`（O-015） |
 | L Core | `computeDieCandidate.lCores`（当前 8，每 Core 8×(1×256) engine） | `MODEL` |
 | H Core | `computeDieCandidate.hCores`（当前 4，每 Core 5×(48×128) engine） | `MODEL` |
 | BF16 Dense peak | `computeDieCandidate.bf16DenseTflops` | 推导值 |
@@ -73,6 +77,17 @@ weight tile 4 MiB）；再允许 KV 跨层预取和 DMA 抢占后，shared SRAM 
 （24 MiB local + 16 MiB shared），H 矩阵算力 196.6 TF/Die（原 131.1），卡功耗 2136 W；
 KV cache 改为 FP8 后，H core local SRAM 可放下 32K token 的 KV tile，搜索把 KV tile 提到 32768、
 reduce lane 回到 4096（卡功耗 2241 W，die 面积 396.7 mm²），其余不变。
+同日决定**算力调整不得改变频率**，频率固定为 1.0 GHz（`EXT.ghz=[1]`，与此前各候选和 P0 一致）。
+上面的 0.8 GHz 点放回 1.0 GHz 会超出 die/卡功耗上限，已撤回。重新搜索后移动到 4 L + 5 H
+（H core 5×(32×128) engine，H 矩阵 204.8 TF/Die，L 矩阵 16.4 TF/Die）、1.0 GHz、30 MiB/Die
+（14 MiB local + 16 MiB shared，H local 2 MiB/core，KV tile 16384）、UCIe 64 lane，
+卡功耗 2392 W，die 面积 330.7 mm²（N4 参考系数、风冷上限）。
+同日决定 compute die 面积按**三星 SF4 级 4 nm** 估算、矩阵密度取 3.2 TF/mm²（N4 口径 @1 GHz，原 1.6）、
+改用**液冷**（Die 300 W、卡 2800 W，原 260 W / 2400 W），见
+[`src/search/k3_physical_basis.js`](../../src/search/k3_physical_basis.js)。重新搜索后移动到 8 L + 4 H
+（H core 5×(48×128) engine，H 矩阵 245.8 TF/Die，L 矩阵 32.8 TF/Die）、1.0 GHz、40 MiB/Die
+（24 MiB local + 16 MiB shared，H local 4 MiB/core，KV tile 32768）、UCIe 128 lane、vector 512 lane，
+Die 373.7 mm²（SF4）、286.2 W，卡功耗 2768 W。
 02、03、05 号文档的单元级描述仍基于 2026-09-20 的候选，在 P1 候选稳定前只作对照，
 不作为当前规格。
 
@@ -94,7 +109,7 @@ reduce lane 回到 4096（卡功耗 2241 W，die 面积 396.7 mm²），其余�
 
 320 GB/s 点的计算与通信时间与 640 GB/s 点完全相同，差别来自 DMA 等待，以及
 等待拖慢 shared 专家和 TMA 预取后可掩盖的时间变少（`tests/test_design_baseline.js` 断言）。自 2026-09-25 起，640 GB/s 点的 raw 中
-compute 与 τ 下限后的通信合计已超过 854.70 μs 预算，DMA 等待不再是主要矛盾；
+compute − TMA 掩盖 + τ 下限后的通信 − 重叠已达 818.30 μs，只给 DMA 等待留下约 36 μs；
 只提 MC 带宽不能达到目标。
 
 2026-09-25 的两项决定：
@@ -164,9 +179,40 @@ FP8 KV cache（2026-09-25，`OPT.kvCache='fp8'`，计算仍为 BF16）：
   挪回 reduce 4096 得 1031.52。在新候选上：pvMerge=tile 1012.80，softmax 融合关 995.28，
   逐元素融合关 1003.75，depth 1 为 961.77。MC320 为 584.75。
 - FP8 KV 是精度口径变更（B-001），需模型侧给出精度评估后才算冻结。
+- 上述 1031.52 点使用 0.8 GHz，已按下一节的频率规则撤回。
 - 模拟器修正：TMA 通道为后续算子提前装满的 tile 会钉住其输入，当 head 算子需要的 DMA
   装不下时会死锁（大 KV tile + 半窗口时出现）。现在作为最后手段取消最远的已完成装载，
   该算子稍后重新装载（`tmaCancels` 计数；发布点为 0）。
+
+频率固定 1.0 GHz（2026-09-25 决定，算力只按 core/engine 数与形状调整）：
+- 发布点 1015.08 TPS/usr（raw 842.01 µs = compute 502.36 − tmaHidden 110.34 +
+  comm 453.44 + wait 23.70 − overlap 27.16），离 854.70 µs 预算余 12.7 µs
+  （τ 可再高约 0.032 µs 仍达标）。比 0.8 GHz 点少 16.44 TPS。
+- 卡功耗仍是约束（2392/2400 W）：搜索用 L core 8→4、UCIe 128→64 lane 换来 5 个
+  H core。H 矩阵算力 204.8 TF/Die，高于 0.8 GHz 点的 196.6，但 L 侧 GEMV、TMA 掩盖、
+  跨 Die 与卡内通信阶段变慢。LSE merge 的协议时间 1.21 µs 首次超过 τ。
+  H local 2 MiB 只放得下 16K 的 KV tile。
+- DMA busy 841.6 µs，几乎等于 raw；每颗 MC 的有效带宽被 UCIe 端口（409.6 GB/s）截断。
+- 在新候选上逐项回退：pvMerge=tile 909.67，tmaLane 关 915.25，DMA 抢占关 961.00，
+  KV 跨层预取关 968.56，commOverlap 关 992.84，逐元素融合关 996.63，softmax 融合关 997.69，
+  launchBatching 关 1005.57，端口放大全关 1014.78；depth 1 为 975.78。MC320 为 585.95。
+  完整表见 [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md) 第 5 节。
+- 上述 1015.08 点按 N4 参考面积与风冷上限计算，已被下一节的物理口径取代。
+
+三星 SF4 面积、矩阵密度 3.2 TF/mm²、液冷（2026-09-25 决定，`src/search/k3_physical_basis.js`）：
+- 只换面积口径（SF4、密度仍 1.6）时，1015.08 点的 Die 为 414.5 mm²，超出 400 mm²；
+  搜索改为 4 L + 4 H（H 6×(32×128)），1015.06 TPS/usr，Die 399.7 mm²，面积成为绑定约束。
+- 再把矩阵密度取 3.2 TF/mm²、上限改为液冷后：发布点 1101.77 TPS/usr（raw 775.75 µs =
+  compute 434.62 − tmaHidden 106.91 + comm 451.95 + wait 22.35 − overlap 26.27），
+  离 854.70 µs 预算余 78.95 µs（τ 可到约 1.35 µs 仍达标）。
+- 收益来自 UCIe 64→128 lane 与 H 算力**同时**增加：UCIe 128 lane 使每颗 MC 不再被端口截断
+  （MC 带宽 819→896 GB/s/Die，DMA busy 842→775 µs），此后算力才重新在关键路径上。
+  只加算力约 +3 TPS，只加 UCIe 约 +9 TPS。Die 功耗 300 W 以上的放宽几乎没有额外收益。
+- 五类集合通信的协议时间都低于 τ，通信 = 393 × 1.15 = 451.95 µs。
+- 逐项回退：tmaLane 关 984.20，KV 跨层预取关 991.52，softmax 融合关 1033.22，DMA 抢占关 1041.66，
+  commOverlap 关 1073.24，逐元素融合关 1077.23，pvMerge=tile 1082.21，launchBatching 关 1088.47，
+  端口放大全关 1101.71；BF16 KV 在 32K tile 下不可行。depth 1 为 1018.96，MC320 为 586.46。
+- P1 数值超过 1050 的架构闸门，但闸门要求可制造 MC 路线与详细 tile 模型，仍为未通过。
 
 ### 3.1 集合通信计数口径
 
@@ -179,8 +225,8 @@ shared 专家计算之后，每 rank 先把 Wup 与 Shared down 的部分和本�
 仓库早先口径为 510 次，可用 `countBasis='repo-510'` 复现。
 
 **次数轴不是当前杠杆**：发布点自 2026-09-25 起使用 spec 的每次集合通信成本
-基准（1.15 µs），393 次的解析天花板约 1059.42 TPS（已扣除 shared 专家重叠和 TMA 掩盖，DMA 等待取 0）。
-降到 209 次时解析值为 1436.08 TPS，但这是乐观上界：它假设 DMA 等待为 0，并把 TMA
+基准（1.15 µs），393 次的解析天花板约 1134.46 TPS（已扣除 shared 专家重叠和 TMA 掩盖，DMA 等待取 0）。
+降到 209 次时解析值为 1577.52 TPS，但这是乐观上界：它假设 DMA 等待为 0，并把 TMA
 掩盖量按当前观测值固定，而通信越少，可藏在通信下的装载越少。对照表见
 `spec/k3_mc_baseline.json#tauBasis.ceilingTpsByCount`。
 
@@ -193,11 +239,11 @@ Shared SRAM 聚合工作窗口**：
 
 - Shared SRAM 物理容量：8×16=128 MiB/卡；
 - usable 0.85，再乘 window fraction（当前候选为 1.0）：108.8 MiB/卡；
-- 模拟峰值：108.76 MiB/卡（已贴满窗口）；
-- Local SRAM 32 MiB/Die 由 tile-fit 约束单独检查。
+- 模拟峰值：72.24 MiB/卡；
+- Local SRAM 14 MiB/Die 由 tile-fit 约束单独检查。
 
 因此旧报告中的“122.2 MiB/Die”（2026-09-23 候选的整卡峰值）是标签错误，不应据此把单 Die SRAM 扩到
-122 MiB；当前的 108.76 MiB 同样是整卡值。
+122 MiB；当前的 72.24 MiB 同样是整卡值。
 
 ### 4.2 “MC”存在两条不同路线
 
@@ -212,7 +258,7 @@ Shared SRAM 聚合工作窗口**：
 
 | 冲突 | 当前处理 |
 | --- | --- |
-| P0 为 8 L + 8 H Core、1.0 GHz；P1 由搜索决定（当前 8 L + 4 H、1.0 GHz） | 不是冲突，是两个 profile（ADR-004）；P0 是物理主规划，P1 是当前可执行回归模型；报告必须注明 profile |
+| P0 为 8 L + 8 H Core、1.0 GHz；P1 由搜索决定（当前 4 L + 5 H、1.0 GHz 固定） | 不是冲突，是两个 profile（ADR-004）；P0 是物理主规划，P1 是当前可执行回归模型；报告必须注明 profile |
 | P0 Compute Die 为 400 mm² 上限；P1 估算见第 2 节 | 400 mm² 是 P0 规划上限，P1 数字只用于回归对照 |
 | 卡内互联有“4×2 mesh”“双向 ring”“4+4 hierarchy”三种描述 | `BLOCKER`，统一拓扑后才可冻结 |
 | 参考 MC 320 GB/s；默认搜索上限 480 GB/s；P1 最佳搜索使用 640 GB/s | `BLOCKER`，档位定义见 ADR-011，必须选定可制造档 |

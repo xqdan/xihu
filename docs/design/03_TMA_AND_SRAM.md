@@ -1,8 +1,8 @@
 # TMA 与 SRAM 子系统设计
 
-> 本文的单元级数字基于 2026-09-20 的 P1 候选（4 L + 4 H、44 MiB/Die）。2026-09-23 修正
-> Final Tuning 模型后，P1 最佳候选移动到 24 L + 8 H、88 MiB/Die（`spec/k3_mc_baseline.json`），
-> 本文在 P1 候选稳定前只作对照。
+> 本文的单元级数字基于 2026-09-20 的 P1 候选（4 L + 4 H、44 MiB/Die），只作对照。
+> 当前发布点的 SRAM 层级、端口放大计费和 TMA 通道见
+> [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md) 第 3.3、3.4、4.4 节（`spec/k3_mc_baseline.json#tpsDesign`）。
 
 ## 1. 物理容量基线
 

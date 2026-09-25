@@ -3,7 +3,8 @@
  *
  * Hand-copied performance numbers drift. This script rewrites ONLY the
  * model-derived fields of docs/design/spec/k3_mc_baseline.json
- * (computeDieCandidate, modelResults, sramAccounting, acceptance.reason) and
+ * (computeDieCandidate, modelResults, collectiveCount, tauBasis, sramAccounting,
+ * acceptance.reason, tpsDesign) and
  * the K3 calibration block of data/direction/directional_workload_baseline.json
  * from data/rdma/k3_rdma_final_tuning_results.json. Human-authored fields
  * (goal, architectureRoute, referenceMemoryCube, bandwidthTiers, tilePlan,
@@ -18,7 +19,9 @@ const read = p => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8').replace
 const write = (p, v) => fs.writeFileSync(path.join(root, p), `${JSON.stringify(v, null, 2)}\n`, 'utf8');
 const O = require('../src/rdma/k3_rdma_final_tuning_model.js');
 const A = require('../src/search/k3_architecture_search.js');
+const P = require('../src/search/k3_physical_basis.js');
 const E = require('../src/core/design_engine.js');
+const T = require('../src/rdma/k3_tps_design_baseline.js');
 
 const results = read('data/rdma/k3_rdma_final_tuning_results.json');
 const best = results.search.best;
@@ -53,10 +56,13 @@ spec.computeDieCandidate = {
   estimatedPowerW: stretch.p.diePower,
   estimatedCardPowerW: stretch.p.cardPower,
   sharedPortScalingCost: stretch.p.sharedPortCost || null,
-  note: 'Area and power include the charged shared-SRAM port scaling cost (Final Tuning OPT.chargeSharedPortCost). All coefficients are analytical assumptions pending synthesis/floorplan/IP back-annotation.'
+  physicalBasis: {process: P.BASIS.process, areaScale: {...P.PROCESS[P.BASIS.process]}, matrixTFPerMm2: P.BASIS.matrixTFPerMm2, cooling: P.BASIS.cooling, limits: {...P.BASIS.limits}, source: 'src/search/k3_physical_basis.js', note: 'area scaled from the N4-ref TECH coefficients; power, frequency and bandwidth coefficients unchanged; all ASSUMPTION (B-006)'},
+  note: 'Area is estimated on the physical basis above. Area and power include the charged shared-SRAM port scaling cost (Final Tuning OPT.chargeSharedPortCost). All coefficients are analytical assumptions pending synthesis/floorplan/IP back-annotation.'
 };
+// prefetchDepth (1) was a hand-authored leftover; the searched lookahead is optimizedOverlapDepth.
+const {prefetchDepth: _staleDepth, ...tilePlanRest} = spec.tilePlan || {};
 spec.tilePlan = {
-  ...spec.tilePlan,
+  ...tilePlanRest,
   weightTileMiB: x.weightTileMiB,
   kvTileTokens: x.kvTile,
   kvCacheFormat: O.OPT.kvCache,
@@ -151,6 +157,8 @@ spec.acceptance = {
   architectureGateStatus: 'not-met (P1 engineering model; gate requires the selected manufacturable MC route in the detailed tile model)',
   reason: `The best stretch-MC candidate is ${stretch.tps.toFixed(2)} TPS/usr and the reference-compatible 320 GB/s MC point is about ${reference.tps.toFixed(2)} TPS/usr (P1 compact executable profile, engineering model).`
 };
+// TPS/usr design baseline (docs/design/21_TPS_DESIGN_BASELINE.md, ADR-0005).
+spec.tpsDesign = T.build(x, spec.goal.rawLatencyBudgetUs);
 write('docs/design/spec/k3_mc_baseline.json', spec);
 
 // Directional workload baseline: the K3 calibration block mirrors the MC320 point.

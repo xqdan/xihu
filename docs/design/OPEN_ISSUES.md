@@ -6,12 +6,12 @@
 | --- | --- | --- | --- |
 | B-001 | 正式 K3 逐层结构和 dtype 未冻结；2026-09-25 发布点采用 FP8 KV cache（FlashMLA 布局，计算仍为 BF16，`OPT.kvCache`），精度影响未评估 | FLOP/byte、算子图和容量可能变化 | 模型清单与权重 manifest |
 | B-002 | MC 档位未选定：320 参考、480 默认上限、560/640 激进（ADR-011）；P1 目标点使用 640 GB/s | 320 与 640 两点 TPS 见 `00_CURRENT_STATE.md` 第 3 节 | 选定颗数与每颗带宽的供应商规格或替代架构 |
-| B-003 | Final Tuning 的经验缩放因子：2026-09-25 决定全部置 1（`GAIN` 表保留名称）；共享 SRAM 端口放大已计入面积/功耗；`OPT.launchScale` 仍是未回标参数 | 置 1 后发布点从 990.13 降到 681.06 TPS（同时含 τ 变更；之后加入 shared 专家计算通信重叠并补种子搜索后为 729.14，再加入独立 TMA 通道后为 774.77，再加入 KV 跨层预取和 DMA 抢占后为 860.03，再加入 PV 按层合并、softmax/逐元素融合并搜索预取深度与 H core 规格后为 1007.27，再改 FP8 KV cache 后为 1031.52）；已实现的优化收益目前未计入 | 逐项用精确 tile/transaction 模型给出收益后，才允许对应因子离开 1 |
+| B-003 | Final Tuning 的经验缩放因子：2026-09-25 决定全部置 1（`GAIN` 表保留名称）；共享 SRAM 端口放大已计入面积/功耗；`OPT.launchScale` 仍是未回标参数 | 置 1 后发布点从 990.13 降到 681.06 TPS（同时含 τ 变更；之后加入 shared 专家计算通信重叠并补种子搜索后为 729.14，再加入独立 TMA 通道后为 774.77，再加入 KV 跨层预取和 DMA 抢占后为 860.03，再加入 PV 按层合并、softmax/逐元素融合并搜索预取深度与 H core 规格后为 1007.27，再改 FP8 KV cache 后为 1031.52，恢复固定 1.0 GHz 频率规则后为 1015.08，改按三星 SF4 面积、矩阵密度 3.2 TF/mm² 与液冷上限后为 1101.77）；已实现的优化收益目前未计入 | 逐项用精确 tile/transaction 模型给出收益后，才允许对应因子离开 1 |
 | B-004 | 卡内 topology 口径冲突 | 带宽、hop、封装无法签核 | 统一拓扑与 packet 模型 |
 | B-005 | TP32 scale-out 物理拓扑未定义 | 800 GB/s 和低时延不可实现性未知 | PHY/拓扑/布线/功耗方案 |
-| B-006 | P1 的 1.0 GHz、面积、功耗（见 `00_CURRENT_STATE.md` 第 2 节）和 P0 的 1.0 GHz 候选均未回标 | PPA 可能不收敛 | synthesis/floorplan/IP macro |
+| B-006 | P1 的 1.0 GHz（固定）、面积、功耗（见 `00_CURRENT_STATE.md` 第 2 节）和 P0 的 1.0 GHz 候选均未回标；2026-09-25 起 P1 面积按三星 SF4 级 4 nm 由公开节点数据缩放（逻辑 ×1.277 按 CPP×MMP，SRAM ×1.248 按 HD bitcell，PHY ×1；SF4/SF4X 节距未公开，取 SF4E），矩阵密度取 3.2 TF/mm²（N4 口径 @1 GHz，原 1.6），均为 `ASSUMPTION`（`src/search/k3_physical_basis.js`） | PPA 可能不收敛；发布点 Die 373.7 mm²，逻辑系数若按 CPP×MMP 偏乐观、矩阵密度若只有 2.5 TF/mm² 以下，面积可能超 400 mm² | synthesis/floorplan/IP macro；三星 SF4 PDK 的 SRAM compiler 与 MAC 阵列宏 |
 | B-007 | reference-393 口径：2026-09-25 决定接受。合并后的 `Wup + Shared output all-reduce` 已移到 shared 专家计算之后（此前排在之前，shared 部分和未被归约）；`Q / new-KV all-gather` 按参考页作本地算子 | 已接受；若供应商结构说明否定 shared 与 Wup 输出同宽相加，须回退 `repo-510` | 供应商 shared 专家结构说明或权重 manifest 的输出张量宽度（确认性，不阻塞） |
-| B-008 | τ 口径：2026-09-25 决定发布点每次集合通信下限取 spec 的 1.15 μs（`OPT.tauUs`）；1.15 μs 本身尚无物理推导 | 通信 451.95 μs（393 × 1.15），占 raw 预算的 53%；393 次的天花板约 1059.42 TPS（含 shared 专家重叠和 TMA 掩盖，假设 DMA 等待为 0）；发布点 1031.52 离预算余 26.1 μs，τ 若高于 1.15 μs 约 0.066 μs 即跌破 1000 | 由 B-004/B-005 给出 τ 的物理推导并回标（ADR-0004） |
+| B-008 | τ 口径：2026-09-25 决定发布点每次集合通信下限取 spec 的 1.15 μs（`OPT.tauUs`）；1.15 μs 本身尚无物理推导 | 通信 451.95 μs（393 × 1.15，五类协议时间均低于 τ），占 raw 预算的 53%；393 次的天花板约 1134.46 TPS（含 shared 专家重叠和 TMA 掩盖，假设 DMA 等待为 0）；发布点 1101.77 离预算余 78.95 μs，τ 可到约 1.35 μs（每次余 0.201 μs）仍达标 | 由 B-004/B-005 给出 τ 的物理推导并回标（ADR-0004） |
 
 ## P1 关键问题
 
@@ -31,7 +31,7 @@
 | O-012 | Dense/Attention/Shared 权重能否用 FP8 | Workload/AI Core |
 | O-013 | 1M KV/state 的正式布局和精度 | Workload/Memory |
 | O-014 | LM Head 的精度和分片 | Workload/AI Core |
-| O-015 | 2400 W 是否包含 optics/VRM/host I/O | Package/Power |
+| O-015 | 卡功耗上限是否包含 optics/VRM/host I/O；2026-09-25 起 P1 按液冷（冷板）取 Die 300 W、卡 2800 W（原风冷 2400 W），冷板、VRM 与供电方案尚未建模 | Package/Power |
 
 ## P2 风险项
 

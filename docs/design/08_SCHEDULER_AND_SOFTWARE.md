@@ -1,5 +1,8 @@
 # 调度器、编译器与固件设计
 
+> 当前发布点依赖的调度与映射机制（TMA 通道、KV 跨层预取、DMA 抢占、PV 按层合并、softmax/逐元素融合、
+> FP8 KV、launch batching）及其逐项回退见 [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md) 第 4、5 节。
+
 ## 1. 软件层级
 
 ```text

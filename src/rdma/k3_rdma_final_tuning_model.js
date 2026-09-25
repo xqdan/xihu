@@ -11,7 +11,7 @@
  * at least OPT.tauUs = 1.15 us, the spec per-collective latency. The RDMA
  * protocol model still sets the duration of any collective that exceeds it.
  */
-const A=require('../search/k3_architecture_search.js'),R=require('./k3_sram_memory_rdma_model');
+const A=require('../search/k3_architecture_search.js'),P=require('../search/k3_physical_basis.js'),R=require('./k3_sram_memory_rdma_model');
 const {MiB,simulate}=require('../simulation/k3_operator_sram_sim.js');
 
 const OPT={
@@ -129,24 +129,21 @@ function collective(name,payload,p,x,c=OPT){
 
 // Charge extra shared-SRAM port bandwidth (card-level TB/s beyond what
 // physical() sized) as bank/port area and port power, then re-check limits.
+// Area and limits follow the die's physical basis (P.BASIS: process, cooling).
 function chargeSharedPortCost(p,x,extraCardTBs){
   const D=A.LIMITS.dies,T=A.TECH;
   const perDie=Math.max(0,extraCardTBs)/D;
   const sliceTBs=512*x.ghz/1000*T.bankUtil;          // read bandwidth of one shared slice
-  const area=perDie/sliceTBs*32*T.bankArea;           // ports cost the bank area that would deliver them
+  const area=perDie/sliceTBs*32*T.bankArea*P.PROCESS[P.BASIS.process].logic; // ports cost the bank area that would deliver them
   const power=perDie*T.sharedPortWPerTB;
   const dieArea=p.dieArea+area,diePower=p.diePower+power,cardPower=p.cardPower+D*power,packageArea=p.packageArea+D*area;
-  const reasons=[];
-  if(dieArea>A.LIMITS.dieArea)reasons.push('die area after shared-port scaling');
-  if(diePower>A.LIMITS.diePower)reasons.push('die power after shared-port scaling');
-  if(cardPower>A.LIMITS.cardPower)reasons.push('card power after shared-port scaling');
-  if(packageArea>A.LIMITS.packageArea*A.LIMITS.packageUtil)reasons.push('package area after shared-port scaling');
+  const reasons=P.limitReasons({dieArea,diePower,cardPower,packageArea},' after shared-port scaling');
   return {...p,area:{...p.area,sharedPorts:area},power:{...p.power,sharedPorts:power},dieArea,diePower,cardPower,packageArea,
     sharedPortCost:{extraTBsPerDie:perDie,areaMm2PerDie:area,powerWPerDie:power,cardPowerW:D*power},feasible:!reasons.length,reasons};
 }
 
 function mapped(x){
-  const c=OPT,p0=A.physical(x);if(!p0.feasible)return {feasible:false,reasons:p0.reasons};
+  const c=OPT,p0=P.resize(A.physical(x));if(!p0.feasible)return {feasible:false,reasons:p0.reasons};
   const m=A.mappedPlan(x,1,p0,{countBasis:c.countBasis,commOverlap:c.commOverlap,tmaLane:c.tmaLane,kvPrefetch:c.kvPrefetch,dmaPreempt:c.dmaPreempt,pvMerge:c.pvMerge,softmaxFusion:c.softmaxFusion,epilogueFusion:c.epilogueFusion,kvCache:c.kvCache});if(!m.feasible)return m;
   let reserve=0,wire=0,req=0,ph=0;const protocol={};
   for(const o of m.plan.ops)if(o.unit==='COMM'){

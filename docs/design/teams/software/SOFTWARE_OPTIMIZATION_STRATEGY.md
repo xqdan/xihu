@@ -139,7 +139,7 @@ const LINEAR_OPS = /Linear|Expert|Wup|Wdown/
 ### 4.2 需硬件改动，不计软件收益
 
 - **`matrixUtil` 0.65 → 0.88**（+90.7 TPS，实测 949.8）。`F.OPT.matrixUtil = 0.88` 已登载，但 `mappedPlan()` 用 `TECH.matrixUtil = 0.65` 定完 `o.duration` 后被覆盖、不再重算。**这是登载值与实际值的口径不一致，不是软件优化。** 若要计入，需 SW-03 提供 QK/GEMM kernel 达到 88% 矩阵利用率的证据并替换 `TECH.matrixUtil`。
-- **加 H 算力**。`hEngines=8` / `hCols=128` / `hRows=64` 全部撞 **card power 2400 W**（实测 2806 W）；即使把 `nL` 砍到 4 并删除端口放大块，仍为 2506 W。面积不是绑定约束，功耗是。
+- **加 H 算力**。`hEngines=8` / `hCols=128` / `hRows=64` 全部撞 **card power 2400 W**（实测 2806 W）；即使把 `nL` 砍到 4 并删除端口放大块，仍为 2506 W。面积不是绑定约束，功耗是。（2026-09-25 起按 SF4 面积、矩阵密度 3.2 TF/mm²、液冷 Die 300 W / 卡 2800 W 重新搜索，H 算力加到 4 × 5×(48×128) = 245.76 TF/Die，发布点 1101.77，见 21 号文档第 1.2 节。）
 
 ### 4.3 已关闭
 

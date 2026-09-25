@@ -2,7 +2,7 @@
 
 Run ID: `stage-a-20260923-calibrated-workload`
 Manifest hash: `68303686e210999ec31ea08df9310e76d36677f184422b0754fe87cae051c319`
-Source commit: `e6a63f2052ccb9840f268294fa4a86ceac5d7ca1`
+Source commit: `a452bde77da47539b4d699e16c36a84c8cdd9370`
 
 ## Workload calibration
 

@@ -84,3 +84,10 @@
 - 规格来源：`references/k3_1000tps_chip_designs.html`（已入库副本，原件来自工作区 `docs/1000tps/`）。
 - 状态：`BASELINE`
 - 影响：B-002 的表述改为"MC 档位未选定"，关闭证据是选定颗数与每颗带宽的供应商规格。
+
+## ADR-012：TPS/usr 设计基线与变更控制
+
+- 日期：2026-09-25
+- 决策：支撑 TPS/usr 发布点的软硬件设计统一写入 [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md)，数值来自 `spec/k3_mc_baseline.json#tpsDesign`（由 `npm run baseline:sync` 重算），`tests/test_tps_design_baseline.js` 强制一致；任何 OPT/GAIN/TECH/LIMITS/调度语义/搜索空间变更须同一次提交重新搜索、同步并更新文档 21。
+- 详细记录：[decisions/ADR-0005-tps-design-baseline.md](decisions/ADR-0005-tps-design-baseline.md)
+- 状态：`BASELINE`（按 ADR-0003 不得标为 `FROZEN`）
