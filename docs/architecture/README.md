@@ -3,9 +3,9 @@
 - [`teams/council/docs/AGENT_WORKSTREAM_PLAN.md`](../../teams/council/docs/AGENT_WORKSTREAM_PLAN.md)：并行 agent workstream、依赖图、合并顺序和签核闸门。
 - [`teams/council/docs/AGENT_METRICS_MATRIX.md`](../../teams/council/docs/AGENT_METRICS_MATRIX.md)：A0–A13 按模块拆解的量化指标、交付物、依赖和退出条件。
 
-版本：2026-09-25。
+版本：2026-09-26。
 
-本目录把现有搜索、模拟器和历史方案整理成一套可逐步冻结的芯片设计文档。
+本目录把现有搜索和模拟器整理成一套可逐步冻结的芯片设计文档。硬件规格只有一份（P1，ADR-0021）。
 目标交付深度为**单元级**：明确 Tensor Core、Vector Core、TMA、SRAM、
 NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的数量、
 接口、拓扑、位宽、性能预算和验证条件；单元内部流水线与 RTL 暂不展开。
@@ -15,14 +15,14 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 1. 工作负载暂定为 K3 工程 preset：93 层、B=1、Context=1M、
    TP=32、PP=1，目标为 1000 TPS/usr。K3 的形状唯一来源是
    `teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3`。
-2. 当前 P1 Final Tuning 搜索结果见 `00_CURRENT_STATE.md` 第 3 节和
+2. 当前发布点 1101.77 TPS/usr（`MODEL`）及其计算过程见 `00_CURRENT_STATE.md` 第 3 节和
    `teams/hardware/inputs/k3_mc_baseline.json#modelResults`；是否达标以 `acceptance.currentStatus` 为准。
    支撑该结果的全部软硬件设计、逐项回退和变更控制见
    [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md)（`teams/hardware/inputs/k3_mc_baseline.json#tpsDesign`）。
 3. 该结果使用的是每颗 MC **640 GB/s** 的 Stretch 搜索假设（ADR-0019）。
    本地 Memory Cube 参考规格给出的 KGD 最大单向带宽是
    **320 GB/s/颗**。在相同 Compute Die 和优化参数下，320 GB/s 点明显不达标。
-4. 因此目前不能把 P1 的 MC640 结果视为已经证明可实现的芯片指标。首先需要
+4. 因此目前不能把 MC640 结果视为已经证明可实现的芯片指标。首先需要
    冻结可制造的 MC 带宽与连接方式，再冻结 Compute Die。
 5. 当前路线以**外置 Memory Cube**为主：MC 提供容量和带宽，矩阵计算仍在
    Compute Die。带 GEMM base die 的近存计算 MC 是备选路线，不混入本轮基线。
@@ -60,8 +60,7 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | [21_TPS_DESIGN_BASELINE.md](21_TPS_DESIGN_BASELINE.md) | 支撑 TPS/usr 发布点的软硬件设计基线：时间账、单元规格、软件机制、逐项回退、敏感度与变更控制（ADR-0005） |
 | [ADR 索引](../../teams/council/adr/README.md) | 架构决策记录（`teams/council/adr/`，四位编号） |
 | [OPEN_ISSUES.md](OPEN_ISSUES.md) | 阻塞项、责任子系统和关闭证据 |
-| [teams/hardware/inputs/k3_mc_baseline.json](../../teams/hardware/inputs/k3_mc_baseline.json) | 当前机器可读基线与回归数值（P1） |
-| [teams/hardware/inputs/k3_7r_package_baseline.json](../../teams/hardware/inputs/k3_7r_package_baseline.json) | 7-reticle package 的面积、SRAM、MC 容量、带宽和 PPA 规划基线（P0） |
+| [teams/hardware/inputs/k3_mc_baseline.json](../../teams/hardware/inputs/k3_mc_baseline.json) | 唯一硬件规格与回归数值（P1，含 package 面积约束） |
 | [13_MULTI_MODEL_ARCHITECTURE.md](13_MULTI_MODEL_ARCHITECTURE.md) | K3 / GLM-5.2 / DeepSeek-V4-Pro 多模型架构调整 |
 | [14_TPS_OBSERVATION_METRICS.md](14_TPS_OBSERVATION_METRICS.md) | TPS 观测指标矩阵和证据状态 |
 | [contracts/TILE_IR.md](contracts/TILE_IR.md) | Tile IR 契约：编译器、硬件调度器、模拟器和 RTL 共用的 tile descriptor |
@@ -79,22 +78,24 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | [07_COLLECTIVE_RDMA.md](../../teams/hardware/docs/07_COLLECTIVE_RDMA.md) | 远端 SRAM 语义、归约引擎、epoch 和可靠性 |
 | [08_ON_DIE_SCHEDULER_AND_PMU.md](../../teams/hardware/docs/08_ON_DIE_SCHEDULER_AND_PMU.md) | Die Dispatcher、Core Tile Scheduler、硬件侧低开销要求和 PMU |
 | [09_PACKAGE_POWER_RAS.md](../../teams/hardware/docs/09_PACKAGE_POWER_RAS.md) | 封装、I/O 岸线、功耗、时钟、散热和 RAS |
-| [12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md](../../teams/hardware/docs/12_7_RETICLE_SINGLE_CHIP_ARCHITECTURE.md) | 7-reticle 单芯片、Compute Die 面积和集成存储规划 |
 
 #### 软件设计（`teams/software/docs/`，Software）
 
 | 文档 | 负责范围 |
 | --- | --- |
-| [COMPILER_RUNTIME_AND_FIRMWARE.md](../../teams/software/docs/COMPILER_RUNTIME_AND_FIRMWARE.md) | 编译器、TP Group / Card runtime 调度、静态/动态划分、固件 |
-| [SOFTWARE_OPTIMIZATION_STRATEGY.md](../../teams/software/docs/SOFTWARE_OPTIMIZATION_STRATEGY.md) | 可兑现的软件优化清单 |
-| [SW-05_COLLECTIVE_STRATEGY_REVISION.md](../../teams/software/docs/SW-05_COLLECTIVE_STRATEGY_REVISION.md) | 集合通信策略（当前有效） |
+| [KERNEL_SPEC.md](../../teams/software/docs/KERNEL_SPEC.md) | K3 发布点 K1–K8 kernel 族：单元、shape、限制因素、时长 |
+| [COLLECTIVE_SCHEDULE.md](../../teams/software/docs/COLLECTIVE_SCHEDULE.md) | 393 次集合通信的构成、依赖与重叠、τ 敏感性；GLM/DS 集合通信 |
+| [PRECISION_POLICY.md](../../teams/software/docs/PRECISION_POLICY.md) | 三个模型的 dtype、取整点、集合通信精度、确定性与精度验收 |
+| [MULTI_MODEL_LOWERING.md](../../teams/software/docs/MULTI_MODEL_LOWERING.md) | GLM-5.2 / DeepSeek-V4-Pro 到 kernel 族的映射与新增 kernel |
+| [COMPILER_RUNTIME_AND_FIRMWARE.md](../../teams/software/docs/COMPILER_RUNTIME_AND_FIRMWARE.md) | 编译器、runtime 调度、launch 账、persistent decode、KV 分页（提案） |
 
 #### 模型部署方案（`teams/model/docs/deployment/`，Model）
 
 | 文档 | 负责范围 |
 | --- | --- |
 | [deployment/README.md](../../teams/model/docs/deployment/README.md) | 三个模型共同的部署决定与机器可读来源 |
-| [K3.md](../../teams/model/docs/deployment/K3.md) · [GLM-5.2.md](../../teams/model/docs/deployment/GLM-5.2.md) · [DeepSeek-V4-Pro.md](../../teams/model/docs/deployment/DeepSeek-V4-Pro.md) | 逐模型的切分、dtype、KV/index 布局、集合通信次数和未闭合项 |
+| [K3.md](../../teams/model/docs/deployment/K3.md) · [GLM-5.2.md](../../teams/model/docs/deployment/GLM-5.2.md) · [DeepSeek-V4-Pro.md](../../teams/model/docs/deployment/DeepSeek-V4-Pro.md) | 逐模型的切分、dtype、KV/index 布局、每 rank 容量、集合通信次数和未闭合项 |
+| [OPERATOR_LEDGER.md](../../teams/model/docs/deployment/OPERATOR_LEDGER.md) · [SCENARIO_MATRIX.md](../../teams/model/docs/deployment/SCENARIO_MATRIX.md) | 规划算子账与 token-time 系数；场景矩阵与选择政策 |
 
 #### 运行模型（`teams/council/docs/`，Council）
 
@@ -105,6 +106,12 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | [17_TWO_STAGE_ARCHITECTURE_OPERATING_MODEL.md](../../teams/council/docs/17_TWO_STAGE_ARCHITECTURE_OPERATING_MODEL.md) | Stage A 方向 / Stage B 量化两阶段流程 |
 | [18_AGENT_CATALOG_AND_INTERACTION_PROTOCOL.md](../../teams/council/docs/18_AGENT_CATALOG_AND_INTERACTION_PROTOCOL.md) | agent 目录与交互协议 |
 | [20_INDUSTRIAL_AGENT_ORGANIZATION.md](../../teams/council/docs/20_INDUSTRIAL_AGENT_ORGANIZATION.md) | 工业界团队组织 |
+
+#### 验证（`teams/vv/docs/`，V&V）
+
+| 文档 | 负责范围 |
+| --- | --- |
+| [VV_PLAN.md](../../teams/vv/docs/VV_PLAN.md) | 证据等级、测试分组与守恒检查、D-Gate / Q-Gate 判定和待补验证项 |
 
 ## 4. 设计文档完成定义
 

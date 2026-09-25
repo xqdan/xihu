@@ -25,6 +25,16 @@
     "powerLimitW": 2800,
     "cooling": "liquid (cold plate); die 300 W, card 2800 W; ASSUMPTION, decision 2026-09-25 (ADR-0005); was air-cooled 260 W / 2400 W"
   },
+  "package": {
+    "decisionRecord": "teams/council/adr/ADR-0018-7-reticle-package-boundary.md",
+    "reticles": 7,
+    "placementWindowMm2": 5248,
+    "computeDieAreaLimitMm2": 400,
+    "memoryCubeAreaMm2Planning": 100,
+    "capacityGBPerCubePrimary": 16,
+    "capacityGBPerCubePrototype": 8,
+    "note": "8 compute dies + 16 MC in one 7-reticle placement window; package area = 8 x computeDieCandidate.estimatedAreaMm2 + 16 x memoryCubeAreaMm2Planning must fit placementWindowMm2 (k3_physical_basis.js BASIS.limits). The vendor must confirm stitch map, keep-out and maximum dimensions."
+  },
   "referenceMemoryCube": {
     "source": "../../../references/README.md",
     "capacityOptionsGB": [
@@ -199,10 +209,10 @@
   },
   "acceptance": {
     "currentStatus": "target-met-in-model-only",
-    "reason": "The best stretch-MC candidate is 1101.77 TPS/usr and the reference-compatible 320 GB/s MC point is about 586.46 TPS/usr (P1 compact executable profile, engineering model).",
+    "reason": "The best stretch-MC candidate is 1101.77 TPS/usr and the reference-compatible 320 GB/s MC point is about 586.46 TPS/usr (single hardware spec P1, engineering model).",
     "nextGate": "Freeze an implementable MC bandwidth/topology and reproduce at least 1050 TPS/usr in the detailed tile model before microarchitecture freeze.",
     "architectureGateTpsPerUser": 1050,
-    "architectureGateStatus": "not-met (P1 engineering model; gate requires the selected manufacturable MC route in the detailed tile model)"
+    "architectureGateStatus": "not-met (engineering model; gate requires the selected manufacturable MC route in the detailed tile model)"
   },
   "collectiveCount": {
     "total": 393,
@@ -217,7 +227,7 @@
     "referencePageTotal": 393,
     "repoBaselineTotal": 510,
     "referencePageSource": "references/k3_1000tps_chip_designs.html:1720",
-    "reconciliation": "teams/software/docs/SW-05_COLLECTIVE_STRATEGY_REVISION.md#1",
+    "reconciliation": "teams/software/docs/COLLECTIVE_SCHEDULE.md#11-与-repo-510-的差额",
     "status": "accepted 2026-09-25 (B-007); the folded reduction follows the shared-expert compute",
     "note": "The 510->393 difference is 92 folded shared-output reductions plus 24 Q/new-KV all-gathers and 1 sampling broadcast that the reference page does not count; it is not a measured speedup."
   },
@@ -232,8 +242,7 @@
       "integration/detailed/k3_operator_sram_sim.js#tauUs": 1.15,
       "integration/detailed/k3_sram_memory_rdma_model.js#MEM.oneWayUs": 0.1,
       "integration/detailed/k3_rdma_final_tuning_model.js#OPT.tauUs (published floor)": 1.15,
-      "integration/detailed/k3_rdma_final_tuning_model.js#OPT.oneWayUs": 0.05,
-      "out/rdma/k3_b1_1000_rdma_sram_results.json (2026-09-19 observed)": 0.871
+      "integration/detailed/k3_rdma_final_tuning_model.js#OPT.oneWayUs": 0.05
     },
     "ceilingTpsByCount": {
       "209": 1577.5247935076802,

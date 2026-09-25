@@ -1,6 +1,6 @@
 # Documentation
 
-仓库级文档入口。团队自有文档放在各自的 `teams/<team>/docs/`；这里只放不属于单个团队的架构规格和概览。
+仓库级文档入口。团队自有文档放在各自的 `teams/<team>/docs/`；这里只放不属于单个团队的架构规格。
 
 - [`architecture/`](architecture/README.md)：正式架构规格（Council 拥有）
   - `HIGH_LEVEL_ARCHITECTURE.md`：高层架构总纲和详细文档地图；
@@ -10,7 +10,6 @@
   - `OPEN_ISSUES.md`：需要 owner、证据和关闭日期的问题；
   - [`contracts/`](architecture/contracts/README.md)：跨团队接口 contract。
 - 团队设计文档（按签核团队存放）：硬件单元设计 [`teams/hardware/docs/`](../teams/hardware/docs/)，软件设计 [`teams/software/docs/`](../teams/software/docs/)，模型部署方案 [`teams/model/docs/deployment/`](../teams/model/docs/deployment/README.md)。
-- [`overview/`](overview/k3_project_overview_deck.html)：项目概览幻灯片。
 - 架构决策记录（ADR）：[`teams/council/adr/`](../teams/council/adr/README.md)。
 - 运行模型、agent 目录与 Stage B 详细设计规格：[`teams/council/docs/`](../teams/council/docs/)。
 

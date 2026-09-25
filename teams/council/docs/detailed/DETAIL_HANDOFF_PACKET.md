@@ -13,7 +13,7 @@
   "tp": 0,
   "cp": 0,
   "ep": 0,
-  "physicalProfile": "P0|P1",
+  "physicalProfile": "P1",
   "mcProfile": "MC320|MC640",
   "manifestHash": "",
   "inputHashes": {},

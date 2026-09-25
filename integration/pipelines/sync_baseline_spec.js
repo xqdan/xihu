@@ -104,13 +104,13 @@ spec.collectiveCount = {
   referencePageTotal: 393,
   repoBaselineTotal: 510,
   referencePageSource: 'references/k3_1000tps_chip_designs.html:1720',
-  reconciliation: 'teams/software/docs/SW-05_COLLECTIVE_STRATEGY_REVISION.md#1',
+  reconciliation: 'teams/software/docs/COLLECTIVE_SCHEDULE.md#11-与-repo-510-的差额',
   status: 'accepted 2026-09-25 (B-007); the folded reduction follows the shared-expert compute',
   note: 'The 510->393 difference is 92 folded shared-output reductions plus 24 Q/new-KV all-gathers and 1 sampling broadcast that the reference page does not count; it is not a measured speedup.'
 };
 
-// tau basis. SW-05 section 2 found four mutually inconsistent per-collective
-// latency defaults on this path. Since 2026-09-25 the published point floors
+// tau basis. This path once carried several inconsistent per-collective
+// latency defaults. Since 2026-09-25 the published point floors
 // every collective at OPT.tauUs (the spec 1.15 us). The ceiling is analytic
 // because the simulator asserts raw = compute - tmaHidden + comm + wait - overlap and COMM shares
 // the compute slot, except for the data-independent shared experts that run
@@ -131,8 +131,7 @@ spec.tauBasis = {
     'integration/detailed/k3_operator_sram_sim.js#tauUs': 1.15,
     'integration/detailed/k3_sram_memory_rdma_model.js#MEM.oneWayUs': 0.10,
     'integration/detailed/k3_rdma_final_tuning_model.js#OPT.tauUs (published floor)': O.OPT.tauUs,
-  'integration/detailed/k3_rdma_final_tuning_model.js#OPT.oneWayUs': O.OPT.oneWayUs,
-    'out/rdma/k3_b1_1000_rdma_sram_results.json (2026-09-19 observed)': 0.871
+  'integration/detailed/k3_rdma_final_tuning_model.js#OPT.oneWayUs': O.OPT.oneWayUs
   },
   ceilingTpsByCount: Object.fromEntries([510, 485, 393, 301, 209].map(n => [n, ceiling(n)])),
   overlapUs: replay.overlapUs,
@@ -153,8 +152,8 @@ spec.acceptance = {
   ...spec.acceptance,
   architectureGateTpsPerUser: 1050,
   currentStatus: stretch.tps >= spec.goal.target ? 'target-met-in-model-only' : 'not-met',
-  architectureGateStatus: 'not-met (P1 engineering model; gate requires the selected manufacturable MC route in the detailed tile model)',
-  reason: `The best stretch-MC candidate is ${stretch.tps.toFixed(2)} TPS/usr and the reference-compatible 320 GB/s MC point is about ${reference.tps.toFixed(2)} TPS/usr (P1 compact executable profile, engineering model).`
+  architectureGateStatus: 'not-met (engineering model; gate requires the selected manufacturable MC route in the detailed tile model)',
+  reason: `The best stretch-MC candidate is ${stretch.tps.toFixed(2)} TPS/usr and the reference-compatible 320 GB/s MC point is about ${reference.tps.toFixed(2)} TPS/usr (single hardware spec P1, engineering model).`
 };
 // TPS/usr design baseline (docs/architecture/21_TPS_DESIGN_BASELINE.md, ADR-0005).
 spec.tpsDesign = T.build(x, spec.goal.rawLatencyBudgetUs);
@@ -179,6 +178,10 @@ k3.calibration = {
   source: 'out/rdma/k3_rdma_final_tuning_results.json (MC320 replay of search.best)',
   flopDerivation: `sum of operator FLOP in O.mapped(search.best.x).plan x TP${spec.goal.tpCards}: L ${(opFlops('L') / 1e12).toFixed(6)}T, H ${(opFlops('H') / 1e12).toFixed(6)}T (absorbed-MLA QK/PV over the full context), V ${(opFlops('V') / 1e12).toFixed(6)}T`
 };
+k3.limitations = [
+  'TP8 and TP16 byte scaling is directional, not observed.',
+  'Operator-level byte reuse and overlap are deferred to Stage B.'
+];
 baseline.asOf = results.version.slice(0, 10);
 write('out/direction/directional_workload_baseline.json', baseline);
 

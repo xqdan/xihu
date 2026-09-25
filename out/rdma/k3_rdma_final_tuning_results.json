@@ -237826,10 +237826,6 @@
       }
     ]
   },
-  "baseline": {
-    "tps": 600.9305103074852,
-    "rawUs": 1422.2956565535671
-  },
   "optimization": {
     "stripeKiB": 64,
     "oneWayUs": 0.05,
@@ -237907,15 +237903,15 @@
   "modelNotes": [
     "2026-09-25 decision: all GAIN factors set to 1 (B-003)",
     "2026-09-25 decision: per-collective cost floor OPT.tauUs = 1.15 us, the spec basis (ADR-0004, B-008); booked as services.tauFloor",
-    "2026-09-25: the previously published 681.06 TPS candidate is added as a search seed (PUBLISHED_SEEDS)",
+    "2026-09-25: earlier published candidates are fixed search seeds (PUBLISHED_SEEDS)",
     "2026-09-25: compute/collective overlap (OPT.commOverlap) -- COMM runs on its own lane; only the data-independent shared experts are issued under the Wdown + Router all-gather; raw = compute + comm + wait - overlap",
     "2026-09-25: separate TMA lanes (OPT.tmaLane) -- the DMA-sourced shared->local fill of each op is booked as services.tmaFill and issued ahead of the op on a per-domain (L/H) lane into the free local double-buffer half once its shared-SRAM inputs are ready; it shares the shared-SRAM read port and fabric with DMA/ops/collectives and the local write port with a same-domain kernel; the hidden part is services.tmaHidden; raw = compute - tmaHidden + comm + wait - overlap",
     "2026-09-25: cross-layer KV prefetch (OPT.kvPrefetch=window) -- KV context tiles of the next depth layers are DMA candidates like weights (past-token KV does not depend on the current token), bounded by shared-SRAM capacity",
     "2026-09-25: DMA preemption (OPT.dmaPreempt) -- DMA is striped, so the routed-expert demand fetch released by Top-k, or any fetch the next op needs, parks an in-flight prefetch (which keeps its SRAM reservation and resumes in consumer order) instead of queueing behind a multi-MB KV tile; prediction accuracy (0.8) is unchanged",
     "2026-09-25: attention/small-op mapping (OPT.pvMerge=layer, softmaxFusion, epilogueFusion) -- PV partials merge once per layer with a cross-die ring reduce-scatter by heads; online softmax pipelines on the H-core vector lanes under QK; elementwise ops fold into the adjacent kernel (vector time and bytes kept, stage/flush/launch removed)",
     "2026-09-25: prefetch depth searched (x.depth 1..4) instead of the fixed OPT.overlapDepth 4; finer H-core steps (nH 5/6, hEngines 5/6, hRows 48) added to the space; published seeds carry depth 4",
-    "2026-09-25: FP8 KV cache (OPT.kvCache=fp8) -- FlashMLA FP8 layout, 656 B/token/layer (512 FP8 E4M3 latent + 4 FP32 scales + 64 BF16 RoPE) instead of 1152; KV DMA, shared SRAM, local staging and backing store shrink; QK/PV stay BF16 and dequantize the latent in-kernel on the H-core vector lanes at the weight-unpack rate, overlapped with the matrix work and taken out of the softmax hiding budget; the 1007.27 TPS point is added as a seed",
-    "2026-09-25 decision: frequency fixed at 1.0 GHz (EXT.ghz=[1], removed from the pairwise polish); compute is sized by core/engine counts and shapes only and may no longer be bought by lowering the clock; the 1031.52 TPS point (0.8 GHz) is withdrawn and the fixed-frequency best is seeded first",
+    "2026-09-25: FP8 KV cache (OPT.kvCache=fp8) -- FlashMLA FP8 layout, 656 B/token/layer (512 FP8 E4M3 latent + 4 FP32 scales + 64 BF16 RoPE) instead of 1152; KV DMA, shared SRAM, local staging and backing store shrink; QK/PV stay BF16 and dequantize the latent in-kernel on the H-core vector lanes at the weight-unpack rate, overlapped with the matrix work and taken out of the softmax hiding budget",
+    "2026-09-25 decision: frequency fixed at 1.0 GHz (EXT.ghz=[1], removed from the pairwise polish); compute is sized by core/engine counts and shapes only and may no longer be bought by lowering the clock; the fixed-frequency best is seeded first",
     "2026-09-25 decision: compute-die physical basis (integration/detailed/k3_physical_basis.js): area on Samsung SF4-class 4 nm (logic x1.277 by CPP x MMP 57x32 vs 51x28 nm, SRAM x1.248 by HD bitcell 0.0262 vs 0.021 um2, UCIe/RDMA PHY x1), matrix density 3.2 TF/mm2 at 1 GHz on the N4 reference (was 1.6), liquid cooling with die 300 W / card 2800 W limits (was 260 / 2400 W); power, frequency and bandwidth coefficients unchanged; A.physical() keeps the N4-ref air-cooled basis for historical models",
     "2026-09-25 decision: reference-393 basis accepted (B-007); the folded Wup + Shared output all-reduce now follows the shared-expert compute",
     "duplicate reduceStartThreshold key removed (effective value 0.2 unchanged)",
@@ -237924,6 +237920,6 @@
     "COMM-op dieLink scaling removed: the field does not exist on COMM ops (NaN masked by the accumulator, no effect on duration)",
     "collective counting basis moved to the reference page 393-reduction basis (OPT.countBasis); this is a COUNTING choice, not a physical optimization -- the Q/new-KV all-gather and sampling broadcast stay in the DAG as local ops"
   ],
-  "seconds": 53.261,
-  "inputHash": "e9bfeb6905f3ac246f132d6a7292b6f4f4d06a1b7fc8e39501dd69778228421e"
+  "seconds": 53.848,
+  "inputHash": "b1518e7a436ed85971e2243aa24f6620c06f85f6ccf4f1b20e82db37f75fe633"
 }

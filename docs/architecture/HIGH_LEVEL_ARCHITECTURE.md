@@ -323,7 +323,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 - `spec/ai_core/VECTOR_ENGINE_SPEC.md`
 - `spec/ai_core/CORE_COMMAND_AND_EVENT_SPEC.md`
 
-**基线候选**：规格网格按整卡 L-Core 算力档位搜索，H-Core 在网格内取 8 倍并计入同一块张量面积。1M、32 卡、路线 A 的过线下限约 610 TFLOPS/卡（L 约 98、H 约 512），每 Die 约 76 TFLOPS。4 L + 4 H、44 MiB/Die 的 compact profile 只保留给旧回归对照。Core 个数和频率要由选定的 TFLOPS 档、面积系数和工艺回标反推，不单独冻结 8+8 或 1.0 GHz。
+**基线候选**：规格网格按整卡 L-Core 算力档位搜索，H-Core 在网格内取 8 倍并计入同一块张量面积。1M、32 卡、路线 A 的过线下限约 610 TFLOPS/卡（L 约 98、H 约 512），每 Die 约 76 TFLOPS。当前发布点为 8 L + 4 H、40 MiB/Die（`21_TPS_DESIGN_BASELINE.md`）。Core 个数和频率要由选定的 TFLOPS 档、面积系数和工艺回标反推，不单独冻结 8+8 或 1.0 GHz。
 
 ### M3：TMA、Local SRAM 与 Shared SRAM
 
@@ -337,7 +337,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 - `spec/tma_sram/SRAM_ADDRESS_AND_BANK_MAP.md`
 - `spec/tma_sram/BUFFER_LIFECYCLE_SPEC.md`
 
-**基线候选**：容量按整卡记账，档位从 128 MiB 到 2048 MiB。每颗 Die 的切片是整卡容量除以 8。报告必须同时给出预取缓冲需求和常驻权重容量。768 MiB/卡（96 MiB/Die）是网格中的一档；路线 A 的 1M 观测点使用 384 MiB/卡。44 MiB/Die 的 compact profile 只用于旧回归对照。
+**基线候选**：容量按整卡记账，档位从 128 MiB 到 2048 MiB。每颗 Die 的切片是整卡容量除以 8。报告必须同时给出预取缓冲需求和常驻权重容量。768 MiB/卡（96 MiB/Die）是网格中的一档；路线 A 的 1M 观测点使用 384 MiB/卡。当前发布点为 40 MiB/Die（24 local + 16 shared）。
 
 ### M4：Memory Cube 与内存控制器
 
@@ -427,7 +427,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 - `spec/package/CLOCK_RESET_POWER_DOMAIN_SPEC.md`
 - `spec/package/RAS_AND_SECURITY_SPEC.md`
 
-**当前风险**：250 W/Die 和约 2.8–3.2 kW/package 是 P0 规划预算；P1 compact 模型的 Die 功耗和约 2.4 kW 卡功耗（`teams/hardware/inputs/k3_mc_baseline.json`）是模型结果，不是物理签核结果。必须纳入高速 PHY、ECC、VRM、BMC、冷却、PVT 和老化余量。
+**当前风险**：发布点的 Die 功耗 286.22 W 和卡功耗 2768.47 W（液冷上限 300 W / 2800 W）（`teams/hardware/inputs/k3_mc_baseline.json`）是模型结果，不是物理签核结果。必须纳入高速 PHY、ECC、VRM、BMC、冷却、PVT 和老化余量。
 
 ### M10：性能模型、验证与签核
 
@@ -634,7 +634,7 @@ MC 颗数、每颗带宽、SRAM 常驻或归约延迟一变，Stage 的两项都
 | 优先级 | 问题 | 影响 | 关闭证据 |
 |---|---|---|---|
 | B-001 | 正式 K3 逐层结构和 dtype 未冻结 | FLOP、byte、容量、tile 全部可能变化 | 模型 manifest |
-| B-002 | MC 档位未选定：320 为基线，480 为默认上限，560/640 为激进（ADR-0019） | P1 最佳点使用 640 GB/s，不能作为承诺；1M、16 卡路线 A 约 883 TPS | 选定颗数与每颗带宽的供应商规格 |
+| B-002 | MC 档位未选定：320 为基线，480 为默认上限，560/640 为激进（ADR-0019） | 发布点使用 640 GB/s，不能作为承诺；1M、16 卡路线 A 约 883 TPS | 选定颗数与每颗带宽的供应商规格 |
 | B-003 | Final Tuning 仍含经验缩放因子 | 性能可能高估 | 精确 tile/transaction 模型 |
 | B-004 | 卡内拓扑口径冲突 | 带宽、hop、封装无法签核 | 统一拓扑和 packet 模型 |
 | B-005 | 选定 PP×TP 的跨卡拓扑未定义 | 归约延迟档位和互联 200/400 GB/s 的可实现性未知 | PHY、布线、功耗和 P99 方案 |

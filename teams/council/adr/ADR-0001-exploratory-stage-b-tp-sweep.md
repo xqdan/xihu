@@ -1,8 +1,8 @@
 # ADR-0001: D-Gate 阻塞时只允许探索性 Stage B TP Sweep
 
 - 日期：2026-09-21
-- 状态：Accepted
-- 适用范围：P0-7R-balanced、MC320、TP8/TP16/TP32
+- 状态：Accepted；已失效（D-Gate 已通过，Stage B 为 `PLANNING_QUANTIFICATION`，见 ADR-0007；P0 规格已由 ADR-0021 删除）
+- 适用范围：当时的 P0 规格、MC320、TP8/TP16/TP32
 
 ## 背景
 
@@ -13,9 +13,7 @@ Stage A 的三模型正式配置、敏感性分析和候选聚合证据尚未闭
 允许执行一个明确标记为 `EXPLORATORY_AFTER_BLOCKED_D_GATE` 的 Stage B TP sweep：
 
 ```text
-P0-7R-balanced-MC320-TP8
-P0-7R-balanced-MC320-TP16
-P0-7R-balanced-MC320-TP32
+<P0>-MC320-TP8 / TP16 / TP32（P0 规格已删除，见 ADR-0021）
 ```
 
 该 sweep：
@@ -31,4 +29,4 @@ P0-7R-balanced-MC320-TP32
 
 - Stage B 可以提前验证模型结构和资源守恒，但不能用于架构冻结。
 - D-Gate 通过后，需要创建新的 ADR，将正式候选写入 candidate register。
-- 当前 TP sweep 的任何结果都不能外推到 MC640、P1 或未冻结模型。
+- 该 sweep 的任何结果都不能外推到 MC640、其他规格或未冻结模型。

@@ -44,11 +44,11 @@ const blockedIds = manifestModels.filter(m => workload.provenance[m.modelId].sta
 const comparableIds = manifestModels.map(m => m.modelId).filter(id => !blockedIds.includes(id));
 assert.deepStrictEqual(detail.manifestStatus, Object.fromEntries(manifestModels.map(m => [m.modelId, m.status])));
 for (const id of blockedIds) assert.strictEqual(detail.manifestStatus[id], 'BLOCKED_CONFIG');
-// BLOCKED_CONFIG models have no ledger rows: comparable models x 5 operators x 12 slots.
-assert.strictEqual(detail.operatorLedger.length, comparableIds.length * 5 * 12);
+// BLOCKED_CONFIG models have no ledger rows: comparable models x 5 operators x 6 slots (TP x MC).
+assert.strictEqual(detail.operatorLedger.length, comparableIds.length * 5 * 6);
 assert.deepStrictEqual([...new Set(detail.operatorLedger.map(row => row.modelId))].sort(), [...comparableIds].sort());
 assert(detail.operatorLedger.every(row => !('ep' in row)), 'TP-only slots carry no EP field');
-assert.deepStrictEqual([...new Set(detail.operatorLedger.map(row => row.physicalProfile))].sort(), ['P0', 'P1']);
+assert.deepStrictEqual([...new Set(detail.operatorLedger.map(row => row.physicalProfile))], ['P1']);
 assert.deepStrictEqual([...new Set(detail.operatorLedger.map(row => row.mcProfile))].sort(), ['MC320', 'MC640']);
 assert.deepStrictEqual([...new Set(detail.operatorLedger.map(row => row.tp))].sort((a, b) => a - b), [8, 16, 32]);
 for (const row of detail.operatorLedger) {
@@ -65,9 +65,10 @@ for (const row of detail.operatorLedger) {
   assert(row.workloadStatus, 'ledger rows must carry the workload provenance status');
   assert(Number.isFinite(row.computeTimeUs) && Number.isFinite(row.memoryTimeUs));
 }
-// P0 and P1 ledger rows must use each profile's own peak capacity (from teams/hardware/src/resource_profiles.js).
+// Ledger rows use the single spec's peak capacity (from teams/hardware/src/resource_profiles.js).
 const RES = require('../../teams/hardware/src/resource_profiles');
-for (const profile of ['P0', 'P1']) {
+assert.deepStrictEqual(Object.keys(detail.sizing.availableResources), RES.PHYSICAL_PROFILES);
+for (const profile of RES.PHYSICAL_PROFILES) {
   for (const row of detail.operatorLedger.filter(r => r.physicalProfile === profile)) {
     assert.strictEqual(row.availablePeakFlops, RES.coreProfiles[profile].peakByCore[row.coreClass], `${profile} ${row.operatorId} peak is stale; rerun npm run model:planning`);
   }
@@ -81,12 +82,11 @@ for (const id of blockedIds) assert.strictEqual(detail.summary.find(x => x.model
 // Token-time block: formula, stored calibration and MTP exclusion are explicit.
 for (const [key, value] of Object.entries(detail.tokenTime.calibration)) assert.deepStrictEqual(value, workload.calibration[key], `tokenTime.calibration.${key} is stale`);
 assert.strictEqual(detail.tokenTime.mtpApplied, false);
-assert.strictEqual(detail.tokenTime.slots.length, comparableIds.length * 12);
+assert.strictEqual(detail.tokenTime.slots.length, comparableIds.length * 6);
 assert.strictEqual(detail.summary.length, 3);
 assert.strictEqual(detail.sizing.targetTpsPerUser, 1000);
 assert.strictEqual(detail.sizing.utilizationAssumption, 0.6);
 assert.strictEqual(detail.sizing.dutyCycleAssumption, 0.85);
-assert(detail.sizing.availableResources.P0.L.peakFlops > 0);
 assert(detail.sizing.availableResources.P1.L.peakFlops > 0);
 assert.strictEqual(detail.agentRuns.Q2.status, 'COMPLETE');
 assert.strictEqual(detail.agentRuns.Q8.status, 'PLANNING_ONLY');
@@ -96,7 +96,7 @@ assert.strictEqual(detail.observationMatrix.all18SlotsAccounted, true);
 assert(detail.provenance.manifestHash);
 assert.strictEqual(detail.evidenceKind, 'CALIBRATED_PLANNING_TOKEN_TIME');
 assert.strictEqual(detail.qGate.provenanceComplete, true);
-assert.strictEqual(detail.qGate.p0P1DistinctResources, true);
+assert.strictEqual(detail.qGate.singleHardwareSpec, true);
 assert.strictEqual(detail.qGate.observationMatrixCompleteOrBlocked, false);
 assert.strictEqual(detail.qGate.decision, 'BLOCKED_BY_D_GATE_MANIFEST_EVENT_MODEL_AND_PROVENANCE');
 // Performance acceptance is computed from the slots, not written as a literal.
@@ -126,4 +126,4 @@ assert.strictEqual(gate.quantificationGate.decision, detail.qGate.decision);
 assert(report.includes(detail.runMode));
 if (blockedIds.length) assert(report.includes('BLOCKED_CONFIG'));
 assert(report.includes(`All 18 slots meet target: **${detail.performanceAcceptance.all18SlotsMeetTarget ? 'yes' : 'no'}**`));
-console.log(`PASS Stage B planning: register-driven candidates, distinct P0/P1 capacity, computed acceptance (${detail.performanceAcceptance.status}) and Q-Gate block are explicit`);
+console.log(`PASS Stage B planning: register-driven candidates, single P1 spec capacity, computed acceptance (${detail.performanceAcceptance.status}) and Q-Gate block are explicit`);

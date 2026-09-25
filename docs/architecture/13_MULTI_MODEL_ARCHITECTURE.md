@@ -40,7 +40,7 @@ K3仍然是当前主性能目标；GLM-5.2和DeepSeek-V4-Pro成为必须进入�
 
 ### 3.1 K3
 
-K3继续使用当前仓库的93层工程preset和P0/P1架构分离。K3 的唯一形状来源是 `teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3`，正式 manifest 由它约束（`tests/regression/test_k3_manifest_consistency.js`）；P1/MC640 的 Final Tuning 结果（见 `00_CURRENT_STATE.md` 第 3 节）仍然只是对照结果。
+K3继续使用当前仓库的93层工程preset和唯一硬件规格（P1，ADR-0021）。K3 的唯一形状来源是 `teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3`，正式 manifest 由它约束（`tests/regression/test_k3_manifest_consistency.js`）；MC640 的 Final Tuning 发布点（见 `00_CURRENT_STATE.md` 第 3 节）是 `MODEL` 等级。
 
 K3重点验证：
 
@@ -95,7 +95,7 @@ DeepSeek新增硬件需求：
 | RDMA/Collective | TP32 mailbox、reduce、LSE | indexer top-k merge、MTP commit/rollback（无all-to-all、dispatch/combine） |
 | Scheduler | Tile IR、persistent decode | 多分支token DAG、MTP accept/reject、expert capacity reservation |
 | Performance | K3 P1回归 | 三模型分开回放，输出bytes、FLOP、hit rate、load balance和P99 |
-| PPA/RAS | P0面积/功耗/热预算 | 最坏模型取值、expert hotspot、cache容量切换、动态功耗峰值 |
+| PPA/RAS | 面积/功耗/热预算 | 最坏模型取值、expert hotspot、cache容量切换、动态功耗峰值 |
 
 ## 5. Agent调整矩阵
 
@@ -302,7 +302,7 @@ precision_path
 量化验收：
 
 - K3 P1继续复现 `teams/hardware/inputs/k3_mc_baseline.json#modelResults` 中的 MC320 与 MC640 两点；
-- P0三模型均给出≥1,050 TPS/usr是否达标的明确结论；
+- 三模型均给出≥1,050 TPS/usr是否达标的明确结论；
 - 未达标时按memory、indexer、expert、NoC、RDMA、Core、thermal分解；
 - 经验缩放因子为0。
 
@@ -335,7 +335,7 @@ precision_path
 
 量化验收：
 
-- 三模型的P0/P1隔离检查100%通过；
+- 三模型结果都在唯一硬件规格上（`singleHardwareSpec`）；
 - 每个公共接口至少有正向、背压、超时、重放和故障测试；
 - 需求追踪覆盖率G4达到100%。
 
@@ -418,7 +418,7 @@ tests/regression/test_multi_model_profiles.js
 
 ## 9. 当前结论
 
-7-reticle、8 Compute Die、16 MC、P0/P1物理profile不需要因为增加模型而立即修改；但是计算单元、SRAM/TMA、NoC、Package Fabric、RDMA、Scheduler和验证体系必须从“K3专用”升级为“多模型可配置”。
+7-reticle、8 Compute Die、16 MC、硬件规格不需要因为增加模型而立即修改；但是计算单元、SRAM/TMA、NoC、Package Fabric、RDMA、Scheduler和验证体系必须从“K3专用”升级为“多模型可配置”。
 
 最重要的结构性变化是：
 
@@ -428,7 +428,7 @@ tests/regression/test_multi_model_profiles.js
    + 384-expert TP-only MoE + MTP + FP8/FP4 Precision Path
 ```
 
-在A10完成三模型事件级回放前，不能声称当前P0物理方案同时满足三个模型的1,000 TPS/usr目标。
+在A10完成三模型事件级回放前，不能声称当前硬件规格同时满足三个模型的1,000 TPS/usr目标。
 ## 10. TP8 / TP16 / TP32 测试矩阵
 
 机器可读用例位于：

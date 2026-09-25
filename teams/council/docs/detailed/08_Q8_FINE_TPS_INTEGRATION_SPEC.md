@@ -21,7 +21,7 @@
 - 不得静默覆盖 Stage A；
 - 每个 slot 必须有 observed result 或 terminal blocker；
 - `TPS = 1e6 / e2e_latency_us_per_token`；
-- P1/MC640 结果不能标成 P0/MC320 默认结论。
+- MC640 结果不能标成 MC320 或可制造默认结论。
 
 ## Exit criteria
 

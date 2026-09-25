@@ -18,12 +18,8 @@
     "ARCH-03"
   ],
   "profiles": {
-    "P0": {
-      "purpose": "physical primary",
-      "resourceStatus": "PARTIAL"
-    },
     "P1": {
-      "purpose": "compact executable comparison",
+      "purpose": "the single hardware spec (teams/hardware/inputs/k3_mc_baseline.json, ADR-0021)",
       "resourceStatus": "PARTIAL"
     }
   },
@@ -39,7 +35,7 @@
       "MC320",
       "MC640"
     ],
-    "package": "7-reticle / 8 compute die / 16 MC"
+    "package": "8 P1 compute die + 16 MC in the 7-reticle placement window (ADR-0018)"
   },
   "requiredFields": [
     "per-core/die/package peak and sustained resource",
@@ -49,7 +45,7 @@
     "area/power/thermal/RAS"
   ],
   "blockers": [
-    "P0/P1 core-class peaks are distinct planning values; sustained utilization, duty cycle and activity-bound PPA are not independently reconciled."
+    "P1 core-class peaks are planning values from the spec; sustained utilization, duty cycle and activity-bound PPA are not independently reconciled."
   ],
   "outputs": [
     "AI Core spec",

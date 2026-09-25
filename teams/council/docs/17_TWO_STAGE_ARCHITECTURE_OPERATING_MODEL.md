@@ -35,7 +35,7 @@ Stage B 的目的才是回答：
 1. 每个 operator 在具体 tile 和资源上的时间是多少？
 2. 带宽、队列、拥塞和集合通信是否共同满足目标？
 3. 粗略 TPS 是否在算子级回放中成立？
-4. P0/P1、MC320/MC640 的结论是否可复现、可制造、可签核？
+4. 唯一硬件规格在 MC320/MC640 下的结论是否可复现、可制造、可签核？
 
 ## 2. Agent 组织方式：从功能分组改为阶段+门控
 
@@ -233,7 +233,7 @@ next_detail_questions
 - 逐层 manifest、dtype、layout、KV/state；
 - Tile IR；
 - AI core、SRAM/TMA、MC、NoC、package fabric、collective 和 scheduler 参数；
-- P0/P1 和 MC320/MC640 独立 profile。
+- 唯一硬件规格（ADR-0021）和 MC320/MC640 独立 profile。
 
 ### 5.2 细粒度链路
 
@@ -270,7 +270,7 @@ manifest
 1. 三模型逐层输入可生成 DAG 或明确 blocked；
 2. TP8/16/32 可执行，不再硬编码 TP32；
 3. 算术强度、Roofline、算力 sizing 与 event replay 使用同一 manifest；
-4. P0/P1 分离；MC320/MC640 分离；
+4. 资源只取自唯一规格文件；MC320/MC640 分离；
 5. 18 个观测槽位都有结果或可审计 blocker；
 6. 结果包含 P50/P95/P99、seed、source commit、profile；
 7. 所有经验缩放因子均有来源或已替换为事件模型；
@@ -383,7 +383,7 @@ Rollback condition
 - 18 个 TPS 槽位：全部有结果或 blocker；
 - P50/P95/P99：全覆盖；
 - arithmetic/byte/time conservation：100%；
-- P0/P1、MC320/MC640 混用错误：0；
+- 第二份硬件规格、MC320/MC640 混用错误：0；
 - 无来源经验缩放因子：0；
 - 细 TPS 与粗 TPS 差异归因率：100%。
 

@@ -3,7 +3,7 @@
 Run ID: `stage-b-20260925-planning`
 Manifest hash: `dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f`
 Run mode: `PLANNING_QUANTIFICATION`
-Source commit: `67128579ccd3595850c1a5031fcd50df30fa2264`
+Source commit: `e95418359cb22dd2a24318d9d9e13477baa2f3d5`
 
 ## Gate result
 
@@ -24,7 +24,6 @@ Source commit: `67128579ccd3595850c1a5031fcd50df30fa2264`
 - Comparable slots meet target: **no**; coverage: `COMPLETE`
 - Comparable slots below target: **11 of 18**
 - Selected candidate slots meet target: **yes** (required by the selection rule, not a performance result)
-- `P0-7R-balanced-MC640-TP32`: every model reaches the target while tau <= 1.438 us (tau-conditional)
 - `P1-compact-MC640-TP32`: every model reaches the target while tau <= 1.408 us (tau-conditional)
 - Studied candidate slots meet target: **yes**
 - Status: `PERFORMANCE_MISS_OUTSIDE_SELECTED_CANDIDATES_NOT_VALIDATED`
@@ -34,26 +33,26 @@ Source commit: `67128579ccd3595850c1a5031fcd50df30fa2264`
 
 | Model | TP | MC | Profile | TPS/usr | bounding operator | resource |
 |---|---:|---|---|---:|---|---|
-| K3 | 8 | MC320 | P0 | 137.80 | dense_projection | memory_bandwidth |
-| K3 | 8 | MC640 | P0 | 275.60 | dense_projection | memory_bandwidth |
-| K3 | 16 | MC320 | P0 | 275.60 | dense_projection | memory_bandwidth |
-| K3 | 16 | MC640 | P0 | 551.21 | dense_projection | memory_bandwidth |
-| K3 | 32 | MC320 | P0 | 551.21 | dense_projection | memory_bandwidth |
-| K3 | 32 | MC640 | P0 | 1102.41 | dense_projection | memory_bandwidth |
-| GLM-5.2 | 8 | MC320 | P0 | 448.26 | routed_moe | memory_bandwidth |
-| GLM-5.2 | 8 | MC640 | P0 | 896.53 | routed_moe | memory_bandwidth |
-| GLM-5.2 | 16 | MC320 | P0 | 896.53 | routed_moe | memory_bandwidth |
-| GLM-5.2 | 16 | MC640 | P0 | 1793.05 | routed_moe | memory_bandwidth |
-| GLM-5.2 | 32 | MC320 | P0 | 1793.05 | routed_moe | memory_bandwidth |
-| GLM-5.2 | 32 | MC640 | P0 | 2420.02 | collective_reduce | collective_latency |
-| DeepSeek-V4-Pro | 8 | MC320 | P0 | 463.85 | dense_projection | memory_bandwidth |
-| DeepSeek-V4-Pro | 8 | MC640 | P0 | 927.69 | dense_projection | memory_bandwidth |
-| DeepSeek-V4-Pro | 16 | MC320 | P0 | 927.69 | dense_projection | memory_bandwidth |
-| DeepSeek-V4-Pro | 16 | MC640 | P0 | 1855.38 | dense_projection | memory_bandwidth |
-| DeepSeek-V4-Pro | 32 | MC320 | P0 | 1855.38 | dense_projection | memory_bandwidth |
-| DeepSeek-V4-Pro | 32 | MC640 | P0 | 2314.59 | collective_reduce | collective_latency |
+| K3 | 8 | MC320 | P1 | 137.80 | dense_projection | memory_bandwidth |
+| K3 | 8 | MC640 | P1 | 275.60 | dense_projection | memory_bandwidth |
+| K3 | 16 | MC320 | P1 | 275.60 | dense_projection | memory_bandwidth |
+| K3 | 16 | MC640 | P1 | 551.21 | dense_projection | memory_bandwidth |
+| K3 | 32 | MC320 | P1 | 551.21 | dense_projection | memory_bandwidth |
+| K3 | 32 | MC640 | P1 | 1102.41 | dense_projection | memory_bandwidth |
+| GLM-5.2 | 8 | MC320 | P1 | 448.26 | routed_moe | memory_bandwidth |
+| GLM-5.2 | 8 | MC640 | P1 | 896.53 | routed_moe | memory_bandwidth |
+| GLM-5.2 | 16 | MC320 | P1 | 896.53 | routed_moe | memory_bandwidth |
+| GLM-5.2 | 16 | MC640 | P1 | 1793.05 | routed_moe | memory_bandwidth |
+| GLM-5.2 | 32 | MC320 | P1 | 1793.05 | routed_moe | memory_bandwidth |
+| GLM-5.2 | 32 | MC640 | P1 | 2416.78 | collective_reduce | collective_latency |
+| DeepSeek-V4-Pro | 8 | MC320 | P1 | 463.85 | dense_projection | memory_bandwidth |
+| DeepSeek-V4-Pro | 8 | MC640 | P1 | 927.69 | dense_projection | memory_bandwidth |
+| DeepSeek-V4-Pro | 16 | MC320 | P1 | 927.69 | dense_projection | memory_bandwidth |
+| DeepSeek-V4-Pro | 16 | MC640 | P1 | 1855.38 | dense_projection | memory_bandwidth |
+| DeepSeek-V4-Pro | 32 | MC320 | P1 | 1855.38 | dense_projection | memory_bandwidth |
+| DeepSeek-V4-Pro | 32 | MC640 | P1 | 2299.32 | collective_reduce | collective_latency |
 
-## Planning slots on P1 (token-time lanes, us)
+## Planning slots (token-time lanes, us)
 
 | Model | TP | MC | memory lane | FLOP / fixed / TMA | collectives | bound | TPS/usr | tau 1.15 / 1.5 / 2.0 | shape range |
 |---|---:|---|---:|---:|---:|---|---:|---|---|

@@ -14,10 +14,19 @@ assert.strictEqual(env.stage, 'direction');
 assert.strictEqual(env.runId, IDS.stageARunId);
 assert.strictEqual(env.models.length, 3);
 assert.strictEqual(env.packageEnvelope.areaConservation, true);
+// Area conservation is recomputed from the single hardware spec: 8 dies + 16 MC fit the placement window.
+{
+  const mc = read('teams/hardware/inputs/k3_mc_baseline.json');
+  const pe = env.packageEnvelope;
+  assert.strictEqual(pe.computeDieAreaMm2, mc.computeDieCandidate.estimatedAreaMm2);
+  assert.strictEqual(pe.placementWindowMm2, mc.package.placementWindowMm2);
+  assert(Math.abs(pe.packageAreaMm2 - (mc.card.computeDies * mc.computeDieCandidate.estimatedAreaMm2 + mc.card.memoryCubes * mc.package.memoryCubeAreaMm2Planning)) < 1e-9);
+  assert(pe.packageAreaMm2 <= pe.placementWindowMm2 && pe.computeDieAreaMm2 <= pe.computeDieAreaLimitMm2);
+}
 assert.strictEqual(workload.models.find(item => item.modelId === 'K3').status, 'CALIBRATED_DIRECTIONAL_BASELINE');
 assert.strictEqual(score.runId, IDS.stageARunId);
-assert.strictEqual(score.candidateCount, 36);
-assert.strictEqual(score.candidateSummaries.length, 12);
+assert.strictEqual(score.candidateCount, 18);
+assert.strictEqual(score.candidateSummaries.length, 6);
 assert(score.candidateSummaries.every(item => item.accountedModelCount === 3));
 assert(score.candidateSummaries.every(item => item.rankingEligible === true));
 // A BLOCKED_CONFIG model is accounted for but never ranked or assumed.
@@ -34,16 +43,15 @@ for (const row of score.candidates.filter(c => blockedIds.includes(c.modelId))) 
   assert.strictEqual(row.tpsPerUser, null);
 }
 
-// P0 and P1 capacities must each be derived from their own spec file. Equality of a
-// single core class is allowed (the search may pick the same H shape); what is
-// forbidden is copying one profile's numbers into the other.
-const packageSpec = read('teams/hardware/inputs/k3_7r_package_baseline.json');
+// One hardware spec (P1, ADR-0021): its capacity is derived from k3_mc_baseline.json,
+// never copied into the runner.
 const mcSpec = read('teams/hardware/inputs/k3_mc_baseline.json');
 const RES = require('../../teams/hardware/src/resource_profiles');
 const peak = (shape, cores, ghz) => cores * shape.engines * shape.rows * shape.cols * 2 * ghz * 1e9 * 8;
-const p0 = score.resourceProfiles.P0, p1 = score.resourceProfiles.P1;
+assert.deepStrictEqual(Object.keys(score.resourceProfiles), ['P1']);
+const p1 = score.resourceProfiles.P1;
 // Fail fast with an actionable message when the committed scorecard predates the current runner.
-assert(p0 && p1 && p0.engine && p1.engine && score.inputHashes.resourceProfiles,
+assert(p1 && p1.engine && score.inputHashes.resourceProfiles,
   'directional_tps_scorecard.json is stale (missing resourceProfiles.*.engine); run `npm run model:planning` and commit the regenerated out/ files');
 const hashFile = p => require('crypto').createHash('sha256').update(fs.readFileSync(path.join(root, p))).digest('hex');
 assert.strictEqual(score.inputHashes.resourceProfiles, hashFile('teams/hardware/src/resource_profiles.js'),
@@ -52,27 +60,24 @@ assert.strictEqual(score.inputHashes.runner, hashFile('integration/pipelines/sta
   'scorecard was generated with a different integration/pipelines/stage_a.js; run `npm run model:planning`');
 assert.strictEqual(score.inputHashes.mcSpec, hashFile('teams/hardware/inputs/k3_mc_baseline.json'),
   'scorecard predates the current k3_mc_baseline.json; run `npm run baseline:sync && npm run model:planning`');
-assert.strictEqual(p0.lCoresPerDie, packageSpec.compute.lCoresPerDie);
-assert.strictEqual(p0.hCoresPerDie, packageSpec.compute.hCoresPerDie);
-assert.strictEqual(p0.ghz, packageSpec.compute.frequencyGHzCandidate);
-assert.strictEqual(p0.peakByCore.L, peak(RES.P0_ENGINE.L, p0.lCoresPerDie, p0.ghz));
-assert.strictEqual(p0.peakByCore.H, peak(RES.P0_ENGINE.H, p0.hCoresPerDie, p0.ghz));
 const cand = mcSpec.computeDieCandidate;
 assert.strictEqual(p1.lCoresPerDie, cand.lCores);
 assert.strictEqual(p1.hCoresPerDie, cand.hCores);
 assert.strictEqual(p1.ghz, cand.frequencyGHz);
 assert.deepStrictEqual(p1.engine.L, {engines: cand.lCore.tensorEngines, rows: cand.lCore.tensorShape[0], cols: cand.lCore.tensorShape[1]});
 assert.deepStrictEqual(p1.engine.H, {engines: cand.hCore.tensorEngines, rows: cand.hCore.tensorShape[0], cols: cand.hCore.tensorShape[1]});
+assert.strictEqual(p1.peakByCore.L, peak(p1.engine.L, p1.lCoresPerDie, p1.ghz));
+assert.strictEqual(p1.peakByCore.H, peak(p1.engine.H, p1.hCoresPerDie, p1.ghz));
 // P1 package peak must be the searched candidate's die peak x 8, not a stale engine shape.
 assert(Math.abs((p1.peakByCore.L + p1.peakByCore.H) / 8 / 1e12 - cand.bf16DenseTflops) < 1e-6, 'P1 peak must match k3_mc_baseline.json; rerun npm run model:planning');
 assert.deepStrictEqual(score.resourceProfiles, JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(RES.coreProfiles).map(([k, v]) => [k, {id: v.id, lCoresPerDie: v.lCoresPerDie, hCoresPerDie: v.hCoresPerDie, ghz: v.ghz, engine: v.engine, peakByCore: v.peakByCore, source: v.source}])))), 'scorecard resource profiles are stale; rerun npm run model:planning');
-const p0k3 = score.candidates.find(c => c.candidateId === 'P0-7R-balanced-MC640-TP32' && c.modelId === 'K3');
 const p1k3 = score.candidates.find(c => c.candidateId === 'P1-compact-MC640-TP32' && c.modelId === 'K3');
-assert(p0k3 && p1k3);
+const mc320k3 = score.candidates.find(c => c.candidateId === 'P1-compact-MC320-TP32' && c.modelId === 'K3');
+assert(p1k3 && mc320k3);
 // TPS/usr is the calibrated planning token time of the slot.
 const TT = require('../../integration/planning/token_time');
 const k3Model = TT.planningModel(planningWorkload, 'K3');
-for (const row of [p0k3, p1k3]) {
+for (const row of [mc320k3, p1k3]) {
   const t = TT.slotTime(k3Model, row, planningWorkload.calibration);
   assert(Math.abs(row.tpsPerUser - t.tpsPerUser) < 1e-9 * t.tpsPerUser);
   assert.strictEqual(row.bottleneck, t.bound);
@@ -141,4 +146,4 @@ if (recomputed.decision === 'PASS') {
 }
 assert(report.includes('D-Gate'));
 assert(report.includes(IDS.stageARunId));
-console.log(`PASS stage A directional run: P0/P1 distinct resources, validator-computed D-Gate (${recomputed.decision}) and policy-derived candidate selection`);
+console.log(`PASS stage A directional run: single P1 spec resources, validator-computed D-Gate (${recomputed.decision}) and policy-derived candidate selection`);

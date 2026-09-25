@@ -2,7 +2,7 @@
 
 Run ID: `stage-a-20260925-token-time`
 Manifest hash: `dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f`
-Source commit: `67128579ccd3595850c1a5031fcd50df30fa2264`
+Source commit: `e95418359cb22dd2a24318d9d9e13477baa2f3d5`
 
 ## Planning token time (integration/planning/token_time.js)
 
@@ -49,24 +49,6 @@ Source commit: `67128579ccd3595850c1a5031fcd50df30fa2264`
 
 | Candidate | Model | dtype | memory lane us | FLOP / fixed / TMA us | collective us | bound | TPS/usr | tau 1.15 / 1.5 / 2.0 | shape range |
 |---|---|---|---:|---:|---:|---|---:|---|---|
-| P0-7R-balanced-MC320-TP8 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 6202.4 | 935.3 / 27.8 / 111.5 | 451.9 | memory | 137.80 | 137.8 / 137.8 / 137.8 | - |
-| P0-7R-balanced-MC320-TP8 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 1906.7 | 114.4 / 23.3 / 32.1 | 293.3 | memory | 448.26 | 448.3 / 448.3 / 448.3 | - |
-| P0-7R-balanced-MC320-TP8 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 1842.6 | 249.8 / 18.2 / 32.0 | 280.6 | memory | 463.85 | 463.8 / 463.8 / 463.8 | 463.8 - 498.2 |
-| P0-7R-balanced-MC320-TP16 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 3101.2 | 467.6 / 27.8 / 55.7 | 451.9 | memory | 275.60 | 275.6 / 275.6 / 275.6 | - |
-| P0-7R-balanced-MC320-TP16 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 953.3 | 57.2 / 23.3 / 16.1 | 293.3 | memory | 896.53 | 896.5 / 896.5 / 896.5 | - |
-| P0-7R-balanced-MC320-TP16 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 921.3 | 124.9 / 18.2 / 16.0 | 280.6 | memory | 927.69 | 927.7 / 927.7 / 927.7 | 927.7 - 996.3 |
-| P0-7R-balanced-MC320-TP32 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 1550.6 | 233.8 / 27.8 / 27.9 | 451.9 | memory | 551.21 | 551.2 / 551.2 / 551.2 | - |
-| P0-7R-balanced-MC320-TP32 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 476.7 | 28.6 / 23.3 / 8.0 | 293.3 | memory | 1793.05 | 1793.1 / 1793.1 / 1499.7 | - |
-| P0-7R-balanced-MC320-TP32 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 460.7 | 62.4 / 18.2 / 8.0 | 280.6 | memory | 1855.38 | 1855.4 / 1855.4 / 1482.1 | 1855.4 - 1992.6 |
-| P0-7R-balanced-MC640-TP8 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 3101.2 | 935.3 / 27.8 / 111.5 | 451.9 | memory | 275.60 | 275.6 / 275.6 / 275.6 | - |
-| P0-7R-balanced-MC640-TP8 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 953.3 | 114.4 / 23.3 / 32.1 | 293.3 | memory | 896.53 | 896.5 / 896.5 / 896.5 | - |
-| P0-7R-balanced-MC640-TP8 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 921.3 | 249.8 / 18.2 / 32.0 | 280.6 | memory | 927.69 | 927.7 / 927.7 / 927.7 | 927.7 - 996.3 |
-| P0-7R-balanced-MC640-TP16 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 1550.6 | 467.6 / 27.8 / 55.7 | 451.9 | memory | 551.21 | 551.2 / 551.2 / 551.2 | - |
-| P0-7R-balanced-MC640-TP16 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 476.7 | 57.2 / 23.3 / 16.1 | 293.3 | memory | 1793.05 | 1793.1 / 1784.1 / 1409.1 | - |
-| P0-7R-balanced-MC640-TP16 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 460.7 | 124.9 / 18.2 / 16.0 | 280.6 | memory | 1855.38 | 1855.4 / 1627.6 / 1320.8 | 1855.4 - 1971.2 |
-| P0-7R-balanced-MC640-TP32 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 775.3 | 233.8 / 27.8 / 27.9 | 451.9 | memory | 1102.41 | 1102.4 / 972.4 / 794.7 | - |
-| P0-7R-balanced-MC640-TP32 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 238.3 | 28.6 / 23.3 / 8.0 | 293.3 | collective | 2420.02 | 2420.0 / 1931.8 / 1499.7 | - |
-| P0-7R-balanced-MC640-TP32 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 230.3 | 62.4 / 18.2 / 8.0 | 280.6 | collective | 2314.59 | 2314.6 / 1879.8 / 1482.1 | 2314.6 - 2333.9 |
 | P1-compact-MC320-TP8 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 6202.4 | 983.2 / 27.8 / 111.5 | 451.9 | memory | 137.80 | 137.8 / 137.8 / 137.8 | - |
 | P1-compact-MC320-TP8 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 1906.7 | 116.3 / 23.3 / 32.1 | 293.3 | memory | 448.26 | 448.3 / 448.3 / 448.3 | - |
 | P1-compact-MC320-TP8 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 1842.6 | 259.6 / 18.2 / 32.0 | 280.6 | memory | 463.85 | 463.8 / 463.8 / 463.8 | 463.8 - 498.2 |
@@ -93,12 +75,6 @@ Source commit: `67128579ccd3595850c1a5031fcd50df30fa2264`
 
 | Comparison | Candidate | TPS/usr | bound | base model TPS/usr |
 |---|---|---:|---|---:|
-| K3-FP8-dense | P0-7R-balanced-MC320-TP8 | 208.24 | memory | 137.80 |
-| K3-FP8-dense | P0-7R-balanced-MC320-TP16 | 416.47 | memory | 275.60 |
-| K3-FP8-dense | P0-7R-balanced-MC320-TP32 | 832.95 | memory | 551.21 |
-| K3-FP8-dense | P0-7R-balanced-MC640-TP8 | 416.47 | memory | 275.60 |
-| K3-FP8-dense | P0-7R-balanced-MC640-TP16 | 832.95 | memory | 551.21 |
-| K3-FP8-dense | P0-7R-balanced-MC640-TP32 | 1168.16 | collective | 1102.41 |
 | K3-FP8-dense | P1-compact-MC320-TP8 | 208.24 | memory | 137.80 |
 | K3-FP8-dense | P1-compact-MC320-TP16 | 416.47 | memory | 275.60 |
 | K3-FP8-dense | P1-compact-MC320-TP32 | 832.95 | memory | 551.21 |
@@ -112,22 +88,15 @@ Policy: rank by worst comparable-model planning TPS; formally eligible only if e
 
 | Candidate | worst model | min TPS | min TPS at tau 2 | max tau for target (us) | >= 1050 gate | formally eligible |
 |---|---|---:|---:|---:|---|---|
-| P0-7R-balanced-MC640-TP32 | K3 | 1102.41 | 794.73 | 1.438 | yes | yes (tau-conditional) |
 | P1-compact-MC640-TP32 | K3 | 1102.41 | 785.97 | 1.408 | yes | yes (tau-conditional) |
-| P0-7R-balanced-MC320-TP32 | K3 | 551.21 | 551.21 | misses at any tau | no | no |
-| P0-7R-balanced-MC640-TP16 | K3 | 551.21 | 551.21 | misses at any tau | no | no |
 | P1-compact-MC320-TP32 | K3 | 551.21 | 551.21 | misses at any tau | no | no |
 | P1-compact-MC640-TP16 | K3 | 551.21 | 551.21 | misses at any tau | no | no |
-| P0-7R-balanced-MC320-TP16 | K3 | 275.60 | 275.60 | misses at any tau | no | no |
-| P0-7R-balanced-MC640-TP8 | K3 | 275.60 | 275.60 | misses at any tau | no | no |
 | P1-compact-MC320-TP16 | K3 | 275.60 | 275.60 | misses at any tau | no | no |
 | P1-compact-MC640-TP8 | K3 | 275.60 | 275.60 | misses at any tau | no | no |
-| P0-7R-balanced-MC320-TP8 | K3 | 137.80 | 137.80 | misses at any tau | no | no |
 | P1-compact-MC320-TP8 | K3 | 137.80 | 137.80 | misses at any tau | no | no |
 
 ## Selected candidates
 
-- `P0-7R-balanced-MC640-TP32`: worst K3 1102.41 TPS/usr; tau-conditional, reaches the target only while tau <= 1.438 us
 - `P1-compact-MC640-TP32`: worst K3 1102.41 TPS/usr; tau-conditional, reaches the target only while tau <= 1.408 us
-- Reference (not formal): `P0-7R-balanced-MC320-TP32`, worst K3 551.21 TPS/usr; misses: K3 551.2 (55%).
+- Reference (not formal): `P1-compact-MC320-TP32`, worst K3 551.21 TPS/usr; misses: K3 551.2 (55%).
 

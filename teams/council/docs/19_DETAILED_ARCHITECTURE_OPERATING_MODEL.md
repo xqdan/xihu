@@ -60,7 +60,7 @@ teams/council/inputs/detailed_architecture_operating_model.json
 - `candidate_id`：来自 `out/governance/candidate_register.json`；
 - `runMode`：`FORMAL_QUANTIFICATION` 或 `EXPLORATORY_AFTER_BLOCKED_D_GATE`；
 - `model_id`：K3、GLM-5.2、DeepSeek-V4-Pro 分开处理；
-- `physicalProfile`：P0/P1；
+- `physicalProfile`：P1（唯一硬件规格，ADR-0021）；
 - `mcProfile`：MC320/MC640；
 - `tp/cp/ep`、phase、batch、context；
 - source commit、input hashes、manifest hash、seed 或 deterministic replay。
@@ -80,7 +80,7 @@ blocked_configuration_list
 
 - 候选来源唯一且可追溯；
 - 所有模型都有明确的 `FROZEN`、`PLANNING` 或 `BLOCKED_CONFIG` 状态；
-- P0/P1、MC320/MC640 没有混用；
+- 资源只取自唯一规格文件，MC320/MC640 没有混用；
 - 后续所有产物共享同一 `run_id` 和输入 hash。
 
 ## 4. B1：工作负载、算术强度与资源 sizing
@@ -218,7 +218,7 @@ Q7 结合 activity trace 检查：
 - average/P95/peak power；
 - thermal hotspot、DVFS、throttle；
 - MC/Die/link failure 和 degraded TPS；
-- P0/P1 独立的物理约束。
+- 来自规格文件的物理约束（Die 面积、封装 window、Die/卡功耗上限）。
 
 Q7 如果发现面积、功耗或热约束需要改变 L/H/Core/MC/NoC 方向，必须通过 A0 建立 `PPA_DIRECTION_BACKFLOW`，不能只在 Q7 报告中缩小一个系数。
 
@@ -249,7 +249,7 @@ Q1 manifest
 必须输出：
 
 - 三模型 × TP8/16/32 × MC320/MC640 的 18 slot 状态；
-- P0/P1 分离；
+- 单一硬件规格检查（`singleHardwareSpec`）；
 - compute、memory、NoC、collective、scheduler、thermal breakdown；
 - P50/P95/P99；
 - Stage A 粗 TPS 与 Stage B 细 TPS 的差异百分比和原因；
@@ -266,7 +266,7 @@ Q9 负责证据检查，A0 负责决策，不允许 Q8 自己宣布通过。
 1. Q1 manifest 完整，或所有缺失配置都为可审计 blocker；
 2. Q2-Q8 使用同一 manifest hash；
 3. TP8/TP16/TP32 可执行，或每个槽位有明确 blocker；
-4. P0/P1、MC320/MC640 完全分离；
+4. 单一硬件规格，MC320/MC640 完全分离；
 5. 18 个 TPS slot 有结果或 terminal blocker；
 6. source commit、input hashes、manifest hash、seed/replay、profile、unit contract 完整；
 7. 算术、bytes、time、capacity、credit、transaction、epoch 守恒通过；

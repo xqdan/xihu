@@ -83,7 +83,7 @@ Hardware 的 tile/memory/NoC event、Software 的 schedule/kernel/collective eve
 
 ### Phase 5：Independent Verification
 
-`VV-02` 验证事件守恒、依赖时序、e2e latency、18-slot 矩阵和 P0/P1/MC320/MC640 分离。若证据仍为 synthetic planning evidence，Q-Gate 必须保持 blocked。
+`VV-02` 验证事件守恒、依赖时序、e2e latency、18-slot 矩阵、单一硬件规格和 MC320/MC640 分离。若证据仍为 synthetic planning evidence，Q-Gate 必须保持 blocked。
 
 ## 6. 详细设计文档层次
 

@@ -98,7 +98,7 @@ problems in the planning path (Stage A / Stage B, `npm run model:planning`):
 - K3 planning at P1/MC640/TP32 is 1102.4 TPS/usr and is memory-bound. At
   MC320 it is 551.2, below the target.
 - DeepSeek-V4-Pro at TP32 / MC640:
-  - 2372.9 TPS/usr at P1 and 2392.9 at P0;
+  - 2372.9 TPS/usr under this ADR's calibration (2299.3 after ADR-0008);
   - bound by collective latency (244 × 1.15 µs), not memory;
   - the indexer reads 8.4 GB/token at 1M context (132 B × 61 layers), about
     4× the sparse-attention KV;

@@ -5,14 +5,14 @@
   "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
   "targetTpsPerUser": 1000,
   "sourceHashes": {
-    "out/governance/gate_status.json": "e4a84713d8392b421fe92e5cb0971114400d29555b7cefa9f9af03eb4ea25a1c",
-    "out/detailed/detailed_architecture_run.json": "409c7ddc496ac356f07c50e9e9f6c35ba853f5769f2c6453580c7a45eca5b720",
-    "out/workload/tps_observation_matrix.json": "e46a7accaffa16e53b4e3840b57bee88cb17e8fd14128b3c810be53304a1f245",
-    "out/direction/sensitivity_sweep.json": "13e445f93a10dd1ead786586e341f42621fde677492e92c7b8f754641ada9b3f",
-    "out/contracts/model_workload_contract.json": "a4cc4df7252ef60796c14971ac95e7c83eb57d6a62141d2dd9e3a383c2a2d8cc",
-    "out/contracts/hardware_resource_contract.json": "b0ba972558f1f1c66deb92678d8b8b0690c7b87a23bf2491373b7699dd73da89",
-    "out/contracts/software_execution_contract.json": "f62368547587b79776ea71abe07a3c1435929c22a43e4361778940ad8ce6ef37",
-    "out/contracts/integration_manifest.json": "8843dca088a1d76f4b149976d67bd33474f1f76f20491f356c6577ebb9cae02e",
+    "out/governance/gate_status.json": "0d0624c856e9ba561a458dfb717970e1b9d33201ef3ce43f235d55ac1437d666",
+    "out/detailed/detailed_architecture_run.json": "93e45402a88864d0e15273bd95ed0a623a069cd8f212ab74052ea8bf9c99ef2d",
+    "out/workload/tps_observation_matrix.json": "ba4ef4038f8880421a9aa3a58478acff5a12162006aa414d9dec163e08a078ef",
+    "out/direction/sensitivity_sweep.json": "476cde0c4baa939642a373039365d5a3022512b7762d75a21ef0a5a5de855fdd",
+    "out/contracts/model_workload_contract.json": "dfa0ba7c28ad26f001b1df2e257b7ddb7bf179c9ad0a3593423c2d3f8275b305",
+    "out/contracts/hardware_resource_contract.json": "a85327173c3a258a19132d52840e7cff5a2f48dcaf18a61a14fd454307ea4a31",
+    "out/contracts/software_execution_contract.json": "94ce29bb1f79607bd77bed8c81ef4ce32c24cf2da4922ab555b08d90a957e60a",
+    "out/contracts/integration_manifest.json": "bea895e7d9cace864267aa1769ef7301b5e932f08cc9c2d00f043582ce64f9c9",
     "out/verification/timing_evidence_status.json": "f047fbf656df58b8240365e9ffe3c56f1b148e641f0721f4527fe9db1a00c2c3",
     "teams/model/inputs/model_manifest_qualification_matrix.json": "4e70a2b040af8156e6373999d427b841f5a3511a885d4b9938ec24640009c761"
   },
@@ -32,7 +32,7 @@
     {
       "id": "Q7/D3",
       "priority": "P0",
-      "issue": "P0/P1 core-class peaks are now distinct but utilization, duty cycle and PPA are not activity-validated",
+      "issue": "P1 core-class peaks come from the spec but utilization, duty cycle and PPA are not activity-validated",
       "exit": "Per-die/package/core-class resource accounting, area and activity-bound power"
     },
     {
@@ -45,7 +45,7 @@
       "id": "D7/Q9",
       "priority": "P0",
       "issue": "1000 TPS/user target not established by validated timing",
-      "exit": "Calibrated operator ledger, validated timing and feasible 7-reticle resource envelope"
+      "exit": "Calibrated operator ledger, validated timing and feasible P1 package resource envelope"
     }
   ],
   "models": [
@@ -55,23 +55,23 @@
       "bestPlanningEstimate": 1102.412443534703,
       "gapFactor": 0.9071015170997758,
       "caseId": "K3-TP32-DECODE-1M-MC640",
-      "note": "K3-calibrated planning token time on the P0 matrix slots; gap is not a hardware sizing recommendation."
+      "note": "K3-calibrated planning token time on the matrix slots; gap is not a hardware sizing recommendation."
     },
     {
       "modelId": "GLM-5.2",
       "status": "PLANNING_ESTIMATE",
-      "bestPlanningEstimate": 2420.0178491656293,
-      "gapFactor": 0.4132200927132743,
+      "bestPlanningEstimate": 2416.7805933324908,
+      "gapFactor": 0.4137735973049599,
       "caseId": "GLM-5.2-TP32-DECODE-1M-MC640",
-      "note": "K3-calibrated planning token time on the P0 matrix slots; gap is not a hardware sizing recommendation."
+      "note": "K3-calibrated planning token time on the matrix slots; gap is not a hardware sizing recommendation."
     },
     {
       "modelId": "DeepSeek-V4-Pro",
       "status": "PLANNING_ESTIMATE",
-      "bestPlanningEstimate": 2314.5850828931093,
-      "gapFactor": 0.4320428777455235,
+      "bestPlanningEstimate": 2299.318900631917,
+      "gapFactor": 0.4349113990778626,
       "caseId": "DeepSeek-V4-Pro-TP32-DECODE-1M-MC640",
-      "note": "K3-calibrated planning token time on the P0 matrix slots; gap is not a hardware sizing recommendation."
+      "note": "K3-calibrated planning token time on the matrix slots; gap is not a hardware sizing recommendation."
     }
   ]
 }

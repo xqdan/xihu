@@ -26,9 +26,9 @@ an independently validated schedule. Counts, hashes and COMPLETE strings do not 
 - Current TPS is an optimistic bottleneck bound, not fine end-to-end TPS.
   (Superseded by ADR-0006: planning TPS is now a K3-calibrated token time; it is
   still a planning estimate, not event-timed end-to-end TPS.)
-- P0 and P1 carry distinct core-class peak capacities from
-  teams/hardware/src/resource_profiles.js; they still share utilization and duty
-  cycle assumptions, so separate coverage is not physical resource validation.
+- Core-class peak capacities come from the single hardware spec P1 through
+  teams/hardware/src/resource_profiles.js (ADR-0021); utilization and duty cycle
+  are assumptions, so spec-sourced peaks are not physical resource validation.
 - D-Gate decisions, the candidate register state and the candidate selection are
   computed (integration/governance/evaluate_gates.js, selectCandidates policy in
   integration/pipelines/stage_a.js); runners never write a decision literal.
@@ -39,7 +39,7 @@ Q1/Q2: verified shape-derived per-operator FLOP and byte ledger with source and 
   (done for K3 against the engineering preset; pending vendor shapes for GLM-5.2 and DeepSeek-V4-Pro).
 Q3/Q4/Q5: resource-conserving tile, packet and cycle traces with time units and calibration.
 Q6/Q8: dependency/resource-aware schedule consumed by token latency calculation.
-Q7: distinct P0/P1 per-core resources and activity/area/power reconciliation.
+Q7: spec-sourced per-core resources and activity/area/power reconciliation.
 Q9: mutation tests reject missing/duplicate slots, mismatched hashes, self-certified registers and synthetic evidence.
 
 Reproduce: npm run model:planning; npm test.

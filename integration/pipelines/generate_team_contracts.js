@@ -3,7 +3,7 @@
  * the integration manifest.
  *
  * Each team owns its contract in teams/<team>/contract.json. This script adds
- * only computed fields: the model qualification counts, the hardware P0/P1
+ * only computed fields: the model qualification counts, the hardware P1
  * core-class peak source (from teams/hardware/src/resource_profiles.js), the
  * contract hashes and the timing evidence status.
  */
@@ -27,7 +27,7 @@ for(const id of Object.keys(hw.profiles))hw.profiles[id].coreClassPeakSource=pro
 fs.writeFileSync('out/contracts/hardware_resource_contract.json',JSON.stringify(hw,null,2)+'\n');
 const sw=readTeam('software');
 fs.writeFileSync('out/contracts/software_execution_contract.json',JSON.stringify(sw,null,2)+'\n');
-const integration={schemaVersion:'integration-manifest-v0.1',status:'BLOCKED_PENDING_THREE_TEAM_ARTIFACTS',requiredTeams:['Hardware Team','Software Team','Model Team'],requiredAgents:['HW-01','HW-02','HW-03','HW-04','HW-05','HW-06','SW-01','SW-02','SW-03','SW-04','SW-05','SW-06','SW-07','MODEL-01','MODEL-02','MODEL-03','MODEL-04','MODEL-05','MODEL-06'],inputs:['out/contracts/model_workload_contract.json','out/contracts/hardware_resource_contract.json','out/contracts/software_execution_contract.json'],hashPolicy:'Every detailed run binds all three contract hashes; mismatch blocks integration.',gatePrerequisites:['verified model shapes','P0/P1 independent resource accounting','dependency-aware timing trace','VV-02 conservation report']};
+const integration={schemaVersion:'integration-manifest-v0.1',status:'BLOCKED_PENDING_THREE_TEAM_ARTIFACTS',requiredTeams:['Hardware Team','Software Team','Model Team'],requiredAgents:['HW-01','HW-02','HW-03','HW-04','HW-05','HW-06','SW-01','SW-02','SW-03','SW-04','SW-05','SW-06','SW-07','MODEL-01','MODEL-02','MODEL-03','MODEL-04','MODEL-05','MODEL-06'],inputs:['out/contracts/model_workload_contract.json','out/contracts/hardware_resource_contract.json','out/contracts/software_execution_contract.json'],hashPolicy:'Every detailed run binds all three contract hashes; mismatch blocks integration.',gatePrerequisites:['verified model shapes','single hardware spec resource accounting','dependency-aware timing trace','VV-02 conservation report']};
 integration.contractHashes=Object.fromEntries(integration.inputs.map(p=>[p,crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex')]));
 integration.generatedAt=qualification.asOf;
 fs.writeFileSync('out/contracts/integration_manifest.json',JSON.stringify(integration,null,2)+'\n');

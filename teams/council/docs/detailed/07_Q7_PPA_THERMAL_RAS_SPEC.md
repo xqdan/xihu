@@ -22,7 +22,7 @@
 
 ## Constraints
 
-- P0/P1 独立；package compute budget 与 cooling envelope 独立；
+- Die 功耗与卡功耗上限分开核算；
 - peak、average、P95 power 分开；
 - 规划数字不得冒充 physical measurement；
 - 超预算必须进入 `PPA_DIRECTION_BACKFLOW`。

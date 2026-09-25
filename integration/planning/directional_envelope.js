@@ -1,6 +1,6 @@
 'use strict';
-/* Directional resource envelope of Stage A: model profiles and the 7R package
- * and MC envelopes in one coarse, class-level record. build() returns the base
+/* Directional resource envelope of Stage A: model profiles and the P1 card
+ * (package and MC) envelopes in one coarse, class-level record. build() returns the base
  * record; Stage A (integration/pipelines/stage_a.js) adds its run id, confidence,
  * status and assumptions and writes out/direction/directional_resource_envelope.json.
  */
@@ -11,8 +11,10 @@ const read = p => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8').replace
 
 function build({runId}) {
   const models = read('teams/model/inputs/model_profiles.json');
-  const pkg = read('teams/hardware/inputs/k3_7r_package_baseline.json');
   const mc = read('teams/hardware/inputs/k3_mc_baseline.json');
+  const RES = require('../../teams/hardware/src/resource_profiles');
+  const pkg = mc.package, die = mc.computeDieCandidate;
+  const packageAreaMm2 = mc.card.computeDies * die.estimatedAreaMm2 + mc.card.memoryCubes * pkg.memoryCubeAreaMm2Planning;
   const target = models.policy.sharedDecodeTargetTpsPerUser;
   const margin = mc.goal.engineeringMargin;
   return {
@@ -34,20 +36,24 @@ function build({runId}) {
       blockers: m.status === 'MODEL' ? [] : ['formal layer/dtype/expert manifest is not frozen']
     })),
     packageEnvelope: {
-      reticles: pkg.reticle.count, placementWindowMm2: pkg.placementWindow.areaMm2,
-      computeDies: pkg.compute.dieCount, computeDieAreaMm2: pkg.compute.dieAreaMm2,
-      memoryCubes: pkg.memory.cubeCount, memoryCapacityGB: pkg.packageTotals.memoryCapacityGBPrimary,
-      mcBaselineGBsPerCube: pkg.memory.payloadGBsPerCubeBaseline,
-      mcStretchGBsPerCube: pkg.memory.payloadGBsPerCubeStretch,
-      packageBaselineTBs: pkg.packageTotals.memoryPayloadTBsBaseline,
-      packageStretchTBs: pkg.packageTotals.memoryPayloadTBsStretch,
-      computePowerBudgetW: pkg.packageTotals.computePowerWBudget,
-      coolingEnvelopeW: pkg.packageTotals.coolingEnvelopeW,
-      areaConservation: pkg.compute.dieCount * pkg.compute.dieAreaMm2 + pkg.memory.cubeCount * pkg.memory.cubeAreaMm2Planning + pkg.packageTotals.placementRoutingReserveMm2 === pkg.placementWindow.areaMm2
+      reticles: pkg.reticles, placementWindowMm2: pkg.placementWindowMm2,
+      computeDies: mc.card.computeDies, computeDieAreaMm2: die.estimatedAreaMm2,
+      computeDieAreaLimitMm2: pkg.computeDieAreaLimitMm2,
+      memoryCubes: mc.card.memoryCubes, memoryCubeAreaMm2: pkg.memoryCubeAreaMm2Planning,
+      memoryCapacityGB: mc.card.memoryCubes * pkg.capacityGBPerCubePrimary,
+      packageAreaMm2,
+      mcBaselineGBsPerCube: RES.mcProfiles.MC320.payloadGBsPerCube,
+      mcStretchGBsPerCube: RES.mcProfiles.MC640.payloadGBsPerCube,
+      packageBaselineTBs: RES.mcProfiles.MC320.rawPayloadTBs,
+      packageStretchTBs: RES.mcProfiles.MC640.rawPayloadTBs,
+      cardPowerW: die.estimatedCardPowerW,
+      cardPowerLimitW: mc.card.powerLimitW,
+      // Area conservation: the searched die and the 16 MC fit the 7-reticle placement window.
+      areaConservation: die.estimatedAreaMm2 <= pkg.computeDieAreaLimitMm2 && packageAreaMm2 <= pkg.placementWindowMm2
     },
     bandwidthEnvelope: {
-      mc320: { sustainedAssumption: 0.7, payloadTBs: pkg.packageTotals.memoryPayloadTBsBaseline, classification: 'baseline_reference' },
-      mc640: { sustainedAssumption: 0.7, payloadTBs: pkg.packageTotals.memoryPayloadTBsStretch, classification: 'stretch_not_manufacturing_default' }
+      mc320: { sustainedAssumption: RES.mcProfiles.MC320.sustainedAssumption, payloadTBs: RES.mcProfiles.MC320.rawPayloadTBs, classification: 'baseline_reference' },
+      mc640: { sustainedAssumption: RES.mcProfiles.MC640.sustainedAssumption, payloadTBs: RES.mcProfiles.MC640.rawPayloadTBs, classification: 'stretch_not_manufacturing_default' }
     },
     assumptions: [
       'Stage A uses coarse classes, not operator-level measurements.',
@@ -55,7 +61,7 @@ function build({runId}) {
       'MC320/MC640 are directional bandwidth profiles and must be replaced by sustained transaction data in Stage B.',
       'No software gain is silently applied in this run.'
     ],
-    constraintsChecked: ['7-reticle area conservation', '8 compute die + 16 MC topology', 'P0/P1 separation', 'MC320/MC640 separation'],
+    constraintsChecked: ['7-reticle package area conservation (P1 die + 16 MC)', '8 compute die + 16 MC topology', 'single hardware spec (P1)', 'MC320/MC640 separation'],
     nextActions: ['D7 candidate sweep', 'Q1 formal manifest for selected candidates', 'Q2 arithmetic intensity ledger']
   };
 }

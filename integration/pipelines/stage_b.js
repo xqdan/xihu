@@ -2,8 +2,8 @@
 /* Stage B: planning quantification.
  *
  * Reads the candidate register (never hard-codes candidates), the hash-bound
- * manifest and the shape-derived planning workload. P0 and P1 use distinct
- * core-class capacities from teams/hardware/src/resource_profiles.js.
+ * manifest and the shape-derived planning workload. Core-class capacities come
+ * from the single hardware spec (P1) in teams/hardware/src/resource_profiles.js.
  *
  * With D-Gate passed the register's formal selection is used. With D-Gate
  * blocked the run is EXPLORATORY_AFTER_BLOCKED_D_GATE (ADR-0001, ADR-0006): it
@@ -47,6 +47,7 @@ const profiles = read('teams/model/inputs/model_profiles.json');
 const directional = read('out/direction/directional_tps_scorecard.json');
 const register = read('out/governance/candidate_register.json');
 const matrix = read('out/workload/tps_observation_matrix.json');
+const SPEC_PROFILE = RES.PHYSICAL_PROFILES[0];
 const workload = read('out/workload/planning_operator_workload.json');
 const targetTps = profiles.policy.sharedDecodeTargetTpsPerUser;
 const architectureGateTps = profiles.policy.sharedArchitectureGateTpsPerUser;
@@ -140,7 +141,7 @@ function ledgerRows(modelId, candidateId) {
 
 const ledger = [];
 const slotTimes = [];
-for (const physicalProfile of ['P0', 'P1']) {
+for (const physicalProfile of RES.PHYSICAL_PROFILES) {
   for (const mcProfile of ['MC320', 'MC640']) {
     for (const tp of [8, 16, 32]) {
       const candidateId = RES.candidateIdFor(physicalProfile, mcProfile, tp);
@@ -222,8 +223,8 @@ for (const row of ledger) {
 }
 
 const observations = matrix.observations.map(observation => {
-  const physical = observation.physicalProfile;
-  if (!['P0','P1'].includes(physical)) throw new Error('Missing/invalid physicalProfile');
+  // One hardware spec: every observation slot is on it, whatever the previous run recorded.
+  const physical = SPEC_PROFILE;
   const candidateId = RES.candidateIdFor(physical, observation.mcProfile, observation.tp);
   const common = {...observation, physicalProfile: physical, sourceSelector: `${candidateId}#/model/${observation.modelId}/tp${observation.tp}/${observation.mcProfile}`, manifestHash, runId};
   const blocked = blockedModels.find(model => model.modelId === observation.modelId);
@@ -303,7 +304,7 @@ write('out/detailed/formal_event_replay.json', eventArtifact);
 write('out/workload/tps_observation_matrix.json', {
   ...matrix,
   status: blockedObservations.length ? 'PLANNING_ESTIMATES_WITH_BLOCKED_CONFIG' : 'PLANNING_ESTIMATES_COMPLETE',
-  common: {...matrix.common, physicalProfile: 'P0'},
+  common: {...matrix.common, physicalProfile: SPEC_PROFILE},
   observationStates: [...new Set([...matrix.observationStates, 'PLANNING_ESTIMATE', 'BLOCKED_CONFIG'])],
   currentCoverage: {
     totalRequired: 18,
@@ -439,7 +440,7 @@ const detail = {
     'DeepSeek-V4-Pro carries a TPS/usr shape range: expert hidden from 49B active (point) and from 1.6T total.',
     'FFN/MoE is TP-only by deployment decision: every model shards every expert over the TP ranks; there is no expert parallelism and no all-to-all dispatch.',
     'MC320 and MC640 remain separate profiles; MC640 is not the default manufacturing claim.',
-    'P0 and P1 use distinct core-class peak capacities but share utilization and duty-cycle assumptions.',
+    'All slots use the single hardware spec (P1, teams/hardware/inputs/k3_mc_baseline.json); utilization and duty cycle are shared planning assumptions.',
     'Q3-Q8 synthetic events are placeholders and do not drive latency.'
   ],
   nextActions: [
@@ -496,11 +497,11 @@ const report = [
     ? `| ${item.modelId} | ${item.tp} | ${item.mcProfile} | ${item.physicalProfile} | BLOCKED_CONFIG | - | - |`
     : `| ${item.modelId} | ${item.tp} | ${item.mcProfile} | ${item.physicalProfile} | ${item.tpsPerUser.toFixed(2)} | ${item.boundingOperatorId} | ${item.boundingResource} |`),
   '',
-  '## Planning slots on P1 (token-time lanes, us)',
+  '## Planning slots (token-time lanes, us)',
   '',
   '| Model | TP | MC | memory lane | FLOP / fixed / TMA | collectives | bound | TPS/usr | tau 1.15 / 1.5 / 2.0 | shape range |',
   '|---|---:|---|---:|---:|---:|---|---:|---|---|',
-  ...slotTimes.filter(item => item.physicalProfile === 'P1').map(item => `| ${item.modelId} | ${item.tp} | ${item.mcProfile} | ${item.memoryLaneUs.toFixed(1)} | ${item.flopUs.toFixed(1)} / ${item.fixedUs.toFixed(1)} / ${item.tmaExposedUs.toFixed(1)} | ${item.commUs.toFixed(1)} (${item.collectivesPerToken} x ${item.perCollectiveUs.toFixed(2)}) | ${item.bound} | ${item.tpsPerUser.toFixed(2)} | ${item.tauSensitivity.map(x => x.tpsPerUser.toFixed(1)).join(' / ')} | ${item.shapeVariants.length ? `${item.tpsPerUserShapeRange.min.toFixed(1)} - ${item.tpsPerUserShapeRange.max.toFixed(1)}` : '-'} |`),
+  ...slotTimes.map(item => `| ${item.modelId} | ${item.tp} | ${item.mcProfile} | ${item.memoryLaneUs.toFixed(1)} | ${item.flopUs.toFixed(1)} / ${item.fixedUs.toFixed(1)} / ${item.tmaExposedUs.toFixed(1)} | ${item.commUs.toFixed(1)} (${item.collectivesPerToken} x ${item.perCollectiveUs.toFixed(2)}) | ${item.bound} | ${item.tpsPerUser.toFixed(2)} | ${item.tauSensitivity.map(x => x.tpsPerUser.toFixed(1)).join(' / ')} | ${item.shapeVariants.length ? `${item.tpsPerUserShapeRange.min.toFixed(1)} - ${item.tpsPerUserShapeRange.max.toFixed(1)}` : '-'} |`),
   '',
   '## Agent outputs',
   '',

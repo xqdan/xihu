@@ -27,13 +27,13 @@ assert.equal(baseline.referenceMemoryCube.maxUnidirectionalBandwidthGBsPerCube, 
 assert(fs.existsSync(path.resolve(path.dirname(specPath), baseline.referenceMemoryCube.source)),
   'Reference provenance file must exist');
 // Whether the stretch point clears the target is a model outcome, not a fixed expectation:
-// the spec must state it consistently, and the 1050 architecture gate is never closed by a P1 model.
+// the spec must state it consistently, and the 1050 architecture gate is never closed by the engineering model.
 assert.equal(baseline.acceptance.currentStatus,
   baseline.modelResults.stretchMc640GBs.tpsPerUser >= baseline.goal.target ? 'target-met-in-model-only' : 'not-met');
-// The P1 number may exceed 1050 (it does on the SF4 / liquid-cooled basis), but the
+// The model number may exceed 1050 (it does on the SF4 / liquid-cooled basis), but the
 // gate needs the manufacturable MC route in the detailed tile model, so it stays not-met.
-assert(baseline.acceptance.architectureGateTpsPerUser === undefined || /^not-met \(P1 engineering model/.test(baseline.acceptance.architectureGateStatus),
-  'architecture gate cannot be closed by the P1 model');
+assert(baseline.acceptance.architectureGateTpsPerUser === undefined || /^not-met \(engineering model/.test(baseline.acceptance.architectureGateStatus),
+  'architecture gate cannot be closed by the engineering model');
 
 const reference = Final.evaluate({...candidate, mcGBs: 320});
 const stretch = Final.evaluate({...candidate, mcGBs: 640});

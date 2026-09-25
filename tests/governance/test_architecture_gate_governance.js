@@ -40,7 +40,7 @@ assert.deepStrictEqual(status.quantificationGate, quant, 'committed Q-Gate must 
 assert.strictEqual(quant.exploratoryOnly, true);
 assert.strictEqual(quant.provenanceComplete, true);
 assert.strictEqual(quant.all18SlotsAccounted, true);
-assert.strictEqual(quant.p0P1DistinctResources, true);
+assert.strictEqual(quant.singleHardwareSpec, true);
 assert.strictEqual(quant.observationMatrixCompleteOrBlocked, false);
 assert.strictEqual(quant.decision, 'BLOCKED_BY_D_GATE_MANIFEST_EVENT_MODEL_AND_PROVENANCE');
 console.log(`PASS independent architecture gate validator: D-Gate ${direction.decision} reproduced from artifacts; Q-Gate rejects synthetic evidence`);

@@ -4,7 +4,7 @@ Read-only history. Live code (`teams/`, `integration/`, `tests/`) must not requi
 
 | Directory | Content | Superseded by |
 |---|---|---|
-| `rdma_variants/` | Six RDMA exploration variants (joint, kernel fusion, local port, local port compete, optimized, tile pipeline): models, searches, results, reports, tests | `integration/detailed/k3_rdma_final_tuning_*` |
+| `rdma_variants/` | Six RDMA exploration variants (joint, kernel fusion, local port, local port compete, optimized, tile pipeline): models, searches, results, reports, tests; `data/k3_b1_1000_rdma_sram_results.json` is the RDMA/SRAM search result they seed from (removed from `out/` by ADR-0021) | `integration/detailed/k3_rdma_final_tuning_*` |
 | `sram_html_models/` | SRAM capacity and SRAM/TPS analysis scripts, data and reports | `integration/detailed/k3_operator_sram_sim.js` |
 | `browser_figures/` | Browser-side KV figure helper | — |
 | `reports/` | Earlier Stage A / Stage B run reports (2026-09-21 … 09-23) | `out/direction/`, `out/detailed/` |

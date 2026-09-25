@@ -1,8 +1,8 @@
-/* Local engineering design-space exploration; no vendor PPA claims.
- * Run: node k3_architecture_search.js [--samples 192] [--generations 4] [--offspring 48]
+/* Die physical model, operator-to-core mapping and the design space shared by
+ * the final tuning search (k3_rdma_final_tuning_search.js); no vendor PPA claims.
+ * The standalone multi-objective search() is kept as a library function only.
  */
 'use strict';
-const fs=require('fs'),crypto=require('crypto');
 const {build,simulate,MiB}=require('./k3_operator_sram_sim.js');
 const LIMITS={dies:8,tp:32,context:1048576,dieArea:400,diePower:260,cardPower:2400,packageArea:5248,packageUtil:1,mcCountPerDie:2,mcArea:100,mcGB:8,networkGBs:800,usable:.85};
 // Only SRAM density and reference matrix density are inherited from local concept documents.
@@ -269,10 +269,3 @@ function search({samples=192,generations=4,offspring=48,polish=2,seed=20260919}=
  return {version:'2026-09-19',seed,options:{samples,generations,offspring,polish},elapsedSeconds:(Date.now()-start)/1000,limits:LIMITS,tech:TECH,space:SPACE,baseline,attempted,physicalReject,mappingReject,rejected,history,selected,frontIds:front.map(r=>r.id),rows};
 }
 module.exports={LIMITS,TECH,SPACE,BASE,EPILOGUE_OPS,physical,mappedPlan,evaluate,dominates,pareto,rng,search};
-if(require.main===module){
- const opt={};for(let i=2;i<process.argv.length;i+=2){const k=process.argv[i].replace(/^--/,'');if(!['samples','generations','offspring','polish','seed'].includes(k))throw Error('Unknown '+k);opt[k]=Number(process.argv[i+1]);if(!Number.isInteger(opt[k])||opt[k]<0)throw Error('Invalid '+k);}
- const result=search(opt);result.inputHash=crypto.createHash('sha256').update(fs.readFileSync(__filename)).update(fs.readFileSync('integration/detailed/k3_operator_sram_sim.js')).update(fs.readFileSync('teams/model/src/design_engine.js')).digest('hex');
- fs.writeFileSync('out/search/k3_architecture_search_results.json',JSON.stringify(result,null,2));
- console.log(JSON.stringify({attempted:result.attempted,evaluated:result.rows.length,front:result.frontIds.length,selected:result.selected,seconds:result.elapsedSeconds},null,2));
- for(const[k,id]of Object.entries(result.selected)){const r=result.rows[id];console.log(k,id,r.f1,r.f2,'area',r.p.dieArea,'W',r.p.cardPower);}
-}

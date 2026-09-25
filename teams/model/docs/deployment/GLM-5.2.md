@@ -39,6 +39,26 @@
 - 稀疏注意力：每层只读 top-k 2048 个 KV；full 层在整段 context 上运行自己的 indexer，shared 层沿用上一个 full 层的 top-k
   （`modeling_glm_moe_dsa.py`：shared 层 `indexer = None`，复用 `prev_topk_indices`）。
 
+```mermaid
+flowchart LR
+  F["full indexer 层（21）<br/>自己打分 → top-2048"] -->|"prev_topk_indices"| S1["shared 层"]
+  S1 --> S2["shared 层"]
+  S2 --> S3["shared 层"]
+  S3 --> F2["下一个 full 层"]
+```
+
+### 4.1 每 rank 容量（TP32，context 1M，单请求）
+
+| 项 | 每 rank |
+|---|---:|
+| 权重 | 23.29 GB |
+| KV（78 层 × 32768 token × 656 B） | 1.677 GB |
+| index key（21 层 × 32768 token × 132 B） | 0.091 GB |
+| 合计 | 25.06 GB |
+
+来源：[`04_MEMORY_SUBSYSTEM_MC.md`](../../../hardware/docs/04_MEMORY_SUBSYSTEM_MC.md) 第 3 节，ASSUMPTION 推导值。
+每 token 读取的字节账见 [OPERATOR_LEDGER.md](OPERATOR_LEDGER.md)。
+
 ## 5. 集合通信（ASSUMPTION）
 
 | 层类型 | 次数/层 | 组成 |

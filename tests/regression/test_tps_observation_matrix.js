@@ -25,7 +25,7 @@ for (const observation of matrix.observations) {
   assert.strictEqual(observation.metric, matrix.metric.id);
   assert.strictEqual(observation.unit, matrix.metric.unit);
   assert(cases.some(testCase => testCase.caseId === observation.caseId), `${observation.observationId}: missing test case`);
-  assert.strictEqual(observation.physicalProfile, 'P0');
+  assert.strictEqual(observation.physicalProfile, 'P1');
   assert(observation.source);
   assert(observation.sourceSelector);
   assert(observation.manifestHash);

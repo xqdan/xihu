@@ -75,7 +75,7 @@ for (const row of score.candidates) {
 }
 assert(comparable > 0);
 // The K3 FP8-dense comparison is recomputed and never enters candidates or ranking.
-assert.strictEqual(score.comparisonRows.length, 12 * Object.keys(workload.comparisons).length);
+assert.strictEqual(score.comparisonRows.length, 6 * Object.keys(workload.comparisons).length);
 for (const row of score.comparisonRows) {
  assert.strictEqual(row.ranked, false);
  const t = TT.slotTime(workload.comparisons[row.comparisonId], row, workload.calibration);

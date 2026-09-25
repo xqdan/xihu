@@ -5,13 +5,12 @@ Status: accepted for repository modeling governance
 
 ## Context
 
-By 2026-09-25 the published Final Tuning point had reached 1015.08 TPS/usr in the
-P1 compact executable model (MC640, frequency fixed at 1.0 GHz; 1101.77 after the
-physical basis of decision 6). The software and hardware choices behind
-it were spread across OPT comments, commit messages, `00_CURRENT_STATE.md`, and
-unit docs 02/03/05, which still describe the 2026-09-20 candidate. Nothing listed
-the full set of mechanisms the claim depends on, what each one contributes, or
-how thin the margin was (12.70 µs of raw at 1015.08; 78.95 µs at 1101.77).
+The published Final Tuning point is 1101.77 TPS/usr (P1, MC640, TP32,
+frequency fixed at 1.0 GHz, physical basis of decision 6). The software and
+hardware choices behind it were spread across OPT comments, commit messages,
+`00_CURRENT_STATE.md` and the hardware unit docs. Nothing listed the full set of
+mechanisms the claim depends on, what each one contributes, or how thin the
+margin is (78.95 µs of raw against the 854.70 µs budget).
 
 ## Decision
 
@@ -45,8 +44,7 @@ how thin the margin was (12.70 µs of raw at 1015.08; 78.95 µs at 1101.77).
      change and needs its own decision.
    - The physical basis of the die (process area scaling, matrix density,
      cooling and its power limits) lives in `integration/detailed/k3_physical_basis.js`
-     and is a change of the same class as A.TECH/A.LIMITS. `A.physical()` keeps
-     the historical N4-reference, air-cooled basis so older artifacts replay.
+     and is a change of the same class as A.TECH/A.LIMITS.
 6. Physical basis, decided 2026-09-25 (all `ASSUMPTION`, B-006 / O-015):
    - compute-die area on Samsung SF4-class 4 nm, scaled from the N4-reference
      coefficients with public node figures: logic ×1.277 (CPP × MMP, SF4E
@@ -62,14 +60,12 @@ how thin the margin was (12.70 µs of raw at 1015.08; 78.95 µs at 1101.77).
 - The shared-SRAM port scaling currently costs 16.15 mm² (SF4) and 5.69 W per die
   (45.51 W per card) for 0.06 TPS. That is now visible and can be reclaimed by a
   later decision.
-- On the SF4 area basis alone (matrix density 1.6, air-cooled) the 1015.08 point
-  is 414.5 mm² and the search settles at 1015.06 with the die area binding. The
-  gain to 1101.77 needs the denser matrix and the liquid-cooled limits together:
-  the power returns UCIe to 128 lanes (MC no longer capped by the UCIe port) and
-  buys H compute; either alone adds under 10 TPS.
-- The P1 number now exceeds the 1050 architecture gate. The gate stays not-met:
+- The published point needs the denser matrix and the liquid-cooled limits
+  together: the power returns UCIe to 128 lanes (MC no longer capped by the
+  UCIe port) and buys H compute; either alone adds under 10 TPS.
+- The published point exceeds the 1050 architecture gate. The gate stays not-met:
   it requires the manufacturable MC route in the detailed tile model.
 - Doc 21 will fail the test if its numbers drift from the model. Hand edits
   alone therefore cannot keep it green.
-- The unit docs 02/03/05 remain comparison material until they are rewritten
-  against doc 21.
+- The hardware unit docs 02–09 take their per-unit values from doc 21 and
+  `k3_mc_baseline.json#computeDieCandidate`.

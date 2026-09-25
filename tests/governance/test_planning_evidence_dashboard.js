@@ -30,9 +30,13 @@ const fake = clone(detail);
 fake.runMode = 'FORMAL_QUANTIFICATION';
 for (const agent of Object.values(fake.agentRuns)) agent.status = 'COMPLETE';
 assert.notStrictEqual(evaluateQuantificationGate(fake,matrix,register,{decision:'PASS'}).decision,'PASS');
-const sharedCapacity = clone(detail);
-sharedCapacity.sizing.availableResources.P0 = clone(sharedCapacity.sizing.availableResources.P1);
-assert.strictEqual(evaluateQuantificationGate(sharedCapacity,matrix,register,{decision:'PASS'}).p0P1DistinctResources,false);
+// A second physical profile, or a resource not sourced from the spec file, breaks the single-spec check.
+const secondProfile = clone(detail);
+secondProfile.sizing.availableResources.P2 = clone(secondProfile.sizing.availableResources.P1);
+assert.strictEqual(evaluateQuantificationGate(secondProfile,matrix,register,{decision:'PASS'}).singleHardwareSpec,false);
+const copiedSource = clone(detail);
+copiedSource.sizing.availableResources.P1.H.source = 'integration/pipelines/stage_b.js';
+assert.strictEqual(evaluateQuantificationGate(copiedSource,matrix,register,{decision:'PASS'}).singleHardwareSpec,false);
 for (const row of detail.operatorLedger) {
  assert.strictEqual(row.rooflineBound,row.arithmeticIntensity < row.ridgePoint ? 'bandwidth' : 'compute');
 }

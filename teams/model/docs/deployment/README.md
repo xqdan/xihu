@@ -9,6 +9,24 @@
 | GLM-5.2 | [GLM-5.2.md](GLM-5.2.md) | 公开 HF `config.json` + 部署 ASSUMPTION 字段 | `SHAPE_DERIVED_FROM_CONFIG` |
 | DeepSeek-V4-Pro | [DeepSeek-V4-Pro.md](DeepSeek-V4-Pro.md) | 公开报告字段 + DeepSeek-V3/V3.2 维度 ASSUMPTION | `SHAPE_DERIVED_WITH_ASSUMPTIONS` |
 
+跨模型文档：
+
+| 文档 | 内容 |
+|---|---|
+| [OPERATOR_LEDGER.md](OPERATOR_LEDGER.md) | 规划算子账：行格式、三个模型的 FLOP/字节、与 K3 详细模型的对账、token-time 系数与局限 |
+| [SCENARIO_MATRIX.md](SCENARIO_MATRIX.md) | 场景矩阵：3 模型 × TP8/16/32 × MC320/640（单一硬件规格 P1）、评分流程、选择政策、D-Gate |
+| [model_manifest_qualification_20260922.md](../model_manifest_qualification_20260922.md) | manifest 资格评审报告（2026-09-22） |
+
+```mermaid
+flowchart LR
+  MAN["formal_model_manifests.json"] --> DEP["逐模型部署方案<br/>K3 / GLM-5.2 / DeepSeek-V4-Pro"]
+  MAN --> LED["OPERATOR_LEDGER<br/>规划算子账"]
+  TPM["multi_model_tp_matrix.json"] --> SCN["SCENARIO_MATRIX<br/>18 行评分"]
+  LED --> SCN
+  SCN --> SC["directional_tps_scorecard.json<br/>（TPS 数值只在这里）"]
+  DEP -.->|"软件侧实现"| SW["teams/software/docs<br/>KERNEL_SPEC、MULTI_MODEL_LOWERING、<br/>COLLECTIVE_SCHEDULE、PRECISION_POLICY"]
+```
+
 ## 与机器可读来源的关系
 
 - 部署字段的唯一来源是 [`teams/model/inputs/formal_model_manifests.json`](../../inputs/formal_model_manifests.json)

@@ -13,7 +13,7 @@
     "tp": [8, 16, 32],
     "cp": [1, 8, 16, 32],
     "phases": ["decode", "prefill"],
-    "physicalProfiles": ["P0", "P1"],
+    "physicalProfiles": ["P1"],
     "mcProfiles": ["MC320", "MC640"]
   },
   "coreClasses": ["L", "H", "V", "INDEXER", "REDUCE"],
@@ -28,6 +28,6 @@
   },
   "validation": {
     "mustTrack": ["model_id", "manifest_version", "contract_version", "source_commit", "run_id", "seed", "unit", "confidence", "status"],
-    "forbid": ["silent_missing_config", "raw_as_sustained", "p1_as_p0", "single_log2_collective_factor", "hidden_vector_indexer_reduce"]
+    "forbid": ["silent_missing_config", "raw_as_sustained", "planning_as_observed", "single_log2_collective_factor", "hidden_vector_indexer_reduce"]
   }
 }

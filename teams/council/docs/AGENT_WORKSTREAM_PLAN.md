@@ -1,9 +1,9 @@
 # K3 7-Reticle 架构并行 Agent 计划
 
-版本：2026-09-21
+版本：2026-09-21（2026-09-26 按 ADR-0021 修订为单一硬件规格）
 状态：`BASELINE / READY FOR PARALLEL EXECUTION`
 
-> 配套量化验收矩阵：[`AGENT_METRICS_MATRIX.md`](AGENT_METRICS_MATRIX.md)。每个 Agent 的指标、单位、P0/P1 profile 和退出条件以该矩阵为准。
+> 配套量化验收矩阵：[`AGENT_METRICS_MATRIX.md`](AGENT_METRICS_MATRIX.md)。每个 Agent 的指标、单位和退出条件以该矩阵为准。
 
 ## 1. 目标
 
@@ -14,8 +14,7 @@
 - 端到端目标 `1000 TPS/usr`；
 - 架构冻结门槛 `>=1050 TPS/usr`；
 - 7-reticle package：8 Compute Die + 16 MC；
-- P0 physical primary：400 mm²/Die、8 L + 8 H、96 MiB data SRAM/Die；
-- P1 compact executable：当前 4 L + 4 H、44 MiB/Die 模型，用于持续回归和对照。
+- 唯一硬件规格 P1（ADR-0021）：8 L + 4 H、40 MiB/Die、373.71 mm²（SF4）、1.0 GHz；当前发布点 1101.77 TPS/usr（MC640，`MODEL` 等级），权威数值见 [`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md)。
 
 ## 1.1 多模型扩展
 
@@ -25,9 +24,9 @@
 
 - A1 为三个模型维护独立 manifest、DAG、state、dtype 和 routing profile；
 - A3–A9 必须支持 sparse index、MoE expert dispatch/combine、MTP 分支和 FP8/FP4 precision path 的可配置建模；
-- A10 必须生成 `3 models × 2 physical profiles × 2 MC profiles` 的结果矩阵；
-- A11 以三模型最坏功耗、热和带宽场景作为 P0 签核输入；
-- A12 为每个模型提供 golden trace、fault trace 和 P0/P1 隔离测试；
+- A10 必须生成 `3 models × 3 TP × 2 MC profiles` 的结果矩阵（18 行）；
+- A11 以三模型最坏功耗、热和带宽场景作为 PPA 签核输入；
+- A12 为每个模型提供 golden trace、fault trace，并检查资源只取自唯一 spec 文件；
 - GLM-5.2 和 DeepSeek-V4-Pro 的正式部署配置、权重格式、dtype 和专家路由在确认前标记为 `MODEL_PENDING_CONFIG_CONFIRMATION`，不得伪造最终性能结论。
 ## 2. 并行设计原则
 
@@ -56,42 +55,65 @@ docs/architecture/00_CURRENT_STATE.md
 docs/architecture/HIGH_LEVEL_ARCHITECTURE.md
 teams/council/adr/README.md
 docs/architecture/OPEN_ISSUES.md
-teams/hardware/inputs/k3_7r_package_baseline.json
+teams/hardware/inputs/k3_mc_baseline.json（仅 computeDieCandidate/modelResults/tpsDesign 由 `npm run baseline:sync` 生成）
 package.json
 AGENTS.md
 ```
 
 agent 只能在自己的 branch 提交建议，由 Integrator 在合并时统一更新这些文件。
 
-### 2.3 两套 profile 必须分离
+### 2.3 只有一份硬件规格
 
-所有 agent 的报告、模型和测试必须明确标注：
-
-| Profile | 用途 | 规格 |
-|---|---|---|
-| `P0-7R-physical` | 封装、面积、SRAM、PPA 主规划 | 8 L + 8 H、96 MiB/Die、400 mm²/Die、16 MC/package |
-| `P1-compact-executable` | 现有代码回归和可执行对照 | 4 L + 4 H、1.2 GHz、44 MiB/Die、面积见 `00_CURRENT_STATE.md` 第 2 节 |
-
-禁止把 P1 的性能结果直接写成 P0 的最终签核结果。
+硬件规格只有 P1（ADR-0021），权威值在 `teams/hardware/inputs/k3_mc_baseline.json`，由 Final Tuning 搜索经
+`npm run baseline:sync` 写入。所有 agent 的报告、模型和测试从这个文件取资源，不另写第二份手工规格；
+想比较别的规格，应作为搜索空间变更提出并带 ADR。性能结果须注明证据等级（`MODEL`、`PLANNING_ESTIMATE` 等），
+模型内达标不等于签核。
 
 ## 3. Agent 角色总表
 
-| ID | 角色 | 主要目录 | 是否关键路径 |
+| ID | 角色 | 主要目录（team-first 布局） | 是否关键路径 |
 |---|---|---|---|
-| A0 | Architecture Integrator / Chief Architect | ADR、状态、集成报告 | 是，串行控制 |
-| A1 | Workload & Model Manifest | `docs/architecture/workload/`, `data/workload/` | 是 |
-| A2 | 7R Package / Floorplan | `docs/architecture/package/`, `data/package/` | 是 |
-| A3 | Compute Die / AI Core | `docs/architecture/ai_core/`, `src/core/` | 是 |
-| A4 | SRAM / TMA / Memory Hierarchy | `docs/architecture/tma_sram/`, `integration/detailed/` | 是 |
-| A5 | Memory Cube / MC Controller | `docs/architecture/memory_mc/`, `src/` | 是 |
-| A6 | Die-local NoC | `docs/architecture/noc/`, `models/noc_packet/` | 是 |
-| A7 | Package Fabric / Die-to-Die | `docs/architecture/multidie/` | 是 |
-| A8 | Scale-out / RDMA / Collective | `docs/architecture/scaleout/`, `src/rdma/` | 是 |
-| A9 | Tile IR / Compiler / Scheduler | `docs/architecture/scheduler/`, `src/` | 是 |
-| A10 | Performance Model Integration | `integration/detailed/`, `models/tile/`, `data/` | 是，关键路径 |
-| A11 | PPA / Power / Thermal / RAS | `docs/architecture/package/`, `models/ppa/` | 是 |
-| A12 | Verification / Regression / Traceability | `tests/`, `teams/vv/` | 是，合并闸门 |
-| A13 | Documentation / Report Publisher | `integration/pipelines/`, `integration/templates/`, `reports/` | 否，可并行 |
+| A0 | Architecture Integrator / Chief Architect | `teams/council/adr/`、`docs/architecture/` | 是，串行控制 |
+| A1 | Workload & Model Manifest | `teams/model/`（`docs/deployment/`、`inputs/`、`src/`） | 是 |
+| A2 | 7R Package / Floorplan | `teams/hardware/docs/09_*`，`teams/hardware/inputs/k3_mc_baseline.json#package` | 是 |
+| A3 | Compute Die / AI Core | `teams/hardware/docs/02_AI_CORE.md`、`teams/hardware/src/` | 是 |
+| A4 | SRAM / TMA / Memory Hierarchy | `teams/hardware/docs/03_TMA_AND_SRAM.md`、`integration/detailed/` | 是 |
+| A5 | Memory Cube / MC Controller | `teams/hardware/docs/04_MEMORY_SUBSYSTEM_MC.md` | 是 |
+| A6 | Die-local NoC | `teams/hardware/docs/05_ON_DIE_NOC.md` | 是 |
+| A7 | Package Fabric / Die-to-Die | `teams/hardware/docs/06_MULTIDIE_AND_SCALEOUT.md` | 是 |
+| A8 | Scale-out / RDMA / Collective | `teams/hardware/docs/07_COLLECTIVE_RDMA.md`、`teams/software/docs/COLLECTIVE_SCHEDULE.md`、`integration/detailed/k3_sram_memory_rdma_model.js` | 是 |
+| A9 | Tile IR / Compiler / Scheduler | `teams/software/`、`teams/hardware/docs/08_*`、`docs/architecture/contracts/` | 是 |
+| A10 | Performance Model Integration | `integration/detailed/`、`integration/planning/`、`out/` | 是，关键路径 |
+| A11 | PPA / Power / Thermal / RAS | `teams/hardware/docs/09_*`、`integration/detailed/k3_physical_basis.js` | 是 |
+| A12 | Verification / Regression / Traceability | `tests/`、`teams/vv/` | 是，合并闸门 |
+| A13 | Documentation / Report Publisher | `integration/pipelines/`、`out/` | 否，可并行 |
+
+> 2026-09-25 注：本计划写于 team-first 重构（commit 6712857）之前。下文各 workstream 的“建议目录 / 交付”代码块
+> 仍是原始规划（`docs/architecture/<子目录>/`、`src/`、`models/`、`data/`、`reports/`），这些目录**从未创建**。
+> 实际落位按下图：设计文档跟签核团队走，模型代码在 `integration/`，产物在 `out/`。
+
+```mermaid
+flowchart LR
+  subgraph OLD["原规划目录（未创建）"]
+    O1["docs/architecture/workload/<br/>data/workload/ src/workload/"]
+    O2["docs/architecture/ai_core/ tma_sram/<br/>memory_mc/ noc/ multidie/ scaleout/ package/"]
+    O3["docs/architecture/scheduler/<br/>src/scheduler/"]
+    O4["models/* src/rdma/ src/core/"]
+    O5["data/* reports/*"]
+  end
+  subgraph NEW["实际落位"]
+    N1["teams/model/"]
+    N2["teams/hardware/docs/02–12"]
+    N3["teams/software/docs/"]
+    N4["integration/detailed/<br/>integration/planning/"]
+    N5["out/"]
+  end
+  O1 --> N1
+  O2 --> N2
+  O3 --> N3
+  O4 --> N4
+  O5 --> N5
+```
 
 如果 agent 数量有限，建议合并为：
 
@@ -109,13 +131,13 @@ A10 + A12：Performance / Verification
 
 **目的**：建立所有 agent 共同遵守的契约、目录、状态和命名。
 
-**输入**：当前 7R baseline、`HIGH_LEVEL_ARCHITECTURE.md`、`teams/council/adr/`、`OPEN_ISSUES.md`。
+**输入**：当前硬件规格（`k3_mc_baseline.json`）、`HIGH_LEVEL_ARCHITECTURE.md`、`teams/council/adr/`、`OPEN_ISSUES.md`。
 
 **交付**：
 
 - `docs/architecture/WORKSTREAM_REGISTER.md`；
 - 需求编号规则；
-- P0/P1 profile schema；
+- 硬件规格 schema；
 - Tile IR 初版字段表；
 - 公共单位规则；
 - 每个 workstream 的 owner、分支和退出条件。
@@ -160,7 +182,7 @@ tests/test_workload_manifest.js
 **任务**：
 
 - 把 7R、82×64 mm、5,248 mm² placement window formalize；
-- 规划 8×400 mm² Compute Die + 16×100 mm² MC；
+- 规划 8 颗 Compute Die（面积取自 `computeDieCandidate`，上限 400 mm²）+ 16×100 mm² MC；
 - 定义 die 坐标、MC home、北/南 memory row；
 - 定义 package edge、scale-out、host、management、clock 位置；
 - 输出初版 bump/PHY beachfront 和 keep-out map。
@@ -191,17 +213,16 @@ W2 在 W1 的 schema 草案可用后并行启动 A3–A9。各 agent 不等待�
 
 **任务**：
 
-- P0 的 8 L + 8 H Core 划分；
+- 8 L + 4 H Core 划分（`computeDieCandidate`）；
 - Tensor/Vector engine 能力和 dtype；
 - Core command queue、RF、issue、preemption；
-- 8 Core Pod / 16 Core Die 的物理映射；
-- P0/P1 kernel cycle model 对比。
+- 12 Core Die 的物理映射；
+- kernel cycle model 与 Final Tuning 时间账对账。
 
 **交付**：
 
 ```text
-docs/architecture/ai_core/AI_CORE_P0_SPEC.md
-docs/architecture/ai_core/AI_CORE_P1_COMPATIBILITY.md
+docs/architecture/ai_core/AI_CORE_SPEC.md
 models/kernel_cycle/
 tests/test_ai_core_contract.js
 ```
@@ -210,10 +231,10 @@ tests/test_ai_core_contract.js
 
 **任务**：
 
-- P0：64 MiB L-local + 16 MiB H-local + 16 MiB Shared；
+- 8 MiB L-local + 16 MiB H-local + 16 MiB Shared（40 MiB/Die）；
 - bank/slice/port/ECC/scrub/repair；
 - TMA descriptor 和 buffer lifecycle；
-- P0/P1 tile-fit 统一接口；
+- tile-fit 接口；
 - bank-cycle model。
 
 **交付**：
@@ -250,7 +271,7 @@ tests/test_mc_contract.js
 
 **任务**：
 
-- P0 的 16 Core + 16 SRAM slice + MC gateway endpoint；
+- 12 Core + 16 SRAM slice + MC gateway endpoint；
 - Data/Control/Collective 三层网络；
 - 5×5 mesh 或多平面替代；
 - flit、VC、credit、buffer、QoS、deadlock；
@@ -331,8 +352,7 @@ W3 在 W2 各模块交付接口草案后启动。
 
 - 将 manifest 转为 operator DAG；
 - 将 Tile IR 接入现有 simulator；
-- 引入 P0 7R 参数；
-- 保留 P1 compact regression；
+- 保留发布点回归（`21_TPS_DESIGN_BASELINE.md`）；
 - 替换经验缩放为 tile/resource/transaction 事件；
 - 输出 320/640 MC 对比和 P50/P95/P99。
 
@@ -343,7 +363,7 @@ models/tile/
 integration/detailed/
 data/performance/
 reports/performance/
-tests/test_p0_p1_performance.js
+tests/test_performance.js
 ```
 
 **通过门槛**：选定可制造路线达到 `>=1050 TPS/usr`，否则只能报告 blocker。
@@ -352,8 +372,8 @@ tests/test_p0_p1_performance.js
 
 **任务**：
 
-- 400 mm²/Die area budget；
-- 250 W/Die、2.8–3.2 kW/package cooling envelope；
+- Die 面积上限 400 mm²、封装 5,248 mm² placement window；
+- 液冷 Die 300 W、卡 2800 W（ASSUMPTION，O-015）；
 - 16 MC、PHY、RDL、VRM、冷板；
 - IR drop、thermal hotspot、DVFS、降频；
 - Die/MC/link failure and degraded mode。
@@ -374,7 +394,7 @@ tests/test_ppa_budget.js
 - 需求 ID → 设计文档 → 模型 → 测试 → 证据；
 - golden trace；
 - area/capacity/bandwidth/time conservation；
-- P0/P1 profile separation checks；
+- single hardware spec checks（`singleHardwareSpec`）；
 - multi-seed、worst routing、fault、thermal、replay；
 - CI 检查新增 schema 和链接。
 
@@ -392,7 +412,7 @@ docs/architecture/REQUIREMENT_TRACEABILITY.md
 **任务**：
 
 - 统一报告模板；
-- P0/P1 标签和假设标识；
+- 证据等级和假设标识；
 - 从 JSON 生成面积、SRAM、MC、PPA 和性能报告；
 - 自动生成 architecture index；
 - 不修改模型语义，只负责展示和可审阅性。
@@ -401,8 +421,7 @@ docs/architecture/REQUIREMENT_TRACEABILITY.md
 
 ```text
 integration/pipelines/
-integration/templates/
-reports/
+out/
 ```
 
 ## 5. 推荐并行拓扑
@@ -448,11 +467,11 @@ Forbidden paths:
 - docs/architecture/HIGH_LEVEL_ARCHITECTURE.md
 - teams/council/adr/README.md
 - docs/architecture/OPEN_ISSUES.md
-- teams/hardware/inputs/k3_7r_package_baseline.json
+- teams/hardware/inputs/k3_mc_baseline.json
 
 Inputs:
 - baseline commit: 5985785
-- profile: P0 / P1 / both
+- hardware spec: k3_mc_baseline.json
 - schema version:
 
 Required outputs:
@@ -463,7 +482,7 @@ Required outputs:
 
 Acceptance criteria:
 - [ ] interfaces and units are explicit
-- [ ] P0/P1 are not mixed
+- [ ] resources come from the single hardware spec
 - [ ] normal/backpressure/error/reset behavior documented
 - [ ] assumptions and evidence level recorded
 - [ ] tests or invariant checks added
@@ -500,7 +519,7 @@ Next:
 - contract PR 先于 implementation PR；
 - 任何改变 Tile IR、MC payload、SRAM capacity、NoC width、package topology 的 PR 必须带 ADR；
 - 任何改变 `data/` 或 `reports/` baseline 的 PR 必须带生成命令和前后差异；
-- A10 性能合并前，A12 必须提供守恒和 profile separation tests；
+- A10 性能合并前，A12 必须提供守恒和 single hardware spec tests；
 - A0 最后才更新公共状态文件和 blocker 状态；
 - 如果两个 agent 修改同一公共接口，优先保留 schema proposal，暂停其中一个实现 PR，不在 merge 时隐式解决。
 
@@ -567,7 +586,7 @@ A6：Performance + Verification
 - A0 发布 schema、目录和 workstream register；
 - A1/A2 建立独立 proposal 分支；
 - A12 建立 requirement ID 和 CI 检查；
-- 所有 agent 确认 P0/P1 profile。
+- 所有 agent 确认硬件规格来源（`k3_mc_baseline.json`）。
 
 ### Day 2–3：W1
 
@@ -575,20 +594,20 @@ A6：Performance + Verification
 - A2 发布 package coordinate、area、bump 和 MC home 草案；
 - A9 根据 A1 草案建立 Tile IR；
 - A5 根据 A2 草案建立 MC interface；
-- A11 建立 P0 area/power/thermal spreadsheet/model。
+- A11 建立 area/power/thermal spreadsheet/model。
 
 ### Day 4–5：W2
 
 - A3/A4/A6/A7/A8 完成单模块接口草案；
 - A12 为每个接口增加最小 contract test；
 - A10 接入一层 Attention、一层 Linear Attention、一层 MoE 的 trace；
-- A13 生成第一版 P0/P1 对比报告。
+- A13 生成第一版 MC320/MC640 对比报告。
 
 ### Week 2：W3
 
 - A1 完成 93 层 manifest；
 - A9 完成 Tile IR v0.1；
-- A10 完成 P0/P1 双 profile 回放；
+- A10 完成三模型 × TP × MC 回放；
 - A5 输出 320/640 GB/s MC 对比；
 - A11 输出 package PPA v0.1；
 - A0 更新 B-001、B-002、B-003、B-004、B-005、B-006 的证据状态。
@@ -598,7 +617,7 @@ A6：Performance + Verification
 第一阶段不要求立即宣称达到 1000 TPS/usr，而要求建立可并行的可信设计基线：
 
 - workload manifest 可生成 93 层 DAG；
-- P0/P1 profile 能独立加载和报告；
+- 硬件规格从 spec 文件加载并报告；
 - package area 守恒通过；
 - SRAM/MC/NoC/RDMA/Tile IR schema 版本明确；
 - 至少 3 个关键算子有 golden trace；
@@ -612,7 +631,7 @@ A6：Performance + Verification
 
 1. A1 的正式 workload manifest 冻结；
 2. A2 的 7R floorplan、bump、RDL 和 keep-out 通过；
-3. A3/A4 的 P0 Compute Die 与 SRAM/TMA 规格闭合；
+3. A3/A4 的 Compute Die 与 SRAM/TMA 规格闭合；
 4. A5 证明 MC 路线的持续 payload 和功耗；
 5. A6/A7 证明 Die-local NoC 和 package fabric 的带宽、P99、拥塞和故障；
 6. A8 证明 TP32 RDMA/Collective 的协议和尾延迟；

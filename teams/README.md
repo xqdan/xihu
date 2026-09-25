@@ -3,7 +3,7 @@
 本目录按工业界职责划分。每个团队一个目录，拥有自己的 README、设计文档（`docs/`）、输入数据（`inputs/`）、代码（`src/`），专业团队另有对外承诺 `contract.json`。
 
 - [Model Team](model/README.md)：模型 manifest、workload 推导，K3 唯一形状来源 `model/src/design_engine.js`
-- [Hardware Team](hardware/README.md)：7R 封装与 P1 基线规格、resource profiles
+- [Hardware Team](hardware/README.md)：唯一硬件规格（P1，8 die + 16 MC 的 7-reticle 封装）与 resource profiles
 - [Software Team](software/README.md)：部署、kernel、fusion、collective 策略
 - [Architecture Council](council/README.md)：ADR、运行模型、跨团队集成（同时拥有 `integration/` 与 `docs/architecture/`）
 - [V&V](vv/README.md)：独立验证（测试在根目录 `tests/`）

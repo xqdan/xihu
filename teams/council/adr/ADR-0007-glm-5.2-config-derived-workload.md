@@ -3,8 +3,8 @@
 Date: 2026-09-25
 Status: accepted for repository modeling governance; supersedes ADR-0006 decision 5.
 Decision 5 (calibration) and the TPS table under Consequences are superseded
-by ADR-0008; the current GLM-5.2 values at TP32/MC640 are 2420.0 (P0) and
-2416.8 (P1).
+by ADR-0008; the current GLM-5.2 value at TP32/MC640 is 2416.8. The candidate
+list below is superseded by ADR-0021 (single hardware spec).
 
 ## Context
 
@@ -91,15 +91,13 @@ In the reference implementation:
   |---:|---:|---:|
   | 8 | 478.0 | 956.0 |
   | 16 | 956.0 | 1911.9 |
-  | 32 | 1911.9 | 2603.2 (P0) / 2598.6 (P1) |
+  | 32 | 1911.9 | 2598.6 |
 
 - No model is `BLOCKED_CONFIG` any more. Under the existing validator rules the
   D-Gate therefore evaluates to `PASS` (scope
-  `PLANNING_COMPARISON_ONLY_NOT_ARCHITECTURE_FREEZE`), with three formal
-  candidates in the register:
-  - `P0-7R-balanced-MC640-TP32`
-  - `P1-compact-MC640-TP32`
-  - `P0-7R-balanced-MC320-TP32`
+  `PLANNING_COMPARISON_ONLY_NOT_ARCHITECTURE_FREEZE`). The formal candidate
+  is now `P1-compact-MC640-TP32` only (target-gated selection, ADR-0008;
+  single hardware spec, ADR-0021).
 - Stage B runs as `PLANNING_QUANTIFICATION`. The ADR-0006 exploratory sweep is
   inactive.
 - The Q-Gate stays blocked: there is no event-timed replay.

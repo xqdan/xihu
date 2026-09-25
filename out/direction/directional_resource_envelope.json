@@ -107,15 +107,18 @@
     "reticles": 7,
     "placementWindowMm2": 5248,
     "computeDies": 8,
-    "computeDieAreaMm2": 400,
+    "computeDieAreaMm2": 373.7139860943489,
+    "computeDieAreaLimitMm2": 400,
     "memoryCubes": 16,
+    "memoryCubeAreaMm2": 100,
     "memoryCapacityGB": 256,
+    "packageAreaMm2": 4589.711888754791,
     "mcBaselineGBsPerCube": 320,
     "mcStretchGBsPerCube": 640,
     "packageBaselineTBs": 5.12,
     "packageStretchTBs": 10.24,
-    "computePowerBudgetW": 2000,
-    "coolingEnvelopeW": 3200,
+    "cardPowerW": 2768.473497600001,
+    "cardPowerLimitW": 2800,
     "areaConservation": true
   },
   "bandwidthEnvelope": {
@@ -143,12 +146,12 @@
     "GLM-5.2 rows are derived from its public config.json; the FP8 KV/index-key layout and collectives per layer are ASSUMPTIONs.",
     "FFN/MoE is deployed TP-only for all three models (deployment decision): every expert is sharded over the TP ranks; no expert parallelism, no all-to-all.",
     "MC320 and MC640 remain separate physical bandwidth profiles.",
-    "P0 and P1 use distinct core-class peak capacities (teams/hardware/src/resource_profiles.js)."
+    "One hardware spec (P1 compact, teams/hardware/inputs/k3_mc_baseline.json); core-class peaks from teams/hardware/src/resource_profiles.js."
   ],
   "constraintsChecked": [
-    "7-reticle area conservation",
+    "7-reticle package area conservation (P1 die + 16 MC)",
     "8 compute die + 16 MC topology",
-    "P0/P1 separation",
+    "single hardware spec (P1)",
     "MC320/MC640 separation"
   ],
   "nextActions": [

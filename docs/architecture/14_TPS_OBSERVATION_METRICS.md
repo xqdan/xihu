@@ -89,20 +89,20 @@ MC640结果必须标为`STRETCH`或`MODEL`，除非供应商或物理实现完�
 
 | Model | TP | Profile | MC | TPS/usr | Raw latency | E2E latency | 状态 |
 |---|---:|---|---:|---:|---:|---:|---|
-| K3 | 32 | P1 | 320 GB/s/MC | 见 `teams/hardware/inputs/k3_mc_baseline.json#modelResults.referenceMc320GBs` | 同左 | 同左 | MODEL_OBSERVED |
-| K3 | 32 | P1 | 640 GB/s/MC | 见 `teams/hardware/inputs/k3_mc_baseline.json#modelResults.stretchMc640GBs` | 同左 | 同左 | MODEL_OBSERVED |
-| K3 | 8/16/32 | P0 | 320/640 | 规划 token 时间（K3 标定） | 同左 | 同左 | PLANNING_ESTIMATE |
-| GLM-5.2 | 8/16/32 | P0 | 320/640 | 规划 token 时间（K3 标定；形状取公开 config，部署布局含 ASSUMPTION） | 同左 | 同左 | PLANNING_ESTIMATE |
-| DeepSeek-V4-Pro | 8/16/32 | P0 | 320/640 | 规划 token 时间（K3 标定，含 ASSUMPTION） | 同左 | 同左 | PLANNING_ESTIMATE |
+| K3 | 32 | P1 | 320 GB/s/MC | 见 `teams/hardware/inputs/k3_mc_baseline.json#modelResults.referenceMc320GBs` | 同左 | 同左 | `MODEL`（详细模型，不占 Q-Gate 槽位） |
+| K3 | 32 | P1 | 640 GB/s/MC | 见 `teams/hardware/inputs/k3_mc_baseline.json#modelResults.stretchMc640GBs` | 同左 | 同左 | `MODEL`（详细模型，不占 Q-Gate 槽位） |
+| K3 | 8/16/32 | P1 | 320/640 | 规划 token 时间（K3 标定） | 同左 | 同左 | PLANNING_ESTIMATE |
+| GLM-5.2 | 8/16/32 | P1 | 320/640 | 规划 token 时间（K3 标定；形状取公开 config，部署布局含 ASSUMPTION） | 同左 | 同左 | PLANNING_ESTIMATE |
+| DeepSeek-V4-Pro | 8/16/32 | P1 | 320/640 | 规划 token 时间（K3 标定，含 ASSUMPTION） | 同左 | 同左 | PLANNING_ESTIMATE |
 
-K3 P1 结果来自：
+K3 详细模型结果来自：
 
 ```text
 out/rdma/k3_rdma_final_tuning_results.json
 teams/hardware/inputs/k3_mc_baseline.json
 ```
 
-数值由 `tests/regression/test_design_baseline.js` 回归，本文不再重复抄写，避免多处漂移。K3 MC640 是否达到 1000 目标以 `teams/hardware/inputs/k3_mc_baseline.json#acceptance.currentStatus` 为准；即使达到，也是 P1 模型结果而非架构门槛（1050）闭合，不能写成“已经达标”。规划估算（`out/workload/tps_observation_matrix.json`）是 ADR-0006 的规划 token 时间：`max(访存 × kMemory, 计算 × kCompute + 集合通信 × τ) × 1.17`，系数在 K3 P1/MC640/TP32 详细点上标定（规划 1102.41 对 1101.77），MC320 样本外偏差约 −6%。它与 P1 tile 模拟不是同一个模型，只在标定点对齐；其余槽位不得当作 `MODEL_OBSERVED`。
+数值由 `tests/regression/test_design_baseline.js` 回归，本文不再重复抄写，避免多处漂移。K3 MC640 是否达到 1000 目标以 `teams/hardware/inputs/k3_mc_baseline.json#acceptance.currentStatus` 为准；即使达到，也是模型结果而非架构门槛（1050）闭合，不能写成“已经达标”。规划估算（`out/workload/tps_observation_matrix.json`）是 ADR-0006 的规划 token 时间：`max(访存道, 串行道) × 1.17`（公式与系数见 `00_CURRENT_STATE.md` 第 3.2 节），系数在 K3 P1/MC640/TP32 详细点上标定（规划 1102.41 对 1101.77），MC320 样本外偏差约 −6%。它与详细模型不是同一个模型，只在标定点对齐；其余槽位不得当作 `MODEL_OBSERVED`。
 
 ## 6. 不同Agent对TPS的责任
 
@@ -117,7 +117,7 @@ teams/hardware/inputs/k3_mc_baseline.json
 
 - 18个矩阵位置均有状态；
 - 0个无model_id的TPS数字；
-- 0个把P1结果标为P0签核的报告。
+- 0个把规划估算标为观测值的报告。
 
 ### A1：Workload Manifest
 
@@ -238,7 +238,7 @@ source_commit
 
 - 18个组合全部有结果或明确状态；
 - 每个结果有至少5个seed或确定性重放；
-- P0/P1独立报告；
+- 规划估算与观测值分开报告；
 - 未达到1050时自动输出瓶颈分解。
 
 ### A11：PPA / Thermal / RAS
@@ -266,7 +266,7 @@ TPS不能脱离物理约束单独提升。A11必须输出TPS与以下指标的�
 - 观测状态；
 - model/TP/MC维度完整性；
 - 基线链接；
-- P0/P1隔离；
+- 所有结果都在唯一硬件规格上（`singleHardwareSpec`）；
 - 结果是否由真实输入生成。
 
 验收：

@@ -58,7 +58,7 @@
   "tp": 8,
   "cp": 1,
   "ep": 1,
-  "physicalProfile": "P0 | P1",
+  "physicalProfile": "P1",
   "mcProfile": "MC320 | MC640",
   "confidence": "E0 | E1 | E2 | E3",
   "status": "...",
@@ -80,7 +80,7 @@
 - 维护目标、架构原则、候选注册表、D-Gate/Q-Gate；
 - 管理跨 Agent 冲突和 ADR；
 - 选择进入 Stage B 的候选，最多 3 个；
-- 防止 P0/P1、MC320/MC640、粗 TPS/细 TPS 混用；
+- 防止出现第二份硬件规格，防止 MC320/MC640、粗 TPS/细 TPS 混用；
 - 将验证结果写入当前状态和签核文档。
 
 **输入**
@@ -161,7 +161,7 @@ D1 -> Q1（候选选定后）
 
 - D1 workload bytes 区间；
 - 7R package/MC 数量与容量；
-- P0/P1 SRAM profile；
+- 唯一硬件规格的 SRAM（`k3_mc_baseline.json#computeDieCandidate`、`#sramAccounting`）；
 - MC320/MC640 profile；
 - D5 的物理/热约束。
 
@@ -177,7 +177,6 @@ D1 -> Q1（候选选定后）
 
 - raw 不得直接当 sustained；
 - MC640 默认只能是 stretch，除非有明确证据；
-- P1 带宽结果不得外推 P0；
 - 不得将 SRAM aggregate 与 per-die 容量混用。
 
 **交互**
@@ -293,7 +292,7 @@ D4 -> D7,Q4,Q6
 - 必须满足 reticle/placement/area 守恒；
 - 不能把 400 mm² die 上限当作实际已实现面积；
 - 必须显式保留 PHY、RDL、DFT、clock、power、thermal keep-out；
-- P0/P1 必须分开。
+- 面积取自规格文件（`estimatedAreaMm2`），不另写手工面积。
 
 **交互**
 
@@ -430,7 +429,7 @@ D-Gate/A0 -> Q1 -> Q2,Q3,Q4,Q5,Q6,Q8,Q9
 - D2 memory envelope；
 - D3 compute envelope；
 - D4 communication envelope；
-- P0/P1、MC320/MC640 profile。
+- 唯一硬件规格与 MC320/MC640 profile。
 
 **输出**
 
@@ -444,7 +443,7 @@ D-Gate/A0 -> Q1 -> Q2,Q3,Q4,Q5,Q6,Q8,Q9
 
 - 不得用单一 `2 × parameter_count` 代替注意力/MoE/通信建模；
 - 不得把 raw bandwidth 当 sustained；
-- 不得把 P1 sizing 外推到 P0；
+- 不得把 MC640 的模型内 sizing 当作可制造结论；
 - Vector/Indexer/Reduce 必须独立建模。
 
 **交互**
@@ -608,7 +607,7 @@ D6,Q1,Q3,Q4,Q5 -> Q6 -> Q8,Q9
 
 - 将候选和事件流映射到面积、功耗、温度、IR drop、DVFS、RAS；
 - 计算正常、P95、peak、throttle 和 degraded-mode TPS 的约束；
-- 输出 P0/P1 独立的 PPA 结果。
+- 输出与规格文件一致的 PPA 结果。
 
 **输入**
 
@@ -629,7 +628,7 @@ D6,Q1,Q3,Q4,Q5 -> Q6 -> Q8,Q9
 
 **约束**
 
-- P0/P1 不能混算；
+- Die 与卡的功耗上限分开核算；
 - peak/average/P95 power 必须分离；
 - 预算值不能冒充 physical measurement；
 - 故障降级模式必须有明确 route 和性能结果。
@@ -647,7 +646,7 @@ D5,D2,D3,Q3,Q4,Q5 -> Q7 -> Q8,Q9,A0
 - 合并 Q2–Q7 的结果；
 - 生成详细 token critical path 和 18-slot TPS matrix；
 - 输出粗 TPS 与细 TPS 差异及归因；
-- 判断模型、TP、MC、P0/P1 的独立结果。
+- 判断模型、TP、MC 的独立结果。
 
 **输入**
 
@@ -673,7 +672,7 @@ D5,D2,D3,Q3,Q4,Q5 -> Q7 -> Q8,Q9,A0
 - 不得静默覆盖 Stage A 粗估；
 - 18 槽位必须有结果或 blocker；
 - TPS 必须与 e2e latency 一致；
-- 不得把 P1/MC640 结果标成默认 P0/MC320。
+- 不得把 MC640 结果标成 MC320 或可制造默认结论。
 
 **交互**
 

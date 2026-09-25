@@ -20,5 +20,5 @@ assert.deepStrictEqual(contract.coreClasses, ['L', 'H', 'V', 'INDEXER', 'REDUCE'
 assert.strictEqual(contract.target.targetTimeUsPerToken, 1000);
 assert.strictEqual(profiles.profiles.length, 3);
 assert(contract.validation.mustTrack.includes('confidence'));
-assert(contract.validation.forbid.includes('p1_as_p0'));
+assert(contract.validation.forbid.includes('planning_as_observed'));
 console.log('PASS arithmetic intensity agent contract: reference, formulas, dimensions and sign-off guards');

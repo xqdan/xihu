@@ -43,7 +43,7 @@ references/frontier_moe_arithmetic_intensity.html
 - `teams/model/inputs/multi_model_tp_matrix.json`
 - `teams/council/inputs/arithmetic_intensity_contract.json`
 - 模型逐层 manifest（若缺失，输出 `BLOCKED_CONFIG`）
-- 芯片资源 profile（P0/P1、MC320/MC640、L/H/Vector peak）
+- 芯片资源（唯一硬件规格 P1、MC320/MC640、L/H/Vector peak，均取自 `k3_mc_baseline.json`）
 - 参考文档中的模型专用 attention 参数（必须标记 source class）
 
 ### 输出
@@ -191,7 +191,7 @@ K3 若没有冻结 dtype、正式层级和 KV/state layout，也只能是 `MODEL
 - prefill 至少覆盖 CP1/8/16/32、TP1/8/16/32 的矩阵；
 - L/H/Vector/Indexer/Reduce 独立输出；
 - arithmetic intensity 守恒：聚合 FLOP/bytes 等于 operator ledger；
-- P0/P1、MC320/MC640 不混淆；
+- 资源只取自唯一规格文件，MC320/MC640 不混淆；
 - `npm test`、专用 arithmetic intensity test 和 `git diff --check` 全部通过；
 - 结果包含 manifest version、contract version、source commit、seed/run_id。
 
@@ -199,7 +199,7 @@ K3 若没有冻结 dtype、正式层级和 KV/state layout，也只能是 `MODEL
 
 - 不使用单一 `2 * parameter_count` 代替所有 attention/MoE/communication 细节；
 - 不把 raw bandwidth 当 sustained bandwidth；
-- 不把 P1 sizing 直接当 P0 结论；
+- 不把 MC640 的模型内 sizing 当成可制造路线结论；
 - 不把未确认 GLM/DeepSeek 配置标记为 final；
 - 不用 `log2(TP)` 单独代替 collective traffic；
 - 不把 Vector/Indexer/Reduce 的需求隐藏到 Tensor peak；

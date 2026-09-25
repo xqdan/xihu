@@ -7,7 +7,7 @@
 
 - Q1 manifest/DAG；
 - D2 memory、D3 compute、D4 communication envelope；
-- P0/P1、MC320/MC640 profile。
+- 唯一硬件规格 P1 与 MC320/MC640 profile。
 
 ## Outputs
 

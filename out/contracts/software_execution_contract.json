@@ -23,12 +23,15 @@
     "QKV fusion",
     "RoPE+attention fusion",
     "RMSNorm+linear fusion",
-    "MoE gate+dispatch fusion",
+    "MoE router+top-k fusion (TP-only, no dispatch; ADR-0020)",
     "dequant+GEMM fusion",
     "MLP chain fusion",
     "communication-computation overlap",
-    "prefetch/double-buffer",
-    "MTP acceptance/rollback"
+    "prefetch/double-buffer"
+  ],
+  "excludedStrategies": [
+    "MTP acceptance/rollback (not counted in TPS/usr; ADR-0006, ADR-0007)",
+    "expert-parallel dispatch/all-to-all (removed by ADR-0020)"
   ],
   "requiredFields": [
     "applicable models/operators",

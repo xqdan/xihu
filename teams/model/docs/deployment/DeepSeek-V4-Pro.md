@@ -38,6 +38,26 @@
 - index key：FP8 128 维 + 1 个 FP32 scale，132 B/token/layer，每层都缓存（DeepSeek-V3.2 lightning indexer）。
 - 稀疏注意力：attention 只读 top-k 2048 个 KV；indexer 读取全部已缓存的 index key。indexer 打分在 H tensor engine 上执行。
 
+### 4.1 每 rank 容量（TP32，context 1M，单请求）
+
+| 项 | 点估计 | 变体 `expertHiddenFromTotal` |
+|---|---:|---:|
+| 权重 | 31.23 GB | 26.91 GB |
+| KV（61 层 × 32768 token × 656 B） | 1.311 GB | 1.311 GB |
+| index key（61 层 × 32768 token × 132 B） | 0.264 GB | 0.264 GB |
+| 合计 | 32.81 GB | 28.49 GB |
+
+```mermaid
+xychart-beta
+  title "每 rank 容量（GB，点估计）"
+  x-axis ["权重", "KV", "index key"]
+  y-axis "GB" 0 --> 35
+  bar [31.23, 1.311, 0.264]
+```
+
+来源：[`04_MEMORY_SUBSYSTEM_MC.md`](../../../hardware/docs/04_MEMORY_SUBSYSTEM_MC.md) 第 3 节，ASSUMPTION 推导值。
+每 token 读取的字节账见 [OPERATOR_LEDGER.md](OPERATOR_LEDGER.md)。
+
 ## 5. 集合通信（ASSUMPTION）
 
 每层 4 次：indexer top-k 合并、稀疏注意力 LSE 合并、attention 输出 all-reduce、FFN/MoE 输出 all-reduce（shared 与 routed 合并）。

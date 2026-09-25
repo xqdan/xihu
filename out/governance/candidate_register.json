@@ -5,7 +5,6 @@
   "decisionState": "D_GATE_PASSED",
   "decisionSource": "integration/governance/evaluate_gates.js#evaluateDirectionGate",
   "formalSelectedCandidates": [
-    "P0-7R-balanced-MC640-TP32",
     "P1-compact-MC640-TP32"
   ],
   "selectionBasis": {
@@ -16,16 +15,6 @@
     "blockedModels": [],
     "ranking": [
       {
-        "candidateId": "P0-7R-balanced-MC640-TP32",
-        "minTpsPerUser": 1102.412443534703,
-        "worstModel": "K3",
-        "formallyEligible": true,
-        "meetsArchitectureGate": true,
-        "minTpsPerUserAtMaxTau": 794.7338838061537,
-        "maxTauUsForTarget": 1.4382835747787985,
-        "tauConditional": true
-      },
-      {
         "candidateId": "P1-compact-MC640-TP32",
         "minTpsPerUser": 1102.412443534703,
         "worstModel": "K3",
@@ -34,26 +23,6 @@
         "minTpsPerUserAtMaxTau": 785.9689091279434,
         "maxTauUsForTarget": 1.4077663415307384,
         "tauConditional": true
-      },
-      {
-        "candidateId": "P0-7R-balanced-MC320-TP32",
-        "minTpsPerUser": 551.2062217673515,
-        "worstModel": "K3",
-        "formallyEligible": false,
-        "meetsArchitectureGate": false,
-        "minTpsPerUserAtMaxTau": 551.2062217673515,
-        "maxTauUsForTarget": null,
-        "tauConditional": false
-      },
-      {
-        "candidateId": "P0-7R-balanced-MC640-TP16",
-        "minTpsPerUser": 551.2062217673515,
-        "worstModel": "K3",
-        "formallyEligible": false,
-        "meetsArchitectureGate": false,
-        "minTpsPerUserAtMaxTau": 551.2062217673515,
-        "maxTauUsForTarget": null,
-        "tauConditional": false
       },
       {
         "candidateId": "P1-compact-MC320-TP32",
@@ -72,26 +41,6 @@
         "formallyEligible": false,
         "meetsArchitectureGate": false,
         "minTpsPerUserAtMaxTau": 551.2062217673515,
-        "maxTauUsForTarget": null,
-        "tauConditional": false
-      },
-      {
-        "candidateId": "P0-7R-balanced-MC320-TP16",
-        "minTpsPerUser": 275.60311088367575,
-        "worstModel": "K3",
-        "formallyEligible": false,
-        "meetsArchitectureGate": false,
-        "minTpsPerUserAtMaxTau": 275.60311088367575,
-        "maxTauUsForTarget": null,
-        "tauConditional": false
-      },
-      {
-        "candidateId": "P0-7R-balanced-MC640-TP8",
-        "minTpsPerUser": 275.60311088367575,
-        "worstModel": "K3",
-        "formallyEligible": false,
-        "meetsArchitectureGate": false,
-        "minTpsPerUserAtMaxTau": 275.60311088367575,
         "maxTauUsForTarget": null,
         "tauConditional": false
       },
@@ -116,16 +65,6 @@
         "tauConditional": false
       },
       {
-        "candidateId": "P0-7R-balanced-MC320-TP8",
-        "minTpsPerUser": 137.80155544183788,
-        "worstModel": "K3",
-        "formallyEligible": false,
-        "meetsArchitectureGate": false,
-        "minTpsPerUserAtMaxTau": 137.80155544183788,
-        "maxTauUsForTarget": null,
-        "tauConditional": false
-      },
-      {
         "candidateId": "P1-compact-MC320-TP8",
         "minTpsPerUser": 137.80155544183788,
         "worstModel": "K3",
@@ -138,7 +77,7 @@
     ],
     "referenceCandidates": [
       {
-        "candidateId": "P0-7R-balanced-MC320-TP32",
+        "candidateId": "P1-compact-MC320-TP32",
         "role": "MC320_REFERENCE_NOT_FORMAL",
         "minTpsPerUser": 551.2062217673515,
         "worstModel": "K3",
@@ -152,291 +91,9 @@
       }
     ],
     "tauConditionalCandidates": [
-      "P0-7R-balanced-MC640-TP32",
       "P1-compact-MC640-TP32"
     ],
     "selected": [
-      [
-        {
-          "candidateId": "P0-7R-balanced-MC640-TP32",
-          "modelId": "K3",
-          "tp": 32,
-          "physicalProfile": "P0",
-          "mcProfile": "MC640",
-          "confidence": "E0",
-          "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
-          "workloadUnits": {
-            "flopsPerToken": 170827581184,
-            "memoryBytesPerToken": 4810366240,
-            "collectiveBytesPerToken": 17683392,
-            "collectivesPerToken": 393,
-            "effectiveBytesPerSecond": 7168000000000,
-            "source": "out/workload/planning_operator_workload.json",
-            "scope": "model_total_per_rank"
-          },
-          "memoryTimeUs": 671.0890401785714,
-          "expertMemoryTimeUs": 112.608,
-          "computeTimeUs": 202.79960339116116,
-          "computeTimeUsByCore": {
-            "L": 48.71218812231923,
-            "H": 153.6,
-            "V": 0.35514705882352937,
-            "REDUCE": 0.13226821001838235
-          },
-          "commTimeUs": 451.95,
-          "memoryLaneUs": 775.3004419656204,
-          "serialSplitUs": {
-            "flop": 233.81278960524483,
-            "fixed": 27.7758733444343,
-            "tmaExposed": 27.866746863107796
-          },
-          "serialComputeUs": 289.4554098127869,
-          "serialLaneUs": 741.405409812787,
-          "rawLatencyUsPerToken": 775.3004419656204,
-          "e2eLatencyUsPerToken": 907.1015170997758,
-          "tpsPerUser": 1102.412443534703,
-          "uncalibratedTpsPerUser": 1273.6027613763827,
-          "bottleneck": "memory",
-          "boundingOperatorId": "dense_projection",
-          "tauSensitivity": [
-            {
-              "tauUs": 1.15,
-              "tpsPerUser": 1102.412443534703,
-              "bound": "memory"
-            },
-            {
-              "tauUs": 1.5,
-              "tpsPerUser": 972.4052496393438,
-              "bound": "collective"
-            },
-            {
-              "tauUs": 2,
-              "tpsPerUser": 794.7338838061537,
-              "bound": "collective"
-            }
-          ],
-          "tpsPerUserTauRange": {
-            "min": 794.7338838061537,
-            "max": 1102.412443534703
-          },
-          "maxTauUsForTarget": 1.4382835747787985,
-          "rereadSensitivity": [
-            {
-              "prediction": 0.7,
-              "expertReread": 0.30000000000000004,
-              "tpsPerUser": 1084.800655999361,
-              "bound": "memory"
-            },
-            {
-              "prediction": 0.8,
-              "expertReread": 0.19999999999999996,
-              "tpsPerUser": 1102.4124435347032,
-              "bound": "memory"
-            },
-            {
-              "prediction": 0.9,
-              "expertReread": 0.09999999999999998,
-              "tpsPerUser": 1120.6055247273462,
-              "bound": "memory"
-            }
-          ],
-          "shapeVariants": [],
-          "tpsPerUserShapeRange": {
-            "min": 1102.412443534703,
-            "max": 1102.412443534703
-          },
-          "dtypePolicy": "dense BF16, router/LM head BF16, routed MXFP4",
-          "status": "PLANNING_ESTIMATE"
-        },
-        {
-          "candidateId": "P0-7R-balanced-MC640-TP32",
-          "modelId": "GLM-5.2",
-          "tp": 32,
-          "physicalProfile": "P0",
-          "mcProfile": "MC640",
-          "confidence": "E0",
-          "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
-          "workloadUnits": {
-            "flopsPerToken": 8854093824,
-            "memoryBytesPerToken": 1386835968,
-            "collectiveBytesPerToken": 6266880,
-            "collectivesPerToken": 255,
-            "effectiveBytesPerSecond": 7168000000000,
-            "source": "out/workload/planning_operator_workload.json",
-            "scope": "model_total_per_rank"
-          },
-          "memoryTimeUs": 193.47599999999997,
-          "expertMemoryTimeUs": 98.74285714285713,
-          "computeTimeUs": 24.806158088235293,
-          "computeTimeUsByCore": {
-            "L": 18.838694852941178,
-            "INDEXER": 5.270588235294118,
-            "H": 0.65,
-            "REDUCE": 0.046875
-          },
-          "commTimeUs": 293.25,
-          "memoryLaneUs": 238.3370365021235,
-          "serialSplitUs": {
-            "flop": 28.599646769584307,
-            "fixed": 23.29589377275135,
-            "tmaExposed": 8.034025879266329
-          },
-          "serialComputeUs": 59.92956642160198,
-          "serialLaneUs": 353.179566421602,
-          "rawLatencyUsPerToken": 353.179566421602,
-          "e2eLatencyUsPerToken": 413.2200927132743,
-          "tpsPerUser": 2420.0178491656293,
-          "uncalibratedTpsPerUser": 2687.263971992466,
-          "bottleneck": "collective",
-          "boundingOperatorId": "collective_reduce",
-          "tauSensitivity": [
-            {
-              "tauUs": 1.15,
-              "tpsPerUser": 2420.0178491656293,
-              "bound": "collective"
-            },
-            {
-              "tauUs": 1.5,
-              "tpsPerUser": 1931.8348491348097,
-              "bound": "collective"
-            },
-            {
-              "tauUs": 2,
-              "tpsPerUser": 1499.6604932557489,
-              "bound": "collective"
-            }
-          ],
-          "tpsPerUserTauRange": {
-            "min": 1499.6604932557489,
-            "max": 2420.0178491656293
-          },
-          "maxTauUsForTarget": 3.116750150114717,
-          "rereadSensitivity": [
-            {
-              "prediction": 0.7,
-              "expertReread": 0.30000000000000004,
-              "tpsPerUser": 2420.0178491656293,
-              "bound": "collective"
-            },
-            {
-              "prediction": 0.8,
-              "expertReread": 0.19999999999999996,
-              "tpsPerUser": 2420.0178491656293,
-              "bound": "collective"
-            },
-            {
-              "prediction": 0.9,
-              "expertReread": 0.09999999999999998,
-              "tpsPerUser": 2420.0178491656293,
-              "bound": "collective"
-            }
-          ],
-          "shapeVariants": [],
-          "tpsPerUserShapeRange": {
-            "min": 2420.0178491656293,
-            "max": 2420.0178491656293
-          },
-          "dtypePolicy": "dense FP8, router/LM head BF16, routed FP8",
-          "status": "PLANNING_ESTIMATE"
-        },
-        {
-          "candidateId": "P0-7R-balanced-MC640-TP32",
-          "modelId": "DeepSeek-V4-Pro",
-          "tp": 32,
-          "physicalProfile": "P0",
-          "mcProfile": "MC640",
-          "confidence": "E0",
-          "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
-          "workloadUnits": {
-            "flopsPerToken": 36844579488,
-            "memoryBytesPerToken": 1381614381.5714285,
-            "collectiveBytesPerToken": 6995968,
-            "collectivesPerToken": 244,
-            "effectiveBytesPerSecond": 7168000000000,
-            "source": "out/workload/planning_operator_workload.json",
-            "scope": "model_total_per_rank"
-          },
-          "memoryTimeUs": 192.74754207190688,
-          "expertMemoryTimeUs": 66.5696578244579,
-          "computeTimeUs": 54.162275247012865,
-          "computeTimeUsByCore": {
-            "L": 22.4736723058364,
-            "INDEXER": 30.619607843137253,
-            "H": 1.0166666666666668,
-            "REDUCE": 0.05232843137254902
-          },
-          "commTimeUs": 280.59999999999997,
-          "memoryLaneUs": 230.33030684414888,
-          "serialSplitUs": {
-            "flop": 62.4450563763929,
-            "fixed": 18.21858359151067,
-            "tmaExposed": 8.003776908612311
-          },
-          "serialComputeUs": 88.66741687651587,
-          "serialLaneUs": 369.2674168765158,
-          "rawLatencyUsPerToken": 369.2674168765158,
-          "e2eLatencyUsPerToken": 432.04287774552347,
-          "tpsPerUser": 2314.5850828931093,
-          "uncalibratedTpsPerUser": 2553.157622286418,
-          "bottleneck": "collective",
-          "boundingOperatorId": "collective_reduce",
-          "tauSensitivity": [
-            {
-              "tauUs": 1.15,
-              "tpsPerUser": 2314.5850828931093,
-              "bound": "collective"
-            },
-            {
-              "tauUs": 1.5,
-              "tpsPerUser": 1879.8374877454326,
-              "bound": "collective"
-            },
-            {
-              "tauUs": 2,
-              "tpsPerUser": 1482.138282288065,
-              "bound": "collective"
-            }
-          ],
-          "tpsPerUserTauRange": {
-            "min": 1482.138282288065,
-            "max": 2314.5850828931093
-          },
-          "maxTauUsForTarget": 3.139481302558766,
-          "rereadSensitivity": [
-            {
-              "prediction": 0.7,
-              "expertReread": 0.30000000000000004,
-              "tpsPerUser": 2314.5850828931093,
-              "bound": "collective"
-            },
-            {
-              "prediction": 0.8,
-              "expertReread": 0.19999999999999996,
-              "tpsPerUser": 2314.5850828931093,
-              "bound": "collective"
-            },
-            {
-              "prediction": 0.9,
-              "expertReread": 0.09999999999999998,
-              "tpsPerUser": 2314.5850828931093,
-              "bound": "collective"
-            }
-          ],
-          "shapeVariants": [
-            {
-              "variant": "expertHiddenFromTotal",
-              "tpsPerUser": 2333.9081439007696,
-              "bound": "collective"
-            }
-          ],
-          "tpsPerUserShapeRange": {
-            "min": 2314.5850828931093,
-            "max": 2333.9081439007696
-          },
-          "dtypePolicy": "dense FP8, router/LM head BF16, routed FP4",
-          "status": "PLANNING_ESTIMATE"
-        }
-      ],
       [
         {
           "candidateId": "P1-compact-MC640-TP32",
@@ -726,7 +383,6 @@
       "runMode": "EXPLORATORY_AFTER_BLOCKED_D_GATE",
       "active": false,
       "candidateIds": [
-        "P0-7R-balanced-MC640-TP32",
         "P1-compact-MC640-TP32"
       ],
       "allowedModels": [
@@ -740,12 +396,6 @@
       "sweepId": "ADR-0002-formal-manifest-sensitivity-sweep",
       "runMode": "FORMAL_DIRECTIONAL_SWEEP",
       "candidateIds": [
-        "P0-7R-balanced-MC320-TP8",
-        "P0-7R-balanced-MC320-TP16",
-        "P0-7R-balanced-MC320-TP32",
-        "P0-7R-balanced-MC640-TP8",
-        "P0-7R-balanced-MC640-TP16",
-        "P0-7R-balanced-MC640-TP32",
         "P1-compact-MC320-TP8",
         "P1-compact-MC320-TP16",
         "P1-compact-MC320-TP32",

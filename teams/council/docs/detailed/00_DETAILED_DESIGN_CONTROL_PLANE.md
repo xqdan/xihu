@@ -23,7 +23,7 @@
 
 - D-Gate 未通过只能使用 `EXPLORATORY_AFTER_BLOCKED_D_GATE`；
 - formal candidate 不得从 runner 内硬编码；
-- P0/P1、MC320/MC640 必须独立；
+- 资源只取自唯一硬件规格，MC320/MC640 必须独立；
 - blocked model 不生成伪造 operator/TPS 结论。
 
 ## Exit criteria

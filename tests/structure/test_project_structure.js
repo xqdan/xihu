@@ -58,9 +58,7 @@ for (const file of files) {
     }
   }
 
-  // Templates are rendered into out/, so their links are relative to the rendered report.
-  const isTemplate = path.relative(root, file).startsWith(`integration${path.sep}templates${path.sep}`);
-  if ((ext === '.html' || ext === '.md') && !isTemplate) {
+  if (ext === '.html' || ext === '.md') {
     for (const match of text.matchAll(/(?:href|src)=["']([^"']+)["']/gi)) {
       const link = match[1];
       if (/^(?:#|https?:|mailto:|data:|javascript:)/i.test(link) || link.includes('${')) continue;
@@ -91,7 +89,7 @@ assert.deepEqual(teamViolations, [], `Team directories must not depend on other 
 for (const required of [
   'teams/model/inputs', 'teams/model/src', 'teams/model/docs/deployment', 'teams/hardware/inputs', 'teams/hardware/src', 'teams/hardware/docs', 'teams/software/docs',
   'teams/council/adr', 'teams/council/docs', 'teams/council/inputs', 'teams/vv',
-  'integration/detailed', 'integration/planning', 'integration/governance', 'integration/pipelines', 'integration/templates',
+  'integration/detailed', 'integration/planning', 'integration/governance', 'integration/pipelines',
   'out', 'docs/architecture', 'archive', 'tests/unit', 'tests/regression', 'tests/governance', 'tests/structure',
   'references', '.github/workflows'
 ]) {

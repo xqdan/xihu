@@ -5,13 +5,13 @@
 | ID | 问题 | 影响 | 关闭证据 |
 | --- | --- | --- | --- |
 | B-001 | 正式 K3 逐层结构和 dtype 未冻结；2026-09-25 发布点采用 FP8 KV cache（FlashMLA 布局，计算仍为 BF16，`OPT.kvCache`），精度影响未评估 | FLOP/byte、算子图和容量可能变化 | 模型清单与权重 manifest |
-| B-002 | MC 档位未选定：320 参考、480 默认上限、560/640 激进（ADR-0019）；P1 目标点使用 640 GB/s | 320 与 640 两点 TPS 见 `00_CURRENT_STATE.md` 第 3 节 | 选定颗数与每颗带宽的供应商规格或替代架构 |
-| B-003 | Final Tuning 的经验缩放因子：2026-09-25 决定全部置 1（`GAIN` 表保留名称）；共享 SRAM 端口放大已计入面积/功耗；`OPT.launchScale` 仍是未回标参数 | 置 1 后发布点从 990.13 降到 681.06 TPS（同时含 τ 变更；之后加入 shared 专家计算通信重叠并补种子搜索后为 729.14，再加入独立 TMA 通道后为 774.77，再加入 KV 跨层预取和 DMA 抢占后为 860.03，再加入 PV 按层合并、softmax/逐元素融合并搜索预取深度与 H core 规格后为 1007.27，再改 FP8 KV cache 后为 1031.52，恢复固定 1.0 GHz 频率规则后为 1015.08，改按三星 SF4 面积、矩阵密度 3.2 TF/mm² 与液冷上限后为 1101.77）；已实现的优化收益目前未计入 | 逐项用精确 tile/transaction 模型给出收益后，才允许对应因子离开 1 |
+| B-002 | MC 档位未选定：320 参考、480 默认上限、560/640 激进（ADR-0019）；发布点使用 640 GB/s | 320 与 640 两点 TPS 见 `00_CURRENT_STATE.md` 第 3 节 | 选定颗数与每颗带宽的供应商规格或替代架构 |
+| B-003 | Final Tuning 的经验缩放因子：2026-09-25 决定全部置 1（`GAIN` 表保留名称）；共享 SRAM 端口放大已计入面积/功耗；`OPT.launchScale` 仍是未回标参数 | 发布点 1101.77 TPS/usr 不含任何经验收益；各机制的收益来自事件/资源模型本身，逐项回退见 `21_TPS_DESIGN_BASELINE.md` 第 5 节 | 逐项用精确 tile/transaction 模型给出收益后，才允许对应因子离开 1 |
 | B-004 | 卡内 topology 口径冲突 | 带宽、hop、封装无法签核 | 统一拓扑与 packet 模型 |
 | B-005 | TP32 scale-out 物理拓扑未定义 | 800 GB/s 和低时延不可实现性未知 | PHY/拓扑/布线/功耗方案 |
-| B-006 | P1 的 1.0 GHz（固定）、面积、功耗（见 `00_CURRENT_STATE.md` 第 2 节）和 P0 的 1.0 GHz 候选均未回标；2026-09-25 起 P1 面积按三星 SF4 级 4 nm 由公开节点数据缩放（逻辑 ×1.277 按 CPP×MMP，SRAM ×1.248 按 HD bitcell，PHY ×1；SF4/SF4X 节距未公开，取 SF4E），矩阵密度取 3.2 TF/mm²（N4 口径 @1 GHz，原 1.6），均为 `ASSUMPTION`（`integration/detailed/k3_physical_basis.js`） | PPA 可能不收敛；发布点 Die 373.7 mm²，逻辑系数若按 CPP×MMP 偏乐观、矩阵密度若只有 2.5 TF/mm² 以下，面积可能超 400 mm² | synthesis/floorplan/IP macro；三星 SF4 PDK 的 SRAM compiler 与 MAC 阵列宏 |
+| B-006 | 1.0 GHz（固定）、面积、功耗（见 `00_CURRENT_STATE.md` 第 2 节）均未回标；面积按三星 SF4 级 4 nm 由公开节点数据缩放（逻辑 ×1.277 按 CPP×MMP，SRAM ×1.248 按 HD bitcell，PHY ×1；SF4/SF4X 节距未公开，取 SF4E），矩阵密度取 3.2 TF/mm²（N4 口径 @1 GHz，原 1.6），均为 `ASSUMPTION`（`integration/detailed/k3_physical_basis.js`） | PPA 可能不收敛；发布点 Die 373.7 mm²，逻辑系数若按 CPP×MMP 偏乐观、矩阵密度若只有 2.5 TF/mm² 以下，面积可能超 400 mm² | synthesis/floorplan/IP macro；三星 SF4 PDK 的 SRAM compiler 与 MAC 阵列宏 |
 | B-007 | reference-393 口径：2026-09-25 决定接受。合并后的 `Wup + Shared output all-reduce` 已移到 shared 专家计算之后（此前排在之前，shared 部分和未被归约）；`Q / new-KV all-gather` 按参考页作本地算子 | 已接受；若供应商结构说明否定 shared 与 Wup 输出同宽相加，须回退 `repo-510` | 供应商 shared 专家结构说明或权重 manifest 的输出张量宽度（确认性，不阻塞） |
-| B-008 | τ 口径：2026-09-25 决定发布点每次集合通信下限取 spec 的 1.15 μs（`OPT.tauUs`）；1.15 μs 本身尚无物理推导 | 通信 451.95 μs（393 × 1.15，五类协议时间均低于 τ），占 raw 预算的 53%；393 次的天花板约 1134.46 TPS（含 shared 专家重叠和 TMA 掩盖，假设 DMA 等待为 0）；发布点 1101.77 离预算余 78.95 μs，τ 可到约 1.35 μs（每次余 0.201 μs）仍达标；规划链路每个槽位给出 τ = 1.15 / 1.5 / 2.0 μs 三列（ADR-0008），TP32/MC640 的 K3 在 1.5 μs 下为 972、2.0 μs 下为 795，GLM-5.2 与 DeepSeek-V4-Pro 在 2.0 μs 下仍有约 1480–1500；两个正式候选都是 τ 条件候选（规划模型下 K3 须 τ ≤ 1.44 / 1.41 μs，详细模型为约 1.35 μs），入选只看点估计 | 由 B-004/B-005 给出 τ 的物理推导并回标（ADR-0004） |
+| B-008 | τ 口径：2026-09-25 决定发布点每次集合通信下限取 spec 的 1.15 μs（`OPT.tauUs`）；1.15 μs 本身尚无物理推导 | 通信 451.95 μs（393 × 1.15，五类协议时间均低于 τ），占 raw 预算的 53%；393 次的天花板约 1134.46 TPS（含 shared 专家重叠和 TMA 掩盖，假设 DMA 等待为 0）；发布点 1101.77 离预算余 78.95 μs，τ 可到约 1.35 μs（每次余 0.201 μs）仍达标；规划链路每个槽位给出 τ = 1.15 / 1.5 / 2.0 μs 三列（ADR-0008），TP32/MC640 的 K3 在 1.5 μs 下为 959、2.0 μs 下为 786，GLM-5.2 与 DeepSeek-V4-Pro 在 2.0 μs 下仍有约 1480–1500；正式候选是 τ 条件候选（规划模型下 K3 须 τ ≤ 1.41 μs，详细模型为约 1.35 μs），入选只看点估计 | 由 B-004/B-005 给出 τ 的物理推导并回标（ADR-0004） |
 | B-009 | 2026-09-25 关闭：GLM-5.2 形状改取公开 HF `config.json`（ADR-0007），含 MTP 总参数 753.3B 对公布 753B；剩余部署布局（FP8 KV 656 B、索引键 132 B、每层集合通信 full 4 / shared 3）为 `ASSUMPTION`，无 EP 已由 ADR-0020 定为部署决定，并入 O-016 | 已关闭；6 个观测槽位有规划 TPS，D-Gate 的 `threeModelComparable` 成立 | 部署布局的确认性证据（不阻塞） |
 
 ## P1 关键问题
@@ -33,7 +33,8 @@
 | O-013 | 1M KV/state 的正式布局和精度 | Workload/Memory |
 | O-014 | LM Head 的精度和分片 | Workload/AI Core |
 | O-016 | 规划 token 时间的标定系数（kMemory、expertReread、kFlop、fixedPerLayerUs、kTmaExposedUsPerGB，ADR-0008）只在 K3 一个详细点上标定：expertReread 0.20 取自详细模型的输入值（专家预测准确率 0.8），不是测量值，每个槽位另给准确率 0.7 / 0.9 两列；kFlop 未覆盖 INDEXER 核类，DeepSeek-V4-Pro 的 indexer 计算属外推；每层固定开销扣除了 K3 特有的 shared 专家通信重叠；K3 在 MC320 的样本外核对为 0.94，访存受限槽位的数值可能偏保守约 6%；DeepSeek-V4-Pro 的 MLA/indexer 维度、dense 层数、词表、FP4 专家字节数、每层 4 次集合通信均为 `ASSUMPTION`；expert hidden 按 49B 激活反解（3840.8，隐含总参数为公布 1.6T 的 1.16 倍）与按 1.6T 反解（3299.8）两解并列，TPS 以区间给出；GLM-5.2 的 KV/索引键字节与每层集合通信次数同为 `ASSUMPTION`（ADR-0006、ADR-0007）；FFN/MoE 的 TP-only 映射已是部署决定（ADR-0020），不再是假设 | Workload/Modeling |
-| O-015 | 卡功耗上限是否包含 optics/VRM/host I/O；2026-09-25 起 P1 按液冷（冷板）取 Die 300 W、卡 2800 W（原风冷 2400 W），冷板、VRM 与供电方案尚未建模 | Package/Power |
+| O-015 | 卡功耗上限是否包含 optics/VRM/host I/O；2026-09-25 起按液冷（冷板）取 Die 300 W、卡 2800 W（原风冷 2400 W），冷板、VRM 与供电方案尚未建模 | Package/Power |
+| O-017 | GLM-5.2 / DeepSeek-V4-Pro 的 router 字节按 TP 切分计入，但每层集合通信次数里没有 router 输出的 gather：若 router 复制到每个 rank，每 token 字节 GLM 约 +0.24 GB（+17%）、DS 约 +0.32 GB（+23%）；若保持切分，每个 MoE 层多 1 次集合通信（K3 的 Wdown+Router AG 口径）。另：稀疏注意力 top-2048 在 TP32 上按 context 切分，平均每 rank 64 个 token、最坏 2048 个，负载不均未计入（`teams/software/docs/MULTI_MODEL_LOWERING.md` 第 5 节） | Workload/Software |
 
 ## P2 风险项
 

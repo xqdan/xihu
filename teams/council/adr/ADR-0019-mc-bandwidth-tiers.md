@@ -8,7 +8,7 @@
   2. 480 GB/s/颗是默认搜索上限，超过它的档位在所有报告中标记为 `AGGRESSIVE`；
   3. 560 与 640 GB/s/颗保留在网格中，只能标为 `STRETCH/AGGRESSIVE`，供应商证据闭合前不得作为制造默认值；
   4. 路线 A（32 MC × 480 GB/s × 8 GB，384 MiB SRAM/卡）是 1M context 的算力下限观测点，不是帕累托选点，也不是签核规格；
-  5. reticle 张数留在封装签核：7-reticle 是仓库的工程 placement window，规格页图注的约 6 reticle 是另一份材料的估计，两者共同锁定的只是 8 颗约 400 mm² Compute Die 加 UCIe 直连 MC。
+  5. reticle 张数留在封装签核：7-reticle 是仓库的工程 placement window，规格页图注的约 6 reticle 是另一份材料的估计，两者共同锁定的只是 8 颗 Compute Die 加 UCIe 直连 MC（Die 面积见 ADR-0021）。
 - 机器可读：`teams/hardware/inputs/k3_mc_baseline.json#bandwidthTiers`。
 - 规格来源：`references/k3_1000tps_chip_designs.html`（已入库副本，原件来自工作区 `docs/1000tps/`）。
 - 状态：`BASELINE`

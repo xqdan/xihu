@@ -6,7 +6,7 @@
  *            GLM-5.2 derived from its public config.json, DeepSeek-V4-Pro
  *            shape-derived with assumptions; a model without config is BLOCKED_CONFIG,
  *            plus the K3-calibrated token-time factors)
- *          teams/hardware/src/resource_profiles.js (P0 and P1 are distinct)
+ *          teams/hardware/src/resource_profiles.js (the P1 hardware spec)
  *          integration/planning/token_time.js (planning token time per slot)
  * Outputs: out/direction/directional_resource_envelope.json (base record from
  *            integration/planning/directional_envelope.js)
@@ -56,7 +56,6 @@ const manifestPath = 'teams/model/inputs/formal_model_manifests.json';
 const manifest = read(manifestPath);
 const manifestHash = hashFile(manifestPath);
 const profile = read('teams/model/inputs/model_profiles.json');
-const packageSpec = read('teams/hardware/inputs/k3_7r_package_baseline.json');
 const workload = read('out/workload/planning_operator_workload.json');
 const sourceInputs = {
   manifest: manifestHash,
@@ -67,7 +66,6 @@ const sourceInputs = {
   envelope: hashFile('integration/planning/directional_envelope.js'),
   gateValidator: hashFile('integration/governance/evaluate_gates.js'),
   modelProfiles: hashFile('teams/model/inputs/model_profiles.json'),
-  packageSpec: hashFile('teams/hardware/inputs/k3_7r_package_baseline.json'),
   mcSpec: hashFile('teams/hardware/inputs/k3_mc_baseline.json')
 };
 
@@ -107,7 +105,7 @@ const dtypeLabel = modelId => {
 };
 const candidates = [];
 const comparisonRows = [];
-for (const physicalProfile of ['P0', 'P1']) {
+for (const physicalProfile of RES.PHYSICAL_PROFILES) {
   for (const mcProfile of ['MC320', 'MC640']) {
     for (const tp of [8, 16, 32]) {
       const slot = {tp, physicalProfile, mcProfile};
@@ -244,11 +242,6 @@ const sweepSummary = {
   selectedSensitivity: sweep.filter(item => Object.values(item.axes).every(v => v === 1))
 };
 
-const areaConservation =
-  packageSpec.compute.dieCount * packageSpec.compute.dieAreaMm2 +
-  packageSpec.memory.cubeCount * packageSpec.memory.cubeAreaMm2Planning +
-  packageSpec.packageTotals.placementRoutingReserveMm2 === packageSpec.placementWindow.areaMm2;
-
 const env = {
   ...ENVELOPE.build({runId}),
   confidence: 'E1',
@@ -266,10 +259,9 @@ const env = {
     'GLM-5.2 rows are derived from its public config.json; the FP8 KV/index-key layout and collectives per layer are ASSUMPTIONs.',
     'FFN/MoE is deployed TP-only for all three models (deployment decision): every expert is sharded over the TP ranks; no expert parallelism, no all-to-all.',
     'MC320 and MC640 remain separate physical bandwidth profiles.',
-    'P0 and P1 use distinct core-class peak capacities (teams/hardware/src/resource_profiles.js).'
+    'One hardware spec (P1 compact, teams/hardware/inputs/k3_mc_baseline.json); core-class peaks from teams/hardware/src/resource_profiles.js.'
   ]
 };
-env.packageEnvelope = {...env.packageEnvelope, areaConservation};
 
 const direction = {
   schemaVersion: 'directional-tps-scorecard-v0.5',

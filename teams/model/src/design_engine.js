@@ -77,7 +77,7 @@
     }
   };
 
-  // 单卡 = 8 计算 Die × 16 MC，口径见 ucie_7reticle_architecture.html
+  // 单卡 = 8 计算 Die × 16 MC（teams/hardware/inputs/k3_mc_baseline.json#/card）
   const CHIP_DEFAULT = {
     mcCount: 16,
     mcBandwidthGBs: 320,

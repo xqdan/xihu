@@ -1,7 +1,7 @@
 process.chdir(require('path').resolve(__dirname,'../..')); // paths below are relative to the repository root
 const fs=require('fs');
 const org=JSON.parse(fs.readFileSync('teams/council/inputs/industrial_agent_organization.json','utf8'));
-const teamMeta={hardware:{name:'Hardware Team',mission:'定义可实现的 7-reticle 单芯片硬件规格和资源边界',goal:'在面积、带宽、算力、通信、功耗和热约束下形成可制造候选'},software:{name:'Software Team',mission:'将模型部署到硬件并通过编译、算子、融合、通信 overlap 和调度提升有效吞吐',goal:'把每项软件收益转化为可执行、可回放、可回滚的 schedule'},model:{name:'Model Team',mission:'维护三模型真实性、工作负载、场景和测试验收',goal:'让每个硬件/软件结论都有明确 model、shape、dtype、routing 和测试范围'}};
+const teamMeta={hardware:{name:'Hardware Team',mission:'维护唯一硬件规格（P1，8 die + 16 MC 封装）和资源边界',goal:'在面积、带宽、算力、通信、功耗和热约束下形成可制造候选'},software:{name:'Software Team',mission:'将模型部署到硬件并通过编译、算子、融合、通信 overlap 和调度提升有效吞吐',goal:'把每项软件收益转化为可执行、可回放、可回滚的 schedule'},model:{name:'Model Team',mission:'维护三模型真实性、工作负载、场景和测试验收',goal:'让每个硬件/软件结论都有明确 model、shape、dtype、routing 和测试范围'}};
 const special={
 'ARCH-01':['Architecture Council','发布统一目标、约束、证据等级和版本基线'],
 'ARCH-02':['Architecture Council','集成三团队结果，生成候选架构和方向级 TPS/PPA envelope'],

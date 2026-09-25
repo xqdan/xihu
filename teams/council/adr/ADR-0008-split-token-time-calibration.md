@@ -141,8 +141,8 @@ issues with the planning path:
 
 ## Consequences
 
-- TPS/usr for P0 (P1 differs only at TP32/MC640). `m` means memory-bound and
-  `c` means collective-bound:
+- TPS/usr on the single hardware spec P1 (ADR-0021). `m` means memory-bound
+  and `c` means collective-bound:
 
   | Slot | K3 | GLM-5.2 | DeepSeek-V4-Pro (range) | K3-FP8-dense |
   |---|---:|---:|---:|---:|
@@ -150,11 +150,8 @@ issues with the planning path:
   | MC320 TP16 | 275.6 m | 896.5 m | 927.7 m (927.7–996.3) | 416.5 |
   | MC320 TP32 | 551.2 m | 1793.1 m | 1855.4 m (1855.4–1992.6) | 832.9 |
   | MC640 TP8 | 275.6 m | 896.5 m | 927.7 m (927.7–996.3) | 416.5 |
-  | MC640 TP16 | 551.2 m | 1793.1 m | 1855.4 m (1855.4–1971.2) | 832.9 |
-  | MC640 TP32 | 1102.4 m | 2420.0 c | 2314.6 c (2314.6–2333.9) | 1168.2 |
-
-  At P1 / MC640 / TP32 the values are K3 1102.4, GLM-5.2 2416.8,
-  DeepSeek-V4-Pro 2299.3 (range 2299.3–2318.4) and K3-FP8-dense 1149.3.
+  | MC640 TP16 | 551.2 m | 1793.1 m | 1855.4 m (1855.4–1949.1) | 832.9 |
+  | MC640 TP32 | 1102.4 m | 2416.8 c | 2299.3 c (2299.3–2318.4) | 1149.3 |
 
 - Change against ADR-0007:
   - At the collective-bound TP32/MC640 slots, GLM-5.2 drops 7.0% and
@@ -166,26 +163,26 @@ issues with the planning path:
     BF16 router and LM head add to this.
   - K3 is unchanged by construction.
 
-- τ sensitivity at 1.15 / 1.5 / 2.0 µs (P0):
+- τ sensitivity at 1.15 / 1.5 / 2.0 µs:
 
   | Slot | K3 | GLM-5.2 | DeepSeek-V4-Pro |
   |---|---|---|---|
-  | TP32/MC640 | 1102 / 972 / 795 | 2420 / 1932 / 1500 | 2315 / 1880 / 1482 |
-  | TP16/MC640 | 551 / 551 / 551 | 1793 / 1784 / 1409 | 1855 / 1628 / 1321 |
-  | TP32/MC320 | 551 / 551 / 551 | 1793 / 1793 / 1500 | 1855 / 1855 / 1482 |
+  | TP32/MC640 | 1102 / 959 / 786 | 2417 / 1930 / 1498 | 2299 / 1870 / 1476 |
+  | TP16/MC640 | 551 / 551 / 551 | 1793 / 1781 / 1407 | 1855 / 1613 / 1311 |
+  | TP32/MC320 | 551 / 551 / 551 | 1793 / 1793 / 1498 | 1855 / 1855 / 1476 |
 
   - K3 at TP32/MC640 falls below the target at τ = 1.5 µs.
   - GLM-5.2 and DeepSeek-V4-Pro stay above it at every τ in the table.
 
 - Selection and gates:
-  - Two formal candidates remain: `P0-7R-balanced-MC640-TP32` and
-    `P1-compact-MC640-TP32`.
-  - `P0-7R-balanced-MC320-TP32` becomes the non-formal MC320 reference, with
-    K3 at 551.2 (0.55 of target).
+  - One formal candidate: `P1-compact-MC640-TP32` (ADR-0021 removed the
+    second hardware spec and its candidates).
+  - `P1-compact-MC320-TP32` is the non-formal MC320 reference, with K3 at
+    551.2 (0.55 of target).
   - The D-Gate stays `PASS`.
-  - Both formal candidates are τ-conditional. In the planning model, K3
-    reaches the target only while τ ≤ 1.438 µs (P0) and ≤ 1.408 µs (P1).
-    - The detailed model gives about 1.35 µs for the P1 point (B-008).
+  - The formal candidate is τ-conditional. In the planning model, K3 reaches
+    the target only while τ ≤ 1.408 µs.
+    - The detailed model gives about 1.35 µs for the same point (B-008).
     - The planning bound is looser because the planning serial lane is
       slightly shorter.
     - The detailed value governs.

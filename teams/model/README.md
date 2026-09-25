@@ -9,7 +9,7 @@
 |---|---|---|---|---|
 | MODEL-01 Config/Manifest | layer、dtype、expert、routing、KV/index/MTP、版本证据 | 公共配置、许可证/来源 | model manifest、confidence、blockers | 未确认字段只能 UNVERIFIED |
 | MODEL-02 Workload/Operator | FLOP、weight/KV/index/expert/collective bytes、算术强度输入 | manifest、context/batch/decode | workload ledger、operator DAG | 不用 2×parameter 替代全部算子 |
-| MODEL-03 Scenario/Test | batch/context/prefill/decode、TP8/16/32、MC320/640、P0/P1 cases | manifest、deployment contract | test case matrix、seed、acceptance | 每槽位唯一，结果可追溯 |
+| MODEL-03 Scenario/Test | batch/context/prefill/decode、TP8/16/32、MC320/640 cases（单一硬件规格 P1） | manifest、deployment contract | test case matrix、seed、acceptance | 每槽位唯一，结果可追溯 |
 | MODEL-04 Routing/Sparsity | MoE routing、expert dispatch/combine、sparse index、MTP | model config、runtime assumptions | routing traffic/state scenarios | active experts、capacity factor 显式 |
 | MODEL-05 Golden Trace | 逐层/逐算子 golden workload、shape/layout/state trace | validated model artifacts | golden traces、diff report | planning trace 与 measured trace 分离 |
 | MODEL-06 Model KPI/Acceptance | TPS/usr、latency、quality、memory footprint、accuracy guardrail | test matrix、software result、HW envelope | model acceptance report | 不能把 planning estimate 当 observed |
@@ -21,7 +21,7 @@
 | `src/design_engine.js` | K3 形状唯一来源（`MODEL_PRESETS.kimiK3`，工程 preset）与形状推导 |
 | `src/workload_derivation.js` | GLM-5.2 / DeepSeek-V4-Pro 规划算子行推导（manifest `shape` + 显式 ASSUMPTION） |
 | `inputs/` | 正式 manifest、model profiles、manifest qualification matrix、多模型 TP 矩阵 |
-| `docs/deployment/` | 逐模型部署方案（K3、GLM-5.2、DeepSeek-V4-Pro）：切分、dtype、KV/index 布局、集合通信次数；字段来源是 `inputs/formal_model_manifests.json` |
+| `docs/deployment/` | 逐模型部署方案（K3、GLM-5.2、DeepSeek-V4-Pro）：切分、dtype、KV/index 布局、每 rank 容量、集合通信次数；字段来源是 `inputs/formal_model_manifests.json`。跨模型：`OPERATOR_LEDGER.md`（规划算子账，MODEL-02）、`SCENARIO_MATRIX.md`（场景矩阵与选择政策，MODEL-03） |
 | `docs/` | manifest qualification 报告 |
 | `contract.json` | 对外 workload contract 的静态部分；`integration/pipelines/generate_team_contracts.js` 合成到 `out/contracts/model_workload_contract.json` |
 
