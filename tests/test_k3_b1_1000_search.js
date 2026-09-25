@@ -26,8 +26,18 @@ for(const stage of [d.original,d.extended]){
 // because the same hardware / tile cannot accommodate B32.
 const x={...A.BASE,hMiB:1,kvTile:2048};assert(S.evaluate(x).feasible);assert(!A.mappedPlan(x,32).feasible);
 const z=d.diagnostics;
-assert.equal(z.collectives,510);assert.equal(z.steps,4520);
-close(z.networkStartup,632.8);close(z.dieStartup,76.5);close(z.floorUs,709.3);
+// Collective counting basis. The published point counts on the reference page's
+// basis (393), not the earlier repo basis (510). Pinned in both directions so a
+// silent reversion is caught; see ADR-0004 and SW-05. `steps` is NOT rebuilt
+// here: it depends on per-operator naming, so reconstructing it from a name
+// rule duplicates the model instead of checking it. It is used only as an input
+// to the self-consistency relations below.
+assert.equal(z.collectives,393);
+const zRepo=A.mappedPlan(d.extended.best.x,1,A.physical(d.extended.best.x),'repo-510').plan.ops.filter(o=>o.unit==='COMM');
+assert.equal(zRepo.length,510,'repo basis must still total 510');
+close(z.networkStartup,z.steps*A.TECH.rdmaStepUs);
+close(z.dieStartup,z.collectives*6*A.TECH.ucieHopUs);
+close(z.floorUs,z.networkStartup+z.dieStartup);
 close(z.targetRawUs,1000/1.17);assert(d.extended.best.rawUs>=z.floorUs);
 close(z.latencySweeps[0].tps,d.extended.best.tps);
 const html=fs.readFileSync('reports/search/k3_b1_1000_report.html','utf8');

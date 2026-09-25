@@ -44,7 +44,9 @@ function physical(x){
  if(dieArea>LIMITS.dieArea)reasons.push('die area');if(diePower>LIMITS.diePower)reasons.push('die power');if(cardPower>LIMITS.cardPower)reasons.push('card power');if(packageArea>LIMITS.packageArea*LIMITS.packageUtil)reasons.push('package area');if(shoreline>edgeBudget)reasons.push('PHY shoreline');
  return {lTF,hTF,vectorTOP,localMiB,totalMiB,lRead,hRead,sharedRead,sharedWrite,meshSide,nocTB,coreTma,uciePortGB,mcDieGB,dieCutGB,rdmaDieGB,rdmaCardGB,reduceTOP,area,power,dieArea,diePower,mcPower,cardPower,packageArea,shoreline,edgeBudget,feasible:!reasons.length,reasons};
 }
-function mappedPlan(x,batch,p=physical(x)){
+// basis: a countBasis string, or {countBasis, commOverlap, tmaLane, kvPrefetch, dmaPreempt} forwarded to build().
+function mappedPlan(x,batch,p=physical(x),basis){
+ const extra=typeof basis==='string'?{countBasis:basis}:{...(basis&&basis.countBasis?{countBasis:basis.countBasis}:{}),...(basis&&'commOverlap' in basis?{commOverlap:basis.commOverlap}:{}),...(basis&&'tmaLane' in basis?{tmaLane:basis.tmaLane}:{}),...(basis&&basis.kvPrefetch?{kvPrefetch:basis.kvPrefetch}:{}),...(basis&&'dmaPreempt' in basis?{dmaPreempt:basis.dmaPreempt}:{})};
  const D=LIMITS.dies,NL=D*x.nL,NH=D*x.nH,B=batch;
  // Shared SRAM holds backing objects; LOCAL SRAM is never added to this pool.
  // Keep physical capacity reserve separate from timing/imbalance margin.
@@ -52,7 +54,8 @@ function mappedPlan(x,batch,p=physical(x)){
  const sharedUsable=D*x.sharedMiB*LIMITS.usable;
  const plan=build({batch,context:LIMITS.context,depth:x.depth,prediction:.8,weightTileMiB:x.weightTileMiB,kvTile:x.kvTile,headTile:x.headTile,
  lTflops:p.lTF*D,hTflops:p.hTF*D,vectorTops:p.vectorTOP*D,lUtil:TECH.matrixUtil,hUtil:TECH.matrixUtil,vectorUtil:TECH.vectorUtil,
- sramReadTBs:D*p.sharedRead,sramWriteTBs:D*p.sharedWrite,memTBs:D*p.mcDieGB/1000,fabricTBs:D*p.nocTB,linkGBs:p.rdmaCardGB,margin:1.17});
+ sramReadTBs:D*p.sharedRead,sramWriteTBs:D*p.sharedWrite,memTBs:D*p.mcDieGB/1000,fabricTBs:D*p.nocTB,linkGBs:p.rdmaCardGB,margin:1.17,
+ ...extra});
  // KV persists across all head tiles of this context tile. Reserve the
  // FULL batch share, not an unmodelled smaller batch tile: otherwise
  // claiming one shared->local KV read would hide actual reload traffic.
@@ -142,8 +145,21 @@ function mappedPlan(x,batch,p=physical(x)){
   // must not get free SRAM bandwidth simply by having more engines.
   const pipelined=Math.max(nominalPipeline,(oldWrite+sharedR)/(cores*localRead*.5*1e6),oldRead/(cores*localRead*1e6));
   const flush=sharedW?Math.max(sharedW/(D*p.sharedWrite*1e6),sharedW/(D*p.nocTB*1e6),sharedW/(cores*p.coreTma*1e6),sharedW/(cores*localRead*1e6))+meshLatency:0;
-  record(o,{kernel,localTma:Math.max(0,pipelined-kernel)+flush,reduce:reduceUs,dieLink:dieUs,launch:TECH.launchUs},{domain,fill,limiter,chunks,sharedR,sharedW,
+  const localTma=Math.max(0,pipelined-kernel)+flush;
+  // tmaLane: the DMA-sourced (weight/expert/KV/state) share of the first
+  // shared->local stage becomes a separate TMA fill that the simulator may
+  // issue ahead of the op into the domain's free double-buffer half. The rest
+  // (activation fill, local-port excess, flush) stays in the op as localTma.
+  const dmaBytes=Math.min(sharedR,o.inputs.reduce((s,id)=>s+(plan.jobs[id].kind!=='write'?plan.jobs[id].bytes:0),0));
+  const tmaFill=extra.tmaLane&&sharedR?Math.min(localTma-flush,stage/chunks)*dmaBytes/sharedR:0;
+  const timing=extra.tmaLane?{kernel,localTma:localTma-tmaFill,tmaFill,reduce:reduceUs,dieLink:dieUs,launch:TECH.launchUs}:{kernel,localTma,reduce:reduceUs,dieLink:dieUs,launch:TECH.launchUs};
+  record(o,timing,{domain,fill,limiter,chunks,sharedR,sharedW,
    localReadBytes:oldRead+sharedW,localWriteBytes:oldWrite+sharedR,localReadTBs:cores*localRead,localWriteTBs:cores*localRead*.5});
+  // The filled tile holds one double-buffer half of its domain until the last
+  // consumer of its inputs finishes (KV tiles are reused across head tiles);
+  // a multi-chunk op streams through both halves.
+  if(tmaFill>0)o.tma={us:tmaFill,bytes:dmaBytes/chunks,domain,halves:chunks===1?1:2,localWriteTBs:cores*localRead*.5,
+   release:Math.max(...o.inputs.map(id=>plan.jobs[id].last))};
   o.read=sharedR+reduceRead;o.write=sharedW+reduceWrite;o.linkBytes=sharedR+sharedW;
  }
  return {feasible:true,plan,window,sharedUsable,hLocalBytes,lLocalBytes,services,limiters,dmaPeak,dmaEffective:plan.c.memTBs};

@@ -60,7 +60,15 @@ close(stretch.peakReservedMiB,
 // The reference-compatible MC point must remain a visible blocker (below target),
 // and the stretch point must be materially faster than the reference point.
 assert(reference.tps < baseline.goal.target, 'Reference-compatible MC point must remain a visible blocker');
-assert(stretch.tps > reference.tps * 1.5, 'MC bandwidth sensitivity unexpectedly changed');
+// The two points differ only through DMA: compute and comm (tau-floored since
+// 2026-09-25) are identical, so the raw gap is the wait gap minus the overlap
+// and hidden-TMA gaps (weights that are late at MC320 hide less under the
+// all-gather and leave the TMA lanes less lead time). A fixed speed-up ratio
+// is not asserted because the comm floor dilutes MC sensitivity.
+assert(stretch.tps > reference.tps, 'MC640 must be faster than MC320');
+close(stretch.computeUs, reference.computeUs, 1e-9, 'compute must not depend on MC bandwidth');
+close(stretch.commUs, reference.commUs, 1e-9, 'comm must not depend on MC bandwidth');
+close(reference.rawUs - stretch.rawUs, (reference.waitUs - stretch.waitUs) - (reference.overlapUs - stretch.overlapUs) - (reference.tmaHiddenUs - stretch.tmaHiddenUs), 1e-6, 'MC bandwidth must act only through DMA wait, overlap and hidden TMA');
 // Charged shared-port scaling cost must be reflected in the spec and stay within limits.
 assert(baseline.computeDieCandidate.sharedPortScalingCost && baseline.computeDieCandidate.sharedPortScalingCost.powerWPerDie > 0,
   'spec must carry the charged shared-port cost; run npm run baseline:sync');

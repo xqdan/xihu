@@ -1,6 +1,6 @@
 # 当前设计状态与已知结论
 
-版本：2026-09-23。
+版本：2026-09-25。
 
 ## 0. 7-reticle 单芯片前提
 
@@ -11,7 +11,7 @@
 | Profile | 用途 | 规格 |
 |---|---|---|
 | P0 7R physical primary | 封装、面积、集成存储和 PPA 主规划 | 8 L + 8 H/Die，1.0 GHz 候选，96 MiB data SRAM/Die，400 mm²/Die |
-| P1 compact executable | 当前搜索/回归模型 | 由 Final Tuning 搜索决定，权威值在 `spec/k3_mc_baseline.json#computeDieCandidate`；2026-09-23 修正模型后为 24 L + 8 H/Die、1.0 GHz、88 MiB data SRAM/Die（2026-09-20 的候选是 4 L + 4 H、1.2 GHz、44 MiB） |
+| P1 compact executable | 当前搜索/回归模型 | 由 Final Tuning 搜索决定，权威值在 `spec/k3_mc_baseline.json#computeDieCandidate`；2026-09-25 按 GAIN=1、τ=1.15 μs、reference-393 口径重新搜索后为 8 L + 4 H/Die、1.0 GHz、80 MiB data SRAM/Die（同日早些时候的候选是 8 L + 8 H；2026-09-23 是 24 L + 8 H、88 MiB；2026-09-20 是 4 L + 4 H、1.2 GHz、44 MiB） |
 
 P1 的性能回归结果不能直接宣称为 P0 7R 物理主候选的最终性能；需要先完成
 P0 的 tile、kernel、MC、NoC、floorplan 和 PPA 模型。本文第 2、3 节的数字全部是 **P1** 结果。
@@ -47,13 +47,13 @@ K3 preset 来自
 | 项目 | 值 | 状态 |
 | --- | ---: | --- |
 | 工艺/频率 | 工艺未锁；`computeDieCandidate.frequencyGHz`（当前 1.0 GHz） | `MODEL` |
-| L Core | `computeDieCandidate.lCores`（当前 24，每 Core 2×(2×128) engine） | `MODEL` |
-| H Core | `computeDieCandidate.hCores`（当前 8，每 Core 4×(32×64) engine） | `MODEL` |
+| L Core | `computeDieCandidate.lCores`（当前 8，每 Core 8×(1×256) engine） | `MODEL` |
+| H Core | `computeDieCandidate.hCores`（当前 4，每 Core 4×(32×128) engine） | `MODEL` |
 | BF16 Dense peak | `computeDieCandidate.bf16DenseTflops` | 推导值 |
 | Vector peak | `computeDieCandidate.vectorTops` | 推导值 |
-| Local SRAM | `lCore/hCore.localSramMiB`（当前 2 MiB/Core，64 MiB/Die） | `MODEL` |
-| Shared SRAM | `sharedSramMiB` / `sharedSramSlices`（当前 24 MiB，16 slices） | `MODEL` |
-| 总数据 SRAM | `physicalDataSramMiB`（当前 88 MiB/Die） | 推导值 |
+| Local SRAM | `lCore/hCore.localSramMiB`（当前 L 2 MiB/Core、H 4 MiB/Core，32 MiB/Die） | `MODEL` |
+| Shared SRAM | `sharedSramMiB` / `sharedSramSlices`（当前 48 MiB，16 slices） | `MODEL` |
+| 总数据 SRAM | `physicalDataSramMiB`（当前 80 MiB/Die） | 推导值 |
 | NoC | 抽象 mesh，`dataNocBytesPerCyclePerDirection` | `MODEL` |
 | TMA | `tmaEngines` × `tmaBytesPerCyclePerEngine` | `MODEL` |
 | Reduce | `reduceLanes` | `MODEL` |
@@ -62,7 +62,12 @@ K3 preset 来自
 | 卡功耗 | `computeDieCandidate.estimatedCardPowerW` | `MODEL` |
 
 2026-09-23 修正 Final Tuning 模型（端口放大计费、launch 只应用一次）后重新搜索，
-最佳候选从 4 L + 4 H、1.2 GHz、44 MiB/Die 移动到 24 L + 8 H、1.0 GHz、88 MiB/Die。
+最佳候选从 4 L + 4 H、1.2 GHz、44 MiB/Die 移动到 24 L + 8 H、1.0 GHz、88 MiB/Die；
+2026-09-25 先切换计数口径（ADR-0004）移动到 8 L + 8 H；随后按 GAIN=1、τ=1.15 μs 的决定重新搜索，
+移动到 8 L + 4 H、1.0 GHz、80 MiB/Die（32 MiB local + 48 MiB shared）；加入独立 TMA 通道后，
+local SRAM 可提前装载下一块权重，搜索移动到 8 L + 4 H、1.0 GHz、72 MiB/Die（48 MiB local + 24 MiB shared，
+weight tile 4 MiB）；再允许 KV 跨层预取和 DMA 抢占后，shared SRAM 的压力变小，搜索移动到
+8 L + 4 H、1.0 GHz、48 MiB/Die（32 MiB local + 16 MiB shared，L core 64 bank，weight tile 8 MiB）。
 02、03、05 号文档的单元级描述仍基于 2026-09-20 的候选，在 P1 候选稳定前只作对照，
 不作为当前规格。
 
@@ -82,28 +87,77 @@ K3 preset 来自
 字节和有效 DMA 带宽都记录在上述 JSON 字段中；`README.md`、各子系统文档和
 看板引用同一来源。
 
-320 GB/s 点的计算与通信时间与 640 GB/s 点基本相同，差别几乎全部来自 DMA
-等待。因此当前首要矛盾是**实现可行的 MC 聚合带宽**，而不是继续增加
-Tensor peak。
+320 GB/s 点的计算与通信时间与 640 GB/s 点完全相同，差别来自 DMA 等待，以及
+等待拖慢 shared 专家和 TMA 预取后可掩盖的时间变少（`tests/test_design_baseline.js` 断言）。自 2026-09-25 起，640 GB/s 点的 raw 中
+compute 与 τ 下限后的通信合计已超过 854.70 μs 预算，DMA 等待不再是主要矛盾；
+只提 MC 带宽不能达到目标。
 
-Final Tuning 的所有经验缩放因子在
-[`src/rdma/k3_rdma_final_tuning_model.js`](../../src/rdma/k3_rdma_final_tuning_model.js)
-的 `GAIN` 表中逐项命名，证据等级均为 ASSUMPTION（B-003）。
+2026-09-25 的两项决定：
+- `GAIN` 表中的全部经验缩放因子置为 1（B-003）。表仍逐项保留在
+  [`src/rdma/k3_rdma_final_tuning_model.js`](../../src/rdma/k3_rdma_final_tuning_model.js)；
+  任何因子离开 1 都必须有比 ASSUMPTION 更好的证据。
+- 每次集合通信成本下限取 spec 的 τ = 1.15 μs（`OPT.tauUs`，ADR-0004、B-008）。
+  时间账中的 `tauFloor` 是补足到 τ 的时间。
+仍生效的非物理推导参数是 `OPT.launchScale` 和共享 SRAM 端口放大（后者已计费）。
+
+计算与通信重叠（`OPT.commOverlap`，2026-09-25）：集合通信在独立的通道上执行，
+算子仍按程序顺序发射。B=1 decode 下每次集合通信都在依赖主链上，只有与 routed
+路径无数据依赖的 shared 专家（只读 MoE RMSNorm 输出）被排到 Wdown + Router
+all-gather 之后、与之并行。于是 raw = compute + comm + wait − overlap，
+overlap 上限是 shared 专家的计算时间。
+
+独立 TMA 通道（`OPT.tmaLane`，2026-09-25）：此前每个算子的 shared→local 装载
+（`localTma`）串行地算在 compute 内，且不能早于算子本身开始。现在由 DMA 取入
+shared SRAM 的输入（权重、routed expert、KV tile、线性注意力 state）对应的装载
+单独记为 `tmaFill`，在 L/H 两个域各一条 TMA 通道上按程序顺序提前发射：输入在
+shared SRAM 就绪、且该域 local SRAM 双缓冲有空闲一半时即可开始，可与集合通信或
+前一个 kernel 并行。通道与 DMA/算子/集合通信共享 shared SRAM 读口和 fabric，与同域
+kernel 共享 local 写口；激活装载、写回 flush 和 local 口超额部分仍留在算子内。
+于是 raw = compute − tmaHidden + comm + wait − overlap。被掩盖的部分在 routed
+expert 和 KV tile 处部分转化为 DMA 等待，由下面两项处理。
+
+KV 跨层预取与 DMA 抢占（2026-09-25，review 第 8 项）：
+- `OPT.kvPrefetch='window'`：历史 KV 不依赖当前 token，KV context tile 与权重一样
+  可提前到后续 `overlapDepth` 层取入 shared SRAM，只受容量约束（此前只允许层内）。
+- `OPT.dmaPreempt=true`：DMA 按 stripe 切分，Top-k 之后释放的 routed expert
+  未命中部分（或下一个算子需要的数据）可暂停正在进行的预取，被暂停的任务保留
+  SRAM 预留并按消费顺序恢复。
+- 预测预取本身无需提前：预测权重已在 Top-k 之前约 20 μs 取完，瓶颈是未命中的
+  20% 被排在数 MB 的 KV 预取之后。预测命中率仍为 0.8（工程假设），未改动。
+- 两项需要一起用：只开跨层 KV 预取时，大 KV 块会挡住 expert 未命中取数。
+  在发布候选上，两项都关 707.00，只关抢占 767.85，只关跨层 KV 802.94，
+  都开 860.03 TPS。
+
+### 3.1 集合通信计数口径
+
+通信次数按**参考页目标设计的口径**统计（`OPT.countBasis='reference-393'`，
+2026-09-25 接受，B-007），总数见 `collectiveCount.total`，逐项见
+`collectiveCount.byPhase`。这是**口径对齐，不是性能优化**（ADR-0004）：`Q / new-KV all-gather`（24）与
+`Distributed sampling candidates`（1）仍作为本地算子保留在 DAG 中，
+`Shared output all-reduce`（92）并入 `Wup + Shared output all-reduce`；合并后的归约排在
+shared 专家计算之后，每 rank 先把 Wup 与 Shared down 的部分和本地相加再归约一次。
+仓库早先口径为 510 次，可用 `countBasis='repo-510'` 复现。
+
+**次数轴不是当前杠杆**：发布点自 2026-09-25 起使用 spec 的每次集合通信成本
+基准（1.15 µs），393 次的解析天花板约 874.42 TPS（已扣除 shared 专家重叠和 TMA 掩盖）。
+降到 209 次时解析值为 1116.02 TPS，但这是乐观上界：它假设 DMA 等待为 0，并把 TMA
+掩盖量按当前观测值固定，而通信越少，可藏在通信下的装载越少。对照表见
+`spec/k3_mc_baseline.json#tauBasis.ceilingTpsByCount`。
 
 ## 4. 必须纠正的口径
 
 ### 4.1 SRAM 峰值不是每 Die
 
-模拟器中的 122.20 MiB 峰值和 122.40 MiB window 是**整卡 8 个 Die 的
+模拟器中的 283.45 MiB 峰值和 326.40 MiB window 是**整卡 8 个 Die 的
 Shared SRAM 聚合工作窗口**：
 
-- Shared SRAM 物理容量：8×24=192 MiB/卡；
-- usable 0.85，再乘 window fraction 0.75：122.4 MiB/卡；
-- 模拟峰值：122.20 MiB/卡；
-- Local SRAM 20 MiB/Die 由 tile-fit 约束单独检查。
+- Shared SRAM 物理容量：8×16=128 MiB/卡；
+- usable 0.85，再乘 window fraction（当前候选为 1.0）：108.8 MiB/卡；
+- 模拟峰值：108.76 MiB/卡（已贴满窗口）；
+- Local SRAM 32 MiB/Die 由 tile-fit 约束单独检查。
 
-因此旧报告中的“122.2 MiB/Die”是标签错误，不应据此把单 Die SRAM 扩到
-122 MiB。
+因此旧报告中的“122.2 MiB/Die”（2026-09-23 候选的整卡峰值）是标签错误，不应据此把单 Die SRAM 扩到
+122 MiB；当前的 108.76 MiB 同样是整卡值。
 
 ### 4.2 “MC”存在两条不同路线
 
@@ -118,12 +172,12 @@ Shared SRAM 聚合工作窗口**：
 
 | 冲突 | 当前处理 |
 | --- | --- |
-| P0 为 8 L + 8 H Core、1.0 GHz；P1 由搜索决定（当前 24 L + 8 H、1.0 GHz） | 不是冲突，是两个 profile（ADR-004）；P0 是物理主规划，P1 是当前可执行回归模型；报告必须注明 profile |
+| P0 为 8 L + 8 H Core、1.0 GHz；P1 由搜索决定（当前 8 L + 4 H、1.0 GHz） | 不是冲突，是两个 profile（ADR-004）；P0 是物理主规划，P1 是当前可执行回归模型；报告必须注明 profile |
 | P0 Compute Die 为 400 mm² 上限；P1 估算见第 2 节 | 400 mm² 是 P0 规划上限，P1 数字只用于回归对照 |
 | 卡内互联有“4×2 mesh”“双向 ring”“4+4 hierarchy”三种描述 | `BLOCKER`，统一拓扑后才可冻结 |
 | 参考 MC 320 GB/s；默认搜索上限 480 GB/s；P1 最佳搜索使用 640 GB/s | `BLOCKER`，档位定义见 ADR-011，必须选定可制造档 |
 | NoC 的 512 B/cycle 是分析参数，尚无可布线证明 | `OPEN`，需物理和拥塞模型 |
-| Final Tuning 中大量优化使用经验缩放因子 | `BLOCKER`；因子已在 `GAIN` 表中逐项命名，共享 SRAM 端口放大已计入面积/功耗，但仍需逐项替换为事件和资源模型 |
+| Final Tuning 中大量优化使用经验缩放因子 | 2026-09-25 起 `GAIN` 全部为 1，不再计入经验收益；共享 SRAM 端口放大已计入面积/功耗；任何收益须由事件和资源模型给出（B-003） |
 | Attention 投影参数由 residual 拟合，不是精确 Q/K/V 图 | `BLOCKER`，需模型清单和编译 trace |
 | 正式 manifest 曾与 `design_engine` preset 描述不同的 K3 | 已修正：K3 唯一来源是 `src/core/design_engine.js#MODEL_PRESETS.kimiK3`，`tests/test_k3_manifest_consistency.js` 强制一致 |
 

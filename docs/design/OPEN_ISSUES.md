@@ -6,10 +6,12 @@
 | --- | --- | --- | --- |
 | B-001 | 正式 K3 逐层结构和 dtype 未冻结 | FLOP/byte、算子图和容量可能变化 | 模型清单与权重 manifest |
 | B-002 | MC 档位未选定：320 参考、480 默认上限、560/640 激进（ADR-011）；P1 目标点使用 640 GB/s | 320 与 640 两点 TPS 见 `00_CURRENT_STATE.md` 第 3 节 | 选定颗数与每颗带宽的供应商规格或替代架构 |
-| B-003 | Final Tuning 使用经验缩放因子（已在 `GAIN` 表逐项命名；共享 SRAM 端口放大已计入面积/功耗） | 性能可能高估 | 逐项替换为精确 tile/transaction 模型 |
+| B-003 | Final Tuning 的经验缩放因子：2026-09-25 决定全部置 1（`GAIN` 表保留名称）；共享 SRAM 端口放大已计入面积/功耗；`OPT.launchScale` 仍是未回标参数 | 置 1 后发布点从 990.13 降到 681.06 TPS（同时含 τ 变更；之后加入 shared 专家计算通信重叠并补种子搜索后为 729.14，再加入独立 TMA 通道后为 774.77，再加入 KV 跨层预取和 DMA 抢占后为 860.03）；已实现的优化收益目前未计入 | 逐项用精确 tile/transaction 模型给出收益后，才允许对应因子离开 1 |
 | B-004 | 卡内 topology 口径冲突 | 带宽、hop、封装无法签核 | 统一拓扑与 packet 模型 |
 | B-005 | TP32 scale-out 物理拓扑未定义 | 800 GB/s 和低时延不可实现性未知 | PHY/拓扑/布线/功耗方案 |
-| B-006 | P1 的 1.2 GHz、面积、功耗（见 `00_CURRENT_STATE.md` 第 2 节）和 P0 的 1.0 GHz 候选均未回标 | PPA 可能不收敛 | synthesis/floorplan/IP macro |
+| B-006 | P1 的 1.0 GHz、面积、功耗（见 `00_CURRENT_STATE.md` 第 2 节）和 P0 的 1.0 GHz 候选均未回标 | PPA 可能不收敛 | synthesis/floorplan/IP macro |
+| B-007 | reference-393 口径：2026-09-25 决定接受。合并后的 `Wup + Shared output all-reduce` 已移到 shared 专家计算之后（此前排在之前，shared 部分和未被归约）；`Q / new-KV all-gather` 按参考页作本地算子 | 已接受；若供应商结构说明否定 shared 与 Wup 输出同宽相加，须回退 `repo-510` | 供应商 shared 专家结构说明或权重 manifest 的输出张量宽度（确认性，不阻塞） |
+| B-008 | τ 口径：2026-09-25 决定发布点每次集合通信下限取 spec 的 1.15 μs（`OPT.tauUs`）；1.15 μs 本身尚无物理推导 | 通信 451.95 μs（393 × 1.15），占 raw 预算的 53%；393 次的天花板约 874.42 TPS（含 shared 专家重叠和 TMA 掩盖，假设 DMA 等待为 0） | 由 B-004/B-005 给出 τ 的物理推导并回标（ADR-0004） |
 
 ## P1 关键问题
 

@@ -71,6 +71,9 @@ const point = r => ({
   computeUs: r.computeUs,
   commUs: r.commUs,
   dmaWaitUs: r.waitUs,
+  commOverlapUs: r.overlapUs,
+  tmaFillUs: r.tmaFillUs,
+  tmaHiddenUs: r.tmaHiddenUs,
   readBytesPerRankPerToken: r.readBytes,
   effectiveDmaTBsPerCard: r.dmaTBs
 });
@@ -79,6 +82,58 @@ spec.modelResults = {
   source: 'data/rdma/k3_rdma_final_tuning_results.json',
   referenceMc320GBs: point(reference),
   stretchMc640GBs: point(stretch)
+};
+
+// Collective counting basis. This is a COUNTING choice, not a physical
+// optimization: under 'reference-393' the Q/new-KV all-gather and the sampling
+// broadcast stay in the DAG as local ops instead of network traffic. Reporting
+// a higher TPS on this basis must not be read as a gain.
+const byPhase = {};
+for (const a of replay.protocol) byPhase[a.name] = a.count;
+const collectiveTotal = replay.protocol.reduce((s, a) => s + a.count, 0);
+spec.collectiveCount = {
+  total: collectiveTotal,
+  byPhase,
+  countBasis: O.OPT.countBasis,
+  referencePageTotal: 393,
+  repoBaselineTotal: 510,
+  referencePageSource: 'references/k3_1000tps_chip_designs.html:1720',
+  reconciliation: 'docs/design/teams/software/SW-05_COLLECTIVE_STRATEGY_REVISION.md#1',
+  status: 'accepted 2026-09-25 (B-007); the folded reduction follows the shared-expert compute',
+  note: 'The 510->393 difference is 92 folded shared-output reductions plus 24 Q/new-KV all-gathers and 1 sampling broadcast that the reference page does not count; it is not a measured speedup.'
+};
+
+// tau basis. SW-05 section 2 found four mutually inconsistent per-collective
+// latency defaults on this path. Since 2026-09-25 the published point floors
+// every collective at OPT.tauUs (the spec 1.15 us). The ceiling is analytic
+// because the simulator asserts raw = compute - tmaHidden + comm + wait - overlap and COMM shares
+// the compute slot, except for the data-independent shared experts that run
+// under a collective (OPT.commOverlap) and the shared->local fills on the TMA
+// lanes (OPT.tmaLane); both are subtracted at their observed values.
+const observedNsPerCollective = collectiveTotal ? (replay.commUs * 1000) / collectiveTotal : null;
+const specTauUs = 1.15;
+if (O.OPT.tauUs !== specTauUs) throw new Error(`OPT.tauUs ${O.OPT.tauUs} differs from the spec tau ${specTauUs}`);
+const ceiling = N => 1e6 / ((replay.computeUs - replay.tmaHiddenUs + N * specTauUs - replay.overlapUs) * spec.goal.engineeringMargin);
+spec.tauBasis = {
+  publishedBasis: 'floor at OPT.tauUs (decision 2026-09-25)',
+  tauUs: O.OPT.tauUs,
+  oneWayUs: O.OPT.oneWayUs,
+  observedNsPerCollective,
+  specNsPerCollective: specTauUs * 1000,
+  ratioToSpec: observedNsPerCollective ? (specTauUs * 1000) / observedNsPerCollective : null,
+  sourcesInRepo: {
+    'src/simulation/k3_operator_sram_sim.js#tauUs': 1.15,
+    'src/rdma/k3_sram_memory_rdma_model.js#MEM.oneWayUs': 0.10,
+    'src/rdma/k3_rdma_final_tuning_model.js#OPT.tauUs (published floor)': O.OPT.tauUs,
+  'src/rdma/k3_rdma_final_tuning_model.js#OPT.oneWayUs': O.OPT.oneWayUs,
+    'data/rdma/k3_b1_1000_rdma_sram_results.json (2026-09-19 observed)': 0.871
+  },
+  ceilingTpsByCount: Object.fromEntries([510, 485, 393, 301, 209].map(n => [n, ceiling(n)])),
+  overlapUs: replay.overlapUs,
+  tmaHiddenUs: replay.tmaHiddenUs,
+  note: 'ceiling(N) = 1e6 / ((computeUs - tmaHiddenUs + N x 1.15us - overlapUs) x 1.17), analytic given the simulator conservation identity raw = compute - tmaHidden + comm + wait - overlap, with DMA wait taken as zero; overlapUs is the shared-expert compute hidden under collectives and tmaHiddenUs the shared->local fills hidden on the TMA lanes, both held at their observed values (fewer collectives leave less time to hide fills under, so the ceiling is optimistic). The published point now uses the spec tau as a per-collective floor; the count axis alone cannot reach 1000 TPS.',
+  blocker: 'B-008 (tau basis unified at 1.15 us on 2026-09-25; physical derivation still depends on B-004/B-005)',
+  adr: 'docs/design/decisions/ADR-0004-collective-tau-basis-and-count-basis.md'
 };
 spec.sramAccounting = {
   physicalMiBPerDie: stretch.p.totalMiB,

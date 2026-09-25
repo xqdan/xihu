@@ -34,4 +34,37 @@ for(const batch of [1,8])for(const depth of [0,2])for(const prediction of [0,.8,
  }
 }
 assert.throws(()=>build({batch:0}));assert.throws(()=>build({tp:24}));
+// Cross-layer KV prefetch and DMA preemption (both default off). Every mode must
+// keep capacity, conservation and byte accounting; preemption parks jobs, it
+// never drops or duplicates bytes.
+assert.equal(build().c.kvPrefetch,'layer');assert.equal(build().c.dmaPreempt,false);
+assert.throws(()=>build({kvPrefetch:'all'}));assert.throws(()=>build({dmaPreempt:1}));
+for(const kvPrefetch of ['layer','window'])for(const dmaPreempt of [false,true])for(const S of [64,288,768]){
+ const p=build({batch:1,depth:2,kvPrefetch,dmaPreempt}),r=simulate(p,S);assert(r.feasible);
+ assert(r.peakReservedMiB<=S+1e-7);assert(Math.abs(r.rawUs-r.computeUs-r.commUs-r.waitUs)<1e-5);
+ if(!dmaPreempt)assert.equal(r.dmaPreemptions,0);
+ const kv=p.jobs.filter(j=>j.kind==='kv').reduce((a,j)=>a+j.bytes,0),need=p.jobs.filter(j=>['weight','kv','state'].includes(j.kind)).reduce((a,j)=>a+j.bytes,0);
+ assert(r.readBytes+1e-3>=need,'all weight/KV/state bytes are read');
+ assert(r.readBytes>=kv);
+ cases++;
+}
+// The default plan is MC-bandwidth bound, so reordering cannot cut its wait;
+// the benefit is asserted at the Final Tuning point instead.
+{const kvw=simulate(build({batch:1,depth:2,kvPrefetch:'window',dmaPreempt:true}),288);assert(kvw.dmaPreemptions>0);}
+// Separate TMA lanes (default off). A synthetic port-speed fill on every weight
+// op: the op body shrinks by the fill, the lane runs it ahead, and the ledger
+// closes. Raw need not shrink here: this plan is DMA-bound and fills take
+// fabric from DMA; a lane throttled by contention can also outlast its nominal
+// fill, so tmaHidden is not signed in general.
+assert.equal(build().c.tmaLane,false);assert.throws(()=>build({tmaLane:'yes'}));
+{const mk=lane=>{const p=build({batch:1,tmaLane:lane,commOverlap:lane});
+  for(const o of p.ops)if(o.unit==='L'&&o.inputs.some(id=>p.jobs[id].kind==='weight')){
+   const us=o.duration/2,bytes=us*Math.min(p.c.sramReadTBs,p.c.fabricTBs)*1e6/2;
+   o.tma={us,bytes,domain:'L',halves:1,localWriteTBs:1e3,release:Math.max(...o.inputs.map(id=>p.jobs[id].last))};}
+  return simulate(p,288);};
+ const off=mk(false),on=mk(true);
+ assert.equal(off.tmaFillUs,0);
+ assert(on.tmaFillUs>0&&on.tmaHiddenUs>0&&on.tmaHiddenUs<=on.tmaFillUs+1e-9);
+ assert(Math.abs(on.rawUs-(on.computeUs-on.tmaHiddenUs+on.commUs+on.waitUs-on.overlapUs))<1e-5);
+ assert.equal(on.computeUs,off.computeUs);}
 console.log('PASS analytic 1/2-buffer timing tests, topology checks and',cases,'full 93-layer runs');

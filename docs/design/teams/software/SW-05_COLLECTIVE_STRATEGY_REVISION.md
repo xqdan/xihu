@@ -53,6 +53,8 @@
 
 ### 1.2 差额归属
 
+> **已应用到主线（2026-09-25，ADR-0004）**：三项差额已全部对齐到参考口径，`OPT.countBasis='reference-393'`，主线次数 510 → 393。其中 `Q / new-KV all-gather`（24）与 `Distributed sampling candidates`（1）**保留为本地算子**（同样字节与依赖边，不走网络），不是直接删除；`Shared output all-reduce`（92）并入 `Wup + Shared output all-reduce`。本节对账结论已被 `tests/test_k3_rdma_final_tuning.js` 固化为双向守卫（393 / 510 均可复现）。
+
 - **92 = `Shared output all-reduce`**：参考页把它并入 ★3 的专家合并。这是 510 vs 393 的主体，也是原策略 C1 融合所删除的那一次。
 - **24 = `Q / new-KV all-gather`**：参考页的 393 不包含它（其注意力子层只计 ★1 与 LSE 合并）。
 - **1 = `Distributed sampling candidates`**：参考页未计。
@@ -171,8 +173,8 @@ compute = 779.73 µs（MC320 与 MC640 两点逐位相同）
 
 | 优先级 | 杠杆 | 状态 | 归属 |
 |---|---|---|---|
-| **P0** | τ 基准显式化：为 `OPT.oneWayUs = 0.05 µs` 补物理推导，或改回 spec 的 1.15 µs 并重算全部 TPS | 未做，无推导 | SW-05 + D4/B-004/B-005 |
-| **P1** | 次数对齐参考基线（5/层 → 4/层） | 已可做，**不产生收益** | SW-05（本次） |
+| **P0** | τ 基准显式化：为 `OPT.oneWayUs = 0.05 µs` 补物理推导，或改回 spec 的 1.15 µs 并重算全部 TPS | 2026-09-25 已改回 1.15 µs（`OPT.tauUs` 下限）并重算：681.06 TPS（加入 shared 专家重叠后 729.14，独立 TMA 通道后 774.77，KV 跨层预取与 DMA 抢占后 860.03）；物理推导仍未做 | SW-05 + D4/B-004/B-005 |
+| **P1** | 次数对齐参考基线（5/层 → 4/层） | **已应用**（2026-09-25，ADR-0004）；**不产生收益** | SW-05（本次） |
 | **P2** | 减少每次的固定协议延迟（实测占单次的 87.9%） | 属 PHY/协议/拓扑，非调度 | B-004 / B-005 |
 | **P3** | 复制换归约（393 → 301 → 209） | **关闭**（32–39× 差距） | 需 MC 带宽或 τ 大幅改善 |
 | **P4** | 部分复制 `r=2` | 不可定价，粗算净收益≈0 | 需扩展 `collective()` |
@@ -197,9 +199,9 @@ compute = 779.73 µs（MC320 与 MC640 两点逐位相同）
 
 ## 5. 未决 / 需要外部输入
 
-1. **τ 的物理依据**：`oneWayUs = 0.05` 是设计假设还是从某次链路估算反推？若是后者，估算过程在哪？`B-004`/`B-005` 关闭前无法回答。
-2. **参考页的 393 口径是否已在本仓库登记**：本仓库的 510 与之差额 117 分散在三处（Shared 输出、Q/new-KV all-gather、sampling），未见对账记录。
-3. **`Shared output all-reduce` 的归属**：参考页并入 ★3；本模型在 `Latent Wup` 之后单独发。二者是否等价取决于 shared 专家是否真以 `MoE RMSNorm` 输出为输入（原策略 §6 前提 2，仍未确认）。
+1. **τ 的物理依据**：`oneWayUs = 0.05` 是设计假设还是从某次链路估算反推？若是后者，估算过程在哪？`B-004`/`B-005` 关闭前无法回答。**口径已登记为 B-008 / ADR-0004（`spec.tauBasis` 记录四个来源与天花板表），物理依据仍未收口。**
+2. ~~**参考页的 393 口径是否已在本仓库登记**~~ **已结项**（2026-09-25）：`OPT.countBasis` 切换 + `spec.collectiveCount` 字段 + `tests/test_k3_rdma_final_tuning.js` 双向守卫 + ADR-0004。
+3. **`Shared output all-reduce` 的归属**：参考页并入 ★3；本模型在 `Latent Wup` 之后单独发。二者是否等价取决于 shared 专家是否真以 `MoE RMSNorm` 输出为输入（原策略 §6 前提 2，仍未确认）。**已登记为 B-007：这是 92 次差额成立的前提，前提不成立则回退 `repo-510`。**
 4. **部分复制**：需要先扩展 `k3_sram_memory_rdma_model.collective()` 接受 `groupSize`。
 
 ## 6. 复现
@@ -209,8 +211,12 @@ compute = 779.73 µs（MC320 与 MC640 两点逐位相同）
 ```
 computeUs            = spec/k3_mc_baseline.json#modelResults.*.computeUs        = 779.7324474251067
 commUs（发布候选）    = 同上 .commUs                                             = 138.42546670161298
-平均单次              = commUs / 510                                             = 271.4 ns
+平均单次（510 口径）  = commUs / 510                                             = 271.4 ns
+平均单次（393 口径）  = spec/k3_mc_baseline.json#tauBasis.observedNsPerCollective
+归约次数             = spec/k3_mc_baseline.json#collectiveCount.total            = 393
 ceiling(N)           = 1e6 / ((computeUs + N×1.15) × 1.17)
+ceiling(393)         = 760.58 TPS（仍低于 1000 目标；即使降到结构下限 209 也只有 937.03，τ 未收口前次数轴不可达）
+                       2026-09-25 GAIN 置 1 后 compute 变大：720.19 / 876.47 TPS；加入 shared 专家重叠后 781.26 / 968.61 TPS；加入独立 TMA 通道后 845.72 / 1069.69 TPS；加入 KV 跨层预取与 DMA 抢占后 874.42 / 1116.02 TPS（spec.tauBasis；DMA 等待取 0、掩盖量按观测值固定，209 次的值是乐观上界）
 byteFloor            = readBytesPerRankPerToken / effectiveDmaTBsPerCard
 MC slack             = (computeUs + commUs) − byteFloor                          = 54.34 µs
 Wup bytes            = 92 × 7168 × 3584 × 2                                      = 4.727 GB
