@@ -1,0 +1,81 @@
+{
+  "schemaVersion": "model-workload-contract-v0.2",
+  "status": "BLOCKED_PENDING_VERIFIED_MODEL_SHAPES",
+  "ownerTeam": "Model Team",
+  "ownerAgents": [
+    "MODEL-01",
+    "MODEL-02",
+    "MODEL-03",
+    "MODEL-04"
+  ],
+  "consumers": [
+    "HW-02",
+    "HW-03",
+    "HW-04",
+    "HW-05",
+    "SW-01",
+    "SW-02",
+    "SW-03"
+  ],
+  "dimensions": {
+    "models": [
+      "K3",
+      "GLM-5.2",
+      "DeepSeek-V4-Pro"
+    ],
+    "tp": [
+      8,
+      16,
+      32
+    ],
+    "mcProfiles": [
+      "MC320",
+      "MC640"
+    ],
+    "physicalProfiles": [
+      "P0",
+      "P1"
+    ],
+    "scenarios": [
+      "decode-batch1-context1m",
+      "prefill-context1m"
+    ]
+  },
+  "requiredFields": [
+    "modelVersion",
+    "layerCount",
+    "dtype",
+    "hiddenSize",
+    "attentionShape",
+    "expertCount",
+    "activeExperts",
+    "routingCapacity",
+    "kv/index state",
+    "MTP behavior",
+    "operator shape/layout",
+    "FLOP/token",
+    "bytes/token",
+    "collective bytes"
+  ],
+  "shapeSources": {
+    "K3": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3 (engineering preset, single source of truth; not vendor-confirmed)",
+    "GLM-5.2": "teams/model/inputs/formal_model_manifests.json#/models/1/shape (public HF config.json fields + explicit ASSUMPTION fields for the deployment layout; not vendor-confirmed)",
+    "DeepSeek-V4-Pro": "teams/model/inputs/formal_model_manifests.json#/models/2/shape (reported fields + explicit ASSUMPTION fields; not vendor-confirmed)"
+  },
+  "evidencePolicy": "All values remain UNVERIFIED until source and shape reconciliation are supplied.",
+  "blockers": [
+    "GLM-5.2 deployment layout (FP8 KV/index-key bytes, collectives per layer) is ASSUMPTION; FFN/MoE is TP-only by deployment decision; shape fields follow the public config.json.",
+    "DeepSeek-V4-Pro rests on ASSUMPTION fields (DeepSeek-V3/V3.2 dimensions) pending the vendor config; K3 uses the repository engineering preset.",
+    "Model qualification matrix status: BLOCKED; 0/45 fields verified."
+  ],
+  "outputs": [
+    "operator DAG",
+    "workload ledger",
+    "routing traffic envelope",
+    "golden workload trace"
+  ],
+  "qualificationMatrix": "teams/model/inputs/model_manifest_qualification_matrix.json",
+  "qualificationStatus": "BLOCKED",
+  "verifiedFieldCount": 0,
+  "requiredFieldCount": 45
+}

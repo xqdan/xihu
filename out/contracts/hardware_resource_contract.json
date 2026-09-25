@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "hardware-resource-contract-v0.2",
+  "status": "PLANNING_ENVELOPE_PENDING_ACTIVITY_VALIDATION",
+  "ownerTeam": "Hardware Team",
+  "ownerAgents": [
+    "HW-01",
+    "HW-02",
+    "HW-03",
+    "HW-04",
+    "HW-05",
+    "HW-06"
+  ],
+  "consumers": [
+    "SW-*",
+    "MODEL-02",
+    "MODEL-03",
+    "ARCH-02",
+    "ARCH-03"
+  ],
+  "profiles": {
+    "P0": {
+      "purpose": "physical primary",
+      "resourceStatus": "PARTIAL",
+      "coreClassPeakSource": "teams/hardware/src/resource_profiles.js (8L+8H, 1 GHz; teams/hardware/inputs/k3_7r_package_baseline.json)"
+    },
+    "P1": {
+      "purpose": "compact executable comparison",
+      "resourceStatus": "PARTIAL",
+      "coreClassPeakSource": "teams/hardware/src/resource_profiles.js (8L+4H, 1 GHz; teams/hardware/inputs/k3_mc_baseline.json)"
+    }
+  },
+  "dimensions": {
+    "coreClasses": [
+      "L",
+      "H",
+      "V",
+      "INDEXER",
+      "REDUCE"
+    ],
+    "memoryProfiles": [
+      "MC320",
+      "MC640"
+    ],
+    "package": "7-reticle / 8 compute die / 16 MC"
+  },
+  "requiredFields": [
+    "per-core/die/package peak and sustained resource",
+    "SRAM bank/port/ECC",
+    "MC raw/sustained/effective bandwidth",
+    "NoC topology/credit/hop",
+    "area/power/thermal/RAS"
+  ],
+  "blockers": [
+    "P0/P1 core-class peaks are distinct planning values; sustained utilization, duty cycle and activity-bound PPA are not independently reconciled."
+  ],
+  "outputs": [
+    "AI Core spec",
+    "memory service model",
+    "MC contract",
+    "NoC packet contract",
+    "PPA/RAS envelope"
+  ]
+}

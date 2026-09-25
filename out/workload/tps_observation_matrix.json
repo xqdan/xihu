@@ -1,0 +1,825 @@
+{
+  "schemaVersion": "tps-observation-matrix-v0.1",
+  "status": "PLANNING_ESTIMATES_COMPLETE",
+  "purpose": "Make per-model decode TPS/user an explicit architecture observation metric across TP8, TP16 and TP32.",
+  "metric": {
+    "id": "decode_tps_per_user",
+    "unit": "tokens/s/user",
+    "direction": "higher_is_better",
+    "primary": true,
+    "targetTpsPerUser": 1000,
+    "architectureGateTpsPerUser": 1050,
+    "rawLatencyBudgetUsPerToken": 854.7008547008547,
+    "definition": "Completed decode tokens per second per user at batch=1, context=1M, PP=1, with the stated model, TP and MC profile.",
+    "formula": "tpsPerUser = 1000000 / e2eLatencyUsPerToken for one decode token."
+  },
+  "observationStates": [
+    "MODEL_OBSERVED",
+    "SILICON_OBSERVED",
+    "PENDING_MODEL_RUN",
+    "BLOCKED_CONFIG",
+    "PLANNING_ESTIMATE"
+  ],
+  "dimensions": [
+    "modelId",
+    "tp",
+    "mcProfile",
+    "physicalProfile",
+    "workloadCase",
+    "seed"
+  ],
+  "requiredCoverage": {
+    "models": [
+      "K3",
+      "GLM-5.2",
+      "DeepSeek-V4-Pro"
+    ],
+    "tp": [
+      8,
+      16,
+      32
+    ],
+    "mcProfiles": [
+      "MC320",
+      "MC640"
+    ],
+    "minimumObservations": 18
+  },
+  "currentCoverage": {
+    "totalRequired": 18,
+    "modelObserved": 0,
+    "planningEstimated": 18,
+    "blockedConfig": 0,
+    "siliconObserved": 0,
+    "pendingModelRun": 18,
+    "percentComplete": 0,
+    "planningPercentComplete": 100,
+    "note": "18 calibrated planning estimates, 0 BLOCKED_CONFIG slots; zero validated timing observations. No silicon result."
+  },
+  "common": {
+    "batch": 1,
+    "contextTokens": 1048576,
+    "decodeTokens": 1,
+    "pp": 1,
+    "physicalProfile": "P0",
+    "seed": null
+  },
+  "observations": [
+    {
+      "observationId": "K3-TP8-DECODE-1M-MC320",
+      "modelId": "K3",
+      "caseId": "K3-TP8-DECODE-1M",
+      "tp": 8,
+      "mcProfile": "MC320",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 137.80155544183788,
+      "rawLatencyUsPerToken": 6202.403535724963,
+      "e2eLatencyUsPerToken": 7256.812136798207,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC320-TP8#/model/K3/tp8/MC320",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 137.80155544183788,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 137.80155544183788,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 137.80155544183788,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "K3-TP8-DECODE-1M-MC640",
+      "modelId": "K3",
+      "caseId": "K3-TP8-DECODE-1M",
+      "tp": 8,
+      "mcProfile": "MC640",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 275.60311088367575,
+      "rawLatencyUsPerToken": 3101.2017678624816,
+      "e2eLatencyUsPerToken": 3628.4060683991033,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC640-TP8#/model/K3/tp8/MC640",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 275.60311088367575,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 275.60311088367575,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 275.60311088367575,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "K3-TP16-DECODE-1M-MC320",
+      "modelId": "K3",
+      "caseId": "K3-TP16-DECODE-1M",
+      "tp": 16,
+      "mcProfile": "MC320",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 275.60311088367575,
+      "rawLatencyUsPerToken": 3101.2017678624816,
+      "e2eLatencyUsPerToken": 3628.4060683991033,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC320-TP16#/model/K3/tp16/MC320",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 275.60311088367575,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 275.60311088367575,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 275.60311088367575,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "K3-TP16-DECODE-1M-MC640",
+      "modelId": "K3",
+      "caseId": "K3-TP16-DECODE-1M",
+      "tp": 16,
+      "mcProfile": "MC640",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 551.2062217673515,
+      "rawLatencyUsPerToken": 1550.6008839312408,
+      "e2eLatencyUsPerToken": 1814.2030341995517,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC640-TP16#/model/K3/tp16/MC640",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 551.2062217673515,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 551.2062217673515,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 551.2062217673515,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "K3-TP32-DECODE-1M-MC320",
+      "modelId": "K3",
+      "caseId": "K3-TP32-DECODE-1M",
+      "tp": 32,
+      "mcProfile": "MC320",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 551.2062217673515,
+      "rawLatencyUsPerToken": 1550.6008839312408,
+      "e2eLatencyUsPerToken": 1814.2030341995517,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC320-TP32#/model/K3/tp32/MC320",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 551.2062217673515,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 551.2062217673515,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 551.2062217673515,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "K3-TP32-DECODE-1M-MC640",
+      "modelId": "K3",
+      "caseId": "K3-TP32-DECODE-1M",
+      "tp": 32,
+      "mcProfile": "MC640",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 1102.412443534703,
+      "rawLatencyUsPerToken": 775.3004419656204,
+      "e2eLatencyUsPerToken": 907.1015170997758,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC640-TP32#/model/K3/tp32/MC640",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 1102.412443534703,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 972.4052496393438,
+          "bound": "collective"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 794.7338838061537,
+          "bound": "collective"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "GLM-5.2-TP8-DECODE-1M-MC320",
+      "modelId": "GLM-5.2",
+      "caseId": "GLM-5.2-TP8-DECODE-1M",
+      "tp": 8,
+      "mcProfile": "MC320",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 448.26271403544513,
+      "rawLatencyUsPerToken": 1906.696292016988,
+      "e2eLatencyUsPerToken": 2230.834661659876,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC320-TP8#/model/GLM-5.2/tp8/MC320",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "routed_moe",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 448.26271403544513,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 448.26271403544513,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 448.26271403544513,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "GLM-5.2-TP8-DECODE-1M-MC640",
+      "modelId": "GLM-5.2",
+      "caseId": "GLM-5.2-TP8-DECODE-1M",
+      "tp": 8,
+      "mcProfile": "MC640",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 896.5254280708903,
+      "rawLatencyUsPerToken": 953.348146008494,
+      "e2eLatencyUsPerToken": 1115.417330829938,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC640-TP8#/model/GLM-5.2/tp8/MC640",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "routed_moe",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 896.5254280708903,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 896.5254280708903,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 896.5254280708903,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "GLM-5.2-TP16-DECODE-1M-MC320",
+      "modelId": "GLM-5.2",
+      "caseId": "GLM-5.2-TP16-DECODE-1M",
+      "tp": 16,
+      "mcProfile": "MC320",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 896.5254280708903,
+      "rawLatencyUsPerToken": 953.348146008494,
+      "e2eLatencyUsPerToken": 1115.417330829938,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC320-TP16#/model/GLM-5.2/tp16/MC320",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "routed_moe",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 896.5254280708903,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 896.5254280708903,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 896.5254280708903,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "GLM-5.2-TP16-DECODE-1M-MC640",
+      "modelId": "GLM-5.2",
+      "caseId": "GLM-5.2-TP16-DECODE-1M",
+      "tp": 16,
+      "mcProfile": "MC640",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 1793.0508561417805,
+      "rawLatencyUsPerToken": 476.674073004247,
+      "e2eLatencyUsPerToken": 557.708665414969,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC640-TP16#/model/GLM-5.2/tp16/MC640",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "routed_moe",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 1793.0508561417805,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 1784.1086207308836,
+          "bound": "collective"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 1409.0877910944102,
+          "bound": "collective"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "GLM-5.2-TP32-DECODE-1M-MC320",
+      "modelId": "GLM-5.2",
+      "caseId": "GLM-5.2-TP32-DECODE-1M",
+      "tp": 32,
+      "mcProfile": "MC320",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 1793.0508561417805,
+      "rawLatencyUsPerToken": 476.674073004247,
+      "e2eLatencyUsPerToken": 557.708665414969,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC320-TP32#/model/GLM-5.2/tp32/MC320",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "routed_moe",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 1793.0508561417805,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 1793.0508561417805,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 1499.6604932557489,
+          "bound": "collective"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "GLM-5.2-TP32-DECODE-1M-MC640",
+      "modelId": "GLM-5.2",
+      "caseId": "GLM-5.2-TP32-DECODE-1M",
+      "tp": 32,
+      "mcProfile": "MC640",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 2420.0178491656293,
+      "rawLatencyUsPerToken": 353.179566421602,
+      "e2eLatencyUsPerToken": 413.2200927132743,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC640-TP32#/model/GLM-5.2/tp32/MC640",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "collective_reduce",
+      "boundingResource": "collective_latency",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 2420.0178491656293,
+          "bound": "collective"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 1931.8348491348097,
+          "bound": "collective"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 1499.6604932557489,
+          "bound": "collective"
+        }
+      ],
+      "tpsPerUserShapeRange": null
+    },
+    {
+      "observationId": "DeepSeek-V4-Pro-TP8-DECODE-1M-MC320",
+      "modelId": "DeepSeek-V4-Pro",
+      "caseId": "DeepSeek-V4-Pro-TP8-DECODE-1M",
+      "tp": 8,
+      "mcProfile": "MC320",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 463.84519823480133,
+      "rawLatencyUsPerToken": 1842.642454753191,
+      "e2eLatencyUsPerToken": 2155.8916720612333,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC320-TP8#/model/DeepSeek-V4-Pro/tp8/MC320",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 463.84519823480133,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 463.84519823480133,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 463.84519823480133,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": {
+        "min": 463.84519823480133,
+        "max": 498.1588455049878
+      }
+    },
+    {
+      "observationId": "DeepSeek-V4-Pro-TP8-DECODE-1M-MC640",
+      "modelId": "DeepSeek-V4-Pro",
+      "caseId": "DeepSeek-V4-Pro-TP8-DECODE-1M",
+      "tp": 8,
+      "mcProfile": "MC640",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 927.6903964696027,
+      "rawLatencyUsPerToken": 921.3212273765955,
+      "e2eLatencyUsPerToken": 1077.9458360306166,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC640-TP8#/model/DeepSeek-V4-Pro/tp8/MC640",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 927.6903964696027,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 927.6903964696027,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 927.6903964696027,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": {
+        "min": 927.6903964696027,
+        "max": 996.3176910099756
+      }
+    },
+    {
+      "observationId": "DeepSeek-V4-Pro-TP16-DECODE-1M-MC320",
+      "modelId": "DeepSeek-V4-Pro",
+      "caseId": "DeepSeek-V4-Pro-TP16-DECODE-1M",
+      "tp": 16,
+      "mcProfile": "MC320",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 927.6903964696027,
+      "rawLatencyUsPerToken": 921.3212273765955,
+      "e2eLatencyUsPerToken": 1077.9458360306166,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC320-TP16#/model/DeepSeek-V4-Pro/tp16/MC320",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 927.6903964696027,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 927.6903964696027,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 927.6903964696027,
+          "bound": "memory"
+        }
+      ],
+      "tpsPerUserShapeRange": {
+        "min": 927.6903964696027,
+        "max": 996.3176910099756
+      }
+    },
+    {
+      "observationId": "DeepSeek-V4-Pro-TP16-DECODE-1M-MC640",
+      "modelId": "DeepSeek-V4-Pro",
+      "caseId": "DeepSeek-V4-Pro-TP16-DECODE-1M",
+      "tp": 16,
+      "mcProfile": "MC640",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 1855.3807929392053,
+      "rawLatencyUsPerToken": 460.66061368829776,
+      "e2eLatencyUsPerToken": 538.9729180153083,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC640-TP16#/model/DeepSeek-V4-Pro/tp16/MC640",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 1855.3807929392053,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 1627.6412212304542,
+          "bound": "collective"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 1320.78410098266,
+          "bound": "collective"
+        }
+      ],
+      "tpsPerUserShapeRange": {
+        "min": 1855.3807929392053,
+        "max": 1971.1657424075177
+      }
+    },
+    {
+      "observationId": "DeepSeek-V4-Pro-TP32-DECODE-1M-MC320",
+      "modelId": "DeepSeek-V4-Pro",
+      "caseId": "DeepSeek-V4-Pro-TP32-DECODE-1M",
+      "tp": 32,
+      "mcProfile": "MC320",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 1855.3807929392053,
+      "rawLatencyUsPerToken": 460.66061368829776,
+      "e2eLatencyUsPerToken": 538.9729180153083,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC320-TP32#/model/DeepSeek-V4-Pro/tp32/MC320",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "dense_projection",
+      "boundingResource": "memory_bandwidth",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 1855.3807929392053,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 1855.3807929392053,
+          "bound": "memory"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 1482.138282288065,
+          "bound": "collective"
+        }
+      ],
+      "tpsPerUserShapeRange": {
+        "min": 1855.3807929392053,
+        "max": 1992.6353820199513
+      }
+    },
+    {
+      "observationId": "DeepSeek-V4-Pro-TP32-DECODE-1M-MC640",
+      "modelId": "DeepSeek-V4-Pro",
+      "caseId": "DeepSeek-V4-Pro-TP32-DECODE-1M",
+      "tp": 32,
+      "mcProfile": "MC640",
+      "metric": "decode_tps_per_user",
+      "unit": "tokens/s/user",
+      "status": "PLANNING_ESTIMATE",
+      "tpsPerUser": 2314.5850828931093,
+      "rawLatencyUsPerToken": 369.2674168765158,
+      "e2eLatencyUsPerToken": 432.04287774552347,
+      "source": "out/detailed/detailed_architecture_run.json",
+      "sourceSelector": "P0-7R-balanced-MC640-TP32#/model/DeepSeek-V4-Pro/tp32/MC640",
+      "blocker": null,
+      "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+      "runId": "stage-b-20260925-planning",
+      "physicalProfile": "P0",
+      "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
+      "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
+      "boundingOperatorId": "collective_reduce",
+      "boundingResource": "collective_latency",
+      "tpsPerUserTauSensitivity": [
+        {
+          "tauUs": 1.15,
+          "tpsPerUser": 2314.5850828931093,
+          "bound": "collective"
+        },
+        {
+          "tauUs": 1.5,
+          "tpsPerUser": 1879.8374877454326,
+          "bound": "collective"
+        },
+        {
+          "tauUs": 2,
+          "tpsPerUser": 1482.138282288065,
+          "bound": "collective"
+        }
+      ],
+      "tpsPerUserShapeRange": {
+        "min": 2314.5850828931093,
+        "max": 2333.9081439007696
+      }
+    }
+  ]
+}

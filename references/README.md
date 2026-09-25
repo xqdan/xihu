@@ -1,4 +1,4 @@
-﻿# External references
+# External references
 
 本仓库只保留外部资料的来源说明，不默认提交供应商 PDF、受限白皮书或私有材料。
 

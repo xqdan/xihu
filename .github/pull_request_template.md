@@ -1,6 +1,6 @@
-﻿## Scope
+## Scope
 
-- Module:
+- Team / integration area:
 - Owner:
 - Related issue / ADR:
 

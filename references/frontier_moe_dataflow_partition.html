@@ -81,12 +81,12 @@
     <div class="eyebrow">DATAFLOW 路 PARTITION 路 RESOURCE MATCH</div>
     <h1>DeepSeek-V4-Pro / Kimi K3 / GLM-5.2锛氭暟鎹祦銆佸垏鍒嗕笌璧勬簮鍖归厤</h1>
     <p class="subtitle">
-      鍙瘎涓夐鏃楄埌锛欴eepSeek-V4-Pro锛?.6T-A49B 路 CSA/HCA锛夈€並imi K3锛堜粨搴撳彛寰勶級銆丟LM-5.2锛堜笌 5.3 鍚屾灦鏋勶紝宸湪鍚庤缁冿級銆?      鎷嗐€屼竴灞傚紶閲忔€庝箞璧般€佽法鍗℃€庝箞鍒囥€佹瘡 token 瑕佹惉澶氬皯瀛楄妭 / 鍋氬灏戣繍绠?/ 鍗犲灏戝閲忋€嶃€?      Decode 榛樿鎸?<b>PP1脳TP32</b>锛?2 寮犲熀绾垮崱锛汯3 96 澶淬€乂4 128 澶淬€丟LM 64 澶村潎鍙暣闄わ級銆傞〉鍐呭彲鎵?batch銆傛暟瀛楁槸鏋舵瀯閲忕骇瀵圭収銆?      Decode / Prefill 绠楁湳寮哄害涓庢寜 I 閫夎姱鐗囪 <a href="./frontier_moe_arithmetic_intensity.html">绠楁湳寮哄害涓?Roofline</a>銆?    </p>
+      鍙瘎涓夐鏃楄埌锛欴eepSeek-V4-Pro锛?.6T-A49B 路 CSA/HCA锛夈€並imi K3锛堜粨搴撳彛寰勶級銆丟LM-5.2锛堜笌 5.3 鍚屾灦鏋勶紝宸湪鍚庤缁冿級銆?      鎷嗐€屼竴灞傚紶閲忔€庝箞璧般€佽法鍗℃€庝箞鍒囥€佹瘡 token 瑕佹惉澶氬皯瀛楄妭 / 鍋氬灏戣繍绠?/ 鍗犲灏戝閲忋€嶃€?      Decode 榛樿鎸?<b>PP1脳TP32</b>锛?2 寮犲熀绾垮崱锛汯3 96 澶淬€乂4 128 澶淬€丟LM 64 澶村潎鍙暣闄わ級銆傞〉鍐呭彲鎵?batch銆傛暟瀛楁槸鏋舵瀯閲忕骇瀵圭収銆?      Decode / Prefill 绠楁湳寮哄害涓庢寜 I 閫夎姱鐗囪 <a href="frontier_moe_arithmetic_intensity.html">绠楁湳寮哄害涓?Roofline</a>銆?    </p>
     <div class="toc">
       <a href="#family">瀹舵棌瀵圭収</a>
       <a href="#flow">涓€灞傛暟鎹祦</a>
       <a href="#blocks">鍚勫潡鎷嗚В</a>
-      <a href="./frontier_moe_arithmetic_intensity.html">绠楁湳寮哄害 / Roofline</a>
+      <a href="frontier_moe_arithmetic_intensity.html">绠楁湳寮哄害 / Roofline</a>
       <a href="#cap">瀹归噺</a>
       <a href="#part">Partition</a>
       <a href="#match">鍚岃姱鐗囧尮閰?/a>
@@ -172,7 +172,7 @@
   <div class="callout">
     <strong>绠楁湳寮哄害宸插崟鐙垚椤?/strong>
     <p>Decode / Prefill Roofline銆佸悇鍧楀浐鏈?I銆佹寜 I 閫夎姱鐗囪鏍艰
-    <a href="./frontier_moe_arithmetic_intensity.html">绠楁湳寮哄害涓?Roofline</a>銆?    鏈〉缁х画璁叉暟鎹祦銆佸垏鍒嗐€佸閲忋€侀噸鍙犲拰 batch銆傚悇鍧楄〃閲岀殑 MoE / Attn 寮哄害浠嶆槸 Decode 涓€姝ョ殑鎽樿銆?/p>
+    <a href="frontier_moe_arithmetic_intensity.html">绠楁湳寮哄害涓?Roofline</a>銆?    鏈〉缁х画璁叉暟鎹祦銆佸垏鍒嗐€佸閲忋€侀噸鍙犲拰 batch銆傚悇鍧楄〃閲岀殑 MoE / Attn 寮哄害浠嶆槸 Decode 涓€姝ョ殑鎽樿銆?/p>
   </div>
 
   <h2 id="cap">鍖归厤搴?鈶?瀹归噺锛氭潈閲嶅父椹?vs KV 闅?Context 娑?/h2>
@@ -347,10 +347,10 @@
 
   <footer>
     妯″瀷鏉ユ簮锛欿imi K3 = 鏈粨搴撹绠楀櫒鍙ｅ緞锛汥eepSeek-V4-Pro = arXiv:2606.19348 + deepseek-ai/DeepSeek-V4-Pro-Base锛圕SA m=4銆丠CA m鈥?128銆乼opk=1024锛夛紱
-    GLM-5.2 = zai-org/GLM-5.2锛圡LA+DSA銆両ndexShare 姣?4 灞傦紱GLM-5.3 鍚岀粨鏋勶級銆?    V4 鐨?KV/娉ㄦ剰鍔?FLOPs 涓虹粨鏋勪及绠楋紱璁烘枃 1M 瀵圭収涓虹浉瀵?V3.2 鐨?10% KV / 27% 鎬?FLOPs銆?    Prefill / 澶氱敤鎴?/ SRAM / 浜掕仈 / batch 鎵弿瑙侀〉鍐呭搴旇妭銆傜畻鏈己搴︿笌 Roofline 瑙?<a href="./frontier_moe_arithmetic_intensity.html">鐙珛椤?/a>銆傜湡瀹?EP all-to-all 鎷ュ浠嶆湭寤烘ā銆傚紩鎿庯細<a href="../src/core/design_engine.js">../../src/core/design_engine.js</a>銆?  </footer>
+    GLM-5.2 = zai-org/GLM-5.2锛圡LA+DSA銆両ndexShare 姣?4 灞傦紱GLM-5.3 鍚岀粨鏋勶級銆?    V4 鐨?KV/娉ㄦ剰鍔?FLOPs 涓虹粨鏋勪及绠楋紱璁烘枃 1M 瀵圭収涓虹浉瀵?V3.2 鐨?10% KV / 27% 鎬?FLOPs銆?    Prefill / 澶氱敤鎴?/ SRAM / 浜掕仈 / batch 鎵弿瑙侀〉鍐呭搴旇妭銆傜畻鏈己搴︿笌 Roofline 瑙?<a href="frontier_moe_arithmetic_intensity.html">鐙珛椤?/a>銆傜湡瀹?EP all-to-all 鎷ュ浠嶆湭寤烘ā銆傚紩鎿庯細<a href="../teams/model/src/design_engine.js">../../src/core/design_engine.js</a>銆?  </footer>
 </main>
 
-<script src="../src/core/design_engine.js"></script>
+<script src="../teams/model/src/design_engine.js"></script>
 <script>
 (function () {
   "use strict";

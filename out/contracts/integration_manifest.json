@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "integration-manifest-v0.1",
+  "status": "BLOCKED_PENDING_THREE_TEAM_ARTIFACTS",
+  "requiredTeams": [
+    "Hardware Team",
+    "Software Team",
+    "Model Team"
+  ],
+  "requiredAgents": [
+    "HW-01",
+    "HW-02",
+    "HW-03",
+    "HW-04",
+    "HW-05",
+    "HW-06",
+    "SW-01",
+    "SW-02",
+    "SW-03",
+    "SW-04",
+    "SW-05",
+    "SW-06",
+    "SW-07",
+    "MODEL-01",
+    "MODEL-02",
+    "MODEL-03",
+    "MODEL-04",
+    "MODEL-05",
+    "MODEL-06"
+  ],
+  "inputs": [
+    "out/contracts/model_workload_contract.json",
+    "out/contracts/hardware_resource_contract.json",
+    "out/contracts/software_execution_contract.json"
+  ],
+  "hashPolicy": "Every detailed run binds all three contract hashes; mismatch blocks integration.",
+  "gatePrerequisites": [
+    "verified model shapes",
+    "P0/P1 independent resource accounting",
+    "dependency-aware timing trace",
+    "VV-02 conservation report"
+  ],
+  "contractHashes": {
+    "out/contracts/model_workload_contract.json": "a4cc4df7252ef60796c14971ac95e7c83eb57d6a62141d2dd9e3a383c2a2d8cc",
+    "out/contracts/hardware_resource_contract.json": "b0ba972558f1f1c66deb92678d8b8b0690c7b87a23bf2491373b7699dd73da89",
+    "out/contracts/software_execution_contract.json": "f62368547587b79776ea71abe07a3c1435929c22a43e4361778940ad8ce6ef37"
+  },
+  "generatedAt": "2026-09-22"
+}

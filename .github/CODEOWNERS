@@ -1,7 +1,12 @@
-﻿# Replace placeholders with GitHub users or teams before enabling required reviews.
-# * @k3-architecture-maintainers
-# /src/core/ @k3-core-owners
-# /src/simulation/ @k3-model-owners
-# /src/rdma/ @k3-fabric-owners
-# /docs/design/ @k3-architecture-owners
-# /tests/ @k3-verification-owners
+# Replace placeholders with GitHub users or teams before enabling required reviews.
+# Ownership follows AGENTS.md section 1; later rules win.
+# * @k3-architecture-council
+# /teams/model/ @k3-model-team
+# /teams/hardware/ @k3-hardware-team
+# /teams/software/ @k3-software-team
+# /teams/council/ @k3-architecture-council
+# /teams/vv/ @k3-vv-team
+# /integration/ @k3-architecture-council
+# /docs/architecture/ @k3-architecture-council
+# /tests/ @k3-vv-team
+# /archive/ @k3-architecture-council

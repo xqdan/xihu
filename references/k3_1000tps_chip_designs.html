@@ -224,7 +224,7 @@
 <script>
 /* inlined from ../../src/core/design_engine.js — 单文件可离线打开；改模型请先改源文件再重新嵌入
  * 入库副本说明（2026-09-23）：本文件从工作区 docs/1000tps/ 复制到 references/，脚本引用改为仓库内 ../src/core/；
- * 内嵌的 design_engine 与 src/core/design_engine.js 同源。 */
+ * 内嵌的 design_engine 与 teams/model/src/design_engine.js 同源。 */
 /*
  * ../../src/core/design_engine.js — MoE Decode 部署与芯片规格设计空间探索引擎
  *
@@ -233,8 +233,8 @@
  *   2. 给定模型 + 芯片 + 卡数，自动选择 PP×TP
  *   3. 给定模型 + 芯片旋钮及其代价，给出「最少资源、最大收益」的升级/削减路径
  *
- * 浏览器：<script src="../src/core/design_engine.js"><\/script> 后使用 window.DesignEngine
- * Node：   const E = require("./../../src/core/design_engine.js");  node src/core/design_engine.js 直接运行示例
+ * 浏览器：<script src="../teams/model/src/design_engine.js"><\/script> 后使用 window.DesignEngine
+ * Node：   const E = require("./../../src/core/design_engine.js");  node teams/model/src/design_engine.js 直接运行示例
  *
  * 建模口径与 ../explorers/k3_pp_tp_calculator.html 一致，并做了以下扩展：
  *   - 注意力/固定权重可显式推导（MLA/GQA）而不只依赖残差
@@ -1000,7 +1000,7 @@
   };
 });
 </script>
-<script src="../src/core/k3_compute_node.js"></script>
+<script src="../teams/hardware/src/k3_compute_node.js"></script>
 <script>
   const E = window.DesignEngine;
   const $ = id => document.getElementById(id);

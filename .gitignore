@@ -1,4 +1,4 @@
-﻿node_modules/
+node_modules/
 coverage/
 .tmp/
 *.log
@@ -11,6 +11,6 @@ Thumbs.db
 # local/private vendor material
 references/private/
 
-# local generated scratch outputs
+# local generated scratch outputs (out/ holds committed generated artifacts and is tracked)
 scratch/
-out/
+.probe-tmp/

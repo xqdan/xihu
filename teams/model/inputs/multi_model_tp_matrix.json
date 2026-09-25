@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "multi-model-tp-matrix-v0.1",
+  "status": "TEST_CASE_BASELINE",
+  "purpose": "Architecture compatibility and performance-model test cases for K3, GLM-5.2 and DeepSeek-V4-Pro at TP8/TP16/TP32.",
+  "common": {
+    "batch": 1,
+    "contextTokens": 1048576,
+    "decodeTokens": 1,
+    "pp": 1,
+    "physicalProfile": "P1-compact-executable",
+    "mcProfiles": ["MC320", "MC640"],
+    "seedSet": [11, 23, 47, 89, 131],
+    "targetTpsPerUser": 1000,
+    "architectureGateTpsPerUser": 1050,
+    "rawLatencyBudgetUsPerToken": 854.7008547
+  },
+  "topologyRules": {
+    "packagesPerTpRank": 1,
+    "computeDiesPerPackage": 8,
+    "memoryCubesPerPackage": 16,
+    "dataSramMiBPerPackage": 768,
+    "memoryCapacityGBPerPackage": 256,
+    "packageScaleOutPayloadGBs": 800,
+    "tpValues": [8, 16, 32]
+  },
+  "cases": [
+    {
+      "caseId": "K3-TP8-DECODE-1M",
+      "modelId": "K3",
+      "tp": 8,
+      "workloadClass": "decode",
+      "features": ["linear_attention", "moe", "lse_m_l_o", "persistent_decode"],
+      "sharding": {"weight": "tensor_parallel", "kvState": "tensor_parallel", "expertWeights": "tensor_parallel", "collective": "hierarchical"},
+      "expected": {"expertDispatch": false, "indexCache": false, "mtpBranch": false, "lseMerge": true}
+    },
+    {
+      "caseId": "K3-TP16-DECODE-1M",
+      "modelId": "K3",
+      "tp": 16,
+      "workloadClass": "decode",
+      "features": ["linear_attention", "moe", "lse_m_l_o", "persistent_decode"],
+      "sharding": {"weight": "tensor_parallel", "kvState": "tensor_parallel", "expertWeights": "tensor_parallel", "collective": "hierarchical"},
+      "expected": {"expertDispatch": false, "indexCache": false, "mtpBranch": false, "lseMerge": true}
+    },
+    {
+      "caseId": "K3-TP32-DECODE-1M",
+      "modelId": "K3",
+      "tp": 32,
+      "workloadClass": "decode",
+      "features": ["linear_attention", "moe", "lse_m_l_o", "persistent_decode"],
+      "sharding": {"weight": "tensor_parallel", "kvState": "tensor_parallel", "expertWeights": "tensor_parallel", "collective": "hierarchical"},
+      "expected": {"expertDispatch": false, "indexCache": false, "mtpBranch": false, "lseMerge": true}
+    },
+    {
+      "caseId": "GLM-5.2-TP8-DECODE-1M",
+      "modelId": "GLM-5.2",
+      "tp": 8,
+      "workloadClass": "decode",
+      "features": ["sparse_moe", "index_share_attention", "multi_token_prediction", "agentic_decode"],
+      "sharding": {"weight": "tensor_parallel", "kvState": "tensor_parallel", "indexCache": "replicated_or_sharded", "expertWeights": "tensor_parallel", "collective": "hierarchical"},
+      "expected": {"expertDispatch": false, "indexCache": true, "mtpBranch": true, "rollback": true}
+    },
+    {
+      "caseId": "GLM-5.2-TP16-DECODE-1M",
+      "modelId": "GLM-5.2",
+      "tp": 16,
+      "workloadClass": "decode",
+      "features": ["sparse_moe", "index_share_attention", "multi_token_prediction", "agentic_decode"],
+      "sharding": {"weight": "tensor_parallel", "kvState": "tensor_parallel", "indexCache": "replicated_or_sharded", "expertWeights": "tensor_parallel", "collective": "hierarchical"},
+      "expected": {"expertDispatch": false, "indexCache": true, "mtpBranch": true, "rollback": true}
+    },
+    {
+      "caseId": "GLM-5.2-TP32-DECODE-1M",
+      "modelId": "GLM-5.2",
+      "tp": 32,
+      "workloadClass": "decode",
+      "features": ["sparse_moe", "index_share_attention", "multi_token_prediction", "agentic_decode"],
+      "sharding": {"weight": "tensor_parallel", "kvState": "tensor_parallel", "indexCache": "replicated_or_sharded", "expertWeights": "tensor_parallel", "collective": "hierarchical"},
+      "expected": {"expertDispatch": false, "indexCache": true, "mtpBranch": true, "rollback": true}
+    },
+    {
+      "caseId": "DeepSeek-V4-Pro-TP8-DECODE-1M",
+      "modelId": "DeepSeek-V4-Pro",
+      "tp": 8,
+      "workloadClass": "decode",
+      "features": ["sparse_moe", "deepseek_sparse_attention", "indexer", "multi_token_prediction"],
+      "sharding": {"weight": "tensor_parallel", "kvState": "tensor_parallel", "expertWeights": "tensor_parallel", "collective": "hierarchical"},
+      "expected": {"expertDispatch": false, "indexCache": true, "mtpBranch": true, "rollback": true, "expertCount": 384, "activeExpertsPerToken": 6}
+    },
+    {
+      "caseId": "DeepSeek-V4-Pro-TP16-DECODE-1M",
+      "modelId": "DeepSeek-V4-Pro",
+      "tp": 16,
+      "workloadClass": "decode",
+      "features": ["sparse_moe", "deepseek_sparse_attention", "indexer", "multi_token_prediction"],
+      "sharding": {"weight": "tensor_parallel", "kvState": "tensor_parallel", "expertWeights": "tensor_parallel", "collective": "hierarchical"},
+      "expected": {"expertDispatch": false, "indexCache": true, "mtpBranch": true, "rollback": true, "expertCount": 384, "activeExpertsPerToken": 6}
+    },
+    {
+      "caseId": "DeepSeek-V4-Pro-TP32-DECODE-1M",
+      "modelId": "DeepSeek-V4-Pro",
+      "tp": 32,
+      "workloadClass": "decode",
+      "features": ["sparse_moe", "deepseek_sparse_attention", "indexer", "multi_token_prediction"],
+      "sharding": {"weight": "tensor_parallel", "kvState": "tensor_parallel", "expertWeights": "tensor_parallel", "collective": "hierarchical"},
+      "expected": {"expertDispatch": false, "indexCache": true, "mtpBranch": true, "rollback": true, "expertCount": 384, "activeExpertsPerToken": 6}
+    }
+  ]
+}

@@ -1,0 +1,477 @@
+{
+  "schemaVersion": "formal-model-manifests-v0.2",
+  "asOf": "2026-09-25",
+  "status": "ARCHITECTURE_PLANNING_MANIFEST",
+  "singleSourceOfTruth": {
+    "K3": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+    "rule": "K3 shape fields below must equal the engineering preset; tests/regression/test_k3_manifest_consistency.js enforces this. Change the preset first, then regenerate.",
+    "DeepSeek-V4-Pro": "teams/model/inputs/formal_model_manifests.json#/models/2/shape (reported fields from model_profiles.json plus explicit ASSUMPTION fields)",
+    "GLM-5.2": "teams/model/inputs/formal_model_manifests.json#/models/1/shape (public HF config.json fields plus explicit ASSUMPTION fields for the deployment layout)"
+  },
+  "scope": {
+    "batch": 1,
+    "contextTokens": 1048576,
+    "decodeTokens": 1,
+    "pp": 1,
+    "tpValues": [
+      8,
+      16,
+      32
+    ],
+    "mcProfiles": [
+      "MC320",
+      "MC640"
+    ],
+    "note": "This is a reproducible architecture planning manifest, not a vendor-certified deployment manifest."
+  },
+  "models": [
+    {
+      "modelId": "K3",
+      "status": "UNVERIFIED_PLANNING_MANIFEST",
+      "confidence": "E0",
+      "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+      "profileRef": "teams/model/inputs/model_profiles.json#/profiles/0",
+      "layerCount": 93,
+      "moeLayerCount": 92,
+      "hiddenSize": 7168,
+      "moeLatent": 3584,
+      "expertHidden": 3072,
+      "attention": {
+        "kind": "mla",
+        "heads": 96,
+        "qkHeadDim": 192,
+        "vHeadDim": 128,
+        "kvLatent": 512,
+        "ropeDim": 64,
+        "softmaxLayers": 24,
+        "linearAttentionLayers": 69,
+        "linearStateDim": 128
+      },
+      "dtype": {
+        "weightsDense": "BF16",
+        "weightsRouted": "MXFP4",
+        "routedBytesPerParam": 0.53125,
+        "denseBytesPerParam": 2,
+        "activation": "BF16",
+        "accumulation": "FP32"
+      },
+      "expertConfig": {
+        "type": "routed_moe",
+        "experts": 896,
+        "activeExpertsPerToken": 16,
+        "sharedExperts": 2,
+        "expertInput": "latent"
+      },
+      "stateConfig": {
+        "kvState": "FP8",
+        "kdaState": "BF16",
+        "indexState": "NONE",
+        "contextTokens": 1048576,
+        "kvBytesPerTokenPerLayer": 656,
+        "kvLayout": "FlashMLA FP8: 512 FP8 latent + 4 FP32 scales + 64 BF16 RoPE (integration/detailed/k3_rdma_final_tuning_model.js OPT.kvCache=fp8)"
+      },
+      "operatorInventory": [
+        {
+          "operatorId": "dense_projection",
+          "class": "dense_projection",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "weight"
+        },
+        {
+          "operatorId": "routed_moe",
+          "class": "routed_moe",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "expert"
+        },
+        {
+          "operatorId": "attention",
+          "class": "attention",
+          "countPerLayer": 1,
+          "coreClass": "H",
+          "bytesClass": "kv_state"
+        },
+        {
+          "operatorId": "kda_state",
+          "class": "kda_state",
+          "countPerLayer": 1,
+          "coreClass": "V",
+          "bytesClass": "kv_state"
+        },
+        {
+          "operatorId": "collective_reduce",
+          "class": "collective_reduce",
+          "countPerLayer": 1,
+          "coreClass": "REDUCE",
+          "bytesClass": "collective"
+        }
+      ],
+      "blockers": [
+        "Vendor/config verification not supplied; shape is the repository engineering preset."
+      ]
+    },
+    {
+      "modelId": "GLM-5.2",
+      "status": "UNVERIFIED_PLANNING_MANIFEST",
+      "confidence": "E0",
+      "source": "teams/model/inputs/model_profiles.json#/profiles/1",
+      "layerCount": 78,
+      "layerCountStatus": "CONFIG_PUBLISHED (config.json num_hidden_layers)",
+      "dtype": {
+        "weights": "FP8",
+        "activation": "FP8",
+        "accumulation": "FP16"
+      },
+      "expertConfig": {
+        "type": "sparse_moe",
+        "experts": 256,
+        "activeExpertsPerToken": 8,
+        "sharedExperts": 1,
+        "indexShareGroupSize": 4
+      },
+      "stateConfig": {
+        "kvState": "FP8",
+        "indexState": "FP8",
+        "indexCache": "FP8",
+        "contextTokens": 1048576,
+        "indexerTopK": 2048,
+        "mtpBranches": 1,
+        "mtpAcceptanceRateAssumption": 0.2,
+        "kvBytesPerTokenPerLayer": 656
+      },
+      "operatorInventory": [
+        {
+          "operatorId": "dense_projection",
+          "class": "dense_projection",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "weight"
+        },
+        {
+          "operatorId": "routed_moe",
+          "class": "routed_moe",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "expert"
+        },
+        {
+          "operatorId": "indexer",
+          "class": "indexer",
+          "countPerLayer": 1,
+          "coreClass": "INDEXER",
+          "bytesClass": "index"
+        },
+        {
+          "operatorId": "sparse_attention",
+          "class": "sparse_attention",
+          "countPerLayer": 1,
+          "coreClass": "H",
+          "bytesClass": "kv_state"
+        },
+        {
+          "operatorId": "collective_reduce",
+          "class": "collective_reduce",
+          "countPerLayer": 4,
+          "coreClass": "REDUCE",
+          "bytesClass": "collective"
+        }
+      ],
+      "blockers": [
+        "Config fields are taken from the public HF config.json; the deployment layout (FP8 KV cache, index-key bytes, TP mapping, collectives per layer) is an explicit ASSUMPTION and not vendor-confirmed."
+      ],
+      "hiddenSize": 6144,
+      "attention": {
+        "kind": "mla_sparse",
+        "heads": 64
+      },
+      "shape": {
+        "status": "CONFIG_PLUS_ASSUMPTIONS",
+        "config": {
+          "source": "https://huggingface.co/zai-org/GLM-5.2/raw/main/config.json",
+          "modelingSource": "transformers src/transformers/models/glm_moe_dsa/modeling_glm_moe_dsa.py (GlmMoeDsaAttention / GlmMoeDsaIndexer / GlmMoeDsaMoE)",
+          "quantizationSource": "https://huggingface.co/zai-org/GLM-5.2-FP8/raw/main/config.json#quantization_config",
+          "reportedTotalParamsB": 753,
+          "layers": 78,
+          "hidden": 6144,
+          "denseLayers": 3,
+          "denseFfnHidden": 12288,
+          "expertHidden": 2048,
+          "routedExperts": 256,
+          "sharedExperts": 1,
+          "activeExperts": 8,
+          "heads": 64,
+          "mla": {
+            "qLoraRank": 2048,
+            "kvLatent": 512,
+            "ropeDim": 64,
+            "qkNopeDim": 192,
+            "vHeadDim": 256
+          },
+          "indexer": {
+            "heads": 32,
+            "headDim": 128,
+            "topK": 2048
+          },
+          "fullIndexerLayers": [
+            0,
+            1,
+            2,
+            6,
+            10,
+            14,
+            18,
+            22,
+            26,
+            30,
+            34,
+            38,
+            42,
+            46,
+            50,
+            54,
+            58,
+            62,
+            66,
+            70,
+            74
+          ],
+          "vocab": 154880,
+          "tieWordEmbeddings": false,
+          "mtpLayers": 1,
+          "maxPositionEmbeddings": 1048576,
+          "fp8": {
+            "format": "e4m3",
+            "weightBlock": [
+              128,
+              128
+            ],
+            "bf16Modules": [
+              "lm_head",
+              "model.embed_tokens",
+              "mlp.gate (router)",
+              "indexers_proj",
+              "norms",
+              "MTP eh_proj"
+            ]
+          }
+        },
+        "assumptions": {
+          "bytesPerParam": {
+            "value": {
+              "fp8": 1,
+              "bf16": 2
+            },
+            "basis": "ASSUMPTION: FP8 checkpoint as published (attention, indexer, dense FFN, shared and routed experts 1 B; router and LM head BF16 2 B); the 128x128 FP32 block scales (0.02%) are ignored; the embedding is a row lookup and is not counted"
+          },
+          "kvBytesPerTokenPerLayer": {
+            "value": 656,
+            "basis": "ASSUMPTION: FlashMLA FP8 layout (512 FP8 latent + 4 FP32 scales + 64 BF16 RoPE), same as K3 and DeepSeek-V4-Pro; the HF reference caches BF16"
+          },
+          "indexKeyBytesPerToken": {
+            "value": 132,
+            "basis": "ASSUMPTION: FP8 128-dim index key + FP32 scale per token, cached only in \"full\" indexer layers (shared layers have no indexer)"
+          },
+          "sparseAttention": {
+            "value": "every layer reads indexerTopK KV entries; full layers run their own indexer over the whole context, shared layers reuse the previous full layer's top-k",
+            "basis": "modeling_glm_moe_dsa.py: indexer_types[layer] == \"shared\" sets indexer = None and reuses prev_topk_indices; index_skip_topk_offset is not read by the modeling code"
+          },
+          "parallelism": {
+            "value": "context and every expert (dense FFN, shared and routed) sharded over the TP ranks; no expert parallelism, no all-to-all",
+            "basis": "DEPLOYMENT_DECISION (2026-09-25): FFN/MoE of all three models is deployed TP-only, as for K3; the FFN/MoE output is one TP all-reduce per layer"
+          },
+          "collectivesPerLayer": {
+            "value": {
+              "full": 4,
+              "shared": 3
+            },
+            "basis": "ASSUMPTION: indexer top-k merge (full layers only), sparse-attention LSE merge, attention output all-reduce, FFN/MoE output all-reduce; same basis as DeepSeek-V4-Pro"
+          },
+          "collectiveMessageBytes": {
+            "value": "2 x hidden x 2 B per rank",
+            "basis": "ASSUMPTION: ring all-reduce of one BF16 hidden vector"
+          },
+          "mtp": {
+            "value": "excluded",
+            "basis": "MTP / speculative decode is not in the TPS/usr metric (num_nextn_predict_layers = 1 is counted in the 753B total only)"
+          }
+        }
+      }
+    },
+    {
+      "modelId": "DeepSeek-V4-Pro",
+      "status": "UNVERIFIED_PLANNING_MANIFEST",
+      "confidence": "E0",
+      "source": "teams/model/inputs/model_profiles.json#/profiles/2",
+      "layerCount": 61,
+      "dtype": {
+        "weights": "FP8",
+        "expertWeights": "FP4",
+        "activation": "FP8",
+        "accumulation": "FP16"
+      },
+      "expertConfig": {
+        "type": "sparse_moe",
+        "experts": 384,
+        "activeExpertsPerToken": 6,
+        "sharedExperts": 1,
+        "expertCapacityOverflowRateAssumption": 0
+      },
+      "stateConfig": {
+        "kvState": "FP8",
+        "indexState": "FP8",
+        "indexCache": "FP8",
+        "contextTokens": 1048576,
+        "indexerTopK": 2048,
+        "mtpBranches": 2,
+        "mtpAcceptanceRateAssumption": 0.2,
+        "kvBytesPerTokenPerLayer": 656
+      },
+      "operatorInventory": [
+        {
+          "operatorId": "dense_projection",
+          "class": "dense_projection",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "weight"
+        },
+        {
+          "operatorId": "routed_moe",
+          "class": "routed_moe",
+          "countPerLayer": 1,
+          "coreClass": "L",
+          "bytesClass": "expert"
+        },
+        {
+          "operatorId": "indexer",
+          "class": "indexer",
+          "countPerLayer": 1,
+          "coreClass": "INDEXER",
+          "bytesClass": "index"
+        },
+        {
+          "operatorId": "sparse_attention",
+          "class": "sparse_attention",
+          "countPerLayer": 1,
+          "coreClass": "H",
+          "bytesClass": "kv_state"
+        },
+        {
+          "operatorId": "collective_reduce",
+          "class": "collective_reduce",
+          "countPerLayer": 4,
+          "coreClass": "REDUCE",
+          "bytesClass": "collective"
+        }
+      ],
+      "blockers": [
+        "Vendor/config verification not supplied; the shape block mixes reported fields with explicit ASSUMPTION fields."
+      ],
+      "hiddenSize": 7168,
+      "attention": {
+        "kind": "mla_sparse",
+        "heads": 128
+      },
+      "shape": {
+        "status": "REPORTED_PLUS_ASSUMPTIONS",
+        "reported": {
+          "source": "teams/model/inputs/model_profiles.json#/profiles/2",
+          "totalParamsB": 1600,
+          "activeParamsB": 49,
+          "layers": 61,
+          "hidden": 7168,
+          "heads": 128,
+          "routedExperts": 384,
+          "activeExperts": 6,
+          "sharedExperts": 1,
+          "indexerTopK": 2048,
+          "weights": "FP8",
+          "expertWeights": "FP4"
+        },
+        "assumptions": {
+          "denseLayers": {
+            "value": 3,
+            "basis": "ASSUMPTION: DeepSeek-V3 first_k_dense_replace = 3; the other 58 layers are MoE"
+          },
+          "denseFfnHidden": {
+            "value": 18432,
+            "basis": "ASSUMPTION: DeepSeek-V3 intermediate_size"
+          },
+          "vocab": {
+            "value": 129280,
+            "basis": "ASSUMPTION: DeepSeek-V3 vocabulary; untied embedding and LM head"
+          },
+          "mla": {
+            "value": {
+              "qLoraRank": 1536,
+              "kvLatent": 512,
+              "ropeDim": 64,
+              "qkNopeDim": 128,
+              "vHeadDim": 128
+            },
+            "basis": "ASSUMPTION: DeepSeek-V3 MLA dimensions; decode uses the absorbed form (QK over 512+64, PV over 512 per head)"
+          },
+          "indexer": {
+            "value": {
+              "heads": 64,
+              "headDim": 128,
+              "keyBytesPerToken": 132
+            },
+            "basis": "ASSUMPTION: DeepSeek-V3.2 lightning indexer (FP8 128-dim key + FP32 scale per token per layer); q from the q-LoRA latent; scoring runs on the H tensor engines"
+          },
+          "expertHidden": {
+            "value": "derived",
+            "basis": "ASSUMPTION: the reported 49B active and 1.6T total cannot both hold with the other ASSUMPTION fields. The point estimate is solved from the reported 49B active (embedding included; the implied total is recorded against 1600B); the variant expertHiddenFromTotal is solved from the reported 1600B total, and TPS/usr is reported as the range of both (ADR-0008)"
+          },
+          "bytesPerParam": {
+            "value": {
+              "dense": 1,
+              "sharedExpert": 1,
+              "routedExpert": 0.53125,
+              "routerAndLmHead": 2
+            },
+            "basis": "ASSUMPTION: FP8 attention, indexer, dense FFN and shared expert; router and LM head BF16 (2 B), aligned with the GLM-5.2 FP8 checkpoint; routed experts FP4 with one 8-bit scale per 32 weights (same as K3 MXFP4)"
+          },
+          "kvBytesPerTokenPerLayer": {
+            "value": 656,
+            "basis": "ASSUMPTION: FlashMLA FP8 layout (512 FP8 latent + 4 FP32 scales + 64 BF16 RoPE), same as K3"
+          },
+          "sparseAttention": {
+            "value": "topK tokens per layer read from the KV cache",
+            "basis": "ASSUMPTION: attention reads only indexerTopK entries; the indexer reads every cached index key"
+          },
+          "parallelism": {
+            "value": "context and every expert (dense FFN, shared and routed) sharded over the TP ranks; no expert parallelism, no all-to-all",
+            "basis": "DEPLOYMENT_DECISION (2026-09-25): FFN/MoE of all three models is deployed TP-only, as for K3; the FFN/MoE output is one TP all-reduce per layer"
+          },
+          "collectivesPerLayer": {
+            "value": 4,
+            "basis": "ASSUMPTION: indexer top-k merge, sparse-attention LSE merge, attention output all-reduce, FFN/MoE output all-reduce (shared and routed folded); counted on the K3 reference basis, sampling excluded"
+          },
+          "collectiveMessageBytes": {
+            "value": "2 x hidden x 2 B per rank",
+            "basis": "ASSUMPTION: ring all-reduce of one BF16 hidden vector"
+          },
+          "mtp": {
+            "value": "excluded",
+            "basis": "MTP / speculative decode is not in the TPS/usr metric: the K3 detailed model has none, and the acceptance rate is unmeasured"
+          }
+        }
+      }
+    }
+  ],
+  "commonOperatorContract": {
+    "fields": [
+      "operatorId",
+      "class",
+      "coreClass",
+      "bytesClass",
+      "flopsPerToken",
+      "bytesPerToken",
+      "source",
+      "manifestHash"
+    ],
+    "dag": "layer_0 -> repeated_layer_operator_inventory -> final_projection -> collective_reduce",
+    "unknownPolicy": "explicit_blocker_only; no residual parameter or silent scaling"
+  }
+}

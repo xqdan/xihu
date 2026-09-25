@@ -1,0 +1,438 @@
+{
+  "schemaVersion": "planning-operator-workload-v0.5",
+  "status": "K3_SHAPE_DERIVED; GLM-5.2 SHAPE_DERIVED_FROM_CONFIG; DEEPSEEK-V4-PRO SHAPE_DERIVED_WITH_ASSUMPTIONS",
+  "generatedBy": "integration/pipelines/generate_planning_operator_workload.js",
+  "units": {
+    "flops": "global FLOP/token",
+    "bytes": "global byte/token before TP",
+    "rate": "SI per package rank"
+  },
+  "sourceHashes": {
+    "designEngine": "9db85047e1acd639643c572681e79c150e17787d056ec412c3db55c7a54d001d",
+    "finalTuningModel": "91d30204ed0c30808939e467a0d909173402d626e3e394883c1a3741d398e942",
+    "finalTuningResults": "efd0ac3f9c5bce412439f609639b0ec956c4e838294d718517a176c7ecf910ea",
+    "formalModelManifests": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
+    "workloadDerivation": "7c27118e32d66fe189ccfcf91e7e7ca72ab97406dbdf235e927a2c025312463c",
+    "tokenTime": "cb4e0f8b95bf5747560eb6f8f99813a1d10768c4872e9a38529b78a8017f76db",
+    "resourceProfiles": "2d270e1eb1c607dfdda13460742fe67c57a54abbfc25277172b58c7089cbc13c"
+  },
+  "provenance": {
+    "K3": {
+      "status": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+      "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+      "attentionParameterSource": "residual",
+      "attentionFlopBasis": "absorbed MLA: 24 layers x 2 x context x 96 heads x (576 + 512)",
+      "kvBytesPerTokenPerLayer": 656,
+      "kvBytesSource": "integration/detailed/k3_rdma_final_tuning_model.js mapped(best.x).plan.kvBytesPerToken (OPT.kvCache = fp8)",
+      "context": 1048576,
+      "collectiveSource": "out/rdma/k3_rdma_final_tuning_results.json#/search/best/wireBytes x TP32; collectiveCount on the reference-393 basis",
+      "reconciliation": {
+        "source": "integration/detailed/k3_rdma_final_tuning_model.js mapped(best.x).plan (per rank x TP32)",
+        "detailedGlobalFlopsPerToken": 5486416421887.996,
+        "derivedGlobalFlopsPerToken": 5466199663616,
+        "flopsRatioDerivedOverCalibrated": 0.996315125080309,
+        "detailedGlobalReadBytesPerToken": 158880578969.59955,
+        "derivedGlobalMemoryBytesPerToken": 153931719680,
+        "bytesRatioDerivedOverCalibrated": 0.9688517040805442,
+        "expertRereadBytesPerToken": 5165914521.599991,
+        "derivedPlusRereadOverDetailed": 1.0013661533298035,
+        "note": "Derived bytes count each weight/KV/state byte once. The detailed read traffic also carries expert prefetch mis-prediction re-reads (wrongBytes); the token time charges them with the separate expertReread factor on routed-expert bytes, and kMemory carries only the DMA efficiency."
+      }
+    },
+    "GLM-5.2": {
+      "status": "SHAPE_DERIVED_FROM_CONFIG",
+      "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+      "configSource": "https://huggingface.co/zai-org/GLM-5.2/raw/main/config.json",
+      "assumptions": [
+        "bytesPerParam",
+        "kvBytesPerTokenPerLayer",
+        "indexKeyBytesPerToken",
+        "sparseAttention",
+        "parallelism",
+        "collectivesPerLayer",
+        "collectiveMessageBytes",
+        "mtp"
+      ],
+      "derivation": {
+        "attentionParamsPerLayer": 165019648,
+        "indexerParamsPerFullLayer": 9371648,
+        "denseFfnParamsPerLayer": 226492416,
+        "expertParams": 37748736,
+        "moeLayers": 75,
+        "fullIndexerLayers": 21,
+        "sharedIndexerLayers": 57,
+        "totalParams": 743375831040,
+        "mtpParams": 9952886784,
+        "totalParamsWithMtp": 753328717824,
+        "totalWithMtpOverReported": 1.00043654425498,
+        "activeParams": 41249341440,
+        "activeParamsExcludingEmbedding": 40297758720,
+        "mtpApplied": false
+      },
+      "note": "Shape fields come from the public config.json; the FP8 KV layout, index-key bytes and collectives per layer are ASSUMPTION; the TP-only FFN/MoE mapping is a deployment decision. Shared indexer layers reuse the previous full layer top-k. MTP is excluded from TPS/usr."
+    },
+    "DeepSeek-V4-Pro": {
+      "status": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+      "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+      "assumptions": [
+        "denseLayers",
+        "denseFfnHidden",
+        "vocab",
+        "mla",
+        "indexer",
+        "expertHidden",
+        "bytesPerParam",
+        "kvBytesPerTokenPerLayer",
+        "sparseAttention",
+        "parallelism",
+        "collectivesPerLayer",
+        "collectiveMessageBytes",
+        "mtp"
+      ],
+      "derivation": {
+        "attentionParamsPerLayer": 187105280,
+        "indexerParamsPerLayer": 13959168,
+        "denseFfnParamsPerLayer": 396361728,
+        "moeLayers": 58,
+        "expertHidden": 3840.8457072484166,
+        "expertHiddenBasis": "solved from reportedActiveParams = 49B (embedding included)",
+        "activeParams": 49000000000,
+        "activeOverReported": 1,
+        "impliedTotalParams": 1859780904448,
+        "impliedTotalOverReported": 1.16236306528,
+        "routedExpertBytesPerToken": 15269481833.142857,
+        "mtpApplied": false
+      },
+      "note": "Every field outside shape.reported is an ASSUMPTION (DeepSeek-V3/V3.2 dimensions). MTP is excluded from TPS/usr."
+    }
+  },
+  "collectivesPerToken": {
+    "K3": 393,
+    "GLM-5.2": 255,
+    "DeepSeek-V4-Pro": 244
+  },
+  "layers": {
+    "K3": 93,
+    "GLM-5.2": 78,
+    "DeepSeek-V4-Pro": 61
+  },
+  "dtypePolicy": {
+    "K3": {
+      "attentionAndDenseProjections": "BF16",
+      "sharedExpert": "BF16",
+      "routerAndLmHead": "BF16",
+      "routedExpert": "MXFP4 (0.53125 B)",
+      "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+      "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+    },
+    "GLM-5.2": {
+      "attentionAndDenseProjections": "FP8",
+      "sharedExpert": "FP8",
+      "routerAndLmHead": "BF16",
+      "routedExpert": "FP8",
+      "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+      "source": "zai-org/GLM-5.2-FP8 quantization_config"
+    },
+    "DeepSeek-V4-Pro": {
+      "attentionAndDenseProjections": "FP8",
+      "sharedExpert": "FP8",
+      "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+      "routedExpert": "FP4 (0.53125 B)",
+      "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+      "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+    }
+  },
+  "variants": {
+    "DeepSeek-V4-Pro": {
+      "expertHiddenFromTotal": {
+        "rows": [
+          [
+            "dense_projection",
+            "L",
+            37312022650.34805,
+            19742336061.174026,
+            "weight"
+          ],
+          [
+            "routed_moe",
+            "L",
+            49388040926.08832,
+            13118698370.99221,
+            "expert"
+          ],
+          [
+            "indexer",
+            "INDEXER",
+            1047972020224,
+            8443133952,
+            "index"
+          ],
+          [
+            "sparse_attention",
+            "H",
+            34795945984,
+            81952768,
+            "kv_state"
+          ],
+          [
+            "collective_reduce",
+            "REDUCE",
+            111935488,
+            223870976,
+            "collective"
+          ]
+        ],
+        "collectivesPerToken": 244,
+        "layers": 61,
+        "derivation": {
+          "attentionParamsPerLayer": 187105280,
+          "indexerParamsPerLayer": 13959168,
+          "denseFfnParamsPerLayer": 396361728,
+          "moeLayers": 58,
+          "expertHidden": 3299.8432345979145,
+          "expertHiddenBasis": "solved from reportedTotalParams = 1600B (embedding and LM head included, MTP excluded)",
+          "activeParams": 44276710828.218185,
+          "activeOverReported": 0.9036063434330242,
+          "impliedTotalParams": 1600000000000,
+          "impliedTotalOverReported": 1,
+          "routedExpertBytesPerToken": 13118698370.99221,
+          "mtpApplied": false
+        }
+      }
+    }
+  },
+  "comparisons": {
+    "K3-FP8-dense": {
+      "baseModelId": "K3",
+      "rows": [
+        [
+          "dense_projection",
+          "L",
+          111159256064,
+          57344905728,
+          "weight"
+        ],
+        [
+          "routed_moe",
+          "L",
+          97240743936,
+          25829572608,
+          "expert"
+        ],
+        [
+          "attention",
+          "H",
+          5257039970304,
+          16508780544,
+          "kv_state"
+        ],
+        [
+          "kda_state",
+          "V",
+          759693312,
+          434110464,
+          "kv_state"
+        ],
+        [
+          "collective_reduce",
+          "REDUCE",
+          282934272,
+          565868544,
+          "collective"
+        ]
+      ],
+      "collectivesPerToken": 393,
+      "layers": 93,
+      "note": "K3 with the GLM-5.2 / DeepSeek-V4-Pro dense dtype policy (FP8 attention/shared/latent projections, BF16 router and LM head); routed experts and KV unchanged. Not a K3 configuration of record."
+    }
+  },
+  "calibration": {
+    "slot": {
+      "tp": 32,
+      "physicalProfile": "P1",
+      "mcProfile": "MC640"
+    },
+    "source": "out/rdma/k3_rdma_final_tuning_results.json#/search/best; op timing from integration/detailed/k3_rdma_final_tuning_model.js mapped(best.x).plan.ops",
+    "detailedTpsPerUser": 1101.771070241925,
+    "detailedRawUs": 775.7517671190814,
+    "detailedDmaBusyUs": 775.3004419656203,
+    "detailedSerialComputeUs": 301.44868247927707,
+    "detailedCommUs": 451.94999999999703,
+    "detailedBreakdown": {
+      "kernelUs": 224.84237236788633,
+      "reduceUs": 14.233846153846155,
+      "dieLinkUs": 6.729843750000002,
+      "localTmaUs": 42.874092680469154,
+      "launchUs": 11.171250000000223,
+      "tmaFillUs": 134.77336125833259,
+      "tmaHiddenUs": 106.90661439522479,
+      "overlapUs": 26.269469336035073,
+      "predBytes": 807174143.9999946,
+      "wrongBytes": 161434828.7999997
+    },
+    "layers": 93,
+    "planningMemoryBytes": 4810366240,
+    "planningMemoryUs": 671.0890401785714,
+    "planningExpertMemoryUs": 112.608,
+    "planningComputeUs": 213.2020751474418,
+    "planningCommUs": 451.95,
+    "expertReread": 0.20000000000000098,
+    "kMemory": 1.1177747241103706,
+    "kFlop": 1.1529252804023746,
+    "fixedPerLayerUs": 0.29866530477886344,
+    "kTmaExposedUsPerGB": 5.793061374700608,
+    "serialSplitUs": {
+      "flop": 245.8060622717325,
+      "fixed": 27.775873344434302,
+      "tmaExposed": 27.866746863107792
+    },
+    "legacyKCompute": 1.4139106398040804,
+    "margin": 1.17,
+    "tauUs": 1.15,
+    "tauSensitivityUs": [
+      1.15,
+      1.5,
+      2
+    ],
+    "definition": "expertReread = wrongBytes / predBytes; kMemory = DMA busy / (memory + expertReread x expert memory); kFlop = (kernel + reduce + dieLink) / planning compute; fixedPerLayerUs = (localTma + launch - comm overlap) / layers; kTmaExposedUsPerGB = (tmaFill - tmaHidden) / non-collective GB per rank; collectives are charged at the same tau in both models and are not scaled",
+    "calibratedRawUs": 775.3004419656204,
+    "calibratedTpsPerUser": 1102.412443534703,
+    "calibratedSerialComputeUs": 301.44868247927457,
+    "rawResidualUs": -0.4513251534609708,
+    "uncalibratedTpsPerUser": 1273.6027613763827,
+    "validation": {
+      "slot": {
+        "tp": 32,
+        "physicalProfile": "P1",
+        "mcProfile": "MC320"
+      },
+      "detailedTpsPerUser": 586.4584543522183,
+      "planningTpsPerUser": 551.2062217673515,
+      "planningOverDetailed": 0.9398896335737795,
+      "note": "Not fitted: same factors replayed against the detailed model with mcGBs = 320."
+    }
+  },
+  "limitations": [
+    "K3 rows are derived from the repository engineering preset, which is itself not vendor-confirmed.",
+    "DeepSeek-V4-Pro rows rest on ASSUMPTION fields (DeepSeek-V3/V3.2 dimensions); the expert hidden size is solved from the reported 49B active parameters.",
+    "GLM-5.2 rows follow the public config.json; its KV/index-key byte layout and collectives per layer are ASSUMPTION fields.",
+    "FFN/MoE is TP-only for all three models (deployment decision): no expert parallelism, no all-to-all dispatch row.",
+    "The token-time factors (expertReread, kMemory, kFlop, fixedPerLayerUs, kTmaExposedUsPerGB) are fitted on K3 only; applying them to GLM-5.2 and DeepSeek-V4-Pro is a planning ASSUMPTION.",
+    "DeepSeek-V4-Pro: the reported 49B active and 1.6T total disagree under the ASSUMPTION fields; the point estimate uses 49B active, the variant expertHiddenFromTotal uses 1.6T total.",
+    "Dense weight dtype differs by model (K3 BF16; GLM-5.2 and DeepSeek-V4-Pro FP8 with BF16 router and LM head); see dtypePolicy and the K3-FP8-dense comparison.",
+    "Collective FLOP is a planning estimate (one accumulate per transported element)."
+  ],
+  "operators": {
+    "K3": [
+      [
+        "dense_projection",
+        "L",
+        111159256064,
+        111159256064,
+        "weight"
+      ],
+      [
+        "routed_moe",
+        "L",
+        97240743936,
+        25829572608,
+        "expert"
+      ],
+      [
+        "attention",
+        "H",
+        5257039970304,
+        16508780544,
+        "kv_state"
+      ],
+      [
+        "kda_state",
+        "V",
+        759693312,
+        434110464,
+        "kv_state"
+      ],
+      [
+        "collective_reduce",
+        "REDUCE",
+        282934272,
+        565868544,
+        "collective"
+      ]
+    ],
+    "GLM-5.2": [
+      [
+        "dense_projection",
+        "L",
+        35297034240,
+        18718064640,
+        "weight"
+      ],
+      [
+        "routed_moe",
+        "L",
+        45298483200,
+        22649241600,
+        "expert"
+      ],
+      [
+        "indexer",
+        "INDEXER",
+        180388626432,
+        2906652672,
+        "index"
+      ],
+      [
+        "sparse_attention",
+        "H",
+        22246588416,
+        104792064,
+        "kv_state"
+      ],
+      [
+        "collective_reduce",
+        "REDUCE",
+        100270080,
+        200540160,
+        "collective"
+      ]
+    ],
+    "DeepSeek-V4-Pro": [
+      [
+        "dense_projection",
+        "L",
+        38661533842.28571,
+        20417091657.142857,
+        "weight"
+      ],
+      [
+        "routed_moe",
+        "L",
+        57485108077.71429,
+        15269481833.142857,
+        "expert"
+      ],
+      [
+        "indexer",
+        "INDEXER",
+        1047972020224,
+        8443133952,
+        "index"
+      ],
+      [
+        "sparse_attention",
+        "H",
+        34795945984,
+        81952768,
+        "kv_state"
+      ],
+      [
+        "collective_reduce",
+        "REDUCE",
+        111935488,
+        223870976,
+        "collective"
+      ]
+    ]
+  }
+}

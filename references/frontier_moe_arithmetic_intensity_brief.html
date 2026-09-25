@@ -63,7 +63,7 @@
     <div class="eyebrow">BRIEF · 按原文逻辑</div>
     <h1>算术强度要点：V4-Pro / K3 / GLM-5.2</h1>
     <p class="subtitle">
-      按 <a href="./frontier_moe_arithmetic_intensity.html">算术强度分析页</a> 的章节顺序把主逻辑写完整，不附图、不逐算子扫表。
+      按 <a href="frontier_moe_arithmetic_intensity.html">算术强度分析页</a> 的章节顺序把主逻辑写完整，不附图、不逐算子扫表。
       只评三颗旗舰的算子 I（FLOP/Byte）。Decode 一步和 Prefill 一条序列必须分开看：Prefill 线性会 ×S，对数轴会被拉开，不能和 Decode 画在同一张图上。
       默认 Decode Context 1M、Prefill 32K、专家预测 80%、PD <b>Decode 80% / Prefill 20%</b>。
       单卡 MC 仍是 16×320 GB/s×0.7 = <b>3.58 TB/s</b>，Tensor 利用率 0.8。下文芯片 TF 是原始峰值，Roofline 有效峰值为 TF×0.8；脊点 = 有效峰值 / 有效带宽。
@@ -348,8 +348,8 @@
   </div>
 
   <footer>
-    Roofline 图、逐算子表、整模 I×TP×CP 表仍在 <a href="./frontier_moe_arithmetic_intensity.html">完整分析页</a>。
-    模型口径与 <a href="./frontier_moe_dataflow_partition.html">数据流页</a> 相同。完整分析页的 Roofline 计算已更新；本页为静态摘要，数值以完整分析页动态结果为准。V4 注意力 FLOP 为结构估算。
+    Roofline 图、逐算子表、整模 I×TP×CP 表仍在 <a href="frontier_moe_arithmetic_intensity.html">完整分析页</a>。
+    模型口径与 <a href="frontier_moe_dataflow_partition.html">数据流页</a> 相同。完整分析页的 Roofline 计算已更新；本页为静态摘要，数值以完整分析页动态结果为准。V4 注意力 FLOP 为结构估算。
   </footer>
 </main>
 </body>

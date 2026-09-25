@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "detailed-architecture-operating-model-v0.2",
+  "asOf": "2026-09-22",
+  "stage": "quantification",
+  "principle": "quantify the selected direction from workload and resource walls down to operator, tile, transaction and cycle evidence",
+  "candidatePolicy": {
+    "source": "out/governance/candidate_register.json",
+    "formalCandidatesMax": 3,
+    "exploratoryRunMode": "EXPLORATORY_AFTER_BLOCKED_D_GATE",
+    "blockedModelsRemainBlocked": true,
+    "p0P1Separated": true,
+    "mc320Mc640Separated": true
+  },
+  "phases": [
+    {
+      "id": "B0_CONTROL",
+      "question": "What candidate, model configuration and resource profile are we quantifying?",
+      "agents": ["A0", "Q0"],
+      "parallel": false,
+      "inputs": ["candidate_register", "gate_status", "model_profiles", "resource_profiles"],
+      "outputs": ["detail_run_manifest", "provenance_bundle", "candidate_binding"],
+      "exitCriteria": ["candidate binding is explicit", "run mode is explicit", "input hashes are recorded", "blocked configurations are explicit"]
+    },
+    {
+      "id": "B1_QUANTIFICATION",
+      "question": "Does the workload, arithmetic intensity, Roofline and resource sizing support this direction?",
+      "agents": ["Q1", "Q2"],
+      "parallel": false,
+      "inputs": ["detail_run_manifest", "model_manifest", "resource_envelope"],
+      "outputs": ["operator_dag", "operator_ledger", "roofline_ledger", "compute_bandwidth_network_sizing"],
+      "exitCriteria": ["FLOP/byte/unit conservation passes", "L/H/V/INDEXER/REDUCE are separate", "required versus available ratios are present", "direction-change trigger is classified"]
+    },
+    {
+      "id": "B2_PHYSICAL_MAPPING",
+      "question": "How does each operator use tiles, buffers, links and core pipelines?",
+      "agents": ["Q3", "Q4", "Q5"],
+      "parallel": true,
+      "dependsOn": ["B1_QUANTIFICATION"],
+      "inputs": ["operator_dag", "operator_ledger", "roofline_ledger", "tile_ir_contract", "topology_profile"],
+      "outputs": ["tile_memory_events", "noc_collective_events", "kernel_cycle_events"],
+      "exitCriteria": ["every event keeps operator_id and manifest_hash", "bytes and transactions conserve", "queue/backpressure/error paths are represented", "no hidden global scaling factor"]
+    },
+    {
+      "id": "B3_EXECUTION_REALIZATION",
+      "question": "Can the mapped work execute with overlap, scheduling, PPA and thermal constraints?",
+      "agents": ["Q6", "Q7"],
+      "parallel": true,
+      "dependsOn": ["B2_PHYSICAL_MAPPING"],
+      "inputs": ["tile_memory_events", "noc_collective_events", "kernel_cycle_events", "software_gain_budget", "package_profile"],
+      "outputs": ["schedule_trace", "critical_path", "ppa_thermal_ras_result"],
+      "exitCriteria": ["critical path is replayable", "overlap policy is explicit", "P50/P95/P99 inputs exist", "area power thermal and degraded modes are bounded"]
+    },
+    {
+      "id": "B4_SYSTEM_INTEGRATION",
+      "question": "What fine-grained TPS/user does the executable event path produce?",
+      "agents": ["Q8"],
+      "parallel": false,
+      "dependsOn": ["B3_EXECUTION_REALIZATION"],
+      "inputs": ["all_prior_artifacts", "tps_observation_matrix"],
+      "outputs": ["fine_tps_matrix", "latency_breakdown", "stage_a_delta_attribution"],
+      "exitCriteria": ["18 slots are observed or terminally blocked", "TPS equals inverse latency", "Stage A versus Stage B delta is attributed", "P50/P95/P99 are reported"]
+    },
+    {
+      "id": "B5_VERIFICATION_GATE",
+      "question": "Is the evidence complete and is the direction still valid?",
+      "agents": ["Q9", "A0"],
+      "parallel": false,
+      "dependsOn": ["B4_SYSTEM_INTEGRATION"],
+      "inputs": ["all_prior_artifacts", "golden_traces", "tests", "stage_a_result"],
+      "outputs": ["q_gate_report", "architecture_decision", "adr_or_feedback_packet"],
+      "exitCriteria": ["provenance is complete", "schema and conservation tests pass", "Q-Gate decision is independently recomputed", "feedback destination is explicit"]
+    }
+  ],
+  "feedbackRoutes": [
+    {
+      "condition": "Q2 sizing changes the dominant architecture wall or required resource envelope",
+      "route": "Q2 -> A0 -> D2/D3/D4/D7",
+      "decisionType": "DIRECTION_BACKFLOW",
+      "requiresAdr": true
+    },
+    {
+      "condition": "Q3/Q4/Q5 finds a local mapping, queue or cycle issue without changing the direction",
+      "route": "Q3/Q4/Q5 -> Q1/Q2/Q6",
+      "decisionType": "LOCAL_DETAIL_FIX",
+      "requiresAdr": false
+    },
+    {
+      "condition": "Q6/Q7 violates package, power, thermal or RAS limits",
+      "route": "Q6/Q7 -> A0 -> D5/D6 or candidate register",
+      "decisionType": "PPA_DIRECTION_BACKFLOW",
+      "requiresAdr": true
+    },
+    {
+      "condition": "model or deployment configuration is not verifiable",
+      "route": "any Q agent -> Q1 -> A0",
+      "decisionType": "BLOCKED_CONFIG",
+      "requiresAdr": false
+    }
+  ],
+  "handoffArtifacts": {
+    "B0_to_B1": ["detail_run_manifest", "candidate_binding", "provenance_bundle"],
+    "B1_to_B2": ["manifest_hash", "operator_dag", "operator_ledger", "roofline_ledger", "sizing_summary"],
+    "B2_to_B3": ["tile_event_trace", "packet_event_trace", "kernel_cycle_trace"],
+    "B3_to_B4": ["schedule_trace", "critical_path", "ppa_thermal_ras_result"],
+    "B4_to_B5": ["fine_tps_matrix", "stage_a_delta_attribution", "latency_percentiles", "provenance_bundle"]
+  },
+  "requiredEvidence": [
+    "source_commit",
+    "run_id",
+    "manifest_hash",
+    "input_hashes",
+    "profile_id",
+    "unit_contract",
+    "seed_or_deterministic_replay",
+    "confidence",
+    "status",
+    "blockers"
+  ]
+}
