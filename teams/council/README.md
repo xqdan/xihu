@@ -10,6 +10,7 @@
 | [`adr/`](adr/README.md) | 架构决策记录，四位编号，一条决策一个文件 |
 | `docs/` | 两阶段运行模型、agent 目录与协作协议、工业化组织、agent 指标与工作流计划（15–20 号文档） |
 | `docs/detailed/` | Stage B 详细设计控制面与 Q1–Q9 规格 |
+| `docs/reviews/` | 多 agent 跨团队评审的运行存档（agent 生成，MODEL 等级，不是 ADR 或 gate 结论），脚本见 `integration/orchestration/` |
 | `inputs/` | 运行模型、agent 目录、组织 roster、算术强度 contract 的机器可读版本（由 governance 测试检查） |
 
 ## Review and handoff
