@@ -149,6 +149,8 @@ flowchart LR
 
 ## 快速开始
 
+第一次接触本仓库，先读 [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md)：阅读顺序、口径、数字来源、改参数实验和改动流程。
+
 需要 Node.js 18 或更高版本，没有第三方依赖。
 
 ```sh
