@@ -2,6 +2,8 @@
 
 仓库级文档入口。团队自有文档放在各自的 `teams/<team>/docs/`；这里只放不属于单个团队的架构规格。
 
+- [`GETTING_STARTED.md`](GETTING_STARTED.md)：新人上手指引（环境、阅读顺序、口径、改参数实验、改动流程）。
+
 - [`architecture/`](architecture/README.md)：正式架构规格（Council 拥有）
   - `HIGH_LEVEL_ARCHITECTURE.md`：高层架构总纲和详细文档地图；
   - `00_CURRENT_STATE.md`：当前基线、证据等级和阻塞项；
