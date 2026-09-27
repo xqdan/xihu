@@ -2,7 +2,7 @@ export const meta = {
   name: 'k3-multiteam-review',
   description: '五团队 probe+lead，CLM 独立编号，六接口配对，blocker 全量三视角核验，Council 新增项回核，critic 查漏',
   phases: [
-    { title: 'Probe', detail: '6 个窄探针，按团队串成 probe→lead 链，团队之间不设屏障' },
+    { title: 'Probe', detail: '7 个窄探针，按团队串成 probe→lead 链，团队之间不设屏障' },
     { title: 'Team merge', detail: '5 个 lead 合并本团队 claim，脚本统一编号 CLM-*' },
     { title: 'Interface pairs', detail: '6 个接口按声明双方配对，缺边显式登记' },
     { title: 'Premises', detail: '三个未回标系数 + 门槛本身：被推翻时结论往哪走' },
@@ -26,8 +26,13 @@ const RULES = [
 
 const SHARED_READS = 'README.md、AGENTS.md、docs/architecture/、integration/、out/、teams/council/adr/'
 
+// 一次性学习沉淀下来的领域知识（references/sota/）。它**不是证据**：
+// 没有 path:line，过不了三视角核验，不得作为任何 claim 的 evidence、不得覆盖仓库基线。
+// 用途只有一个——判断某个假设是否偏离行业常规，从而知道该不该花力气去要实测。
+const SOTA_READS = 'references/sota/（若存在：领域 SOTA/经典方案知识库。仅供判断"本项目的假设是否偏离常规"，引用时必须标为知识而非证据，且不得用它改写任何仓库数字）'
+
 const TEAMS = [
-  { key: 'hardware', prefix: 'HW', owns: ['Package/floorplan', 'AI Core', 'SRAM/TMA', 'MC', 'NoC/Die-to-Die', 'PPA/RAS'] },
+  { key: 'hardware', prefix: 'HW', owns: ['Package/floorplan', 'AI Core', 'SRAM/TMA', 'MC', 'NoC/Die-to-Die', 'Collective/RDMA', 'PPA/RAS'] },
   { key: 'software', prefix: 'SW', owns: ['Deployment/runtime', 'compiler', 'kernels', 'fusion', 'collective overlap', 'scheduler', 'profiler'] },
   { key: 'model', prefix: 'MODEL', owns: ['Model manifest', 'workload/operator ledger', 'scenarios', 'routing/sparsity', 'golden traces', 'model KPI'] },
   { key: 'vv', prefix: 'VV', owns: ['schema', 'conservation', 'traceability', 'regression', 'Q-Gate'] },
@@ -57,11 +62,18 @@ const INTERFACES = {
 }
 const INTERFACE_LIST = Object.entries(INTERFACES).map(([k, v]) => `  ${k}：${v.desc}`).join('\n')
 
-// 6 个探针，合并了原先重叠的 HW-C/SW-C/MODEL-C/VV-C；covers 仍按 AGENTS.md 的 ownership 全覆盖
+// 7 个探针。HW-A 拆成 HW-MC（决定门槛结论的瓶颈项）与 HW-A（余量项），
+// 因为 MC 档位是唯一能翻转 1050 结论的变量，不该和一个管四条 ownership 的探针挤 6 条 claim。
+// 集合通信并入 HW-MC：它的带宽账与 MC sustained 是同一笔账（不新增第 8 个探针），
+// 但 ownership 上归 HW-05 NoC/Die-to-Die，且 τ 的物理拆分是 blocker B-008 的直接取证方向。
+// covers 仍按 AGENTS.md 的 ownership 全覆盖。
 const PROBES = [
-  { team: 'hardware', id: 'HW-A', covers: ['AI Core', 'SRAM/TMA', 'MC', 'NoC/Die-to-Die'],
-    task: 'sustained 能力与对外契约（原 HW-A + HW-C 合并）。第一，把当前 P1 候选的 sustained 算力/带宽算出来（不是 peak，必须说明 peak 到 sustained 的折扣依据和出处），指出瓶颈落在哪个硬件单元，并给出对距离 1050 TPS/usr 冻结门槛的量化差距。第二，明确列出 Hardware 给 Software 和 Model 的契约数字：带宽、时延、容量各是多少，是 peak 还是 sustained，余量多少——Software/Model 会拿这些数字直接算，所以必须写清口径。',
-    reads: 'teams/hardware/inputs/（硬件基线规格）、teams/hardware/src/、teams/hardware/contract.json、teams/hardware/docs/02_*.md 到 07_*.md' },
+  { team: 'hardware', id: 'HW-MC', covers: ['MC', 'NoC/Die-to-Die', 'Collective/RDMA'],
+    task: '内存子系统、互联与集合通信：这是本议题的瓶颈域，必须深入，不要与其他硬件单元混谈。第一，把当前 P1 候选的 MC sustained 带宽算出来（不是 peak）：raw 带宽、效率折扣、sustained、有效 DMA 占用，逐项给出处；效率折扣（如 0.7）如果没有供应商或 PHY 实测支撑，明确标 UNVERIFIED 并说明缺什么。第二，给出 MC 各档位（320/400/480/560/640 GB/s/颗）对应的 TPS/usr 与对 1050 门槛的余量，写明是 MODEL 推算还是有模拟点支撑；指出盈亏点带宽。第三，UCIe/NoC 端口带宽是否构成约束，给出与 MC sustained 的比值。第四，明确列出 Hardware 给 Software 和 Model 的内存侧契约：带宽、时延、容量各是多少，是 peak 还是 sustained，余量多少——Software/Model 会拿这些数字直接算。第五，MC 颗数是否受封装面积锁死，能否靠加颗数补带宽。第六，集合通信（collective）单独拆开算，它是同一笔带宽账的另一半，不能只当余量项：把通信时延 τ 的物理构成逐项拆出来（hop 数、单 hop PHY/SerDes 时延、协议开销、交换级数），每项给出处，推不出来的明确写 UNVERIFIED 并说明需要哪一份实测；给出 TP32 下 allreduce 的算法与拓扑选择（ring / hierarchical / 全互联）分别需要多少 hop、多少条链路、在 MC sustained 上占多大比例；指出 collective 与计算/DMA 能否 overlap，以及不可 overlap 的部分对 TPS/usr 的影响。',
+    reads: 'teams/hardware/inputs/k3_mc_baseline.json、teams/hardware/src/、teams/hardware/contract.json、teams/hardware/docs/ 中 MC/NoC/Die-to-Die/Collective/RDMA 相关文档、teams/council/adr/（ADR-0019、ADR-0005）' },
+  { team: 'hardware', id: 'HW-A', covers: ['AI Core', 'SRAM/TMA'],
+    task: '算力与片上存储：sustained 算力与 SRAM/TMA 的对外契约。第一，把 P1 候选的 sustained 算力算出来（不是 peak），必须说明 peak 到 sustained 的折扣依据和出处；如果同一份硬件存在两套 sustained 口径，一并列出并说明差异。第二，核验阵列填充率、kernel 级利用率是否有实测或波形支撑，还是固定假设；发布点 compute 时间与 DMA 时间的比值是多少。第三，片上 shared SRAM 容量与带宽的余量，以及该余量依赖哪个精度前提（如 FP8 KV）；换精度后是否还成立。第四，明确列出 Memory 侧以外的硬件契约数字（算力、TMA、SRAM 带宽）是 peak 还是 sustained。',
+    reads: 'teams/hardware/inputs/（硬件基线规格）、teams/hardware/src/resource_profiles.js、teams/hardware/contract.json、teams/hardware/docs/02_*.md 到 07_*.md' },
   { team: 'hardware', id: 'HW-P', covers: ['Package/floorplan', 'PPA/RAS'],
     task: 'Package / Power / PPA 账。给出 P1 候选的封装面积、die 面积、卡功耗、SRAM 面积占比、冷却前提各自的预算与当前值及余量（写明出处），说明哪些档位（MC 数量/速率、SRAM 容量、AI Core 数）受面积或功耗卡死；并判断 MC480 以上档位在面积/功耗/冷却上是否可制造。明确 open issue O-015 及类似 PPA 项当前是否有 owner 与证据。',
     reads: 'teams/hardware/docs/09_PACKAGE_POWER_RAS.md、teams/hardware/inputs/、teams/hardware/contract.json、teams/council/adr/（ADR-0019、ADR-0005）、docs/architecture/OPEN_ISSUES.md' },
@@ -200,7 +212,7 @@ const teamChains = await pipeline(
   // 阶段 1：本团队的全部探针并行
   (t) => parallel(PROBES.filter((p) => p.team === t.key).map((p) => () =>
     agent(
-      `你是本项目 ${p.team} 团队的探针 agent（编号 ${p.id}）。\n\n${TOPIC}\n\n你只负责回答这一个问题：\n${p.task}\n\n先读透：${p.reads}\n需要时再读共享材料（只读）：${SHARED_READS}\n\n输出要求：\n- claims 最多 6 条，每条只讲一个结论。claim_id 用 ${p.id}1、${p.id}2 这样编号，owner 一律填 ${p.team}。\n- interfaces 只标该 claim 真正跨越的接口，标错会导致路由失效。可选接口：\n${INTERFACE_LIST}\n- severity：无法承诺的未满足前提填 blocker，影响结论的差距填 gap，背景事实填 info。\n- 不要写综述，不要铺垫。证据拿不到就写 UNVERIFIED 并说缺什么。\n\n硬性规则：\n- ${RULES}`,
+      `你是本项目 ${p.team} 团队的探针 agent（编号 ${p.id}）。\n\n${TOPIC}\n\n你只负责回答这一个问题：\n${p.task}\n\n先读透：${p.reads}\n需要时再读共享材料（只读）：${SHARED_READS}\n领域参照（若已落盘，只读）：${SOTA_READS}\n\n输出要求：\n- claims 最多 6 条，每条只讲一个结论。claim_id 用 ${p.id}1、${p.id}2 这样编号，owner 一律填 ${p.team}。\n- interfaces 只标该 claim 真正跨越的接口，标错会导致路由失效。可选接口：\n${INTERFACE_LIST}\n- severity：无法承诺的未满足前提填 blocker，影响结论的差距填 gap，背景事实填 info。\n- 当某个系数没有仓库出处（UNVERIFIED）时，如果 references/sota/ 显示它明显偏离行业常规，在 statement 里写明"该取值偏离常规区间，值得优先取证"——但**不得引用外部数字作为 evidence**，evidence 仍然只能写 UNVERIFIED。\n- 不要写综述，不要铺垫。证据拿不到就写 UNVERIFIED 并说缺什么。\n\n硬性规则：\n- ${RULES}\n- references/sota/ 是知识不是证据：不得作为 claim 的 evidence，不得覆盖或重算仓库数字。`,
       { label: `probe:${p.id}`, phase: 'Probe', schema: PROBE_SCHEMA, effort: 'medium' },
     ).then((r) => (r ? { ...r, team: p.team, probe: p.id } : null))
   )),
