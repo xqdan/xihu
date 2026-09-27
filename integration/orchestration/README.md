@@ -26,7 +26,13 @@
 
 Probe 与 Team merge 合成**一条按团队串接的 pipeline**：每团队的探针并行跑完，该团队 lead 立即合并，不等其他团队。任一团队卡住不会阻塞其余团队，跑完的 agent 会写入 journal，中途被打断可用 `resumeFromRunId` 命中缓存。
 
-effort 分级：探针 / lead / 接口配对为 `medium`，对抗核验 / Council / Critic 为 `high`，增补为 `medium`。
+effort 分级：探针 / lead 为 `medium`，接口配对 / 对抗核验 / Council / Critic 为 `high`，增补为 `medium`。接口配对决定哪些 claim 进入对抗核验，所以与核验同级，不再降档。
+
+### 覆盖与失败记账
+
+- 探针失败的团队仍进 lead，但 lead 的输入里会显式声明缺了哪个探针，必须据此声明覆盖不完整，不能用现有材料推断代替。
+- `stage_failures.lead` 记录**所有**没有产出立场的团队（含探针全失败、以及 pipeline 阶段抛错），不再只记"有探针但 lead 失败"。
+- `args.teams` 里的未知团队名直接抛错，不会静默跑出 0 个 agent。
 
 ### 护栏
 

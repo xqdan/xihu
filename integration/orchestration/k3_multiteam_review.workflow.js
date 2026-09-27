@@ -34,6 +34,11 @@ const TEAMS = [
 ]
 // smoke test 开关：args.teams 只跑指定团队；args.stopAfter === 'merge' 在 lead 合并后直接返回，不进下游阶段
 const ONLY = Array.isArray(args?.teams) ? args.teams : null
+if (ONLY) {
+  if (!ONLY.length) throw new Error('args.teams 为空数组；省略该参数表示跑全部团队')
+  const unknown = ONLY.filter((k) => !TEAMS.some((t) => t.key === k))
+  if (unknown.length) throw new Error(`args.teams 含未知团队：${unknown.join(', ')}；可选：${TEAMS.map((t) => t.key).join(', ')}`)
+}
 const ACTIVE_TEAMS = ONLY ? TEAMS.filter((t) => ONLY.includes(t.key)) : TEAMS
 const ACTIVE_PROBES_FILTER = (p) => ACTIVE_TEAMS.some((t) => t.key === p.team)
 const STOP_AFTER_MERGE = args?.stopAfter === 'merge'
@@ -201,9 +206,15 @@ const teamChains = await pipeline(
   // 阶段 2：本团队 lead 合并（不等其他团队）
   (raws, t) => {
     const mine = (raws || []).filter(Boolean)
-    if (!mine.length) return { team: t.key, lead: null, probes: [] }
+    const got = new Set(mine.map((r) => r.probe))
+    const lost = PROBES.filter((p) => p.team === t.key && !got.has(p.id)).map((p) => p.id)
+    if (!mine.length && !lost.length) return { team: t.key, lead: null, probes: [] }
+    // 探针失败的团队照样进 lead，但必须让 lead 知道自己缺了哪一块
+    const coverage = lost.length
+      ? `\n\n注意：本团队探针 ${lost.join(', ')} 本轮未返回任何结果，你手上的输入**不完整**。必须在 position 里明确写出"因 ${lost.join(', ')} 缺失，本团队立场未覆盖 X"，缺的那部分写进 blockers（owner 填 ${t.key}，说明需补跑哪个探针）或 internal_conflicts，不得用现有材料推断代替，也不要把它写成一条正常结论。`
+      : ''
     return agent(
-      `你是本项目 ${t.key} 团队的 lead，负责把本团队探针的结论合并成团队正式立场。\n\n${TOPIC}\n\n本团队探针原始输出：\n${JSON.stringify(mine, null, 2)}\n\n任务：\n1. 合并去重：同一结论只保留一条，冲突的按证据强弱裁决，把裁决过程写进 internal_conflicts。\n2. claims 上限 12 条，owner 一律填 ${t.key}。claim_id 随便填，脚本会统一重编为 CLM-${t.prefix}-NN（这是 claim 命名空间，与仓库工作项 ${t.prefix}-* 编号无关，不要混用）。\n3. 复核每条 claim 的 interfaces：只保留它真正跨越的接口。接口定义：\n${INTERFACE_LIST}\n4. 重新评定 severity，blocker 从严：只有"未满足且单独就能翻转 1050 门槛结论"或"被现行 ADR 明令禁止"的前提才算 blocker；其余影响结论的差距为 gap，背景事实为 info。探针自评的 blocker 不必保留。\n5. 只输出本团队能负责的结论，不要替其他团队说话；需要别人做的事写进 blockers。\n6. position 一句话说清：差距多大、卡在谁身上。\n\n不得引入探针里没有的新结论；需要新结论请写进 blockers 并说明缺什么证据。\n\n硬性规则：\n- ${RULES}`,
+      `你是本项目 ${t.key} 团队的 lead，负责把本团队探针的结论合并成团队正式立场。\n\n${TOPIC}\n\n本团队探针原始输出：\n${JSON.stringify(mine, null, 2)}${coverage}\n\n任务：\n1. 合并去重：同一结论只保留一条，冲突的按证据强弱裁决，把裁决过程写进 internal_conflicts。\n2. claims 上限 12 条，owner 一律填 ${t.key}。claim_id 随便填，脚本会统一重编为 CLM-${t.prefix}-NN（这是 claim 命名空间，与仓库工作项 ${t.prefix}-* 编号无关，不要混用）。\n3. 复核每条 claim 的 interfaces：只保留它真正跨越的接口。接口定义：\n${INTERFACE_LIST}\n4. 重新评定 severity，blocker 从严：只有"未满足且单独就能翻转 1050 门槛结论"或"被现行 ADR 明令禁止"的前提才算 blocker；其余影响结论的差距为 gap，背景事实为 info。探针自评的 blocker 不必保留。\n5. 只输出本团队能负责的结论，不要替其他团队说话；需要别人做的事写进 blockers。\n6. position 一句话说清：差距多大、卡在谁身上。\n\n不得引入探针里没有的新结论；需要新结论请写进 blockers 并说明缺什么证据。\n\n硬性规则：\n- ${RULES}`,
       { label: `lead:${t.key}`, phase: 'Team merge', schema: LEAD_SCHEMA, effort: 'medium' },
     ).then((lead) => ({ team: t.key, lead, probes: mine }))
   },
@@ -231,7 +242,7 @@ log(`${ACTIVE_TEAMS.length} 个 lead 随各自团队链完成，不互相等待`
 const leads = []
 for (const c of chains) {
   if (c.lead) leads.push({ ...c.lead, team: c.team })
-  else if (c.probes.length) stageFailures.lead.push(c.team)
+  else stageFailures.lead.push(c.team)
 }
 const absentTeams = ACTIVE_TEAMS.map((t) => t.key).filter((k) => !leads.some((l) => l.team === k))
 if (absentTeams.length) log(`警告：以下团队本轮无立场（MISSING_OWNER）：${absentTeams.join(', ')}`)
@@ -269,7 +280,7 @@ log(`接口配对：${pairable.length}/${grouped.length} 个接口有 ≥2 个�
 const pairRaw = await parallel(pairable.map((g) => () =>
   agent(
     `你是跨团队接口核验 agent，负责接口 ${g.key}：${g.def.desc}。\n声明双方：${g.def.sides.join(' × ')}；实际提交 claim 的团队：${g.teams.join(', ')}${g.missingSides.length ? `；缺席的声明方：${g.missingSides.join(', ')}，请在 interface_verdict 中说明缺边对结论的影响` : ''}。\n\n${TOPIC}\n\n该接口上的 claim（claim_id 由脚本统一分配，引用时必须原样使用）：\n${JSON.stringify(g.claims, null, 2)}\n\n任务：\n- 只核验这一条接口，不要扩张到其他接口。可以读仓库任何文件来核验（只读）。\n- 找出双方数字在接口处是否真的对得上：一方是否把另一方的 peak 当成了 sustained、是否假定了对方并未承诺的带宽/时延、是否把目标 1000 的余量当成门槛 1050 的余量、单位或口径是否不一致。\n- 一方向另一方提出的需求（例如要求对方给出逐算子数字）若对方 claim 中没有回应，单独列一条 finding，relations 填 assume，并写明"未回应"。\n- 每条 finding 必须给出可核查反证（文件路径:行号），或者明确指出"这是未被证据支持的假设"。\n- 对不上且会改变门槛结论的标 blocker，余量不足或口径瑕疵标 gap，对得上标 ok。blocker 要从严：只有单独就能翻转 1050 门槛结论的才算。\n- 被标到本接口、实际不跨越本接口的 claim 写进 mislabeled_claims。\n\n硬性规则：\n- ${RULES}`,
-    { label: `pair:${g.key}`, phase: 'Interface pairs', schema: PAIR_SCHEMA, effort: 'medium' },
+    { label: `pair:${g.key}`, phase: 'Interface pairs', schema: PAIR_SCHEMA, effort: 'high' },
   )
 ))
 pairable.forEach((g, i) => { if (!pairRaw[i]) stageFailures.pair.push(g.key) })
