@@ -14,13 +14,19 @@
 
 | 阶段 | agent | 作用 |
 |---|---|---|
-| Probe | 11 个，按团队（HW-A/C/P、SW-A/C、MODEL-A/C/R、VV-A/C、ARCH-A） | 每个探针只回答一个窄问题，输出原子 claim（evidence 为 `path:line` 或 `UNVERIFIED`，带 `flip_evidence` 与 severity）。每个探针声明覆盖 `AGENTS.md` 中的哪些 ownership，脚本算出 `uncovered_responsibilities` |
+| Probe | 6 个，按团队（HW-A/P、SW-A、MODEL-A、VV-A、ARCH-A） | 每个探针只回答一个窄问题，输出原子 claim（evidence 为 `path:line` 或 `UNVERIFIED`，带 `flip_evidence` 与 severity）。每个探针声明覆盖 `AGENTS.md` 中的哪些 ownership，脚本算出 `uncovered_responsibilities` |
 | Team merge | 5 个 lead | 合并去重、从严重评 severity（只有单独能翻转 1050 或被 ADR 禁止的才算 blocker）。脚本统一编号为 `CLM-<TEAM>-NN`，与仓库工作项 `HW-*`/`MODEL-*` 等分开 |
 | Interface pairs | 每个有 ≥2 个团队 claim 的接口一个 | 6 个接口按声明双方配对（hw-sw-abi、workload-operator、k3-shape、sw-model-precision、ppa-gap、gate-governance），核对 peak/sustained、1000/1050 口径与未回应的需求 |
 | Adversarial | blocker × 3 视角，外加最多 6 条仅被接口判 blocker 的 claim | 视角为 arithmetic、evidence-chain、basis-consistency，默认判反驳。≥2 票反驳 killed，1 票 split，缺票 incomplete |
 | Council | 1 | 只吃 ledger。ledger 外的新结论必须放进 `new_items`，报告中只能以 PENDING 引用 |
 | Council recheck | new_items × 3 视角，必要时 1 个增补 | 回核 Council 新增项；有未存活项时 Council 出增补并修订 blocker 清单 |
 | Critic | 1 | 查未核验 claim、单边接口、被写成定论的假设、余量重复分配、下一轮派发清单 |
+
+### 阶段串接与 effort
+
+Probe 与 Team merge 合成**一条按团队串接的 pipeline**：每团队的探针并行跑完，该团队 lead 立即合并，不等其他团队。任一团队卡住不会阻塞其余团队，跑完的 agent 会写入 journal，中途被打断可用 `resumeFromRunId` 命中缓存。
+
+effort 分级：探针 / lead / 接口配对为 `medium`，对抗核验 / Council / Critic 为 `high`，增补为 `medium`。
 
 ### 护栏
 
