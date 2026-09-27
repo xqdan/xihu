@@ -5,6 +5,7 @@ export const meta = {
     { title: 'Probe', detail: '6 个窄探针，按团队串成 probe→lead 链，团队之间不设屏障' },
     { title: 'Team merge', detail: '5 个 lead 合并本团队 claim，脚本统一编号 CLM-*' },
     { title: 'Interface pairs', detail: '6 个接口按声明双方配对，缺边显式登记' },
+    { title: 'Premises', detail: '三个未回标系数 + 门槛本身：被推翻时结论往哪走' },
     { title: 'Adversarial', detail: 'blocker 全量核验，非 blocker 争议项按团队轮转取样' },
     { title: 'Council', detail: '只吃 ledger，新增项单列，单套验收线' },
     { title: 'Council recheck', detail: 'Council 新增项三视角回核，必要时出增补' },
@@ -297,6 +298,45 @@ pairable.forEach((g, i) => {
   for (const id of r.mislabeled_claims || []) mislabeled.push({ interface: g.key, claim_id: id })
 })
 
+// ---------- Phase 3.5: premises ----------
+// 结论建立在若干未回标的系数与门槛本身上。这一阶段不改写任何 claim，
+// 只回答"如果某个前提被推翻，结论往哪个方向走、走多少、还有没有能过门槛的区间"。
+phase('Premises')
+const PREMISE_SCHEMA = {
+  type: 'object',
+  properties: {
+    premises: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          premise_id: { type: 'string', description: '形如 PREM-01' },
+          premise: { type: 'string', description: '被当作给定的前提，写清它当前的取值与出处' },
+          held_by: { type: 'array', items: { type: 'string' }, description: '依赖它的 claim_id 列表' },
+          current_value: { type: 'string', description: '当前取值 + 单位 + 口径（1000 目标还是 1050 门槛）' },
+          if_weaker: { type: 'string', description: '这个前提比现在差时，门槛结论怎么变；给方向和量级' },
+          if_stronger: { type: 'string', description: '比现在好时怎么变；给方向和量级' },
+          flip_point: { type: 'string', description: '使结论翻转到达到/达不到门槛的临界取值；算不出写 UNVERIFIED 并说明缺什么' },
+          refutable_by: { type: 'string', description: '什么样的证据能推翻或坐实它（供应商数据表 / PHY 实测 / 综合结果 / 回归测试）' },
+          action: { type: 'string', description: '要不要去要这个证据；要的话谁去要、要什么' },
+          direction: { type: 'string', enum: ['premise_may_be_wrong', 'premise_holds', 'unknown'] },
+        },
+        required: ['premise_id', 'premise', 'held_by', 'current_value', 'if_weaker', 'if_stronger', 'flip_point', 'refutable_by', 'action', 'direction'],
+      },
+    },
+    threshold_question: { type: 'string', description: '门槛 1050 本身是不是问对了：它现在挡住的差距是真实能力差距，还是系数不确定性的产物' },
+    reachable_window: { type: 'string', description: '在所有前提都取有证据支持的取值时，可达 TPS/usr 的区间；写明是界还是点' },
+  },
+  required: ['premises', 'threshold_question', 'reachable_window'],
+}
+const premiseOut = await agent(
+  `你是敏感性分析 agent，任务是质疑本轮结论所依赖的**前提**，而不是复核结论本身。\n\n${TOPIC}\n\n本轮全部 claim（claim_id 原样引用）：\n${JSON.stringify(allClaims, null, 2)}\n\n本轮对抗核验结果：\n${JSON.stringify(adversarial.map((a) => ({ claim_id: a.claim_id, status: a.status })), null, 2)}\n\n任务：\n1. 列出被当作给定条件、但本身没有回标的系数与前提。至少覆盖：MC sustained 效率 0.7（无供应商实测）、UCIe 效率 0.8、engineeringMargin 1.17、PPA matrix density 3.2 TF/mm²、τ=1.15 µs、MoE 专家命中率。仓库里还有别的就一并列出。\n2. 对每个前提，用现有数字做敏感性：它比现在差/好时，1050 门槛结论往哪个方向走、大致走多少。算术必须写出步骤，不要只给结论。\n3. 对每个前提给出 flip_point：使它翻转到"达到门槛"的临界取值是多少——这个数才决定"我们是在追一个够得着的目标，还是在追一个系数假设"。算不出就写 UNVERIFIED 并说明缺哪个输入。\n4. 回答 threshold_question：结合 reachable_window，1050 这个门槛当前挡住的，是真实的能力差距，还是主要是系数不确定性。\n5. 你**不修改任何 claim**，也不新增 blocker；你的产出是敏感性结论和证据需求，供 Council 与 Critic 使用。\n\n只读，不要修改任何文件。\n硬性规则：\n- ${RULES}`,
+  { label: 'premises:sensitivity', phase: 'Premises', schema: PREMISE_SCHEMA, effort: 'high' },
+)
+const premises = premiseOut || { premises: [], threshold_question: 'PREMISES_FAILED', reachable_window: 'PREMISES_FAILED' }
+if (!premiseOut) stageFailures.premises = 1
+log(`前提敏感性：${(premises.premises || []).length} 条前提，其中 ${(premises.premises || []).filter((p) => p.direction === 'premise_may_be_wrong').length} 条可能站不住`)
+
 // ---------- Phase 4: adversarial ----------
 phase('Adversarial')
 const blockerHits = {}
@@ -346,6 +386,50 @@ const adversarial = selected.map((c) => {
 const tally = (arr, s) => arr.filter((a) => a.status === s).length
 log(`对抗核验：survived ${tally(adversarial, 'survived')}，split ${tally(adversarial, 'split')}，killed ${tally(adversarial, 'killed')}，incomplete ${tally(adversarial, 'incomplete')}`)
 
+// ---------- Phase 4.5: evidence requests ----------
+// blocker 的性质基本是"求证据"而不是"改代码"：要供应商数据表、PHY 实测、综合结果。
+// 把这些 flip_evidence 聚合成一张可派发的清单，这才是"补差距"这个动作的输入。
+phase('Evidence requests')
+const blockClaims = allClaims.filter((c) => c.severity === 'blocker')
+const arithHits = new Set(adversarial.filter((a) => a.status === 'killed').map((a) => a.claim_id))
+const evReqRaw = blockClaims.length
+  ? await agent(
+    `你是证据需求整理 agent。本轮 blocker 的翻转条件（flip_evidence）散落在各条 claim 上，请把它们聚合成一张可派发的"取证清单"。\n\n${TOPIC}\n\n本轮全部 blocker：\n${JSON.stringify(blockClaims, null, 2)}\n\n前提敏感性分析（含每条前提的 refutable_by 与 flip_point）：\n${JSON.stringify(premises, null, 2)}\n\n对抗核验中已 killed 的 blocker（这些不必再取证，直接标注即可）：\n${JSON.stringify(Array.from(arithHits))}\n\n任务：\n- 同一份证据能同时解决多条 blocker 的，合并成一条需求，claim_ids 列全，不要重复开单。\n- 每单必须写清：要什么数据（具体到字段/测试项）、找谁要（供应商/封装厂/实测/综合/仓库内）、拿到后哪个数字会变成什么、没有它结论卡在哪。\n- 按"没有它就无法冻结"排序，只把真正的关键路径标 critical=true。\n- 不给建议、不复述 claim，只出清单。\n\n只读，不要修改任何文件。硬性规则：\n- ${RULES}`,
+    {
+      label: 'evidence:requests',
+      phase: 'Evidence requests',
+      effort: 'medium',
+      schema: {
+        type: 'object',
+        properties: {
+          requests: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                request_id: { type: 'string', description: '形如 EVID-01' },
+                item: { type: 'string', description: '要什么，具体到字段或测试项' },
+                source: { type: 'string', description: '供应商 / 封装厂 / PHY 实测 / 综合结果 / 仓库内可补' },
+                who: { type: 'string', description: '建议的 owner 团队（hardware/software/model/vv/council）' },
+                claim_ids: { type: 'array', items: { type: 'string' } },
+                unblocks: { type: 'string', description: '拿到后哪个数字会变成什么' },
+                blocked_without: { type: 'string', description: '没有它，结论卡在哪一步' },
+                critical: { type: 'boolean' },
+              },
+              required: ['request_id', 'item', 'source', 'who', 'claim_ids', 'unblocks', 'blocked_without', 'critical'],
+            },
+          },
+          killed_blockers: { type: 'array', items: { type: 'string' }, description: '核验已 killed、无需取证的 blocker claim_id' },
+        },
+        required: ['requests', 'killed_blockers'],
+      },
+    },
+  )
+  : null
+const evidenceRequests = evReqRaw ? evReqRaw.requests || [] : []
+if (blockClaims.length && !evReqRaw) stageFailures.evidenceRequests = 1
+log(`取证清单：${evidenceRequests.length} 条需求，其中关键路径 ${evidenceRequests.filter((r) => r.critical).length} 条`)
+
 // ---------- Phase 5: council ----------
 phase('Council')
 const ledger = {
@@ -360,11 +444,13 @@ const ledger = {
   interface_verdicts: interfaceVerdicts,
   interface_findings: pairFindings,
   adversarial,
+  premises,
+  evidence_requests: evidenceRequests,
   unverified_contested: unverifiedContested.map((c) => ({ claim_id: c.claim_id, owner: c.owner, statement: c.statement, severity: c.severity })),
 }
 
 const councilOut = await agent(
-  `你是 Architecture Council，负责跨团队集成与 ADR。\n\n${TOPIC}\n\n下面是本轮全部机器可读输入（ledger）：\n${JSON.stringify(ledger, null, 2)}\n\n你的任务（写进 report）：\n1. 给出当前 P1 候选距离 1050 TPS/usr 冻结门槛的差距结论，并说明它建立在哪些证据上、哪些还是假设；若差距来自未在约束内重新搜索的外推，必须写明是上界/下界。\n2. 把差距逐项归因到 Hardware / Software / Model / V&V / Council 的具体项，每项给 owner 与可核查的交付指标。\n3. 出 ADR 要点草案（decision、status、consequences），明确哪些现在就能定、哪些必须等证据；涉及团队间 owner 争议（如 FP8 KV 精度归属）的，只能写成 ADR 待决项，不得直接裁决。\n4. 保留 dissent，不要强行统一；明确哪些项记为 blocker 而不是放行。\n\n必须显式处理的 ledger 字段：\n- absent_teams / uncovered_responsibilities / external_dependencies / stage_failures / unpaired_interfaces：逐项声明本轮缺了什么；缺席团队与未覆盖职责相关项标 MISSING_OWNER，仓库外依赖标 EXTERNAL_DEPENDENCY，不得用其他团队结论代填。\n- adversarial：status=killed 的不得作为结论依据；status=split 的只能作为"有争议"列出，写明反驳视角与反驳理由，不得根据单票收窄、改写或推翻原 claim；incomplete 视同未核验。\n- unverified_contested：以它们为依据的项必须标注"未经对抗核验"。\n- mislabeled_claims：说明路由错误是否影响了某个接口的结论。\n\n新增项规则：ledger 中不存在的结论、数字或 blocker，一律写进 new_items（item_id 用 CLM-NEW-NN），report 中只能以"CLM-NEW-NN（PENDING，待回核）"身份引用，不得作为冻结结论依据。它们会在你之后被独立回核。\n\nblocker 去重：同一根因的 blocker 只保留一条，其余写成"见 X"，不得重复计数。\n\n验收线规则：只能出**一套**验收线。要么给联合分配（各项之和不超过 1050 门槛的实际余量，并写明未计入的项），要么只给单项盈亏点并明确声明"单项验收线不能同时压线"。不得两套并列。\n\n治理约束：不得写入 PASS / D_GATE_PASSED 字面量；不得把软件纸面收益当已验证收益；不得把硬件 peak 当 sustained；不得把目标 1000 的余量当门槛 1050 的余量；K3 形状只能来自 teams/model/src/design_engine.js 的 preset。\n只读，不要修改任何文件。`,
+  `你是 Architecture Council，负责跨团队集成与 ADR。\n\n${TOPIC}\n\n下面是本轮全部机器可读输入（ledger）：\n${JSON.stringify(ledger, null, 2)}\n\n你的任务（写进 report）：\n1. 给出当前 P1 候选距离 1050 TPS/usr 冻结门槛的差距结论，并说明它建立在哪些证据上、哪些还是假设；若差距来自未在约束内重新搜索的外推，必须写明是上界/下界。\n2. 把差距逐项归因到 Hardware / Software / Model / V&V / Council 的具体项，每项给 owner 与可核查的交付指标。\n3. 出 ADR 要点草案（decision、status、consequences），明确哪些现在就能定、哪些必须等证据；涉及团队间 owner 争议（如 FP8 KV 精度归属）的，只能写成 ADR 待决项，不得直接裁决。\n4. 保留 dissent，不要强行统一；明确哪些项记为 blocker 而不是放行。\n\n必须显式处理的 ledger 字段：\n- absent_teams / uncovered_responsibilities / external_dependencies / stage_failures / unpaired_interfaces：逐项声明本轮缺了什么；缺席团队与未覆盖职责相关项标 MISSING_OWNER，仓库外依赖标 EXTERNAL_DEPENDENCY，不得用其他团队结论代填。\n- adversarial：status=killed 的不得作为结论依据；status=split 的只能作为"有争议"列出，写明反驳视角与反驳理由，不得根据单票收窄、改写或推翻原 claim；incomplete 视同未核验。\n- unverified_contested：以它们为依据的项必须标注"未经对抗核验"。\n- premises：每条前提的 direction=premise_may_be_wrong 时，必须说明依赖它的结论要不要降级；threshold_question 与 reachable_window 必须正面回答——如果 1050 当前挡住的差距主要是系数不确定性而不是能力差距，必须在 report 里明说，并给出需要回标的系数清单，不得只报差距数字。\n- evidence_requests：这是本轮的交付物之一，必须在 report 里以清单形式给出，标明关键路径项；report 的"下一步"只能由它和 next_actions 构成。\n- next_actions：每条必须带 owner、交付指标、依赖的 evidence_request（若有），可被直接派发。不得写"继续观察"这类无法验收的项。\n- mislabeled_claims：说明路由错误是否影响了某个接口的结论。\n\n新增项规则：ledger 中不存在的结论、数字或 blocker，一律写进 new_items（item_id 用 CLM-NEW-NN），report 中只能以"CLM-NEW-NN（PENDING，待回核）"身份引用，不得作为冻结结论依据。它们会在你之后被独立回核。\n\nblocker 去重：同一根因的 blocker 只保留一条，其余写成"见 X"，不得重复计数。\n\n验收线规则：只能出**一套**验收线。要么给联合分配（各项之和不超过 1050 门槛的实际余量，并写明未计入的项），要么只给单项盈亏点并明确声明"单项验收线不能同时压线"。不得两套并列。\n\n治理约束：不得写入 PASS / D_GATE_PASSED 字面量；不得把软件纸面收益当已验证收益；不得把硬件 peak 当 sustained；不得把目标 1000 的余量当门槛 1050 的余量；K3 形状只能来自 teams/model/src/design_engine.js 的 preset。\n只读，不要修改任何文件。`,
   { label: 'council:integration', phase: 'Council', schema: COUNCIL_SCHEMA, effort: 'high' },
 )
 const council = councilOut ? councilOut.report : 'COUNCIL_FAILED'
@@ -395,8 +481,17 @@ if (newItemVerdicts.some((v) => v.status !== 'survived')) {
 // ---------- Phase 7: critic ----------
 phase('Critic')
 const critic = await agent(
-  `你是 Completeness critic，唯一任务是找出集成报告和本轮流程**漏掉了什么**。\n\n${TOPIC}\n\n本轮 ledger：\n${JSON.stringify(ledger, null, 2)}\n\nCouncil 集成报告：\n${council}\n\nCouncil 新增项回核结果：\n${JSON.stringify(newItemVerdicts.map((v) => ({ item_id: v.item_id, statement: v.statement, status: v.status })), null, 2)}\n\nCouncil 增补：\n${addendum || '（无，新增项全部存活或没有新增项）'}\n\n请回答：\n1. 哪些 claim 从未被任何核验视角碰过？对照 claims 全集、interface_findings 的 claim_ids、adversarial 覆盖。\n2. 哪个接口没有配对成功或只有单边、哪些接口需求未被回应？\n3. 有没有哪条结论在报告里被写成了定论，但证据只是 flip_evidence 还没出现的假设？有没有 split 项被单票改写？\n4. 报告是否只有一套验收线？有没有把同一份余量分配给多条验收线、或混用 1000 与 1050 口径？\n5. uncovered_responsibilities 与 external_dependencies 是否被正确处理？\n6. 本轮没有跑到的角度是什么？\n7. 你的发现构成下一轮该派什么 agent 的清单。\n\n只读，不要修改任何文件。中文输出，直接给漏项清单，不要复述报告。`,
+  `你是 Completeness critic，唯一任务是找出集成报告和本轮流程**漏掉了什么**。\n\n${TOPIC}\n\n本轮 ledger：\n${JSON.stringify(ledger, null, 2)}\n\nCouncil 集成报告：\n${council}\n\nCouncil 新增项回核结果：\n${JSON.stringify(newItemVerdicts.map((v) => ({ item_id: v.item_id, statement: v.statement, status: v.status })), null, 2)}\n\nCouncil 增补：\n${addendum || '（无，新增项全部存活或没有新增项）'}\n\n请回答：\n1. 哪些 claim 从未被任何核验视角碰过？对照 claims 全集、interface_findings 的 claim_ids、adversarial 覆盖。\n2. 哪个接口没有配对成功或只有单边、哪些接口需求未被回应？\n3. 有没有哪条结论在报告里被写成了定论，但证据只是 flip_evidence 还没出现的假设？有没有 split 项被单票改写？\n4. 报告是否只有一套验收线？有没有把同一份余量分配给多条验收线、或混用 1000 与 1050 口径？\n5. uncovered_responsibilities 与 external_dependencies 是否被正确处理？\n6. premises 里 direction=premise_may_be_wrong 的前提，报告有没有如实降级结论？threshold_question 有没有被正面回答，还是绕开了？\n7. evidence_requests 与报告里的"下一步"对得上吗？有没有 report 里承诺了但清单里没有的取证，或清单里有而 report 没提的关键路径？是否有 blocker 没有任何取证单覆盖？\n8. 本轮没有跑到的角度是什么？\n9. 你的发现构成下一轮该派什么 agent 的清单。\n\n只读，不要修改任何文件。中文输出，直接给漏项清单，不要复述报告。`,
   { label: 'critic:gaps', phase: 'Critic', effort: 'high' },
 )
 
-return { leads, claims: allClaims, interfaceVerdicts, pairFindings, mislabeled, adversarial, unverifiedContested, uncoveredResponsibilities, stageFailures, absentTeams, unpairedInterfaces, council, newItemVerdicts, addendum, critic }
+// run_id 必须确定性：脚本里不能用 Date.now()/Math.random()，否则 resume 失效。
+// 用 claim 内容算一个短哈希，内容相同则 run_id 相同，跨轮对比才成立。
+const fingerprint = (s) => {
+  let h = 2166136261
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) }
+  return (h >>> 0).toString(16).padStart(8, '0')
+}
+const runId = 'k3rev-' + fingerprint(JSON.stringify({ c: allClaims.map((c) => [c.claim_id, c.statement, c.severity]), a: adversarial.map((a) => [a.claim_id, a.status]), p: (premises.premises || []).map((p) => [p.premise_id, p.direction]) }))
+
+return { runId, claims_hash: runId.slice(6), leads, claims: allClaims, interfaceVerdicts, pairFindings, mislabeled, adversarial, premises, evidenceRequests, unverifiedContested, uncoveredResponsibilities, stageFailures, absentTeams, unpairedInterfaces, council, newItemVerdicts, addendum, critic }

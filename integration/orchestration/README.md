@@ -17,7 +17,9 @@
 | Probe | 6 个，按团队（HW-A/P、SW-A、MODEL-A、VV-A、ARCH-A） | 每个探针只回答一个窄问题，输出原子 claim（evidence 为 `path:line` 或 `UNVERIFIED`，带 `flip_evidence` 与 severity）。每个探针声明覆盖 `AGENTS.md` 中的哪些 ownership，脚本算出 `uncovered_responsibilities` |
 | Team merge | 5 个 lead | 合并去重、从严重评 severity（只有单独能翻转 1050 或被 ADR 禁止的才算 blocker）。脚本统一编号为 `CLM-<TEAM>-NN`，与仓库工作项 `HW-*`/`MODEL-*` 等分开 |
 | Interface pairs | 每个有 ≥2 个团队 claim 的接口一个 | 6 个接口按声明双方配对（hw-sw-abi、workload-operator、k3-shape、sw-model-precision、ppa-gap、gate-governance），核对 peak/sustained、1000/1050 口径与未回应的需求 |
+| Premises | 1 | 质疑结论依赖的前提本身：MC 效率 0.7、UCIe 0.8、margin 1.17、matrix density 3.2、τ=1.15 等。每条给双向敏感度、翻转临界值和取证方向，并正面回答"1050 挡住的差距主要是能力差距还是系数不确定性" |
 | Adversarial | blocker × 3 视角，外加最多 6 条仅被接口判 blocker 的 claim | 视角为 arithmetic、evidence-chain、basis-consistency，默认判反驳。≥2 票反驳 killed，1 票 split，缺票 incomplete |
+| Evidence requests | 1 | 把各条 blocker 的 `flip_evidence` 聚合成可派发的取证清单（要什么、找谁要、拿到后哪个数字变、没有它卡在哪），按关键路径排序 |
 | Council | 1 | 只吃 ledger。ledger 外的新结论必须放进 `new_items`，报告中只能以 PENDING 引用 |
 | Council recheck | new_items × 3 视角，必要时 1 个增补 | 回核 Council 新增项；有未存活项时 Council 出增补并修订 blocker 清单 |
 | Critic | 1 | 查未核验 claim、单边接口、被写成定论的假设、余量重复分配、下一轮派发清单 |
