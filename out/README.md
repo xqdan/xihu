@@ -13,6 +13,7 @@ Everything in this directory is written by a script in `integration/pipelines/` 
 | `dashboard/` | Global dashboard | `generate_global_dashboard.js` |
 | `rdma/` | K3 Final Tuning search results and report (the published point) | `run_search.js` |
 | `agents/` | Agent organization detail and HTML | `generate_agent_org_*.js` |
+| `reviews/` | Multi-team review ledger per run (`<runId>.json`) plus `latest.json`; written from the return value of the orchestration workflow, with a diff against the previous run | `generate_review_ledger.js` |
 
 One file is only partly generated: `direction/directional_workload_baseline.json` is the Stage A workload baseline of 2026-09-21; `sync_baseline_spec.js` rewrites only its K3 calibration block, the other fields are maintained by hand (explain the change in the PR).
 

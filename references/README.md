@@ -10,3 +10,9 @@
 
 如需在本地使用原始文件，请放入 `references/private/`，不要提交到公共 GitHub
 仓库。设计文档必须记录版本、来源和允许使用的假设，而不是依赖本机绝对路径。
+
+## `sota/`
+
+领域 SOTA/经典方案知识库，由 `integration/orchestration/k3_agent_learning.workflow.js` 一次性生成，供评审探针判断"本项目的假设是否偏离行业常规"。见 [`sota/README.md`](sota/README.md)。
+
+与上面的资料清单不同，`sota/` 的条目**不是证据**：没有仓库内出处，不得作为 claim 的 evidence，也不得用来改写任何基线数字。
