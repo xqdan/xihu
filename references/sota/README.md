@@ -22,7 +22,7 @@
 
 ## 文件
 
-7 个学习单元中的 4 个已落盘（各 `as_of: 2026-01`），其余 3 个单元在首次运行时被中断，尚无 `result`，
+7 个学习单元中的 5 个已落盘（各 `as_of: 2026-01`），其余 2 个单元在首次运行时被中断，尚无 `result`，
 待用 `args.units` 单独重跑。
 
 | 文件 | 状态 | 覆盖 |
@@ -31,7 +31,7 @@
 | `interconnect-collective.md` | ✅ 17 卡 | 互联、Die-to-Die 与集合通信：四层记账、UCIe flit 效率、MPE 50% 上限、ring vs hierarchical allreduce、overlap 失效条件 |
 | `compute-core.md` | ✅ 11 卡 | AI Core、阵列利用率与片上存储：M=64 小 tile 折减、FP8 WGMMA 布局约束、roofline 与 ridge point、TPU 阵列尺寸 |
 | `model-workload.md` | ✅ 14 卡 | MoE 推理的模型侧参数与量化：专家命中率 0.488→0.833、MLA 字节账、FP8/FP4 精度-吞吐权衡、DSA 稀疏化 |
-| `memory-subsystem.md` | ⏳ 待跑 | 内存子系统与 MC 效率：sustained 折减、命令混合、QoS |
+| `memory-subsystem.md` | ✅ 14 卡 | 内存子系统与 MC 效率：sustained 折减的分层分母、命令混合、QoS |
 | `evidence-governance.md` | ⏳ 待跑 | 门槛设定、余量与证据分级方法学 |
 | `package-ppa.md` | ⏳ 待跑 | 封装、面积、功耗与热 |
 
