@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "matrix-vector-design-space-v0.1",
+  "owner": "HW-02 AI-Core (co-sign SW-03 Kernel Optimization)",
+  "status": "MODEL",
+  "document": "teams/hardware/docs/02_AI_CORE.md#25-matrixvector-配比hw-02-决策",
+  "scope": "Every alternative HW-02 considers for the AI Core matrix:vector balance lives here. integration/detailed/matrix_vector_search.js enumerates the product of the searched dimensions, scores every candidate on the per-kernel hiding bounds and the K3 detailed replay, and writes only the winner to out/detailed/matrix_vector_design.json. The per-option comparison is quoted in the document, section 2.5.",
+  "evidence": "Vector op counts, TECH.vectorUtil, TECH.unpackParamsPerLaneCycle and the area overheads are ASSUMPTIONs (B-006, O-006, O-012). Areas are the SF4 die areas of k3_physical_basis.resize(A.physical(x)) plus the option overheads.",
+  "ratioConvention": "BF16 dense matrix peak : vector peak (lanes x 2 ops x f) = MACs : lanes, per die or per core class",
+  "hiddenCriterion": "per kernel: vector lane-cycles / lanes <= matrix FLOPs / (2 x MACs x matrixUtil x fill)",
+  "requirements": {
+    "models": ["Kimi K3", "GLM-5.2", "DeepSeek-V4-Pro"],
+    "modelsReason": "the repository serves three models; the K3-only requirement is shown as a variant in the document",
+    "hiddenCoreClasses": ["H"],
+    "hiddenReason": "every H-core kernel (attention, DSA indexer, KDA state) of the required models must hide its vector work under its matrix work. The L-core GEMV unpack at B=1 has a bound of about 3:1 (about 666 lanes per L core); it is reported, not required, and its time is charged in the K3 system replay",
+    "tpsTolerance": 0.001,
+    "tpsReason": "the K3 system replay keeps the published TPS/usr within 0.1%"
+  },
+  "vectorOps": {
+    "indexerOpsPerScore": 3,
+    "topkOpsPerToken": 8,
+    "kdaOpsPerStateElement": 2,
+    "kdaMatrixFlopsPerStateElement": 7,
+    "evidence": "ASSUMPTION (O-006): indexer ReLU + weighted FMA across index heads; threshold/radix top-k select over the scored context; KDA per-channel decay + delta update; KDA matrix FLOPs as k3_operator_sram_sim (7 x B x heads x 128 x 128). Softmax ops per score belong to the expUnit dimension"
+  },
+  "constraints": [
+    "every H-core kernel of the required models hides its vector work (kernel bound >= core MACs:lanes)",
+    "K3 detailed replay at the published point with only vectorLanes (and, for native input, the unpack) changed keeps TPS/usr within tpsTolerance of the published point",
+    "the die stays within its area and power limits (O.evaluate feasibility)"
+  ],
+  "objective": [
+    "feasible first",
+    "least die area including the option overheads",
+    "least die power"
+  ],
+  "dimensions": {
+    "vectorLanes": {
+      "question": "Vector lanes per core (the model has one vectorLanes for L and H cores)",
+      "options": {
+        "256": {"lanes": 256},
+        "320": {"lanes": 320},
+        "384": {"lanes": 384},
+        "448": {"lanes": 448},
+        "512": {"lanes": 512, "evidence": "P1 published point"},
+        "576": {"lanes": 576},
+        "640": {"lanes": 640},
+        "704": {"lanes": 704},
+        "768": {"lanes": 768},
+        "832": {"lanes": 832},
+        "896": {"lanes": 896},
+        "960": {"lanes": 960},
+        "1024": {"lanes": 1024}
+      }
+    },
+    "lowPrecisionInput": {
+      "question": "Where FP8/MXFP4 weights, FP8 KV and FP8 index keys are turned into tensor operands",
+      "options": {
+        "vectorUnpack": {
+          "native": false,
+          "matrixAreaOverhead": 0,
+          "evidence": "P1 published point: BF16-only tensor engines; every sub-BF16 operand is dequantized on the vector lanes at TECH.unpackParamsPerLaneCycle"
+        },
+        "nativeTensor": {
+          "native": true,
+          "matrixAreaOverhead": 0.08,
+          "evidence": "ASSUMPTION (O-012): the tensor engines accept FP8 E4M3 and MXFP4 with block scales directly, so no dequant runs on the vector lanes; the multi-format MAC array costs 8% of the matrix area (multi-precision MAC designs are commonly quoted at 5-15% over a single-format MAC; knowledge, not evidence for this array). The document reports the break-even overhead"
+        }
+      }
+    },
+    "expUnit": {
+      "question": "How the softmax exp is computed on the vector lanes",
+      "options": {
+        "sfu": {
+          "softmaxOpsPerScore": 8,
+          "vectorAreaOverhead": 0.1,
+          "evidence": "ASSUMPTION (O-006): an exp/reciprocal special-function unit shared by the lanes; softmax costs max, sub, exp, sum, rescale = 8 ops per score (k3_operator_sram_sim: 8 x B x nh x len); the SFU costs 10% of the vector area (TECH.vectorLaneArea is taken as ALU only)"
+        },
+        "polynomial": {
+          "softmaxOpsPerScore": 18,
+          "vectorAreaOverhead": 0,
+          "evidence": "ASSUMPTION (O-006): exp as a range reduction plus polynomial on the ALU lanes, 18 ops per score; no SFU area"
+        }
+      }
+    }
+  },
+  "ruled": {
+    "lanesPerCoreClass": {
+      "chosen": "one lane count for L and H cores",
+      "alternatives": ["separate L and H lane counts"],
+      "reason": "A.physical() and mappedPlan() have a single vectorLanes, so a per-class split cannot be replayed on the detailed model yet. L cores need about 4:1 for B=1 GEMV unpack and H cores 44-100:1, so a split would save area; revisit after the model is extended"
+    },
+    "tmaDecode": {
+      "chosen": "decode in the tensor engine or on the vector lanes",
+      "alternatives": ["decoder in the TMA shared-to-local path"],
+      "reason": "not modeled: decoding in TMA writes BF16 into local SRAM, 2-4x the bytes of FP8/MXFP4, and the TMA/local write-port model (O-007) does not charge it yet"
+    },
+    "batch": {
+      "chosen": "B=1 decode",
+      "alternatives": ["B>1 (MTP or batching)"],
+      "reason": "the published point is B=1 decode; the GEMV bounds for B up to 16 are reported as sensitivity"
+    }
+  }
+}

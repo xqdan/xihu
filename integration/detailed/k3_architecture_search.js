@@ -75,7 +75,7 @@ function physical(x){
 //   the FP8 latent in-kernel on the H-core vector lanes (same rate as weight
 //   unpack), overlapped with the BF16 matrix work. That vector time is taken out
 //   of the budget the fused online softmax may hide under QK.
-const SIM_KEYS=['countBasis','commOverlap','tmaLane','kvPrefetch','dmaPreempt','kvCache'];
+const SIM_KEYS=['countBasis','commOverlap','tmaLane','kvPrefetch','dmaPreempt','kvCache','softmaxOpsPerScore'];
 const EPILOGUE_OPS=/^(Attention RMSNorm|MoE RMSNorm|SiLU x up|Shared SiLU x up|Expert weighted sum|Dispatch local pack|RoPE|KV append source)$/;
 function mappedPlan(x,batch,p=physical(x),basis){
  const b0=typeof basis==='string'?{countBasis:basis}:(basis||{});

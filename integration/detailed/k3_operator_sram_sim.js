@@ -49,11 +49,15 @@ const DEFAULT={tp:32,batch:8,context:1048576,depth:2,prediction:.8,union:'worst'
  // part kept in BF16, 656 bytes per token. Compute stays BF16: the latent is
  // dequantized in the QK and PV kernels (jobs carry the element count as
  // `dequant`; the mapper books it on the vector lanes).
- kvCache:'bf16'};
+ kvCache:'bf16',
+ // Vector ops per attention score in the online softmax (max, sub, exp, sum,
+ // rescale with an exp SFU). HW-02's expUnit option sets it (18 for a
+ // polynomial exp on the ALU lanes; teams/hardware/inputs/matrix_vector_design_space.json).
+ softmaxOpsPerScore:8};
 function build(input={}){
  const c={...DEFAULT,...input},m=E.deriveModel(E.MODEL_PRESETS.kimiK3),s=m.spec;
  if(c.tp!==32||!Number.isInteger(c.batch)||c.batch<1||!Number.isInteger(c.depth)||c.depth<0||c.depth>4||c.prediction<0||c.prediction>1||c.context%c.tp||!['worst','expected'].includes(c.union))throw Error('Invalid input / only TP32 mapped');
- for(const k of ['lTflops','hTflops','vectorTops','memTBs','fabricTBs','sramReadTBs','sramWriteTBs','linkGBs','weightTileMiB','kvTile','headTile','lUtil','hUtil','vectorUtil','expertFill','unpackTparams','margin','projectionScale'])if(!Number.isFinite(c[k])||c[k]<=0)throw Error('Invalid '+k);
+ for(const k of ['lTflops','hTflops','vectorTops','memTBs','fabricTBs','sramReadTBs','sramWriteTBs','linkGBs','weightTileMiB','kvTile','headTile','lUtil','hUtil','vectorUtil','expertFill','unpackTparams','margin','projectionScale','softmaxOpsPerScore'])if(!Number.isFinite(c[k])||c[k]<=0)throw Error('Invalid '+k);
  if(!['reference-393','repo-510'].includes(c.countBasis))throw Error('Invalid countBasis '+c.countBasis);
  if(typeof c.commOverlap!=='boolean')throw Error('Invalid commOverlap');
  if(typeof c.tmaLane!=='boolean')throw Error('Invalid tmaLane');
@@ -150,7 +154,7 @@ function build(input={}){
      const nh=Math.min(c.headTile,s.attention.heads-h),score=B*nh*len*4;
      const info=`context ${pos}..${pos+len-1}; heads ${h}..${h+nh-1}`;
      op('QK (absorbed MLA)',{unit:'H',flops:2*B*nh*len*qDim,read:jobs[kid].bytes+B*nh*qDim*2,write:score,inputs:[kid],arena:'soft',detail:info});
-     op('Online softmax',{flops:8*B*nh*len,read:score,write:score,inputs:[kid],arena:'soft',detail:info});
+     op('Online softmax',{flops:c.softmaxOpsPerScore*B*nh*len,read:score,write:score,inputs:[kid],arena:'soft',detail:info});
      op('PV + rescale accumulation',{unit:'H',flops:2*B*nh*len*vDim+4*B*nh*vDim,read:jobs[kid].bytes+score,write:B*nh*vDim*4,inputs:[kid],arena:'soft',detail:info});
     }
    }
