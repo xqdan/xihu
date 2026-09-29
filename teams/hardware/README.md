@@ -13,7 +13,7 @@
 | HW-04 MC/Memory Controller | MC320/MC640、带宽、容量、QoS | memory traffic、queue model | MC spec、sustained bandwidth、capacity | raw 不得当 effective；MC640 是 stretch |
 | HW-05 NoC/Die-to-Die | NoC、collective fabric、packet/credit/hop、拓扑 | TP/CP/EP traffic、package floorplan | topology、latency/bandwidth envelope | local/cross-package 分离；防 deadlock |
 | HW-06 PPA/RAS | power、thermal、IR drop、DVFS、故障降级 | activity/event traces、floorplan | PPA/RAS report | average/P95/peak 分离；不能冒充实测 |
-| HW-07 Comm-Core | 集合通信触发、WQE 模板下发、接收 commit/notify 计数、ACK 合并、超时/poison；内存语义（PUT/PUT_SIGNAL/GET/远端原子、全局地址、内存序） | collective graph（SW-05）、mailbox 语义（[07](docs/07_COLLECTIVE_RDMA.md)）、`out/detailed/comm_core_budget.json`（`npm run commcore:budget`） | Comm Core 规格（[10](docs/10_COMM_CORE.md)）、控制路径预算、τ 自底向上推导的控制路径一项（O-018） | 固件不在每次集合通信的关键路径上；AI Core 不发 WQE；slot generation 与 mailbox epoch 一致；cycle 数在回标前都是 ASSUMPTION |
+| HW-07 Comm-Core | 集合通信触发、WQE 模板下发、接收 commit/notify 计数、ACK 合并、超时/poison；内存语义（PUT/PUT_SIGNAL/GET/远端原子、全局地址、内存序） | collective graph（SW-05）、mailbox 语义（[07](docs/07_COLLECTIVE_RDMA.md)）、设计空间 `inputs/comm_core_design_space.json`（全部备选方案与 cycle/面积假设） | Comm Core 规格（[10](docs/10_COMM_CORE.md)，第 7 节列出各备选方案的落选原因）、搜索选出的最终方案 `out/detailed/comm_core_design.json`（`npm run commcore:search`）、τ 自底向上推导的控制路径一项（O-018） | 固件不在每次集合通信的关键路径上；AI Core 不发 WQE；slot generation 与 mailbox epoch 一致；cycle 数在回标前都是 ASSUMPTION |
 
 ## Directory
 

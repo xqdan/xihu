@@ -12,7 +12,7 @@
     "search:final": "node integration/pipelines/run_search.js final",
     "baseline:sync": "node integration/pipelines/sync_baseline_spec.js",
     "aicore:balance": "node integration/pipelines/generate_matrix_vector_balance.js",
-    "commcore:budget": "node integration/pipelines/generate_comm_core_budget.js",
+    "commcore:search": "node integration/pipelines/generate_comm_core_design.js",
     "dashboard": "node integration/pipelines/generate_direction_feedback.js && node integration/pipelines/generate_global_dashboard.js",
     "workload:planning": "node integration/pipelines/generate_planning_operator_workload.js",
     "contracts": "node integration/pipelines/generate_team_contracts.js",

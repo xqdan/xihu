@@ -155,7 +155,7 @@ sequenceDiagram
 | DMA / MC | bytes、busy、latency、replay、抢占次数 | 每 MC | DMA busy 775.30 µs、wait 22.35 µs |
 | Collective | 次数、phase、request、协议时长、τ 补足、timeout | 每类 | `memoryTransport`、`cardLocal`、`tpReduce`、`tauFloor` |
 | Mailbox | occupancy、partial-ready 提前量、generation 丢弃 | 每 slot | — |
-| Comm Core | 触发到 doorbell 时延、WQE 数、commit 计数、ACK 合并、slot 冻结 | 每 Die | 控制路径（`comm_core_budget.json`） |
+| Comm Core | 触发到 doorbell 时延、WQE 数、commit 计数、ACK 合并、slot 冻结 | 每 Die | 控制路径（`comm_core_design.json`） |
 | Launch | descriptor 数、doorbell、launch stall | 每 Die | `launch` |
 | 重叠 | shared 专家与集合通信重叠时长 | 每层 | `commOverlap` |
 | 物理 | Core/Die 温度、频率、功率 | 每 Die | 功耗 286.22 W |

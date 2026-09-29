@@ -1,0 +1,356 @@
+{
+  "status": "MODEL (search over the HW-07 design space on the detailed protocol model; not FROZEN, does not change the published point)",
+  "owner": "HW-07 Comm-Core (co-sign SW-05 Collective/Comm-Compute, SW-01 Runtime)",
+  "document": "teams/hardware/docs/10_COMM_CORE.md",
+  "designSpace": {
+    "file": "teams/hardware/inputs/comm_core_design_space.json",
+    "sha256": "cc324fd56995ff3e3d7b68ab5e57b0c804359cf0b0a014b88bb90b78d232a9c2",
+    "dimensions": [
+      "placement",
+      "trigger",
+      "wqeGeneration",
+      "txLanes",
+      "doorbell",
+      "commitCounting",
+      "signal",
+      "graphStore",
+      "localSramKiB",
+      "managementCores"
+    ],
+    "candidates": 216000,
+    "valid": 45900,
+    "feasible": 6607,
+    "constraints": [
+      "every collective class: protocol time + control path <= OPT.tauUs (spec tau), so the published point is unchanged; this also keeps the raw latency within the raw budget because TPS does not rise with tau",
+      "graph storage fits the local SRAM with graphBuffers copies when the graph is stored locally",
+      "Comm Core busy time per token <= maxUtilization x raw latency"
+    ],
+    "objective": [
+      "feasible first",
+      "least AI Core time per token spent on communication control",
+      "largest spec-tau slack of the slowest class (margin for the O-018 cycle calibration)",
+      "least area"
+    ],
+    "note": "only the winning design is written here; the alternatives stay in the design space and in the document, section 7"
+  },
+  "hardware": {
+    "x": {
+      "nL": 8,
+      "nH": 4,
+      "lRows": 1,
+      "lCols": 256,
+      "lEngines": 8,
+      "hRows": 48,
+      "hCols": 128,
+      "hEngines": 5,
+      "ghz": 1,
+      "vectorLanes": 512,
+      "lMiB": 1,
+      "hMiB": 4,
+      "lBanks": 64,
+      "hBanks": 64,
+      "bankBytes": 64,
+      "sharedMiB": 16,
+      "sharedSlices": 16,
+      "tmaEngines": 4,
+      "tmaBytes": 512,
+      "nocBytes": 256,
+      "nocLanes": 4,
+      "reduceLanes": 4096,
+      "ucieLanes": 128,
+      "ucieGbps": 64,
+      "mcGBs": 640,
+      "rdmaLanes": 16,
+      "weightTileMiB": 8,
+      "kvTile": 32768,
+      "headTile": 96,
+      "depth": 4,
+      "windowFraction": 1
+    },
+    "ghz": 1,
+    "meshSide": 6,
+    "routerCyclesPerHop": 2
+  },
+  "published": {
+    "tpsPerUser": 1101.771070241925,
+    "rawLatencyUs": 775.7517671190814,
+    "rawBudgetUs": 854.7008547008547,
+    "specTauUs": 1.15,
+    "collectivesPerToken": 393
+  },
+  "design": {
+    "placement": {
+      "option": "spare23",
+      "xy": [
+        2,
+        3
+      ],
+      "evidence": "spare south of the Reduce engine, centre of the mesh"
+    },
+    "trigger": {
+      "option": "counterCompare",
+      "cycles": 2,
+      "areaMm2": 0.002,
+      "evidence": "hardware completion counters fed by the Core scoreboards over the Control NoC; compare with the patch-table threshold (MTIA 300 device-triggered collective, wait-on-value)"
+    },
+    "wqeGeneration": {
+      "option": "templatePatch",
+      "cyclesPerWqe": 2,
+      "storage": "template",
+      "usesLanes": true,
+      "laneAreaMm2": 0.002,
+      "evidence": "precompiled WQE templates in the collective graph, patched per epoch (MTIA 300 Message Engine graph)"
+    },
+    "txLanes": {
+      "option": "2",
+      "lanes": 2
+    },
+    "doorbell": {
+      "option": "directPush",
+      "cycles": 2,
+      "areaMm2": 0.003,
+      "evidence": "WQE written with the doorbell into an on-NIC queue (MTIA Express Doorbell); needs a NIC-side WQE buffer"
+    },
+    "commitCounting": {
+      "option": "hwCounters",
+      "cycles": 2,
+      "areaMm2": 0.003,
+      "evidence": "CC-RX hardware commit counters per slot for two epochs; READY notify and reduce WQE on the last commit"
+    },
+    "signal": {
+      "option": "putWithSignal",
+      "evidence": "the 16 B flag rides at the tail of the data packet and is applied as an atomic add after the data is visible: the protocol model as published"
+    },
+    "graphStore": {
+      "option": "localSram",
+      "evidence": "Comm Core SRAM, no fetch on the critical path"
+    },
+    "localSramKiB": {
+      "option": "64",
+      "kib": 64
+    },
+    "managementCores": {
+      "option": "1",
+      "count": 1
+    }
+  },
+  "ruled": {
+    "instances": {
+      "chosen": "one per die",
+      "reason": "the simulator keeps one collective in flight per die and the chosen design is busy for a few percent of the token; one per package would add a die-to-die hop to every trigger"
+    },
+    "txRxEngines": {
+      "chosen": "separate TX and RX state machines",
+      "reason": "inbound commits must not queue behind WQE generation of the next collective"
+    },
+    "dataSemantics": {
+      "chosen": "memory semantics (one-sided put/get/atomic on global addresses)",
+      "reason": "send/recv needs a posted receive buffer and tag matching per message; slots are reserved per epoch instead"
+    },
+    "aiCoreRemoteAccess": {
+      "chosen": "posted store/atomic and FENCE only",
+      "reason": "a remote load stalls the Core for at least one round trip (remoteLoadMinUs in the output); B=1 decode keeps it off the critical path"
+    },
+    "addressing": {
+      "chosen": "symmetric global address (rank, die, region, offset) with protection key and generation",
+      "reason": "templates store offsets only and stay card-independent"
+    }
+  },
+  "controlPath": {
+    "floorplan": {
+      "xy": [
+        2,
+        3
+      ],
+      "hopsToFarthestCore": 4,
+      "hopsToGateway": 4,
+      "hopsToReduce": 1,
+      "hopsToNearestShared": 1
+    },
+    "classes": [
+      {
+        "name": "LSE merge / output reduce-scatter",
+        "count": 24,
+        "requests": 93,
+        "activeNICs": 3,
+        "reduce": true,
+        "protocolUs": 0.9784756753663004,
+        "steps": {
+          "trigger": 0.01,
+          "fetch": 0,
+          "dispatch": 0.002,
+          "doorbell": 0.01,
+          "completion": 0.02
+        },
+        "controlUs": 0.042,
+        "latencyUs": 1.0204756753663005,
+        "slackUs": 0.12952432463369948
+      },
+      {
+        "name": "Attention output all-reduce",
+        "count": 93,
+        "requests": 21,
+        "activeNICs": 1,
+        "reduce": true,
+        "protocolUs": 0.7688841575091576,
+        "steps": {
+          "trigger": 0.01,
+          "fetch": 0,
+          "dispatch": 0.002,
+          "doorbell": 0.01,
+          "completion": 0.02
+        },
+        "controlUs": 0.042,
+        "latencyUs": 0.8108841575091577,
+        "slackUs": 0.3391158424908423
+      },
+      {
+        "name": "Wdown + Router all-gather",
+        "count": 92,
+        "requests": 31,
+        "activeNICs": 1,
+        "reduce": false,
+        "protocolUs": 0.4314335508241759,
+        "steps": {
+          "trigger": 0.01,
+          "fetch": 0,
+          "dispatch": 0.002,
+          "doorbell": 0.01,
+          "completion": 0.018
+        },
+        "controlUs": 0.04,
+        "latencyUs": 0.4714335508241759,
+        "slackUs": 0.678566449175824
+      },
+      {
+        "name": "Routed latent merge",
+        "count": 92,
+        "requests": 21,
+        "activeNICs": 1,
+        "reduce": true,
+        "protocolUs": 0.690584935897436,
+        "steps": {
+          "trigger": 0.01,
+          "fetch": 0,
+          "dispatch": 0.002,
+          "doorbell": 0.01,
+          "completion": 0.02
+        },
+        "controlUs": 0.042,
+        "latencyUs": 0.732584935897436,
+        "slackUs": 0.41741506410256396
+      },
+      {
+        "name": "Wup + Shared output all-reduce",
+        "count": 92,
+        "requests": 21,
+        "activeNICs": 1,
+        "reduce": true,
+        "protocolUs": 0.7688841575091576,
+        "steps": {
+          "trigger": 0.01,
+          "fetch": 0,
+          "dispatch": 0.002,
+          "doorbell": 0.01,
+          "completion": 0.02
+        },
+        "controlUs": 0.042,
+        "latencyUs": 0.8108841575091577,
+        "slackUs": 0.3391158424908423
+      }
+    ],
+    "slowest": {
+      "name": "LSE merge / output reduce-scatter",
+      "latencyUs": 1.0204756753663005
+    },
+    "specSlackUs": 0.12952432463369948,
+    "firmwareOnCriticalPath": false
+  },
+  "evaluation": {
+    "aiCoreUsPerToken": 0,
+    "areaMm2": 0.10388586545729403,
+    "area": {
+      "trigger": 0.002,
+      "lanes": 0.004,
+      "doorbell": 0.003,
+      "commitCounting": 0.003,
+      "sram": 0.06188586545729403,
+      "managementCores": 0.03
+    },
+    "withSpecFloor": {
+      "feasible": true,
+      "tpsPerUser": 1101.771070241925,
+      "rawLatencyUs": 775.7517671190814,
+      "commUs": 451.94999999999703
+    },
+    "bottomUp": {
+      "feasible": true,
+      "tpsPerUser": 1104.7796405629188,
+      "rawLatencyUs": 773.639215749268,
+      "commUs": 285.27468612637415
+    },
+    "controlUsWithinRawBudget": 0.67040509466824,
+    "tauSweep": [
+      {
+        "tauUs": 1,
+        "feasible": true,
+        "tpsPerUser": 1101.7921567815936,
+        "rawLatencyUs": 775.7369204710001,
+        "commUs": 393
+      },
+      {
+        "tauUs": 1.15,
+        "feasible": true,
+        "tpsPerUser": 1101.771070241925,
+        "rawLatencyUs": 775.7517671190814,
+        "commUs": 451.94999999999703
+      },
+      {
+        "tauUs": 1.35,
+        "feasible": true,
+        "tpsPerUser": 1002.1949164546669,
+        "rawLatencyUs": 852.8289663695537,
+        "commUs": 530.5500000000038
+      },
+      {
+        "tauUs": 1.5,
+        "feasible": true,
+        "tpsPerUser": 843.4796262348767,
+        "rawLatencyUs": 1013.3034967496102,
+        "commUs": 589.5
+      },
+      {
+        "tauUs": 2,
+        "feasible": true,
+        "tpsPerUser": 703.8049074624951,
+        "rawLatencyUs": 1214.4002487598466,
+        "commUs": 786
+      },
+      {
+        "tauUs": 3,
+        "feasible": true,
+        "tpsPerUser": 531.7287062511501,
+        "rawLatencyUs": 1607.4002487598552,
+        "commUs": 1179
+      }
+    ]
+  },
+  "load": {
+    "collectivesPerToken": 393,
+    "wqesPerToken": 10901,
+    "wireBytesPerToken": 17683392,
+    "busyUsPerToken": 12.473,
+    "utilization": 0.01607859695417921,
+    "graphBytes": 30224,
+    "graphStoredLocally": true,
+    "localSramKiB": 64,
+    "graphKiB": 29.515625,
+    "sramMm2": 0.06188586545729403
+  },
+  "memorySemantics": {
+    "signal": "putWithSignal",
+    "aiCoreRemoteAccess": "posted store/atomic and FENCE only",
+    "remoteLoadMinUs": 0.124
+  },
+  "regenerate": "node integration/pipelines/generate_comm_core_design.js (npm run commcore:search); enforced by tests/regression/test_comm_core_design.js"
+}

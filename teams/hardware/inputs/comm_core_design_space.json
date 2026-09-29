@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "comm-core-design-space-v0.1",
+  "owner": "HW-07 Comm-Core (co-sign SW-05 Collective/Comm-Compute, SW-01 Runtime)",
+  "status": "PROPOSED",
+  "document": "teams/hardware/docs/10_COMM_CORE.md",
+  "scope": "Every alternative HW-07 considers for the collective control path lives here. integration/detailed/comm_core_search.js enumerates the product of the searched dimensions, drops invalid combinations, scores the rest on the detailed protocol model and writes only the winner to out/detailed/comm_core_design.json. The per-option comparison is quoted in the document, section 7.",
+  "evidence": "Cycle counts and areas are ASSUMPTIONs (O-018) at the die clock and the N4 reference process until RTL or a cycle model calibrates them; the MTIA figures are measured on a different chip and are order-of-magnitude references only.",
+  "floorplan": {
+    "source": "teams/hardware/docs/05_ON_DIE_NOC.md section 2 (x, y); control packets cost TECH.routerCycles per Manhattan hop",
+    "gateway": [0, 5],
+    "reduce": [2, 2],
+    "cores": {"L0": [2, 0], "L1": [3, 0], "H0": [1, 1], "H1": [4, 1], "L2": [0, 2], "L3": [5, 2], "L4": [0, 3], "L5": [5, 3], "H2": [1, 4], "H3": [4, 4], "L6": [2, 5], "L7": [3, 5]},
+    "shared": {"S0": [1, 0], "S1": [4, 0], "S2": [0, 1], "S3": [2, 1], "S4": [3, 1], "S5": [5, 1], "S6": [1, 2], "S7": [4, 2], "S8": [1, 3], "S9": [4, 3], "S10": [0, 4], "S11": [2, 4], "S12": [3, 4], "S13": [5, 4], "S14": [1, 5], "S15": [4, 5]},
+    "dieDispatcher": "OPEN: not placed; a leg to or from it is charged meshSide hops"
+  },
+  "requirements": {
+    "graphBuffers": 2,
+    "maxUtilization": 0.5,
+    "wqeBytes": 128,
+    "patchEntryBytes": 16,
+    "descriptorBytes": 32,
+    "peerEntryBytes": 16,
+    "managementCoreAreaMm2": 0.03,
+    "firmwareContentionCycles": 40,
+    "evidence": "ASSUMPTION: double-buffered graph so the next model's graph loads while the current one runs; at most half of the Comm Core busy per token; WQE size is R.MEM.wqeCqeBytes; one RV32 management core with 16 KiB I/D about 0.03 mm2; a firmware job on the critical path that shares its core with epoch and exception work waits up to 40 cycles"
+  },
+  "constraints": [
+    "every collective class: protocol time + control path <= OPT.tauUs (spec tau), so the published point is unchanged; this also keeps the raw latency within the raw budget because TPS does not rise with tau",
+    "graph storage fits the local SRAM with graphBuffers copies when the graph is stored locally",
+    "Comm Core busy time per token <= maxUtilization x raw latency"
+  ],
+  "objective": [
+    "feasible first",
+    "least AI Core time per token spent on communication control",
+    "largest spec-tau slack of the slowest class (margin for the O-018 cycle calibration)",
+    "least area"
+  ],
+  "dimensions": {
+    "placement": {
+      "question": "Where the Comm Core sits on the die mesh",
+      "options": {
+        "spare32": {"xy": [3, 2], "evidence": "spare east of the Reduce engine"},
+        "spare23": {"xy": [2, 3], "evidence": "spare south of the Reduce engine, centre of the mesh"},
+        "spare33": {"xy": [3, 3], "evidence": "spare diagonal to the Reduce engine"},
+        "spare55": {"xy": [5, 5], "evidence": "corner spare"},
+        "gateway": {"xy": [0, 5], "evidence": "inside the UCIe/RDMA gateway tile GW2, next to the NIC"}
+      }
+    },
+    "trigger": {
+      "question": "What starts a collective once its producers are done",
+      "options": {
+        "counterCompare": {"cycles": 2, "areaMm2": 0.002, "evidence": "hardware completion counters fed by the Core scoreboards over the Control NoC; compare with the patch-table threshold (MTIA 300 device-triggered collective, wait-on-value)"},
+        "coreStore": {"cycles": 1, "aiCoreCyclesPerCollective": 4, "areaMm2": 0.001, "evidence": "the producer Core issues a posted store to the Comm Core after its last tile"},
+        "firmwarePoll": {"cycles": 32, "firmware": true, "areaMm2": 0, "evidence": "the management RISC-V polls completion counters: a loop over up to 8 pending counters at 4 cycles each"},
+        "dieDispatcher": {"cycles": 8, "viaDispatcher": true, "areaMm2": 0, "evidence": "completions go to the Die Dispatcher (08), which sends a start command to the Comm Core"}
+      }
+    },
+    "wqeGeneration": {
+      "question": "Who produces the RDMA work requests (WQEs)",
+      "options": {
+        "templatePatch": {"cyclesPerWqe": 2, "storage": "template", "usesLanes": true, "laneAreaMm2": 0.002, "evidence": "precompiled WQE templates in the collective graph, patched per epoch (MTIA 300 Message Engine graph)"},
+        "descriptorExpand": {"cyclesPerWqe": 4, "storage": "descriptor", "usesLanes": true, "laneAreaMm2": 0.004, "evidence": "an address generator expands one per-collective descriptor and a per-class peer table into WQEs"},
+        "firmwareBuild": {"cyclesPerWqe": 24, "storage": "descriptor", "firmware": true, "evidence": "the management RISC-V builds each 128 B WQE (four 32 B stores plus field arithmetic), MTIA 300 CPU-M style"},
+        "coreBuild": {"fixedUs": 0.45, "origin": "core", "requires": {"trigger": ["coreStore"]}, "evidence": "the producer AI Core posts the WQEs and rings the NIC itself (MTIA 300 PE, about 450 ns measured, HCCL arXiv 2608.00358)"},
+        "controlProcessor": {"fixedUs": 2.9, "firmware": true, "requires": {"trigger": ["firmwarePoll", "dieDispatcher"]}, "evidence": "a control processor dispatches each collective (MTIA 300 CPU-C, 2.9 us measured, HCCL arXiv 2608.00358)"}
+      }
+    },
+    "txLanes": {
+      "question": "How many WQE generation lanes run in parallel (one lane feeds all active NICs in turn)",
+      "options": {"1": {"lanes": 1}, "2": {"lanes": 2}, "3": {"lanes": 3}, "4": {"lanes": 4}}
+    },
+    "doorbell": {
+      "question": "How a WQE reaches the NIC",
+      "options": {
+        "directPush": {"cycles": 2, "areaMm2": 0.003, "evidence": "WQE written with the doorbell into an on-NIC queue (MTIA Express Doorbell); needs a NIC-side WQE buffer"},
+        "ringFetch": {"cycles": 2, "fetchSramCycles": 4, "areaMm2": 0, "evidence": "doorbell only; the NIC reads the WQE back from a ring in Comm Core SRAM, one round trip before the first WQE"}
+      }
+    },
+    "commitCounting": {
+      "question": "Who counts the inbound commits of a mailbox slot and tells the consumer",
+      "options": {
+        "hwCounters": {"cycles": 2, "areaMm2": 0.003, "evidence": "CC-RX hardware commit counters per slot for two epochs; READY notify and reduce WQE on the last commit"},
+        "firmwareCount": {"cyclesPerCommit": 10, "firmware": true, "areaMm2": 0, "evidence": "the management RISC-V handles each inbound commit (load, increment, compare, store)"},
+        "consumerPoll": {"pollCycles": 64, "areaMm2": 0, "evidence": "the consumer Core polls the slot flags in Shared SRAM, one round trip per poll"}
+      }
+    },
+    "signal": {
+      "question": "How the commit signal of a one-sided put reaches the remote counter (memory semantics)",
+      "options": {
+        "putWithSignal": {"evidence": "the 16 B flag rides at the tail of the data packet and is applied as an atomic add after the data is visible: the protocol model as published"},
+        "separateSignal": {"evidence": "a second WQE per peer on the same ordered QP carries the flag: twice the NIC issue and one more header+flag packet per message"},
+        "writeThenSignal": {"evidence": "the flag is sent only after the data write is acknowledged (unordered fabric, no remote fence): one more round trip per message before the commit"}
+      }
+    },
+    "graphStore": {
+      "question": "Where the collective graph (templates or descriptors) lives",
+      "options": {
+        "localSram": {"evidence": "Comm Core SRAM, no fetch on the critical path"},
+        "sharedSram": {"sramCycles": 4, "evidence": "nearest Shared SRAM slice; one mesh round trip per collective before the first WQE"},
+        "mc": {"fetchUs": 0.15, "evidence": "HBM/MC behind the gateway (MTIA 300 fetches the graph from HBM); ASSUMPTION 150 ns access"}
+      }
+    },
+    "localSramKiB": {
+      "question": "Local graph SRAM capacity",
+      "options": {"0": {"kib": 0}, "16": {"kib": 16}, "32": {"kib": 32}, "64": {"kib": 64}, "128": {"kib": 128}}
+    },
+    "managementCores": {
+      "question": "Management RISC-V cores (graph load, epoch, timeout/poison/retry, and any firmware job on the critical path)",
+      "options": {"1": {"count": 1}, "2": {"count": 2}}
+    }
+  },
+  "ruled": {
+    "instances": {"chosen": "one per die", "alternatives": ["one per NIC", "one per package"], "reason": "the simulator keeps one collective in flight per die and the chosen design is busy for a few percent of the token; one per package would add a die-to-die hop to every trigger"},
+    "txRxEngines": {"chosen": "separate TX and RX state machines", "alternatives": ["one shared engine"], "reason": "inbound commits must not queue behind WQE generation of the next collective"},
+    "dataSemantics": {"chosen": "memory semantics (one-sided put/get/atomic on global addresses)", "alternatives": ["send/recv message semantics"], "reason": "send/recv needs a posted receive buffer and tag matching per message; slots are reserved per epoch instead"},
+    "aiCoreRemoteAccess": {"chosen": "posted store/atomic and FENCE only", "alternatives": ["blocking remote load"], "reason": "a remote load stalls the Core for at least one round trip (remoteLoadMinUs in the output); B=1 decode keeps it off the critical path"},
+    "addressing": {"chosen": "symmetric global address (rank, die, region, offset) with protection key and generation", "alternatives": ["per-card physical addresses in every template"], "reason": "templates store offsets only and stay card-independent"}
+  }
+}

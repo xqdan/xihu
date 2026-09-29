@@ -36,8 +36,8 @@ meshLat  = meshSide × routerCycles / f = 6 × 2 / 1.0 GHz        = 12 ns
         x=0        x=1        x=2        x=3        x=4        x=5
 y=0  [ MC GW0 ] [  S0   ] [  L0   ] [  L1   ] [  S1   ] [ MC GW1 ]
 y=1  [  S2   ] [  H0   ] [  S3   ] [  S4   ] [  H1   ] [  S5   ]
-y=2  [  L2   ] [  S6   ] [ RED   ] [  CC   ] [  S7   ] [  L3   ]
-y=3  [  L4   ] [  S8   ] [ spare ] [ spare ] [  S9   ] [  L5   ]
+y=2  [  L2   ] [  S6   ] [ RED   ] [ spare ] [  S7   ] [  L3   ]
+y=3  [  L4   ] [  S8   ] [  CC   ] [ spare ] [  S9   ] [  L5   ]
 y=4  [  S10  ] [  H2   ] [  S11  ] [  S12  ] [  H3   ] [  S13  ]
 y=5  [ UCIe/ ] [  S14  ] [  L6   ] [  L7   ] [  S15  ] [ spare ]
      [ RDMA  ]
@@ -51,7 +51,8 @@ y=5  [ UCIe/ ] [  S14  ] [  L6   ] [  L7   ] [  S15  ] [ spare ]
 - 两个 MC gateway 放在上边两角，对应 Die 上边的两个 MC UCIe 端口；Die 间 UCIe / RDMA gateway 放在另一侧；
 - 每个 H Core 四周至少有 2 个相邻 Shared slice：H 的 KV tile 是最大的 TMA 流；
 - Reduce 引擎放在中心，到所有 slice 的平均跳数最小；
-- Comm Core 占 (3,2)，紧邻 Reduce 引擎，触发/通知报文走 Control NoC（[10](10_COMM_CORE.md)）；
+- Comm Core 占 (2,3)，紧邻 Reduce 引擎，到 GW2 与最远 Core 各 4 跳，触发/通知报文走 Control NoC；
+  位置是 [10](10_COMM_CORE.md) 第 7 节在 5 个候选位置中搜索的结果；
 - 其余 4 个 spare/router-only 位置用于中继、时钟边界和故障绕行。
 
 ## 3. 网络分层
@@ -77,8 +78,8 @@ flowchart TB
   FAST --> DATA
 ```
 
-当前性能模型只显式建模 Data NoC 和 reduce 资源，Control NoC 尚未进入时延模型；Comm Core 控制路径的独立分析
-按 meshSide × `routerCycles` 计跳数（[10](10_COMM_CORE.md) 第 7 节）。
+当前性能模型只显式建模 Data NoC 和 reduce 资源，Control NoC 尚未进入时延模型；Comm Core 的设计搜索
+按本节布局的曼哈顿跳数 × `routerCycles` 计控制报文时延（[10](10_COMM_CORE.md) 第 7 节）。
 
 ## 4. 数据面参数
 
