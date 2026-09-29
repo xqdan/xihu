@@ -34,11 +34,11 @@ const MECHANISMS = [
   {key: 'kvPrefetch', off: 'layer', layer: 'scheduler/DMA', evidence: 'MODEL', role: 'KV context tiles of the next x.depth layers prefetched into shared SRAM'},
   {key: 'dmaPreempt', off: false, layer: 'scheduler/DMA', evidence: 'MODEL', role: 'demand fetches (routed-expert misses) park in-flight prefetches'},
   {key: 'commOverlap', off: false, layer: 'scheduler/collective', evidence: 'MODEL', role: 'shared experts run under the Wdown + Router all-gather'},
-  {key: 'softmaxFusion', off: false, layer: 'kernel mapping', evidence: 'MODEL', role: 'online softmax pipelined on H vector lanes under QK'},
+  {key: 'softmaxFusion', off: false, layer: 'kernel mapping', evidence: 'MODEL', role: 'online softmax pipelined on H vector lanes under QK; coupled to kvCache -- under fp8 the in-kernel dequant shares the same lanes and is charged against this hiding budget, so the two are not independent and their per-mechanism ablations understate the joint effect'},
   {key: 'launchBatching', off: false, layer: 'runtime', evidence: 'ASSUMPTION', role: 'launch cost scaled once by OPT.launchScale'},
   {key: 'epilogueFusion', off: false, layer: 'kernel mapping', evidence: 'MODEL', role: 'elementwise ops folded into the adjacent kernel'},
   {key: 'pvMerge', off: 'tile', layer: 'kernel mapping', evidence: 'MODEL', role: 'PV m/l/O merged once per layer, cross-die ring reduce-scatter by heads'},
-  {key: 'kvCache', off: 'bf16', layer: 'model format', evidence: 'MODEL (precision open, B-001)', role: 'FlashMLA FP8 KV layout, BF16 compute with in-kernel dequant'},
+  {key: 'kvCache', off: 'bf16', layer: 'model format', evidence: 'MODEL (precision open, B-001)', role: 'FlashMLA FP8 KV layout, BF16 compute with in-kernel dequant; coupled to softmaxFusion -- the dequant runs on the H vector lanes and is charged against the softmax hiding budget, so ablating either alone understates the joint effect'},
   {key: 'sharedPortScaling', patch: SHARED_PORT_UNSCALED, layer: 'hardware/SRAM ports', evidence: 'MODEL (O-007)', role: 'shared-SRAM write/read port scaling and dedicated TMA port, charged in area/power'}
 ];
 // Switches that are on but do not move TPS at the published point; listed so

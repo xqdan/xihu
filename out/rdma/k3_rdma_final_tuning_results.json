@@ -237843,7 +237843,6 @@
     "partialThresholdLSE": 0.25,
     "partialThresholdRouter": 0.18,
     "partialRelease": true,
-    "reduceStartThreshold": 0.2,
     "launchBatching": true,
     "launchScale": 0.45,
     "dieDirectReduce": true,
@@ -237914,12 +237913,12 @@
     "2026-09-25 decision: frequency fixed at 1.0 GHz (EXT.ghz=[1], removed from the pairwise polish); compute is sized by core/engine counts and shapes only and may no longer be bought by lowering the clock; the fixed-frequency best is seeded first",
     "2026-09-25 decision: compute-die physical basis (integration/detailed/k3_physical_basis.js): area on Samsung SF4-class 4 nm (logic x1.277 by CPP x MMP 57x32 vs 51x28 nm, SRAM x1.248 by HD bitcell 0.0262 vs 0.021 um2, UCIe/RDMA PHY x1), matrix density 3.2 TF/mm2 at 1 GHz on the N4 reference (was 1.6), liquid cooling with die 300 W / card 2800 W limits (was 260 / 2400 W); power, frequency and bandwidth coefficients unchanged; A.physical() keeps the N4-ref air-cooled basis for historical models",
     "2026-09-25 decision: reference-393 basis accepted (B-007); the folded Wup + Shared output all-reduce now follows the shared-expert compute",
-    "duplicate reduceStartThreshold key removed (effective value 0.2 unchanged)",
+    "reduceStartThreshold removed from OPT: no model path read it (an earlier duplicate key had already been removed)",
     "launch batching applied once with launchScale (was applied twice: 0.45 then 0.55 with an ad-hoc subtraction)",
     "shared-SRAM port scaling charged as bank area and port power (chargeSharedPortCost) and re-checked against die/card limits",
     "COMM-op dieLink scaling removed: the field does not exist on COMM ops (NaN masked by the accumulator, no effect on duration)",
     "collective counting basis moved to the reference page 393-reduction basis (OPT.countBasis); this is a COUNTING choice, not a physical optimization -- the Q/new-KV all-gather and sampling broadcast stay in the DAG as local ops"
   ],
-  "seconds": 53.848,
-  "inputHash": "b1518e7a436ed85971e2243aa24f6620c06f85f6ccf4f1b20e82db37f75fe633"
+  "seconds": 54.368,
+  "inputHash": "3e996d67f3a683b19189d75cd9eb4672b0a39b55b90b425c0abd510f1405a213"
 }

@@ -69,6 +69,10 @@ assert(b.commUs>=b.collectiveCount*O.OPT.tauUs-1e-6,'comm time must be at least 
 // lookahead is the searched x.depth (no fixed OPT.overlapDepth override).
 assert(!('matrixUtil' in O.OPT)&&!('vectorUtil' in O.OPT),'matrix/vector utilization is not an OPT knob');
 assert(!('overlapDepth' in O.OPT),'prefetch depth is searched as x.depth');
+// reduceStartThreshold was removed 2026-09-25: nothing in the published path read
+// it, so it was a dead knob stored in every OPT block. The partial-ready
+// thresholds that ARE consumed (partialThreshold*) stay.
+assert(!('reduceStartThreshold' in O.OPT),'reduceStartThreshold is not consumed by any model path');
 assert.equal(mm0.plan.c.depth,b.x.depth);assert.deepStrictEqual(d.search.space.depth,[1,2,3,4]);
 assert(O.evaluate({...b.x,depth:1}).rawUs>b.rawUs,'x.depth must reach the simulator');
 // Attention and small-op mapping (2026-09-25).
@@ -100,9 +104,19 @@ assert.equal(O.OPT.kvCache,'fp8');assert.equal(mm0.plan.kvBytesPerToken,512+512/
  assert(qk.timing.kernel>=j.dequant/(A.LIMITS.dies*x.nH*x.vectorLanes*A.TECH.unpackParamsPerLaneCycle*x.ghz*1000)-1e-12);
  // Same candidate on BF16 KV: either the local KV staging no longer fits or raw is longer and more bytes move.
  // The common tile is the largest one BF16 KV still fits at this candidate.
- const saved=O.OPT.kvCache;O.OPT.kvCache='bf16';const r=O.evaluate(b.x),tile=[32768,16384,8192,4096].find(t=>O.evaluate({...b.x,kvTile:t}).feasible),rc=O.evaluate({...b.x,kvTile:tile});O.OPT.kvCache=saved;const fc=O.evaluate({...b.x,kvTile:tile});
+ const saved=O.OPT.kvCache;O.OPT.kvCache='bf16';const r=O.evaluate(b.x),bfRaw=r.feasible?r.rawUs:null,tile=[32768,16384,8192,4096].find(t=>O.evaluate({...b.x,kvTile:t}).feasible),rc=O.evaluate({...b.x,kvTile:tile});O.OPT.kvCache=saved;const fc=O.evaluate({...b.x,kvTile:tile});
  assert(!r.feasible||r.rawUs>b.rawUs,'FP8 KV must not lose to BF16 KV at the published point');
- assert(tile&&rc.rawUs>fc.rawUs&&rc.readBytes>fc.readBytes,'FP8 KV must shorten raw and cut DMA bytes at a common KV tile');}
+ assert(tile&&rc.rawUs>fc.rawUs&&rc.readBytes>fc.readBytes,'FP8 KV must shorten raw and cut DMA bytes at a common KV tile');
+ // FP8 and softmaxFusion interact: the in-kernel FP8 dequant runs on the same H
+ // vector lanes as the online softmax and is taken out of the budget the softmax
+ // may hide under QK (k3_architecture_search.js, qkDequant). So switching
+ // softmaxFusion off must move raw further under fp8 than under bf16. The
+ // per-mechanism ablations time each mechanism with all others held at their
+ // published values, so they cannot see this and it is asserted here.
+ const smRaw=cache=>{const p=O.OPT.kvCache;O.OPT.kvCache=cache;const s=O.OPT.softmaxFusion;O.OPT.softmaxFusion=false;const q=O.evaluate(b.x);O.OPT.softmaxFusion=s;O.OPT.kvCache=p;return q.feasible?q.rawUs:null;};
+ if(bfRaw!==null){const smFp=smRaw('fp8'),smBf=smRaw('bf16');
+  assert(smFp!==null&&smBf!==null,'softmax ablation must stay feasible for both KV formats');
+  assert(smFp-b.rawUs>smBf-bfRaw,'FP8 dequant must erode the softmax hiding budget: the softmax ablation has to move raw further under fp8 than under bf16');}}
 // TMA fills pinned for a later op are cancelled rather than deadlocking the head op
 // (large FP8 KV tile with a half window used to deadlock); the published point needs none.
 assert.equal(b.tmaCancels,0);

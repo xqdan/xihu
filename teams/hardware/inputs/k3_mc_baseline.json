@@ -500,7 +500,6 @@
         "partialThresholdLSE": 0.25,
         "partialThresholdRouter": 0.18,
         "partialRelease": true,
-        "reduceStartThreshold": 0.2,
         "launchBatching": true,
         "launchScale": 0.45,
         "dieDirectReduce": true,
@@ -589,7 +588,7 @@
           "off": false,
           "layer": "kernel mapping",
           "evidence": "MODEL",
-          "role": "online softmax pipelined on H vector lanes under QK",
+          "role": "online softmax pipelined on H vector lanes under QK; coupled to kvCache -- under fp8 the in-kernel dequant shares the same lanes and is charged against this hiding budget, so the two are not independent and their per-mechanism ablations understate the joint effect",
           "ablation": {
             "feasible": true,
             "tpsPerUser": 1033.2195259168964,
@@ -641,7 +640,7 @@
           "off": "bf16",
           "layer": "model format",
           "evidence": "MODEL (precision open, B-001)",
-          "role": "FlashMLA FP8 KV layout, BF16 compute with in-kernel dequant",
+          "role": "FlashMLA FP8 KV layout, BF16 compute with in-kernel dequant; coupled to softmaxFusion -- the dequant runs on the H vector lanes and is charged against the softmax hiding budget, so ablating either alone understates the joint effect",
           "ablation": {
             "feasible": false,
             "reasons": [

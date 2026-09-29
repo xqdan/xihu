@@ -195,7 +195,7 @@ for (const s of [16, 24]) { const r = O.evaluate({...x, sharedMiB: s}), p = r.p;
 - 各 agent 的分工（SW-01 到 SW-07）见 [`teams/software/README.md`](../teams/software/README.md)。
 - 机制的语义说明在 `21_TPS_DESIGN_BASELINE.md` 第 4 节。
 
-**你的策略在模型里叫什么。** 软件决策全部在 `O.OPT` 里，共 44 项，大致分为：
+**你的策略在模型里叫什么。** 软件决策全部在 `O.OPT` 里，共 43 项，大致分为：
 
 | 类别 | `OPT` 键 |
 |---|---|
@@ -203,7 +203,7 @@ for (const s of [16, 24]) { const r = O.evaluate({...x, sharedMiB: s}), p = r.p;
 | kernel 融合 | `attentionFusion`、`softmaxFusion`、`epilogueFusion`、`pvMerge`、`wupRouterFusion`、`moeTokenPacking` |
 | 集合通信协议 | `tauUs`、`stripeKiB`、`oneWayUs`、`commitCycles`/`notifyCycles`/`ackCycles`、`commitBatchSize`/`ackBatchSize`、`phaseFusionFactor`、`epochs` |
 | 归约层级 | `dieDirectReduce`、`dieGroupReduce`、`hierarchicalReduce`、`remoteDirectReduce`、`groupAck`、`readyCounter` |
-| partial-ready | `tilePartialReady`、`partialRelease`、`partialThreshold*`、`reduceStartThreshold`（正确性见 O-009） |
+| partial-ready | `tilePartialReady`、`partialRelease`、`partialThreshold*`（正确性见 O-009） |
 | 格式与口径 | `kvCache`（`'fp8'`/`'bf16'`）、`countBasis`（`'reference-393'`/`'repo-510'`，B-007） |
 
 `GAIN` 里的 25 个经验因子全部为 1。软件收益只能来自改变事件和资源的占用，不能靠乘系数。
