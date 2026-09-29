@@ -64,7 +64,8 @@ flowchart TB
 | Die / 卡功耗 | 286.22 W / 2768.47 W，液冷上限 300 W / 2800 W |
 | MC | 16 × 640 GB/s（`STRETCH`，B-002），参考档 320 GB/s |
 
-每 Die 另有单独的 collective/reduce 单元、2 个本地 MC 数据端口，以及 Die fabric、Scale-out/RDMA、管理、PMU、时钟、复位和 RAS。
+每 Die 另有单独的 collective/reduce 单元、Comm Core（集合通信触发、WQE 下发与接收计数，`PROPOSED`，
+[10_COMM_CORE.md](../../teams/hardware/docs/10_COMM_CORE.md)）、2 个本地 MC 数据端口，以及 Die fabric、Scale-out/RDMA、管理、PMU、时钟、复位和 RAS。
 
 ### 2.2 7-Reticle Package
 

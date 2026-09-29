@@ -189,7 +189,7 @@ flowchart LR
   VE <--> LS
   TMA <-->|"Data NoC"| NOC["NoC endpoint"]
   SB -->|"completion / fault"| CN["Control NoC endpoint"]
-  VE -->|"partial / result"| COL["Collective endpoint"]
+  VE -->|"partial / result 写 Shared SRAM"| COL["Collective endpoint"]
   PMU["PMU 计数器"] -.-> TE
   PMU -.-> VE
   PMU -.-> TMA
@@ -205,7 +205,7 @@ flowchart LR
 | Local SRAM ports | 双向 | Tensor、Vector、TMA 独立仲裁类 | 64 bank × 64 B/cycle |
 | Data NoC endpoint | 双向 | Shared SRAM / 其他 Core tile 传输 | 256 B/cycle × 4 lane |
 | Control NoC endpoint | 双向 | command、completion、fault、barrier | 256 bit flit 候选，`OPEN`（O-004） |
-| Collective endpoint | 双向 | partial/result、epoch、ready/ACK | 见 [07](07_COLLECTIVE_RDMA.md) |
+| Collective endpoint | 双向 | partial/result 写 Shared SRAM 并置完成计数；WQE、doorbell、ready/ACK 由 Comm Core 处理，Core 不发 WQE；另可对全局地址发 posted store / atomic 与 FENCE，不提供远端 load（[10](10_COMM_CORE.md) 第 6 节） | 见 [07](07_COLLECTIVE_RDMA.md)、[10](10_COMM_CORE.md) |
 | PMU/debug | 出 | cycle、stall、bank conflict、utilization、ECC | 见 [08](08_ON_DIE_SCHEDULER_AND_PMU.md) 第 5 节 |
 
 Tensor、Vector、TMA 可并行，但必须由 scoreboard 保证：

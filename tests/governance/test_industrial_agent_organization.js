@@ -6,7 +6,7 @@ const catalog=JSON.parse(fs.readFileSync(path.join(root,'teams/council/inputs/in
 for(const name of ['hardware','software','model']) assert(fs.existsSync(path.join(root,'teams',name,'README.md')));
 assert(doc.includes('Hardware Team')&&doc.includes('Software Team')&&doc.includes('Model Team'));
 assert.deepStrictEqual(Object.keys(catalog.teams).sort(),['hardware','model','software']);
-assert.strictEqual(catalog.teams.hardware.agents.length,6);
+assert.strictEqual(catalog.teams.hardware.agents.length,7);
 assert.strictEqual(catalog.teams.software.agents.length,7);
 assert.strictEqual(catalog.teams.model.agents.length,6);
 for(const team of Object.values(catalog.teams)) for(const agent of team.agents){assert(agent.id);assert(agent.role);assert(Array.isArray(agent.legacy));}

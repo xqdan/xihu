@@ -78,6 +78,7 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | [07_COLLECTIVE_RDMA.md](../../teams/hardware/docs/07_COLLECTIVE_RDMA.md) | 远端 SRAM 语义、归约引擎、epoch 和可靠性 |
 | [08_ON_DIE_SCHEDULER_AND_PMU.md](../../teams/hardware/docs/08_ON_DIE_SCHEDULER_AND_PMU.md) | Die Dispatcher、Core Tile Scheduler、硬件侧低开销要求和 PMU |
 | [09_PACKAGE_POWER_RAS.md](../../teams/hardware/docs/09_PACKAGE_POWER_RAS.md) | 封装、I/O 岸线、功耗、时钟、散热和 RAS |
+| [10_COMM_CORE.md](../../teams/hardware/docs/10_COMM_CORE.md) | Comm Core：集合通信触发、WQE 模板下发、接收计数和控制路径预算 |
 
 #### 软件设计（`teams/software/docs/`，Software）
 

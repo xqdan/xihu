@@ -24,7 +24,7 @@ Hardware Team       Software Team       Model Team
 
 | Team | 负责 | 不负责 |
 |---|---|---|
-| Hardware | 单芯片和封装规格、AI Core、SRAM/TMA、MC、NoC、Die-to-Die、PPA/RAS | 不把软件收益写成硬件能力；不定义模型真实性 |
+| Hardware | 单芯片和封装规格、AI Core、SRAM/TMA、MC、NoC、Die-to-Die、Comm Core、PPA/RAS | 不把软件收益写成硬件能力；不定义模型真实性 |
 | Software | 模型部署、runtime、compiler、kernel mapping、融合、通信计算 overlap、调度 | 不修改硬件 peak/带宽规格；不替模型团队补齐未知配置 |
 | Model | 三模型 manifest、shape/dtype/routing、场景、算子清单、TP/MC 测试矩阵、golden workload | 不声明硬件可实现性；不把 planning estimate 当实测 |
 | Architecture Council | 需求、架构方向、trade-off、ADR、D-Gate 决策 | 不替代专业团队实现细节 |

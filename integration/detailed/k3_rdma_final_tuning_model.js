@@ -25,7 +25,10 @@ const OPT={
   // thrashed shared SRAM once the bytes per layer shrank.
   phaseFusionFactor:3,commitBatchSize:16,ackBatchSize:16,
   tilePartialReady:true,partialThresholdAttention:.20,partialThresholdLSE:.25,partialThresholdRouter:.18,partialRelease:true,
-  reduceStartThreshold:.2,          // single definition (an earlier duplicate key .25 was silently overridden)
+  // An earlier `reduceStartThreshold` (.2, once duplicated at .25) was removed
+  // 2026-09-25: nothing in mapped()/mappedPlan()/simulate() ever read it, so it
+  // was a dead knob recorded in every stored OPT block. The partial-ready
+  // thresholds that ARE consumed stay below.
   launchBatching:true,launchScale:.45, // applied exactly once per non-COMM op; duration is reduced by the same amount
   dieDirectReduce:true,groupAck:true,readyCounter:true,dieGroupReduce:true,hierarchicalReduce:true,remoteDirectReduce:true,
   moeTokenPacking:true,attentionFusion:true,wupRouterFusion:true,outputDirectConsumer:true,

@@ -87,6 +87,10 @@ function build(input={}){
  function op(name,{flops=0,unit='V',read=0,write=0,inputs=[],outputs=[],arena='base',payload=0,router=false,params=0,routed=false,detail='',overlapComm=false}={}){
   let duration,linkBytes=0;
   if(unit==='COMM'){
+   // Placeholder only. In the published path (A.mappedPlan -> O.mapped) record()
+   // recomputes this duration and the tau floor is applied in mapped()
+   // (k3_rdma_final_tuning_model.js). This expression is live only for the
+   // standalone `node k3_operator_sram_sim.js` run at the bottom of this file.
    linkBytes=c.collectiveFactor*payload;
    duration=Math.max(c.tauUs+linkBytes/(c.linkGBs*1e3),linkBytes/(c.sramReadTBs*1e6),linkBytes/(c.sramWriteTBs*1e6));
    read=write=linkBytes;

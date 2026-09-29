@@ -10,7 +10,7 @@
 
 | Team | Directory | Ownership |
 |---|---|---|
-| Hardware | `teams/hardware/`（`inputs/` 硬件基线规格，`src/` resource profiles 与 compute node，`docs/` 硬件单元设计文档） | Package/floorplan, AI Core, SRAM/TMA, MC, NoC/Die-to-Die, Collective/RDMA, PPA/RAS |
+| Hardware | `teams/hardware/`（`inputs/` 硬件基线规格，`src/` resource profiles 与 compute node，`docs/` 硬件单元设计文档） | Package/floorplan, AI Core, SRAM/TMA, MC, NoC/Die-to-Die, Collective/RDMA, Comm Core, PPA/RAS |
 | Software | `teams/software/`（`docs/` 编译器 / runtime / 固件与优化策略） | Deployment/runtime, compiler, kernels, fusion, collective overlap, scheduler, profiler |
 | Model | `teams/model/`（`inputs/` manifest/profile，`src/design_engine.js` 为 K3 唯一形状来源，`src/workload_derivation.js`，`docs/deployment/` 逐模型部署方案） | Model manifest, workload/operator ledger, scenarios, routing/sparsity, golden traces, model KPI |
 | Architecture Council | `teams/council/`（ADR、运行模型文档、agent roster），`integration/`（跨团队代码），`docs/architecture/`（系统级文档与跨团队 contracts） | Requirements, contracts, ADR, candidate integration, D-Gate |

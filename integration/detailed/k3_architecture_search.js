@@ -13,13 +13,20 @@ const TECH={matrixTFPerMm2:1.60,sramMiBPerMm2:1.26,bankArea:.020,coreOverhead:.8
 const SPACE={nL:[4,8,12,16],nH:[4,8,12,16],lRows:[4,8,16],lCols:[64,128],lEngines:[1,2,4],hRows:[8,16,32,64],hCols:[32,64,128],hEngines:[2,4,8],ghz:[.8,1,1.2],vectorLanes:[128,256,512],
  lMiB:[1,2,4,8],hMiB:[1,2,4,8],lBanks:[8,16,32,64],hBanks:[8,16,32,64],bankBytes:[32,64],sharedMiB:[16,24,32,48,64],sharedSlices:[8,16,32],tmaEngines:[1,2,4],tmaBytes:[128,256,512],nocBytes:[256,512,1024],nocLanes:[1,2,4],reduceLanes:[64,128,256,512],ucieLanes:[64,128,256],ucieGbps:[16,32,64],mcGBs:[160,320,640],rdmaLanes:[4,8,16],weightTileMiB:[2,4,8],kvTile:[1024,2048,4096],headTile:[8,16,32],depth:[0,1,2,4],windowFraction:[.5,.75,1]};
 const BASE={nL:8,nH:8,lRows:16,lCols:128,lEngines:1,hRows:64,hCols:64,hEngines:4,ghz:1,vectorLanes:256,lMiB:8,hMiB:2,lBanks:64,hBanks:16,bankBytes:64,sharedMiB:16,sharedSlices:16,tmaEngines:2,tmaBytes:256,nocBytes:512,nocLanes:2,reduceLanes:256,ucieLanes:128,ucieGbps:32,mcGBs:320,rdmaLanes:4,weightTileMiB:8,kvTile:1024,headTile:8,depth:2,windowFraction:1};
+// Design assumption: the shared-SRAM write port is sized at half the read port.
+// This ratio is load-bearing -- it sets plan.c.sramWriteTBs and therefore the
+// DMA peak (dmaPeak), every `ports` term in mapped() and every `flush` term.
+// It is deliberately NOT a TECH key: TECH is serialized wholesale into
+// out/rdma/k3_rdma_final_tuning_results.json, and adding a key there would
+// churn a generated artifact for no modelling gain.
+const SHARED_WRITE_READ_RATIO=.5;
 function physical(x){
  const D=LIMITS.dies,f=x.ghz,n=x.nL+x.nH;
  const lTF=x.nL*x.lRows*x.lCols*x.lEngines*2*f/1000,hTF=x.nH*x.hRows*x.hCols*x.hEngines*2*f/1000;
  const vectorTOP=n*x.vectorLanes*2*f/1000;
  const localMiB=x.nL*x.lMiB+x.nH*x.hMiB,totalMiB=localMiB+x.sharedMiB;
  const lRead=x.lBanks*x.bankBytes*f/1000*TECH.bankUtil,hRead=x.hBanks*x.bankBytes*f/1000*TECH.bankUtil;
- const sharedRead=x.sharedSlices*512*f/1000*TECH.bankUtil,sharedWrite=sharedRead/2;
+ const sharedRead=x.sharedSlices*512*f/1000*TECH.bankUtil,sharedWrite=sharedRead*SHARED_WRITE_READ_RATIO;
  const meshSide=Math.ceil(Math.sqrt(n+x.sharedSlices+3));
  const nocTB=2*meshSide*x.nocBytes*x.nocLanes*f/1000*TECH.nocUtil;
  const coreTma=x.tmaEngines*x.tmaBytes*f/1000*.8;
