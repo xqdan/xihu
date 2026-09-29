@@ -6,7 +6,7 @@ Everything in this directory is written by a script in `integration/pipelines/` 
 |---|---|---|
 | `workload/` | `planning_operator_workload.json` (planning operator rows, token-time calibration); `tps_observation_matrix.json` (three models × TP8/16/32 × MC320/640 planning estimates on the single hardware spec; `null` means no event-level replay yet) | `generate_planning_operator_workload.js`, `stage_b.js` |
 | `direction/` | Stage A envelope, scorecard, sensitivity sweep, workload baseline and the Stage A report | `stage_a.js`, `sync_baseline_spec.js` |
-| `detailed/` | Stage B run, synthetic event replay and the Stage B report | `stage_b.js` |
+| `detailed/` | Stage B run, synthetic event replay and the Stage B report; AI Core matrix:vector balance (`matrix_vector_balance.json`) | `stage_b.js`; `generate_matrix_vector_balance.js` |
 | `governance/` | Gate status, candidate register, manifest binding, direction feedback | `stage_a.js`, `stage_b.js`, `generate_direction_feedback.js` |
 | `contracts/` | Model/hardware/software contracts and the integration manifest | `generate_team_contracts.js` |
 | `verification/` | Timing evidence status | `generate_team_contracts.js` |
