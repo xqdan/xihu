@@ -167,7 +167,7 @@ load profile
 | AI-INT-A2 Operator Ledger | 各算子 FLOP/bytes | 每个 operator 有 unit、dtype、source、FLOP/bytes |
 | AI-INT-A3 TP/CP/EP Sharder | 切分和通信 | TP8/16/32、CP1/8/16/32 可生成 rank ledger |
 | AI-INT-A4 Roofline Engine | L/H/V/Indexer/Reduce roofline | 输出 ridge、bound、effective peak、带宽墙 |
-| AI-INT-A5 Compute Sizer | 算力规模建议 | 输出 required/available/ratio/headroom |
+| AI-INT-A5 Compute Sizer | 算力规模建议；按核类的 Matrix:Vector 配比（交 HW-02，见 `teams/hardware/docs/02_AI_CORE.md` 第 2.5 节） | 输出 required/available/ratio/headroom；每个融合 kernel 给出 vector 可被掩盖的最大 MAC:lane |
 | AI-INT-A6 Verification | 守恒和负例 | 单位、TP、FLOP、bytes、版本、状态检查 |
 | AI-INT-A7 Report Publisher | 报告 | JSON、CSV、Markdown 与 run_id 对齐 |
 

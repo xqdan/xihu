@@ -8,7 +8,7 @@
 | Agent | 职责 | 输入 | 输出 | 关键约束 |
 |---|---|---|---|---|
 | HW-01 Package/Floorplan | 7-reticle 封装、die、MC、PHY、RDL、thermal keep-out | `k3_mc_baseline.json#package`、模型容量、PPA budget | package spec、area/thermal envelope | area conservation；只有一份硬件规格（ADR-0021） |
-| HW-02 AI-Core | L/H/Vector/Indexer/Reduce、dtype、issue、频率、core pod | arithmetic intensity、software kernel needs | AI Core spec、peak/effective resource envelope | peak 不等于 sustained；资源按 core class 分开 |
+| HW-02 AI-Core | L/H/Vector/Indexer/Reduce、dtype、issue、频率、core pod；按核类的 Matrix:Vector 配比 | arithmetic intensity、software kernel needs、`out/detailed/matrix_vector_balance.json`（`npm run aicore:balance`） | AI Core spec、peak/effective resource envelope、每核类 vector lanes 决策（[02](docs/02_AI_CORE.md) 第 2.5 节） | peak 不等于 sustained；资源按 core class 分开；vector 必须被同 kernel 矩阵时间掩盖，配比结论要写明原生 FP8/MXFP4 前提和支持的模型范围 |
 | HW-03 SRAM/TMA/Memory | local/shared SRAM、bank、TMA、buffer lifecycle | tile shapes、bytes、reuse | memory hierarchy、tile-fit、service constraints | per-core/die/package 分离；bytes 守恒 |
 | HW-04 MC/Memory Controller | MC320/MC640、带宽、容量、QoS | memory traffic、queue model | MC spec、sustained bandwidth、capacity | raw 不得当 effective；MC640 是 stretch |
 | HW-05 NoC/Die-to-Die | NoC、collective fabric、packet/credit/hop、拓扑 | TP/CP/EP traffic、package floorplan | topology、latency/bandwidth envelope | local/cross-package 分离；防 deadlock |

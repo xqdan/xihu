@@ -110,6 +110,72 @@ xychart-beta
 | `unpackParamsPerLaneCycle` | 2 | MXFP4/FP8 → BF16 的向量解包速率 | `A.TECH` |
 | `ucieHopUs` | 0.025 µs | 每次跨 Die 跳 | `A.TECH` |
 
+### 2.5 Matrix:Vector 配比（HW-02 决策输入）
+
+- 所有者：HW-02 AI-Core；共签：SW-03（kernel 的 vector 操作计数）
+- 状态：`MODEL`（逐 kernel 解析上限 + K3 详细模型回放，不是 `FROZEN`）
+- 数据：`out/detailed/matrix_vector_balance.json`，由 `npm run aicore:balance`
+  （`integration/detailed/matrix_vector_balance.js`）生成；本节数字由
+  `tests/regression/test_matrix_vector_balance.js` 对照该文件检查。
+
+**口径**：配比 = BF16 dense 矩阵峰值 : vector 峰值（lanes × 2 × f），等价于 MAC : lane。
+P1 当前每 Die **22.7:1**，但它是两类核的平均：L Core **4:1**，H Core **60:1**。
+配比必须按核类分开定，不能只给一个整 Die 数。
+
+**判据（逐 kernel 掩盖）**：每个融合 kernel 的 vector 部分不长于同一 kernel 的矩阵部分：
+
+```text
+vector lane-cycles / lanes  <=  matrix FLOPs / (2 × MACs × matrixUtil × fill)
+=>  核内 MAC:lane  <=  matrix FLOPs / (2 × matrixUtil × fill × vector lane-cycles)
+```
+
+通用 vector 操作按 `TECH.vectorUtil` 折算，解包/反量化按 `TECH.unpackParamsPerLaneCycle` 计，与 `mappedPlan()` 一致。
+
+**逐 kernel 上限**（核内 MAC:lane 不超过该值时，vector 可被完全掩盖）：
+
+| Kernel | 核类 | 上限 | P1 当前 | 结论 |
+| --- | --- | ---: | ---: | --- |
+| GEMV，FP8/FP4 权重经 vector 解包，B=1 | L | 3.1 | 4 | 掩盖不住 |
+| 同上，B=8（MTP/多 token） | L | 24.6 | 4 | 可掩盖 |
+| K3 MLA QK+softmax+PV（FP8 KV，96 head） | H | 99.9 | 60 | 可掩盖 |
+| K3 MLA，exp 用多项式（无 SFU） | H | 53.9 | 60 | 掩盖不住 |
+| GLM-5.2 DSA indexer，FP8 key 原生 | H | 63.0 | 60 | 可掩盖（余量小） |
+| GLM-5.2 DSA indexer，FP8 key 经 vector 反量化 | H | 44.5 | 60 | 掩盖不住 |
+| DeepSeek-V4-Pro DSA indexer，FP8 key 原生 | H | 65.8 | 60 | 可掩盖（余量小） |
+| DeepSeek-V4-Pro DSA indexer，FP8 key 经 vector 反量化 | H | 54.1 | 60 | 掩盖不住 |
+
+GLM-5.2 / DeepSeek-V4-Pro 的 sparse MLA 每核只有约 2 个 token，矩阵填充率极低，vector 总能掩盖，不构成约束。
+RMSNorm、SiLU、残差、RoPE、Router top-k 相对相邻矩阵的强度在 1000 以上，也不构成约束。
+
+**K3 系统回放**（发布点，只改 `vectorLanes`，TPS/usr）：
+
+| 整 Die 配比 | lanes/core | vector 解包 | 原生 FP8/MXFP4 输入 |
+| ---: | ---: | ---: | ---: |
+| 48:1 | 242 | 946.1 | 1060.0 |
+| 32:1 | 363 | 1047.7 | 1101.9 |
+| 22.7:1（当前） | 512 | 1101.8 | 1101.8 |
+| 16:1 | 725 | 1101.8 | 1101.8 |
+
+发布点上 vector 解包比原生输入多出 13.19 µs 的 kernel 时间：MXFP4 routed expert 6.15 µs，BF16 权重 7.03 µs。
+后者是模型记账问题：`mappedPlan()` 对 BF16 权重也按参数计了解包，而 BF16 权重其实不需要解包。
+
+**决策规则**：取满足以下两条的最少 lanes：
+
+1. K3 系统 TPS 不低于该前提下最优值的 99.9%；
+2. 所需支持模型的 H 侧 kernel 全部可掩盖。
+
+| 支持范围 | 前提 | lanes/core | 整 Die 配比 | H Core 配比 |
+| --- | --- | ---: | ---: | ---: |
+| 只有 K3 | vector 解包 | 512 | 22.7:1 | 60:1 |
+| 只有 K3 | 原生 FP8/MXFP4 | 363 | 32.0:1 | 84.6:1 |
+| 三模型 | vector 解包 | 691 | 16.8:1 | 44.5:1 |
+| 三模型 | 原生 FP8/MXFP4 | 488 | 23.8:1 | 63.0:1 |
+
+- **32:1 只在"只跑 K3 且张量核原生吃低精度"时成立。**
+- **三模型都要支持时**：若是原生输入，至少保持当前约 23–24:1；若经 vector 解包，需要 16:1。
+- **B=1 GEMV 的解包在任何实际配比下都掩盖不住**，只有原生 FP8/MXFP4 张量输入（O-012）或在 TMA 通路上解码才能消除；否则它只能被内存链路盖住，而 K3 发布点的串行链与内存链同时饱和，所以会直接反映到 TPS 上。
+- 核类分开配 lanes（L 按每参数解包速率，H 按 attention/indexer 强度）比单一整 Die 配比更省面积。当前模型只有一个 `vectorLanes` 参数，拆分 L/H lanes 需要先扩展 `A.physical()` / `mappedPlan()`。
+
 ## 3. 单元级结构与接口
 
 ```mermaid
@@ -298,13 +364,15 @@ GLM / DeepSeek 的 H 负载远低于 K3，瓶颈转到权重字节和集合通�
    - 跨 lane：sum/max reduction、prefix、compare-select top-k；
    - 内存：gather/scatter 下标生成。
 5. 1.0 GHz 尚无 PVT、线长和 SRAM macro 时序证明（B-006）。
-6. FP8 权重目前经 unpack 按 BF16 计算，原生 FP8 MAC 是否值得面积未评估（O-012）。
+6. FP8 权重目前经 unpack 按 BF16 计算，原生 FP8 MAC 是否值得面积未评估（O-012）。它同时决定 Matrix:Vector 配比（第 2.5 节）。
+7. Vector 操作计数（softmax 每 score 8 op、indexer 每 score 3 op、top-k 每 token 8 op）是假设，需 SW-03 用 kernel 给出；exp 若无 SFU，K3 MLA 的 H 侧上限会从 99.9 降到 53.9。
 
 ## 8. AI Core 冻结交付物
 
 - Core 单元框图和端口表（本文第 3 节为初版）；
 - Tensor/Vector ISA 与 tile descriptor（[`TILE_IR.md`](../../../docs/architecture/contracts/TILE_IR.md)）；
 - 支持 shape/dtype 列表（本文第 4 节为初版）；
+- 按核类的 Matrix:Vector 配比（本文第 2.5 节，`npm run aicore:balance`）；
 - Tensor/Vector/TMA 并发状态机；
 - 每类 kernel 的 cycle 模型和 golden trace（[`KERNEL_SPEC.md`](../../software/docs/KERNEL_SPEC.md)）；
 - Local SRAM bank 映射；
