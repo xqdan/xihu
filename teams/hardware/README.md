@@ -13,16 +13,17 @@
 | HW-04 MC/Memory Controller | MC320/MC640、带宽、容量、QoS | memory traffic、queue model | MC spec、sustained bandwidth、capacity | raw 不得当 effective；MC640 是 stretch |
 | HW-05 NoC/Die-to-Die | NoC、collective fabric、packet/credit/hop、拓扑 | TP/CP/EP traffic、package floorplan | topology、latency/bandwidth envelope | local/cross-package 分离；防 deadlock |
 | HW-06 PPA/RAS | power、thermal、IR drop、DVFS、故障降级 | activity/event traces、floorplan | PPA/RAS report | average/P95/peak 分离；不能冒充实测 |
+| HW-07 Comm-Core | 集合通信触发、WQE 模板下发、接收 commit/notify 计数、ACK 合并、超时/poison；内存语义（PUT/PUT_SIGNAL/GET/远端原子、全局地址、内存序） | collective graph（SW-05）、mailbox 语义（[07](docs/07_COLLECTIVE_RDMA.md)）、`out/detailed/comm_core_budget.json`（`npm run commcore:budget`） | Comm Core 规格（[10](docs/10_COMM_CORE.md)）、控制路径预算、τ 自底向上推导的控制路径一项（O-018） | 固件不在每次集合通信的关键路径上；AI Core 不发 WQE；slot generation 与 mailbox epoch 一致；cycle 数在回标前都是 ASSUMPTION |
 
 ## Directory
 
 | Path | Content |
 |---|---|
-| `docs/` | 硬件单元设计：02 AI Core、03 TMA/SRAM、04 MC、05 NoC、06 多 Die/Scale-out、07 Collective/RDMA、08 片上调度器与 PMU、09 封装/功耗/RAS（编号沿用原 docs/architecture/ 序号） |
+| `docs/` | 硬件单元设计：02 AI Core、03 TMA/SRAM、04 MC、05 NoC、06 多 Die/Scale-out、07 Collective/RDMA、08 片上调度器与 PMU、09 封装/功耗/RAS（编号沿用原 docs/architecture/ 序号）、10 Comm Core |
 | `inputs/k3_mc_baseline.json` | 唯一硬件规格（P1，ADR-0021），含 `package` 面积约束。**混合文件**：规格字段手工维护；`computeDieCandidate`、`modelResults`、`collectiveCount`、`tauBasis`、`sramAccounting`、`acceptance.reason`、`tpsDesign` 由 `integration/pipelines/sync_baseline_spec.js` 从 Final Tuning 结果重写（`npm run baseline:sync`），不要手改这些字段 |
 | `src/resource_profiles.js` | P1 × MC320/MC640 资源 profile，从上面的 spec 推导 |
 | `src/k3_compute_node.js` | Compute Node 模型 |
 | `contract.json` | 对外 resource contract 的静态部分；合成到 `out/contracts/hardware_resource_contract.json` |
 
 ## Review and handoff
-HW-01/HW-02/HW-03/HW-04/HW-05 先形成规格；HW-06 做资源和热闭环；交给 `ARCH-02` 与 `SW-*`。硬件规格变更必须有 ADR。
+HW-01/HW-02/HW-03/HW-04/HW-05/HW-07 先形成规格；HW-06 做资源和热闭环；交给 `ARCH-02` 与 `SW-*`。硬件规格变更必须有 ADR。

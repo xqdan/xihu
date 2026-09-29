@@ -8,6 +8,7 @@ Planning pipeline (in this order after a model change):
 npm run search:final        # run_search.js final -> out/rdma/k3_rdma_final_tuning_results.json
 npm run baseline:sync       # sync_baseline_spec.js -> teams/hardware/inputs/k3_mc_baseline.json, out/direction/directional_workload_baseline.json
 npm run aicore:balance      # generate_matrix_vector_balance.js -> out/detailed/matrix_vector_balance.json
+npm run commcore:budget     # generate_comm_core_budget.js -> out/detailed/comm_core_budget.json
 npm run model:planning      # generate_planning_operator_workload -> stage_a -> stage_b -> generate_team_contracts -> generate_direction_feedback -> generate_global_dashboard
 npm test
 ```
@@ -22,4 +23,5 @@ npm test
 - `run_search.js final`: runs the final tuning search (`integration/detailed/k3_rdma_final_tuning_search.js`), the source of the published point; it also writes `out/rdma/k3_rdma_final_tuning_report.html`.
 - `sync_baseline_spec.js`: rewrites only the model-derived fields of the machine-readable P1 baseline so numbers are never hand-copied.
 - `generate_matrix_vector_balance.js`: AI Core matrix:vector balance for K3, GLM-5.2 and DeepSeek-V4-Pro (HW-02 decision input, `teams/hardware/docs/02_AI_CORE.md` section 2.5): per-kernel hiding bounds per core class plus a K3 detailed replay over `vectorLanes`, with vector unpack and with native FP8/MXFP4 tensor input. Reads the published point from the baseline, so run it after `baseline:sync`.
+- `generate_comm_core_budget.js`: Comm Core control-path budget (HW-07 decision input, `teams/hardware/docs/10_COMM_CORE.md`): adds the trigger, WQE dispatch, doorbell and completion path of three control schemes (hardware-triggered Comm Core, AI Core doorbell, firmware dispatch) to every collective, sets `tauUs` to 0 and replays the detailed model; also a tau sweep, the control budget within the raw budget and the Comm Core load. Reads the published point from the baseline, so run it after `baseline:sync`.
 - `models/detailed_run.js` and `models/direction/run_directional_tps.js` were retired and deleted (ADR-0006); use `npm run model:planning`.

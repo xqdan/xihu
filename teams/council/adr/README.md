@@ -30,3 +30,4 @@
 | [ADR-0019](ADR-0019-mc-bandwidth-tiers.md) | ADR-011 | MC 带宽档位与规格网格 | 2026-09-23 | `BASELINE` |
 | [ADR-0020](ADR-0020-tp-only-ffn-moe.md) | ADR-015 | 三个模型的 FFN/MoE 均按 TP 部署，不用 EP | 2026-09-25 | `DEPLOYMENT_DECISION` |
 | [ADR-0021](ADR-0021-single-hardware-spec.md) | — | 唯一硬件规格 P1；删除 P0 规格与旧搜索产物 | 2026-09-26 | `BASELINE` |
+| [ADR-0022](ADR-0022-comm-core.md) | — | 每 Die 一个 Comm Core，集合通信触发、WQE 下发与接收计数硬件化 | 2026-09-29 | `PROPOSED` |

@@ -32,7 +32,7 @@ const SHARED_READS = 'README.md、AGENTS.md、docs/architecture/、integration/�
 const SOTA_READS = 'references/sota/（若存在：领域 SOTA/经典方案知识库。仅供判断"本项目的假设是否偏离常规"，引用时必须标为知识而非证据，且不得用它改写任何仓库数字）'
 
 const TEAMS = [
-  { key: 'hardware', prefix: 'HW', owns: ['Package/floorplan', 'AI Core', 'SRAM/TMA', 'MC', 'NoC/Die-to-Die', 'Collective/RDMA', 'PPA/RAS'] },
+  { key: 'hardware', prefix: 'HW', owns: ['Package/floorplan', 'AI Core', 'SRAM/TMA', 'MC', 'NoC/Die-to-Die', 'Collective/RDMA', 'Comm Core', 'PPA/RAS'] },
   { key: 'software', prefix: 'SW', owns: ['Deployment/runtime', 'compiler', 'kernels', 'fusion', 'collective overlap', 'scheduler', 'profiler'] },
   { key: 'model', prefix: 'MODEL', owns: ['Model manifest', 'workload/operator ledger', 'scenarios', 'routing/sparsity', 'golden traces', 'model KPI'] },
   { key: 'vv', prefix: 'VV', owns: ['schema', 'conservation', 'traceability', 'regression', 'Q-Gate'] },
@@ -68,9 +68,9 @@ const INTERFACE_LIST = Object.entries(INTERFACES).map(([k, v]) => `  ${k}：${v.
 // 但 ownership 上归 HW-05 NoC/Die-to-Die，且 τ 的物理拆分是 blocker B-008 的直接取证方向。
 // covers 仍按 AGENTS.md 的 ownership 全覆盖。
 const PROBES = [
-  { team: 'hardware', id: 'HW-MC', covers: ['MC', 'NoC/Die-to-Die', 'Collective/RDMA'],
-    task: '内存子系统、互联与集合通信：这是本议题的瓶颈域，必须深入，不要与其他硬件单元混谈。第一，把当前 P1 候选的 MC sustained 带宽算出来（不是 peak）：raw 带宽、效率折扣、sustained、有效 DMA 占用，逐项给出处；效率折扣（如 0.7）如果没有供应商或 PHY 实测支撑，明确标 UNVERIFIED 并说明缺什么。第二，给出 MC 各档位（320/400/480/560/640 GB/s/颗）对应的 TPS/usr 与对 1050 门槛的余量，写明是 MODEL 推算还是有模拟点支撑；指出盈亏点带宽。第三，UCIe/NoC 端口带宽是否构成约束，给出与 MC sustained 的比值。第四，明确列出 Hardware 给 Software 和 Model 的内存侧契约：带宽、时延、容量各是多少，是 peak 还是 sustained，余量多少——Software/Model 会拿这些数字直接算。第五，MC 颗数是否受封装面积锁死，能否靠加颗数补带宽。第六，集合通信（collective）单独拆开算，它是同一笔带宽账的另一半，不能只当余量项：把通信时延 τ 的物理构成逐项拆出来（hop 数、单 hop PHY/SerDes 时延、协议开销、交换级数），每项给出处，推不出来的明确写 UNVERIFIED 并说明需要哪一份实测；给出 TP32 下 allreduce 的算法与拓扑选择（ring / hierarchical / 全互联）分别需要多少 hop、多少条链路、在 MC sustained 上占多大比例；指出 collective 与计算/DMA 能否 overlap，以及不可 overlap 的部分对 TPS/usr 的影响。',
-    reads: 'teams/hardware/inputs/k3_mc_baseline.json、teams/hardware/src/、teams/hardware/contract.json、teams/hardware/docs/ 中 MC/NoC/Die-to-Die/Collective/RDMA 相关文档、teams/council/adr/（ADR-0019、ADR-0005）' },
+  { team: 'hardware', id: 'HW-MC', covers: ['MC', 'NoC/Die-to-Die', 'Collective/RDMA', 'Comm Core'],
+    task: '内存子系统、互联与集合通信：这是本议题的瓶颈域，必须深入，不要与其他硬件单元混谈。第一，把当前 P1 候选的 MC sustained 带宽算出来（不是 peak）：raw 带宽、效率折扣、sustained、有效 DMA 占用，逐项给出处；效率折扣（如 0.7）如果没有供应商或 PHY 实测支撑，明确标 UNVERIFIED 并说明缺什么。第二，给出 MC 各档位（320/400/480/560/640 GB/s/颗）对应的 TPS/usr 与对 1050 门槛的余量，写明是 MODEL 推算还是有模拟点支撑；指出盈亏点带宽。第三，UCIe/NoC 端口带宽是否构成约束，给出与 MC sustained 的比值。第四，明确列出 Hardware 给 Software 和 Model 的内存侧契约：带宽、时延、容量各是多少，是 peak 还是 sustained，余量多少——Software/Model 会拿这些数字直接算。第五，MC 颗数是否受封装面积锁死，能否靠加颗数补带宽。第六，集合通信（collective）单独拆开算，它是同一笔带宽账的另一半，不能只当余量项：把通信时延 τ 的物理构成逐项拆出来（hop 数、单 hop PHY/SerDes 时延、协议开销、交换级数），每项给出处，推不出来的明确写 UNVERIFIED 并说明需要哪一份实测；给出 TP32 下 allreduce 的算法与拓扑选择（ring / hierarchical / 全互联）分别需要多少 hop、多少条链路、在 MC sustained 上占多大比例；指出 collective 与计算/DMA 能否 overlap，以及不可 overlap 的部分对 TPS/usr 的影响。第七，集合通信的控制路径（HW-07 Comm Core）：读 out/detailed/comm_core_budget.json，核验每类集合通信的协议时间加控制路径（触发、WQE 下发、doorbell、完成通知）是否仍低于 spec τ、raw 预算内的控制路径上限是多少；控制路径 cycle 数是 ASSUMPTION 还是有 RTL/周期模型支撑；固件或 AI Core 是否出现在每次集合通信的关键路径上。',
+    reads: 'teams/hardware/inputs/k3_mc_baseline.json、teams/hardware/src/、teams/hardware/contract.json、teams/hardware/docs/ 中 MC/NoC/Die-to-Die/Collective/RDMA 相关文档、teams/council/adr/（ADR-0019、ADR-0005、ADR-0022）、out/detailed/comm_core_budget.json' },
   { team: 'hardware', id: 'HW-A', covers: ['AI Core', 'SRAM/TMA'],
     task: '算力与片上存储：sustained 算力与 SRAM/TMA 的对外契约。第一，把 P1 候选的 sustained 算力算出来（不是 peak），必须说明 peak 到 sustained 的折扣依据和出处；如果同一份硬件存在两套 sustained 口径，一并列出并说明差异。第二，核验阵列填充率、kernel 级利用率是否有实测或波形支撑，还是固定假设；发布点 compute 时间与 DMA 时间的比值是多少。第三，片上 shared SRAM 容量与带宽的余量，以及该余量依赖哪个精度前提（如 FP8 KV）；换精度后是否还成立。第四，明确列出 Memory 侧以外的硬件契约数字（算力、TMA、SRAM 带宽）是 peak 还是 sustained。第五，Matrix:Vector 配比：读 out/detailed/matrix_vector_balance.json，按核类（L/H）核验 vector 工作（解包、KV/index key 反量化、softmax、indexer top-k）能否被同 kernel 的矩阵时间掩盖；指出当前配比下哪些 kernel 掩盖不住、暴露多少 µs，结论依赖的前提（原生 FP8/MXFP4 张量输入 O-012、exp SFU、vector 操作计数）和支持的模型范围（只有 K3 还是三模型）。',
     reads: 'teams/hardware/inputs/（硬件基线规格）、teams/hardware/src/resource_profiles.js、teams/hardware/contract.json、teams/hardware/docs/02_*.md 到 07_*.md、out/detailed/matrix_vector_balance.json' },

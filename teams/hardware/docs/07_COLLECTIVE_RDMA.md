@@ -4,7 +4,8 @@
 - 状态：协议语义 `BASELINE`，参数 `MODEL`，τ 的物理推导 `BLOCKER`（B-008）
 - 数字口径：当前 P1 发布点（reference-393、τ = 1.15 µs 下限），见
   [`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md) 第 2.2、4.2、4.3 节；
-  软件侧调度见 [`COLLECTIVE_SCHEDULE.md`](../../software/docs/COLLECTIVE_SCHEDULE.md)。
+  软件侧调度见 [`COLLECTIVE_SCHEDULE.md`](../../software/docs/COLLECTIVE_SCHEDULE.md)；
+  触发、WQE 下发和接收计数由 Comm Core 完成，见 [10_COMM_CORE.md](10_COMM_CORE.md)（`PROPOSED`，ADR-0022）。
 
 ## 1. 目标
 
@@ -13,14 +14,16 @@
 ```mermaid
 sequenceDiagram
   participant P as producer rank
+  participant CC as 本地 Comm Core
   participant N as 本地 NIC
   participant S as 远端 Shared SRAM slot
   participant M as 远端 mailbox
   participant C as 远端 consumer / Reduce
-  P->>N: partial 就绪（tile event）
+  P->>CC: partial 写入 Shared SRAM，完成计数 +1
+  CC->>N: 计数达标 → 模板补丁 + doorbell（10 号文档第 4 节）
   N->>S: one-sided write（64 KiB stripe）
   S-->>M: 数据可见
-  N->>M: commit（2 cycle）
+  N->>M: commit = 收齐后对 committed 计数原子加（PUT_SIGNAL，2 cycle）
   M->>M: committed counter +1
   M-->>C: PARTIAL_READY / READY（notify 2 cycle）
   C->>S: 读取并归约
@@ -29,6 +32,7 @@ sequenceDiagram
   N-->>P: slot 可复用（下一 epoch）
 ```
 
+远端的 mailbox 计数、READY 通知和 group ACK 由远端 Comm Core 的 CC-RX 完成。
 RDMA write 完成不等于 consumer ready；数据、commit、ACK 和 slot generation 都必须在硬件状态机中显式表达。
 
 ## 2. 支持的 collective
@@ -139,7 +143,7 @@ xychart-beta
 ```mermaid
 stateDiagram-v2
   [*] --> FREE
-  FREE --> RESERVED: 软件/调度器按 epoch 预留
+  FREE --> RESERVED: Comm Core CC-RX 按 epoch 预投递
   RESERVED --> RECEIVING: 第一个 stripe 到达
   RECEIVING --> PARTIAL_READY: committed ≥ watermark
   PARTIAL_READY --> READY: committed = 全部 source
@@ -199,4 +203,6 @@ Partial-ready 只有在以下条件同时成立时才可启动：
 - credit、replay、timeout 和错误语义；
 - RTL 级 transaction model；
 - 形式验证属性；
-- 与 NoC、SRAM、scale-out 的完整接口。
+- 与 NoC、SRAM、scale-out 的完整接口；
+- 与 Comm Core 的 doorbell/commit/ACK 接口（[10](10_COMM_CORE.md) 第 8 节）；
+- 内存语义：PUT_SIGNAL、GET、远端原子与内存序（[10](10_COMM_CORE.md) 第 6 节）。

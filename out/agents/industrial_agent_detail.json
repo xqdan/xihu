@@ -75,6 +75,11 @@
             "legacy": [
               "Q7"
             ]
+          },
+          {
+            "id": "HW-07",
+            "role": "Comm-Core",
+            "legacy": []
           }
         ]
       },
@@ -215,7 +220,7 @@
   "teamMeta": {
     "hardware": {
       "name": "Hardware Team",
-      "mission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "mission": "维护唯一硬件规格（P1，8 die + 16 MC 封装）和资源边界",
       "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选"
     },
     "software": {
@@ -342,7 +347,7 @@
       "team": "Hardware Team",
       "role": "Package/Floorplan",
       "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
-      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "teamMission": "维护唯一硬件规格（P1，8 die + 16 MC 封装）和资源边界",
       "inputs": [
         "已发布的上游 contract/artifact",
         "模型/硬件/软件版本和假设"
@@ -365,7 +370,7 @@
       "team": "Hardware Team",
       "role": "AI-Core",
       "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
-      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "teamMission": "维护唯一硬件规格（P1，8 die + 16 MC 封装）和资源边界",
       "inputs": [
         "已发布的上游 contract/artifact",
         "模型/硬件/软件版本和假设"
@@ -389,7 +394,7 @@
       "team": "Hardware Team",
       "role": "SRAM/TMA/Memory",
       "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
-      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "teamMission": "维护唯一硬件规格（P1，8 die + 16 MC 封装）和资源边界",
       "inputs": [
         "已发布的上游 contract/artifact",
         "模型/硬件/软件版本和假设"
@@ -413,7 +418,7 @@
       "team": "Hardware Team",
       "role": "MC/Memory Controller",
       "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
-      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "teamMission": "维护唯一硬件规格（P1，8 die + 16 MC 封装）和资源边界",
       "inputs": [
         "已发布的上游 contract/artifact",
         "模型/硬件/软件版本和假设"
@@ -437,7 +442,7 @@
       "team": "Hardware Team",
       "role": "NoC/Die-to-Die",
       "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
-      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "teamMission": "维护唯一硬件规格（P1，8 die + 16 MC 封装）和资源边界",
       "inputs": [
         "已发布的上游 contract/artifact",
         "模型/硬件/软件版本和假设"
@@ -461,7 +466,7 @@
       "team": "Hardware Team",
       "role": "PPA/Thermal/RAS",
       "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
-      "teamMission": "定义可实现的 7-reticle 单芯片硬件规格和资源边界",
+      "teamMission": "维护唯一硬件规格（P1，8 die + 16 MC 封装）和资源边界",
       "inputs": [
         "已发布的上游 contract/artifact",
         "模型/硬件/软件版本和假设"
@@ -479,6 +484,27 @@
       "legacy": [
         "Q7"
       ]
+    },
+    "HW-07": {
+      "team": "Hardware Team",
+      "role": "Comm-Core",
+      "goal": "在面积、带宽、算力、通信、功耗和热约束下形成可制造候选",
+      "teamMission": "维护唯一硬件规格（P1，8 die + 16 MC 封装）和资源边界",
+      "inputs": [
+        "已发布的上游 contract/artifact",
+        "模型/硬件/软件版本和假设"
+      ],
+      "outputs": [
+        "Comm-Core design specification",
+        "HW-07 machine-readable artifact",
+        "review and handoff report"
+      ],
+      "constraints": [
+        "one owner per file",
+        "输入必须有版本/hash",
+        "planning estimate 不得冒充 validated observation"
+      ],
+      "legacy": []
     },
     "SW-01": {
       "team": "Software Team",
@@ -874,15 +900,5 @@
       "SILICON_OBSERVED",
       "真实芯片观测结果"
     ]
-  ],
-  "contracts": {
-    "directory": "docs/architecture/contracts",
-    "artifacts": [
-      "out/contracts/model_workload_contract.json",
-      "out/contracts/hardware_resource_contract.json",
-      "out/contracts/software_execution_contract.json",
-      "out/contracts/integration_manifest.json"
-    ],
-    "evidence": "out/verification/timing_evidence_status.json"
-  }
+  ]
 }

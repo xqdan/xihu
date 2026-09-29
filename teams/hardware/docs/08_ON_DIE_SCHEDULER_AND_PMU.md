@@ -31,7 +31,8 @@ flowchart TB
 - 选择 L/H Core；
 - 优先数据本地性；
 - 控制 Shared SRAM slice；
-- 分配 collective mailbox；
+- 向 Comm Core 装载 collective graph 与 WQE 模板、在 token 边界推进 epoch；每次集合通信的触发、WQE 下发和
+  mailbox 计数由 Comm Core 完成，不经 Die Dispatcher（[10_COMM_CORE.md](10_COMM_CORE.md)）；
 - 在 tile 边界迁移，不迁移正在执行的 Tensor wave。
 
 ### 1.2 Core Tile Scheduler
@@ -154,6 +155,7 @@ sequenceDiagram
 | DMA / MC | bytes、busy、latency、replay、抢占次数 | 每 MC | DMA busy 775.30 µs、wait 22.35 µs |
 | Collective | 次数、phase、request、协议时长、τ 补足、timeout | 每类 | `memoryTransport`、`cardLocal`、`tpReduce`、`tauFloor` |
 | Mailbox | occupancy、partial-ready 提前量、generation 丢弃 | 每 slot | — |
+| Comm Core | 触发到 doorbell 时延、WQE 数、commit 计数、ACK 合并、slot 冻结 | 每 Die | 控制路径（`comm_core_budget.json`） |
 | Launch | descriptor 数、doorbell、launch stall | 每 Die | `launch` |
 | 重叠 | shared 专家与集合通信重叠时长 | 每层 | `commOverlap` |
 | 物理 | Core/Die 温度、频率、功率 | 每 Die | 功耗 286.22 W |
