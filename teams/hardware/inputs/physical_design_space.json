@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "physical-design-space-v0.1",
+  "owner": "Hardware (package / power / RAS); co-sign Council (system budget)",
+  "status": "UNVERIFIED",
+  "document": "teams/hardware/docs/09_PACKAGE_POWER_RAS.md",
+  "scope": "Every alternative the physical domain considers for the 7-reticle package: how many compute dies and cubes the window holds, which process and matrix density the area is derived on, what cooling and per-die power ceiling apply, and which keep-out fraction is reserved. integration/detailed/physical_search.js enumerates the product of the searched dimensions, drops combinations that violate a stated constraint, scores the rest on package area conservation, die and card power and PHY shoreline, and writes only the winner to out/detailed/physical_design.json. The per-option comparison is quoted in the document.",
+  "evidence": "UNVERIFIED: this file was drafted from the repository documents and the published baseline by an agent, not derived by the physical domain owner. The limits (die area 400 mm2, die power 300 W, card power 2800 W, placement window 5248 mm2) come from k3_mc_baseline.json#tpsDesign.hardware.limits and #package (ADR-0018, ADR-0005); the process and matrix-density scaling comes from integration/detailed/k3_physical_basis.js (ASSUMPTION B-006). Every option below carries an evidence string saying where its number came from. Anything labelled ASSUMPTION is a placeholder the domain owner must calibrate or delete. This space does not include thermal resistance, VRM or cold-plate models: the document carries cooling as ASSUMPTION (O-015) and this search cannot improve on that.",
+  "caliber": {
+    "dieArea": "per compute die, mm2, on the searched process basis, including the charged shared-port scaling cost",
+    "diePower": "per compute die, W, at the published frequency",
+    "cardPower": "per card = 8 x diePower + the MC term + fixed overhead, W",
+    "packageArea": "sum of all placed logic area in the placement window, mm2, before keep-out",
+    "reason": "package area conservation is stated as placed area + keep-out = usable window; a candidate that only balances the identity without comparing against the 5248 mm2 window has not been checked against the spec"
+  },
+  "requirements": {
+    "models": ["Kimi K3", "GLM-5.2", "DeepSeek-V4-Pro"],
+    "modelsReason": "the package must serve the three models at the published point; a die/cube arrangement that only fits one is not a package",
+    "publishedPoint": "tpsDesign.hardware",
+    "tpsTolerance": 0.001,
+    "tpsReason": "the physical domain may not move the published point: every candidate is replayed on the K3 detailed model and must keep TPS/usr within 0.1% of the published value",
+    "areaConservationTolerance": 0,
+    "areaConservationReason": "the document states all unit areas + keep-out = package usable area, error 0; a non-zero residual means a term is unaccounted for, not that the budget is loose",
+    "dieAreaLimitMm2": 400,
+    "diePowerLimitW": 300,
+    "cardPowerLimitW": 2800,
+    "placementWindowMm2": 5248,
+    "limitsReason": "k3_mc_baseline.json#tpsDesign.hardware.limits; the die limits reflect liquid cooling (ADR-0005). ADR-0021 makes this the single hardware spec"
+  },
+  "constraints": [
+    "die area <= 400 mm2 and die power <= 300 W, both including any keep-out and port scaling the candidate charges",
+    "card power <= 2800 W (the MC term and the fixed overhead are charged, not assumed away)",
+    "package area (dies + cubes) + reserve <= the 5248 mm2 placement window",
+    "PHY shoreline <= the die edge budget (4 x sqrt(dieArea) x phyEdgeFraction); the published point sits at 24.21 / 52.95 mm and this constraint is what a naive lane increase breaks first",
+    "the K3 detailed replay at the published point keeps TPS/usr within tpsTolerance",
+    "every area term must be classifiable as logic, SRAM or PHY: k3_physical_basis.resize throws on an unclassified term, and that must stay true"
+  ],
+  "objective": [
+    "feasible first",
+    "most conservative keep-out premise (a smaller keep-out is a stronger claim about what the vendor accepts, and nothing in this repository supports it)",
+    "largest package area reserve within that premise (the placement window is the resource that cannot be bought back later)",
+    "largest die power margin below the cooling ceiling",
+    "lowest process risk (a scaled basis is a promise about a node, not a measurement)"
+  ],
+  "dimensions": {
+    "process": {
+      "question": "Which process basis the area is derived on",
+      "options": {
+        "SF4": {"process": "SF4", "evidence": "k3_physical_basis.js BASIS.process; logic 57x32 / 51x28 = 1.277, SRAM 0.0262 / 0.021 = 1.248, PHY unscaled. ASSUMPTION (B-006): public node figures, not PDK or macro data. This is the published point"},
+        "N4-ref": {"process": "N4-ref", "evidence": "the project's N4 reference coefficients, kept so every historical model replays unchanged; 374.86 mm2 die area vs 373.71 on SF4. Reported as a sensitivity, not a candidate, unless the domain owner reopens the node decision"}
+      }
+    },
+    "matrixTFPerMm2": {
+      "question": "Matrix density at 1 GHz on the N4 reference, which sets the largest single area term",
+      "options": {
+        "1.6": {"tfPerMm2": 1.6, "evidence": "the historical TECH.matrixTFPerMm2, kept so old models replay; the module note calls it 2-3x above the tensor-array area implied by shipping N4-class parts"},
+        "3.2": {"tfPerMm2": 3.2, "evidence": "k3_physical_basis.js BASIS.matrixTFPerMm2; 0.000625 mm2 per BF16 MAC, twice the historical value. ASSUMPTION (B-006), needs a MAC-array macro. This is the published point"}
+      }
+    },
+    "cooling": {
+      "question": "Which cooling and per-die power ceiling the design is checked against",
+      "options": {
+        "liquid": {"cooling": "liquid", "diePowerLimitW": 300, "cardPowerLimitW": 2800, "evidence": "card.cooling and BASIS.limits (ADR-0005, decision 2026-09-25): cold plate, die 300 W, card 2800 W. This is the published point. ASSUMPTION (O-015): cold plate, VRM and card power delivery are not modelled"},
+        "air": {"cooling": "air", "diePowerLimitW": 260, "cardPowerLimitW": 2400, "evidence": "the superseded air-cooled limits, kept as the sensitivity that shows what the liquid decision bought; NOT a candidate the search may pick unless the domain owner reopens ADR-0005"}
+      }
+    },
+    "reserveFraction": {
+      "question": "Fraction of the placement window held back for RDL, spacing, keep-out, PDN and repair",
+      "options": {
+        "0.1254": {"reserve": 0.1254, "evidence": "the published point: 658.29 / 5248, from document section 1. Recorded as the observed value, not a chosen one"},
+        "0.10": {"reserve": 0.10, "evidence": "ASSUMPTION: a tighter reserve. The document does not say what floor is achievable; the vendor must confirm the stitch map, keep-out and maximum dimensions (package.note)"},
+        "0.15": {"reserve": 0.15, "evidence": "ASSUMPTION: a looser reserve, the safe direction if the stitch map is worse than assumed"}
+      }
+    }
+  },
+  "ruled": {
+    "dieCount": {
+      "chosen": "8 compute dies + 16 memory cubes",
+      "alternatives": ["7 dies + 18 cubes", "a single larger die"],
+      "reason": "ADR-0018 fixes the 7-reticle package boundary and the 4x2 die arrangement; a single larger die would exceed the reticle limit. The count is the given, not a searched dimension, so it appears here rather than as a dimension the search pretends to explore"
+    },
+    "frequency": {
+      "chosen": "1.0 GHz fixed",
+      "alternatives": ["raise frequency to buy compute and spend power"],
+      "reason": "card.powerLimitW is the binding constraint at the published point (2768.47 / 2800 W, 98.9% used), and the physical strategy explicitly prefers lowering frequency over relaxing thermal margin. UNVERIFIED: no voltage/frequency curve is in the repository, so a frequency sweep cannot be scored here"
+    },
+    "nearMemoryCompute": {
+      "chosen": "no compute inside the cube, cube area stays at the planning 100 mm2",
+      "alternatives": ["cube with a tensor unit, larger cube area and different power"],
+      "reason": "architectureRoute keeps near-memory compute out of the baseline; 16 x 100 mm2 = 1600 mm2 is 30% of the window, and any growth there comes out of the reserve"
+    },
+    "thermals": {
+      "chosen": "cooling carried as an ASSUMPTION (O-015), limits checked but not derived",
+      "alternatives": ["a thermal-resistance model with a junction temperature budget"],
+      "reason": "the repository has no thermal model: no theta-JA, no cold-plate curve, no ambient. A search that scored die power against a derived temperature would be inventing the model. The dimension is limited to which ceiling applies, and the document states the limitation"
+    },
+    "degradation": {
+      "chosen": "failure degradation is a route with a stated result, checked in the document, not searched here",
+      "alternatives": ["a degradable cube count as a search dimension"],
+      "reason": "the physical strategy requires a degradation mode with a route and a performance result; the repository has no per-failure performance model to score one with. UNVERIFIED and deliberately excluded, so the space does not imply it was scored"
+    }
+  }
+}

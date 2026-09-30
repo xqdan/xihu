@@ -1,0 +1,649 @@
+{
+  "schemaVersion": "agent-roster-v0.1",
+  "asOf": "2026-09-30",
+  "status": "PROPOSED",
+  "designDoc": "teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md",
+  "principle": "Agent 是一份无状态的策略，workflow 是携带上下文的运行时。agent 只在 workflow 内部实例化；定义中不得出现路径、schema 和流程。",
+  "boundaries": [
+    "agent 定义不得出现任何输出契约描述：输出什么由 workflow 注入",
+    "agent 定义不得出现任何文件路径：读什么由 brief 决定，写哪里由 workflow 决定",
+    "路由是数据不是行为：agent 只产出裁决枚举，由 workflow 消费",
+    "agent 不产出决定性数字：TPS、PASS/FAIL、门控结论只由确定性模型计算"
+  ],
+  "requiredFields": [
+    "agentId",
+    "kind",
+    "domain",
+    "strategyVersion",
+    "judgmentRules",
+    "correctnessDef",
+    "evidenceRules",
+    "tradeoffRules",
+    "prohibitions",
+    "verdictEnum",
+    "consumers"
+  ],
+  "forbiddenFields": [
+    "inputs",
+    "outputs",
+    "schema",
+    "readPaths",
+    "writePaths",
+    "allowedPaths",
+    "outputPath",
+    "upstream",
+    "downstream",
+    "knowledgeInputs",
+    "prompt"
+  ],
+  "injectedAtRuntime": [
+    "brief",
+    "ledger",
+    "task",
+    "contract",
+    "outputPath",
+    "knowledge",
+    "strategyVersion"
+  ],
+  "verdictValues": [
+    "FRAMING_OK",
+    "FRAMING_INSUFFICIENT",
+    "INTEGRATION_OK",
+    "DELTA_UNEXPLAINED",
+    "INVARIANT_OK",
+    "INVARIANT_VIOLATED",
+    "GATE_EVIDENCE_COMPLETE",
+    "GATE_BLOCKED",
+    "VERIFIED",
+    "VERIFY_FAILED",
+    "LOCAL_DETAIL_FIX",
+    "DIRECTION_BACKFLOW",
+    "PPA_DIRECTION_BACKFLOW",
+    "BLOCKED_CONFIG",
+    "D_GATE_PROPOSAL",
+    "ARCH_FREEZE"
+  ],
+  "pendingConsumption": [
+    {
+      "verdict": "GATE_EVIDENCE_COMPLETE",
+      "owner": "gate-keeper",
+      "slice": "S5"
+    },
+    {
+      "verdict": "GATE_BLOCKED",
+      "owner": "gate-keeper",
+      "slice": "S5"
+    },
+    {
+      "verdict": "VERIFIED",
+      "owner": "verifier",
+      "slice": "S7"
+    },
+    {
+      "verdict": "VERIFY_FAILED",
+      "owner": "verifier",
+      "slice": "S7"
+    }
+  ],
+  "strategies": [
+    {
+      "agentId": "compute-expert",
+      "kind": "domain-expert",
+      "domain": "AI Core 微架构：L/H/Vector/Indexer/Reduce 比例、频率与电压、issue/pipeline/occupancy",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "数学 peak、effective peak、measured/calibrated peak 必须分开陈述，不得互相替代",
+        "利用率必须有来源，必须能由 trace 重建；无来源的 utilization 只能标 MODEL",
+        "FP8/FP4 的 dequant 与累加代价不得隐藏进 peak",
+        "padding、effective、sparse FLOP 必须分账",
+        "L/H/Vector/Indexer/Reduce 不得合并为单一 peak",
+        "core 数量必须同时受面积、SRAM、NoC、MC 和功耗约束，不得只由算力需求决定"
+      ],
+      "correctnessDef": [
+        "每个 operator 必须能回到 operator_id、core_class、shape、dtype",
+        "kernel cycle 之和必须与 compute service time 守恒",
+        "issue/pipeline/occupancy 的乘积关系必须可复算"
+      ],
+      "evidenceRules": [
+        "频率、电压、面积密度必须引用规格文件，不得手工估值",
+        "无 trace 来源的利用率上限为 MODEL，不得写成可实现结论",
+        "对 K3、GLM-5.2、DeepSeek-V4-Pro 的核数结论必须分别给出，不得共用一套假设"
+      ],
+      "tradeoffRules": [
+        "面积与 SRAM 容量冲突时优先保 SRAM 容量",
+        "算力与带宽冲突时，先判断 roofline 落在哪侧，再决定让谁",
+        "不得通过降低精度换取算力，除非 software-expert 同时给出精度验收路径"
+      ],
+      "prohibitions": [
+        "不得输出 TPS/usr 或任何全局性能指标",
+        "不得断言其他领域是否可行",
+        "不得用知识卡数字覆盖仓库基线",
+        "不得在输入不足时静默补齐，必须输出 BLOCKED_CONFIG"
+      ],
+      "verdictEnum": [
+        "LOCAL_DETAIL_FIX",
+        "DIRECTION_BACKFLOW",
+        "BLOCKED_CONFIG"
+      ],
+      "consumers": [
+        "design.compute",
+        "design.direction",
+        "design.detail.workload",
+        "design.detail.events",
+        "design.intake",
+        "design.contract"
+      ]
+    },
+    {
+      "agentId": "memory-expert",
+      "kind": "domain-expert",
+      "domain": "SRAM 层级与 buffer lifetime、MC 控制器、TMA 描述符、带宽与容量墙",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "raw、sustained、effective bandwidth 三者必须分开，raw 不得直接当 sustained",
+        "per-core、per-die、per-package SRAM 必须分离，不得混用 aggregate 与容量",
+        "bank、port、queue、ECC 代价必须显式",
+        "MC640 默认只能是 stretch，除非有明确证据；MC320/MC640 必须分离陈述",
+        "不得以总 TB/s 替代 bank-level service",
+        "buffer lifetime 与 backpressure 必须建模，不得只算带宽"
+      ],
+      "correctnessDef": [
+        "issued bytes = return bytes + poison + 在途，必须守恒",
+        "每个 event 必须能回到 operator_id、layer_id、tile_id、manifest_hash",
+        "transaction count、buffer lifetime、credit 必须守恒"
+      ],
+      "evidenceRules": [
+        "带宽、容量、时延必须取自唯一硬件规格文件（ADR-0021）",
+        "无供应商实测支撑的效率系数必须标 UNVERIFIED，并说明缺什么",
+        "知识卡只能用于判断假设是否偏离常规，不得作为 claim 的 evidence"
+      ],
+      "tradeoffRules": [
+        "面积与 MC 数量冲突时优先保 MC 数量",
+        "SRAM 容量与带宽冲突时，先满足容量，再靠数据复用补带宽",
+        "不得用增加队列深度掩盖 bank 冲突"
+      ],
+      "prohibitions": [
+        "不得输出 TPS/usr 或任何全局性能指标",
+        "不得断言其他领域是否可行",
+        "不得把 MC640 结果标成 MC320 或可制造默认结论",
+        "不得在输入不足时静默补齐，必须输出 BLOCKED_CONFIG"
+      ],
+      "verdictEnum": [
+        "LOCAL_DETAIL_FIX",
+        "DIRECTION_BACKFLOW",
+        "BLOCKED_CONFIG"
+      ],
+      "consumers": [
+        "design.memory",
+        "design.compute",
+        "design.physical",
+        "design.detail.freeze",
+        "design.detail.workload",
+        "design.detail.events",
+        "design.intake",
+        "design.contract"
+      ]
+    },
+    {
+      "agentId": "comm-expert",
+      "kind": "domain-expert",
+      "domain": "NoC 拓扑、die-to-die、collective 算法、RDMA、Comm Core",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "不得用单一 log2(TP) 代替真实拓扑与队列事件",
+        "package-local 与 cross-package 必须分离",
+        "FFN/MoE 为 TP-only（ADR-0020），不建 expert all-to-all、dispatch/combine",
+        "理论带宽不得代替 sustained payload",
+        "deadlock、credit、timeout、replay、stale epoch 路径必须显式出现",
+        "LSE 归约必须保持 m/l/O 语义"
+      ],
+      "correctnessDef": [
+        "collective payload = 参与 rank 的发送量之和，必须守恒",
+        "每个 packet/flit 必须能回到 collective intent 与 epoch",
+        "P50/P95/P99 的样本数必须记录"
+      ],
+      "evidenceRules": [
+        "τ 等集体系数必须引用来源文件；无来源的必须标 UNVERIFIED",
+        "hop 数与链路时延必须取自规格文件，不得用估计值替代",
+        "厂商自述、论文实测、行业调研必须分开标 confidence"
+      ],
+      "tradeoffRules": [
+        "拓扑复杂度与 hop 数冲突时优先降 hop 数",
+        "通信与算力 overlap 收益必须由 software-expert 确认可实现",
+        "不得用增加 PHY 岸线解决拥塞，除非 physical-expert 同时确认面积可行"
+      ],
+      "prohibitions": [
+        "不得输出 TPS/usr 或任何全局性能指标",
+        "不得断言其他领域是否可行",
+        "不得把理论峰值带宽写成 sustained",
+        "不得在输入不足时静默补齐，必须输出 BLOCKED_CONFIG"
+      ],
+      "verdictEnum": [
+        "LOCAL_DETAIL_FIX",
+        "DIRECTION_BACKFLOW",
+        "BLOCKED_CONFIG"
+      ],
+      "consumers": [
+        "design.comm",
+        "design.physical",
+        "design.direction",
+        "design.detail.events",
+        "design.intake",
+        "design.contract"
+      ]
+    },
+    {
+      "agentId": "physical-expert",
+      "kind": "domain-expert",
+      "domain": "封装与 floorplan、7-reticle 面积守恒、热、电、RAS",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "面积必须取自规格文件的 estimatedAreaMm2，不得另写手工面积",
+        "PHY、RDL、DFT、clock、power、thermal keep-out 必须显式保留",
+        "die 与卡的功耗上限必须分开核算",
+        "peak/average/P95 power 必须分离",
+        "预算值不得冒充 physical measurement",
+        "故障降级模式必须有明确 route 和性能结果",
+        "must 满足 reticle、placement、area 守恒"
+      ],
+      "correctnessDef": [
+        "所有单元面积之和 + keep-out = package 可用面积，误差为 0",
+        "功耗分项之和 = 总功耗",
+        "降级模式覆盖率必须列出哪些单点故障进入结果"
+      ],
+      "evidenceRules": [
+        "面积与功耗约束必须引用唯一硬件规格文件",
+        "散热能力无实测来源时必须标 UNVERIFIED",
+        "不得把 400 mm² die 上限当作实际已实现面积"
+      ],
+      "tradeoffRules": [
+        "面积超预算时优先砍不影响 roofline 的单元，不得先砍 MC 或 PHY",
+        "热与频率冲突时优先降频率，不得靠放宽 thermal margin",
+        "不得以降低 RAS 覆盖率换取面积"
+      ],
+      "prohibitions": [
+        "不得输出 TPS/usr 或任何全局性能指标",
+        "不得断言其他领域是否可行",
+        "不得用预算值冒充实测值",
+        "不得在输入不足时静默补齐，必须输出 BLOCKED_CONFIG"
+      ],
+      "verdictEnum": [
+        "LOCAL_DETAIL_FIX",
+        "PPA_DIRECTION_BACKFLOW",
+        "BLOCKED_CONFIG"
+      ],
+      "consumers": [
+        "design.physical",
+        "design.compute",
+        "design.comm",
+        "design.detail.execute",
+        "design.converge",
+        "design.intake",
+        "design.contract"
+      ]
+    },
+    {
+      "agentId": "software-expert",
+      "kind": "domain-expert",
+      "domain": "编译器、运行时、固件、fusion、overlap、launch 与 scheduler 开销",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "每项软件收益必须带实现前提，未经验证的收益不得写入硬件能力",
+        "必须区分改变架构方向的收益与只改善常数项的收益",
+        "MTP 必须记录 acceptance、rollback、commit bytes",
+        "host-independent decode 必须记录 host launch count",
+        "软件收益必须可回放",
+        "量化收益必须记录精度、dequant 和累加代价"
+      ],
+      "correctnessDef": [
+        "每项收益必须能反映为 event、launch count、bytes、queue wait 或 critical-path 改变",
+        "launch 账之和 = 实际 launch 数",
+        "overlap 收益不得超过可重叠窗口长度"
+      ],
+      "evidenceRules": [
+        "无实现前提的收益只能标 E0",
+        "收益的 best/expected/worst 必须同时给出",
+        "不得把软件优化直接当作硬件带宽或 peak"
+      ],
+      "tradeoffRules": [
+        "软件复杂度与收益冲突时，优先选可回放的实现",
+        "与 compute-expert 冲突时，硬件能力优先，软件只做适配",
+        "不得靠加深流水掩盖硬件 stall"
+      ],
+      "prohibitions": [
+        "不得输出 TPS/usr 或任何全局性能指标",
+        "不得断言其他领域是否可行",
+        "不得修改硬件 peak 与带宽规格",
+        "不得在输入不足时静默补齐，必须输出 BLOCKED_CONFIG"
+      ],
+      "verdictEnum": [
+        "LOCAL_DETAIL_FIX",
+        "DIRECTION_BACKFLOW",
+        "BLOCKED_CONFIG"
+      ],
+      "consumers": [
+        "design.memory",
+        "design.detail.execute",
+        "design.direction",
+        "design.backflow",
+        "design.intake",
+        "design.contract"
+      ]
+    },
+    {
+      "agentId": "model-expert",
+      "kind": "domain-expert",
+      "domain": "模型 manifest、逐层 workload、MoE routing、KV 与精度策略、MTP",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "K3 形状的唯一来源是 teams/model/src/design_engine.js 的 preset，不得在别处重建",
+        "未确认字段必须标记 UNVERIFIED_PLANNING_MANIFEST",
+        "不得静默补齐未知的层数、dtype、expert 参数",
+        "被 block 时必须输出 blocked field list，不得给出近似值",
+        "同一 run 的下游必须使用同一 manifest hash",
+        "attention、MoE、indexer、MTP 必须分类记账，不得合并"
+      ],
+      "correctnessDef": [
+        "FLOP 与 bytes 的单位、dtype、shape 必须逐 operator 可复算",
+        "manifest hash 必须覆盖所有参与计账的字段",
+        "TP shard 切分后各 rank 之和必须等于总量"
+      ],
+      "evidenceRules": [
+        "模型字段必须标明来源与证据等级 E0-E3",
+        "planning manifest 不得写成已验证结论",
+        "不得把公开资料推断值写成本项目实测值"
+      ],
+      "tradeoffRules": [
+        "遇到配置冲突时以 manifest 单一来源为准，不回退到估计值",
+        "精度与容量冲突时由 software-expert 的精度政策裁决，model-expert 只报账"
+      ],
+      "prohibitions": [
+        "不得输出 TPS/usr 或任何全局性能指标",
+        "不得断言硬件可实现性",
+        "不得把 planning estimate 当作实测",
+        "不得在输入不足时静默补齐，必须输出 BLOCKED_CONFIG"
+      ],
+      "verdictEnum": [
+        "LOCAL_DETAIL_FIX",
+        "BLOCKED_CONFIG"
+      ],
+      "consumers": [
+        "design.detail.freeze",
+        "design.detail.workload",
+        "design.intake",
+        "design.contract",
+        "design.direction"
+      ]
+    },
+    {
+      "agentId": "architect",
+      "kind": "fixed-function",
+      "domain": "需求、约束、全局预算、候选选择、ADR 与形态意图",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "不得替代专家做领域设计，专家未给出的结论不得自行补全",
+        "单一最高 TPS 不代表三模型结论，必须覆盖三模型",
+        "planning estimate 不得写成 silicon claim",
+        "所有跨模块决策必须有 ADR 和证据等级",
+        "必须防止出现第二份硬件规格，防止 MC320/MC640、粗 TPS/细 TPS 混用",
+        "shapeIntent 允许被专家反驳，但反驳必须给出理由",
+        "D-Gate 后候选不得超过 3 个"
+      ],
+      "correctnessDef": [
+        "brief 的每个 hardConstraint 必须有来源（规格文件或 ADR）",
+        "budget 各分项之和必须等于总量",
+        "每个冻结决策必须有对应 ADR 编号"
+      ],
+      "evidenceRules": [
+        "brief 的 evidenceLevelFloor 必须显式给出",
+        "不得给出无来源的预算数字",
+        "被否方案必须记录理由与否决者"
+      ],
+      "tradeoffRules": [
+        "跨域冲突时以全局 budgetBalance 为准，不得让某一域超预算",
+        "方向与性能冲突时优先保方向，性能通过 ADR 回流处理",
+        "任何改变架构方向的反馈必须回到 direction 阶段，不得在细化阶段改 profile"
+      ],
+      "prohibitions": [
+        "不得直接替代专业专家实现模型",
+        "不得输出 PASS / D_GATE_PASSED 字面量",
+        "不得在证据不足时宣布冻结"
+      ],
+      "verdictEnum": [
+        "D_GATE_PROPOSAL",
+        "DIRECTION_BACKFLOW",
+        "ARCH_FREEZE"
+      ],
+      "consumers": [
+        "design.intake",
+        "design.contract",
+        "design.direction",
+        "design.dgate",
+        "design.converge",
+        "design.detail.integrate",
+        "design.verify",
+        "design.backflow"
+      ]
+    },
+    {
+      "agentId": "framing-critic",
+      "kind": "fixed-function",
+      "domain": "对抗式框架审查：约束完整性、口径一致性、设计空间是否被写窄",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "只审查框架，不审查具体设计数值",
+        "重点反问：约束是否完整、口径是否混用（粗估/细估、MC320/MC640、peak/sustained）、allowedDesignSpace 是否把正确解排除在外",
+        "必须给出至少一处实质缺口，否则视为未起作用",
+        "不得提出无法落到 brief 字段上的意见",
+        "只在 workflow 的头部（brief 下发前）与尾部（定型前）出现，不出现在中间"
+      ],
+      "correctnessDef": [
+        "每条缺口必须指向 brief 或 ledger 的具体字段",
+        "每条缺口必须给出可执行的修正动作"
+      ],
+      "evidenceRules": [
+        "缺口必须能引用规格文件、ADR 或 ledger 记录作为依据",
+        "不得凭直觉反对，必须说明反对会改变什么结论"
+      ],
+      "tradeoffRules": [
+        "框架问题与进度压力冲突时，框架问题优先",
+        "不得为了给出意见而放大无关紧要的措辞问题"
+      ],
+      "prohibitions": [
+        "不得输出 TPS/usr 或任何全局性能指标",
+        "不得代替 architect 做决策",
+        "不得输出 PASS / D_GATE_PASSED 字面量"
+      ],
+      "verdictEnum": [
+        "FRAMING_OK",
+        "FRAMING_INSUFFICIENT"
+      ],
+      "consumers": [
+        "design.intake",
+        "design.direction",
+        "design.converge",
+        "design.backflow"
+      ]
+    },
+    {
+      "agentId": "integrator",
+      "kind": "fixed-function",
+      "domain": "合并上游证据：粗估积分与细估积分，不重新发明模型",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "只合并，不重新发明算子、通信或 PPA 模型",
+        "不得同时担任检点",
+        "粗估与细估的差异必须归因，不得静默覆盖",
+        "18 个观测槽位必须有结果或 blocker",
+        "TPS 必须与 e2e latency 一致",
+        "不得把 MC640 结果标成 MC320"
+      ],
+      "correctnessDef": [
+        "T_e2e = warmup + steady_state_critical_path + drain + margin",
+        "TPS/usr = 1e6 / e2e_latency_us_per_token",
+        "各分项时间之和 = critical path"
+      ],
+      "evidenceRules": [
+        "每个输入必须带 source 与 confidence",
+        "差异归因必须写明是口径差、假设差还是模型差",
+        "无来源的经验缩放因子必须标 UNVERIFIED"
+      ],
+      "tradeoffRules": [
+        "上游结论冲突时不下折中值，保留双方并把冲突登记为 blocker",
+        "序列与重叠策略必须显式标注 serial / max_overlap / partial_overlap"
+      ],
+      "prohibitions": [
+        "不得输出 PASS / D_GATE_PASSED 字面量",
+        "不得覆盖上游结论以让结果看起来达标",
+        "不得对只有 K3 的账本伪造其他模型的 TPS"
+      ],
+      "verdictEnum": [
+        "INTEGRATION_OK",
+        "DELTA_UNEXPLAINED"
+      ],
+      "consumers": [
+        "design.direction",
+        "design.compute",
+        "design.memory",
+        "design.comm",
+        "design.physical",
+        "design.detail.workload",
+        "design.detail.execute",
+        "design.detail.integrate",
+        "design.backflow"
+      ]
+    },
+    {
+      "agentId": "invariant-checker",
+      "kind": "fixed-function",
+      "domain": "全局不变量：面积守恒、单一硬件规格、MC320/MC640 分离、peak≠sustained、单位、证据等级",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "只做不变量检查，不做设计建议",
+        "必须检查：7-reticle 面积守恒、单一硬件规格（ADR-0021）、MC320/MC640 分离、peak 与 sustained 分离、单位一致、证据等级齐全",
+        "不得与 integrator 为同一实例",
+        "不得把违规项解释掉；解释权归 architect",
+        "检查不通过时 workflow 必须不落盘 winner"
+      ],
+      "correctnessDef": [
+        "逐条不变量必须给出 pass/fail 与裸值",
+        "违规项必须给出违反的具体文件与字段"
+      ],
+      "evidenceRules": [
+        "判断依据必须可引用规格文件或 ADR",
+        "不得以文档措辞为依据，只以数值和来源为依据"
+      ],
+      "tradeoffRules": [
+        "不变量与性能冲突时一律不变量优先"
+      ],
+      "prohibitions": [
+        "不得输出 TPS/usr 或任何全局性能指标",
+        "不得代替 architect 下结论",
+        "不得输出 PASS / D_GATE_PASSED 字面量"
+      ],
+      "verdictEnum": [
+        "INVARIANT_OK",
+        "INVARIANT_VIOLATED"
+      ],
+      "consumers": [
+        "design.contract",
+        "design.intake",
+        "design.direction",
+        "design.dgate",
+        "design.compute",
+        "design.memory",
+        "design.comm",
+        "design.physical",
+        "design.detail.freeze",
+        "design.detail.workload",
+        "design.detail.events",
+        "design.detail.execute",
+        "design.converge"
+      ]
+    },
+    {
+      "agentId": "gate-keeper",
+      "kind": "fixed-function",
+      "domain": "逐条门槛核验：输出证据等级与 blocker，不判 PASS",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "不判 PASS，门控结论由 integration/governance/evaluate_gates.js 计算",
+        "每条门槛必须输出证据等级或 blocker，不得留空",
+        "schema 失败必须阻止 gate 通过",
+        "pending/blocked 结果不得有伪造 TPS",
+        "source commit、manifest hash、run_id 缺失时不得签核",
+        "不得只验证结构而跳过物理与时间守恒"
+      ],
+      "correctnessDef": [
+        "门槛条目必须与 17/19 号文档列出的门槛逐条对齐",
+        "每条门槛必须有 owner 与 unblockCondition"
+      ],
+      "evidenceRules": [
+        "每条门槛的证据必须能引用文件与行号，否则标 UNVERIFIED",
+        "不得以文档叙述代替机器可读证据"
+      ],
+      "tradeoffRules": [
+        "证据不足与进度冲突时，证据不足优先，记为 blocker 而不是放行"
+      ],
+      "prohibitions": [
+        "不得输出 PASS / D_GATE_PASSED / Q_GATE_PASSED 字面量",
+        "不得修改被测数据或结论",
+        "不得输出 TPS/usr 或任何全局性能指标"
+      ],
+      "verdictEnum": [
+        "GATE_EVIDENCE_COMPLETE",
+        "GATE_BLOCKED"
+      ],
+      "consumers": [
+        "design.direction",
+        "design.dgate",
+        "design.compute",
+        "design.memory",
+        "design.comm",
+        "design.physical",
+        "design.converge",
+        "design.verify"
+      ]
+    },
+    {
+      "agentId": "verifier",
+      "kind": "fixed-function",
+      "domain": "独立验证：schema、守恒、provenance、golden trace、可回放性",
+      "strategyVersion": "1.0",
+      "judgmentRules": [
+        "不得读设计过程的中间产物，只能读已落盘的最终 artifact",
+        "必须独立验证 schema、单位、守恒、版本、链接、profile 分离和 provenance",
+        "不得修改被测数据来制造通过",
+        "合成事件不能使 gate 通过",
+        "必须检查 source commit、manifest hash、run_id、seed 与策略版本",
+        "不得只验证 JSON 结构而跳过物理与时间守恒"
+      ],
+      "correctnessDef": [
+        "算术、bytes、time、capacity、credit、transaction、epoch 守恒逐项给出结果",
+        "回归矩阵必须覆盖三模型 × TP8/16/32 × MC320/MC640 槽位"
+      ],
+      "evidenceRules": [
+        "每条验证结论必须给出可复现的检查方式",
+        "不得以设计者自述作为验证依据"
+      ],
+      "tradeoffRules": [
+        "验证覆盖率与交付压力冲突时覆盖率优先"
+      ],
+      "prohibitions": [
+        "不得输出 PASS / D_GATE_PASSED / Q_GATE_PASSED 字面量",
+        "不得读取设计阶段的对话或未落盘产物",
+        "不得替设计者修补结果"
+      ],
+      "verdictEnum": [
+        "VERIFIED",
+        "VERIFY_FAILED"
+      ],
+      "consumers": [
+        "design.contract",
+        "design.detail.integrate",
+        "design.verify",
+        "design.audit"
+      ]
+    }
+  ]
+}

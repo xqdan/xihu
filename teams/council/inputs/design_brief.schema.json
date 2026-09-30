@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "design-brief-v0.1",
+  "title": "DesignBrief",
+  "description": "架构师下发给单个 stage 的运行时注入契约。策略 agent 只能通过它知道目标、约束、预算、允许的设计空间。设计依据见 teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "stage",
+    "runId",
+    "sourceCommit",
+    "objective",
+    "hardConstraints",
+    "budget",
+    "shapeIntent",
+    "allowedDesignSpace",
+    "forbidden",
+    "exitCriteria",
+    "evidenceLevelFloor",
+    "profileBinding"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "stage": {
+      "type": "string",
+      "description": "本 brief 服务的 stage 标识，须与 workflow 名称后缀一致",
+      "enum": [
+        "contract",
+        "intake",
+        "direction",
+        "dgate",
+        "compute",
+        "memory",
+        "comm",
+        "physical",
+        "detail.freeze",
+        "detail.workload",
+        "detail.events",
+        "detail.execute",
+        "detail.integrate",
+        "converge",
+        "verify",
+        "backflow",
+        "audit",
+        "explore"
+      ]
+    },
+    "runId": { "type": "string", "minLength": 1 },
+    "sourceCommit": { "type": "string", "minLength": 7 },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "description": "本阶段要回答的唯一问题；多问题说明 stage 切分有误"
+    },
+    "hardConstraints": {
+      "type": "array",
+      "description": "硬约束。每条必须有来源，不得无出处",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "source"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^C-[A-Z0-9-]+$" },
+          "text": { "type": "string", "minLength": 1 },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "description": "规格文件路径或 ADR 编号；不得写 TBD"
+          },
+          "value": { "type": ["number", "string", "null"] }
+        }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "本 stage 可支配的预算。未分配的项填 null，不得填猜测值",
+      "required": ["areaMm2", "powerW", "bandwidthGBs"],
+      "properties": {
+        "areaMm2": { "type": ["number", "null"] },
+        "powerW": { "type": ["number", "null"] },
+        "bandwidthGBs": { "type": ["number", "null"] }
+      }
+    },
+    "shapeIntent": {
+      "type": "string",
+      "minLength": 1,
+      "description": "架构师大致想要的形态。允许被专家反驳，但反驳必须给出理由"
+    },
+    "allowedDesignSpace": {
+      "description": "允许探索的设计空间。指向 inputs 下的设计空间文件，或内联选项数组。收窄它是控制成本的唯一手段",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["optionId"],
+            "properties": {
+              "optionId": { "type": "string", "minLength": 1 },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "forbidden": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "本 stage 明令禁止的动作或结论，例如“第二份硬件规格”“MC640 当作可制造默认值”"
+    },
+    "exitCriteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 },
+      "description": "本 stage 的退出条件。workflow 用它决定是否落盘 winner"
+    },
+    "evidenceLevelFloor": {
+      "type": "string",
+      "enum": ["E0", "E1", "E2", "E3"],
+      "description": "本 stage 允许的最低证据等级"
+    },
+    "profileBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["physicalProfile", "mcProfile"],
+      "properties": {
+        "physicalProfile": { "type": "string", "enum": ["P1"] },
+        "mcProfile": { "type": "string", "enum": ["MC320", "MC640"] }
+      }
+    }
+  }
+}

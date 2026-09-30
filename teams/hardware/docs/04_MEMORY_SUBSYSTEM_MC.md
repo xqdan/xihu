@@ -159,6 +159,104 @@ flowchart TB
 在该问题关闭前，不能冻结 MC PHY、Compute Die 岸线或宣称 1000 TPS 达成。
 GLM-5.2、DeepSeek-V4-Pro 每 rank 读取字节约为 K3 的 29%，在 MC320 下规划 TPS 也高于 1000（`out/direction/directional_tps_scorecard.json`）。
 
+### 5.1 MC 设计空间与搜索（HW-04 决策）
+
+- 所有者：HW-04 Memory-Cube；共签：HW-09（封装面积/功耗）
+- 状态：`MODEL`（设计空间搜索：容量下限 + K3 详细模型回放 + 封面上限，不是 `FROZEN`；不改发布点）
+- 设计空间（全部备选及其 ASSUMPTION）：`teams/hardware/inputs/memory_design_space.json`——**`UNVERIFIED`，由 agent 依仓库文档起草，待域 owner 复核**
+- 搜索：`integration/detailed/memory_search.js`；`npm run memory:search` 只把最终方案写到
+  `out/detailed/memory_design.json`，整个打分的候选集写到 `out/detailed/memory_candidates.json`
+  （带 `candidateSetSha256`）。本节数字由 `tests/regression/test_memory_design.js` 对照新鲜搜索结果检查。
+
+**口径**：`mcGBs` 是**每颗 MC 的裸链路带宽**；Die 侧拿到的是
+`memoryCubesPerComputeDie × min(mcGBs × TECH.mcUtil, uciePortGB)`。
+UCIe 端口 819.2 GB/s 封顶，所以"cube 数 × 档位"超出端口是**不可行**，不是"更贵"。
+档位是链路规格，不是可持续带宽承诺——可持续值见第 8 节的签核要求。
+
+**约束**：容量下限 49.198 GB/rank（由回放读出，`r.backingGB`，不是手写的）；
+K3 回放在发布点 TPS/usr 不低于 99.9%；封装面积（8 Die + N cube）+ 预留 ≤ 5248 mm²；
+卡功耗 ≤ 2800 W；路线必须与自身档位/cube 数自洽（见下）。
+搜索共 400 个组合、8 个可行，设计空间 sha256 前缀见下。
+
+**目标**：可行优先，然后制造风险档位最低，然后卡级 MC 功耗最低，然后容量余量最大。
+
+#### 5.1.1 最终方案
+
+| 维度 | 选项 | 参数 |
+| --- | --- | --- |
+| `mcGBs` | `640` | 每颗 MC 640 GB/s，`STRETCH_AGGRESSIVE` |
+| `cubesPerCard` | `16` | 16 颗/卡（与当前规格一致） |
+| `capacityGBPerCube` | `16` | 每 cube 16 GB → 卡级 256 GB |
+| `route` | `mcX` | 单颗提升带宽（第 5 节路线 1） |
+| `eccOverhead` | `0` | 不额外扣 ECC 开销 |
+
+- K3 回放 1101.77 TPS/usr（发布值 1101.77），raw 775.75 µs。
+- Die 侧 896 GB/s，卡级容量 256 GB（余量 206.8 GB），MC 功耗 398.72 W，卡功耗 2722.96 W。
+- **容量不是绑定约束**：49.198 GB/rank 只需 4 颗 16 GB cube，而搜索选了 16 颗；性能由**带宽**决定，不由容量决定。
+- 卡功耗 2722.96 W 比发布点 2768.47 W 低 45.51 W，因为两个域的口径不同：本域按
+  `8 × Die 286.22 + MC 398.72 + 固定 80 = 2722.96 W`，**不**计入 `O.chargeSharedPortCost()` 那笔
+  45.5141376 W 的共享端口功耗（HW-09 计入，得 2768.47 W）。两个数相差的正好是这一项，不是模型不一致；
+  也因此 2800 W 上限在本域是更松的检查，差距正是 45.5141376 W。
+
+#### 5.1.2 档位扫描（其余维度固定在最终方案）
+
+| 档位 GB/s | 分类 | Die 侧 GB/s | MC 功耗 W | 卡功耗 W | TPS/usr | 结果 |
+| ---: | --- | ---: | ---: | ---: | ---: | --- |
+| 320 | `REFERENCE` | 448 | 255.36 | 2579.60 | 586.46 | `k3Tps, routeContradiction:mcX-at-reference-tier` |
+| 400 | `GRID` | 560 | 291.20 | 2615.44 | 721.01 | `k3Tps` |
+| 480 | `DEFAULT_SEARCH_CAP` | 672 | 327.04 | 2651.28 | 853.44 | `k3Tps` |
+| 560 | `AGGRESSIVE` | 784 | 362.88 | 2687.12 | 977.00 | `k3Tps` |
+| 640 | `STRETCH_AGGRESSIVE` | 896 | 398.72 | 2722.96 | 1101.77 | **选中** |
+
+这张表就是 B-002 的量化：320→560 全部低于 1000 TPS/usr，只有 640 档达标。
+`routeContradiction:mcX-at-reference-tier` 表示"选 MC-X 路线却用参考档位"这一自我矛盾——它不是价格问题，是配置不自洽。
+
+#### 5.1.3 cube 数扫描（其余维度固定在最终方案）
+
+| cube 数 | 卡级容量 GB | 已占用 mm² | 预留 mm² | 结果 |
+| ---: | ---: | ---: | ---: | --- |
+| 8 | 128 | 3660.5 | 1587.5 | 可行（容量余量小） |
+| 16 | 256 | 4460.5 | 787.5 | **选中** |
+| 24 | 384 | 5260.5 | −12.5 | `packageArea` |
+| 32 | 512 | 6060.5 | −812.5 | `packageArea` |
+
+第 5 节路线 2（"增加 MC 数量到 32 颗/卡"）在这里量化：32 颗超出封装窗口 812.5 mm²，且 32 颗在 320 档仍只有 586.46 TPS/usr。"封装不支持"不是定性判断。
+
+#### 5.1.4 各备选的落选原因
+
+每个选项把其余维度钉在最终方案上（`alternatives()` 的 `holdDims`），所以行的违反项指向的是**该选项本身**，不是别的维度漂过去的取值。
+
+| 维度 | 选项 | 结果 | 该选项的组合 | Die 侧 GB/s | 容量 GB | MC 功耗 W | TPS/usr |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: |
+| `mcGBs` | `320` | `infeasible: k3Tps, belowProgramGoal, routeContradiction:mcX-at-reference-tier` | 320 / 16 / 16 / mcX / 0 | 448 | 256 | 255.36 | 586.46 |
+| `mcGBs` | `400` | `infeasible: k3Tps, belowProgramGoal` | 400 / 16 / 16 / mcX / 0 | 560 | 256 | 291.20 | 721.01 |
+| `mcGBs` | `480` | `infeasible: k3Tps, belowProgramGoal` | 480 / 16 / 16 / mcX / 0 | 672 | 256 | 327.04 | 853.44 |
+| `mcGBs` | `560` | `infeasible: k3Tps, belowProgramGoal` | 560 / 16 / 16 / mcX / 0 | 784 | 256 | 362.88 | 977.00 |
+| `mcGBs` | `640` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
+| `cubesPerCard` | `8` | `capacity margin` | 640 / 8 / 16 / mcX / 0 | 896 | 128 | 398.72 | 1101.77 |
+| `cubesPerCard` | `16` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
+| `cubesPerCard` | `24` | `infeasible: packageArea` | 640 / 24 / 16 / mcX / 0 | 896 | 384 | 398.72 | 1101.77 |
+| `cubesPerCard` | `32` | `infeasible: packageArea` | 640 / 32 / 16 / mcX / 0 | 896 | 512 | 398.72 | 1101.77 |
+| `capacityGBPerCube` | `8` | `capacity margin` | 640 / 16 / 8 / mcX / 0 | 896 | 128 | 398.72 | 1101.77 |
+| `capacityGBPerCube` | `16` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
+| `route` | `mcX` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
+| `route` | `moreCubes` | `infeasible: routeContradiction:moreCubes-below-the-grid-max` | 640 / 16 / 16 / moreCubes / 0 | 896 | 256 | 398.72 | 1101.77 |
+| `route` | `dualDataPlane` | `infeasible: routeNotScored:dualDataPlane` | 640 / 16 / 16 / dualDataPlane / 0 | 896 | 256 | 398.72 | 1101.77 |
+| `route` | `fewerBytesPerToken` | `infeasible: routeNotScored:fewerBytesPerToken` | 640 / 16 / 16 / fewerBytesPerToken / 0 | 896 | 256 | 398.72 | 1101.77 |
+| `route` | `nearMemoryCompute` | `infeasible: routeNotScored:nearMemoryCompute` | 640 / 16 / 16 / nearMemoryCompute / 0 | 896 | 256 | 398.72 | 1101.77 |
+| `eccOverhead` | `0` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
+| `eccOverhead` | `0.0625` | `capacity margin` | 640 / 16 / 16 / mcX / 0.0625 | 896 | 240 | 398.72 | 1101.77 |
+
+**未被建模的路线**（`routeNotScored:*`，不是"落选"，是"没被计入价格"）：
+
+| 路线 | 需要先建模才能打分 |
+| --- | --- |
+| `dualDataPlane` | a second 320 GB/s data plane per cube (doubled PHY, bumps and controllers)；the model carries one bandwidth number per cube |
+| `fewerBytesPerToken` | a lower per-token byte demand (FP8 dense, compression, more SRAM reuse)；belongs to the software/compute domain and changes the replay input, not the cube |
+| `nearMemoryCompute` | compute inside the cube；architectureRoute keeps it out of the baseline, and the cube area would no longer be the planning 100 mm2 |
+
+挡住它们的原因和 `moreCubes` 不同：`moreCubes` 被算过（32 颗 → 封装不够），这三条**没被算过**。把两者都标成"落选"会让"每条排除都可追溯"变成一句无法验证的话。
+
 ## 6. MC 控制器功能
 
 每 Compute Die 的 MC 子系统至少包含：

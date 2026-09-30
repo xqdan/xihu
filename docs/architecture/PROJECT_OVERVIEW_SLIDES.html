@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI for Chip：用可执行模型和多 agent 设计芯片</title>
+<!--
+  项目介绍幻灯片，聚焦 AI for Chip 的流程本身；芯片架构只做一页概览。
+  第 03 部分是以设计文档为中心、向 RTL / 验证 / 软件 / 后端延伸的评审与展开（观点与提案，不是仓库已实现的能力）。
+  对外讲述用：芯片的目标值、具体架构参数和模型结果已刻意模糊化（只保留量级、比例或定性结论），
+  重点是 AI for Chip 的方法。准确数字以仓库文档和 out/ 生成物为准，本文件不是数字来源。
+  操作：← → / 空格 / PageUp PageDown 翻页，Home End 首尾页，F 全屏，打印即每页一张。
+-->
+<style>
+  /* Google 风格：Google 四色、白底、无边框卡片、Material 阴影与圆角、400/500 字重 */
+  :root {
+    --ink: #202124; --muted: #5f6368; --faint: #80868b; --line: #dadce0; --bg: #f1f3f4;
+    --blue: #1a73e8; --teal: #1e8e3e; --amber: #f9ab00; --red: #d93025; --violet: #9334e6;
+    --g-blue: #4285f4; --g-red: #ea4335; --g-yellow: #fbbc04; --g-green: #34a853;
+    --blue-bg: #e8f0fe; --teal-bg: #e6f4ea; --amber-bg: #fef7e0; --red-bg: #fce8e6; --violet-bg: #f3e8fd;
+    --shadow: 0 1px 2px rgba(60,64,67,.3), 0 1px 3px 1px rgba(60,64,67,.15);
+    --google-bar: linear-gradient(90deg, var(--g-blue) 0 25%, var(--g-red) 25% 50%, var(--g-yellow) 50% 75%, var(--g-green) 75% 100%);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #202124; overflow: hidden;
+    font-family: "Google Sans", "Google Sans Text", "Product Sans", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans CJK SC", system-ui, sans-serif;
+    color: var(--ink); -webkit-font-smoothing: antialiased; }
+  #stage { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px; transform-origin: 0 0; }
+  .slide { position: absolute; inset: 0; background: #fff; padding: 58px 72px 48px; display: none; flex-direction: column; overflow: hidden; }
+  .slide.active { display: flex; }
+  .slide:not(.cover):not(.section)::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px; background: var(--google-bar); }
+  .slide h2 { margin: 0 0 6px; font-size: 34px; font-weight: 500; letter-spacing: 0; }
+  .slide .kicker { font-size: 14px; font-weight: 500; color: var(--blue); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .slide .lead { font-size: 19px; color: var(--muted); margin: 0 0 22px; line-height: 1.55; }
+  .slide .body { flex: 1; display: flex; gap: 24px; min-height: 0; }
+  .col { flex: 1; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .foot { position: absolute; left: 72px; right: 72px; bottom: 18px; display: flex; justify-content: space-between; font-size: 12px; color: #9aa0a6; }
+  ul.b { margin: 0; padding-left: 22px; font-size: 18px; line-height: 1.6; }
+  ul.b li { margin: 4px 0; }
+  ul.b li::marker { color: var(--g-blue); }
+  .card { border: 0; border-radius: 16px; padding: 18px 22px; background: #fff; box-shadow: var(--shadow); }
+  .card h3 { margin: 0 0 8px; font-size: 19px; font-weight: 500; }
+  .card p { margin: 0; font-size: 16px; line-height: 1.55; color: var(--muted); }
+  .card.blue, .card.teal, .card.amber, .card.red, .card.violet { box-shadow: none; }
+  .card.blue { background: var(--blue-bg); }
+  .card.teal { background: var(--teal-bg); }
+  .card.amber { background: var(--amber-bg); }
+  .card.red { background: var(--red-bg); }
+  .card.violet { background: var(--violet-bg); }
+  .card.blue h3 { color: #174ea6; } .card.teal h3 { color: #0d652d; } .card.amber h3 { color: #b06000; }
+  .card.red h3 { color: #a50e0e; } .card.violet h3 { color: #681da8; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .agenda .card { padding: 26px 24px; border-top: 6px solid; border-radius: 4px 4px 16px 16px; }
+  .agenda .card.blue { border-color: var(--g-blue); } .agenda .card.teal { border-color: var(--g-green); } .agenda .card.violet { border-color: var(--g-yellow); background: var(--amber-bg); }
+  .agenda .card.violet h3 { color: #b06000; }
+  .agenda .card.red { border-color: var(--g-red); } .agenda .card.red li::marker { color: var(--g-red); }
+  .agenda .card.teal li::marker { color: var(--g-green); } .agenda .card.violet li::marker { color: var(--g-yellow); }
+  .agenda .card h3 { font-size: 24px; margin-bottom: 16px; }
+  .agenda .card ul.b { font-size: 17px; line-height: 1.45; }
+  .agenda .card ul.b li { margin: 0 0 11px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  table.t { border-collapse: collapse; width: 100%; font-size: 16px; }
+  table.t th, table.t td { border-bottom: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  table.t th { background: transparent; font-weight: 500; color: var(--muted); font-size: 13px; border-bottom: 2px solid var(--line); }
+  table.t td.n, table.t th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  code, .mono { font-family: "Roboto Mono", "SF Mono", Menlo, Consolas, monospace; font-size: .88em; }
+  code { background: var(--bg); border-radius: 6px; padding: 1px 6px; }
+  .big { font-size: 46px; font-weight: 400; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--blue); }
+  .card.teal .big { color: var(--teal); }
+  .big small { font-size: 18px; font-weight: 400; color: var(--muted); margin-left: 4px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 10px; border-radius: 8px; letter-spacing: .3px; vertical-align: middle; }
+  .tag.model { background: var(--blue-bg); color: #174ea6; }
+  .tag.plan { background: var(--amber-bg); color: #b06000; }
+  .tag.assume { background: var(--red-bg); color: #a50e0e; }
+  .tag.prop { background: var(--violet-bg); color: #681da8; }
+  .tag.ok { background: var(--teal-bg); color: #0d652d; }
+  .flow { display: flex; align-items: stretch; gap: 0; }
+  .flow .node { flex: 1; border-radius: 14px; padding: 12px 12px; font-size: 15px; line-height: 1.45; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+  .flow .node b { font-weight: 500; }
+  .flow.wf .node { font-size: 13.5px; padding: 8px 10px; line-height: 1.4; }
+  .flow.wf .arrow { width: 22px; font-size: 18px; }
+  table.t.tight td, table.t.tight th { padding: 6px 8px; }
+  .flow .arrow { width: 30px; display: flex; align-items: center; justify-content: center; color: #9aa0a6; font-size: 22px; flex: none; }
+  .note { font-size: 14px; color: var(--muted); line-height: 1.5; }
+  .hl { color: var(--red); font-weight: 500; }
+  .hlb { color: var(--blue); font-weight: 500; }
+  .hlt { color: var(--teal); font-weight: 500; }
+  a { color: var(--blue); text-decoration: none; }
+
+  /* Google 风格的几何装饰 */
+  .shape { position: absolute; }
+  .shape.circle { border-radius: 50%; }
+  .shape.quarter { border-radius: 100% 0 0 0; }
+  .shape.pill { border-radius: 999px; }
+
+  /* title / section slides */
+  .slide.cover { background: #fff; color: var(--ink); justify-content: center; padding: 72px 96px; }
+  .slide.cover .gbar { display: flex; gap: 8px; margin-bottom: 30px; }
+  .slide.cover .gbar i { width: 44px; height: 8px; border-radius: 4px; }
+  .slide.cover h1 { font-size: 48px; font-weight: 500; margin: 0 0 18px; line-height: 1.3; max-width: 740px; }
+  .slide.cover .sub { font-size: 23px; color: var(--muted); margin-bottom: 40px; line-height: 1.55; max-width: 700px; }
+  .slide.cover .meta { font-size: 15px; color: var(--faint); line-height: 1.8; max-width: 720px; }
+  .slide.cover .pills { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; max-width: 720px; }
+  .slide.cover .pills span { border: 1px solid var(--line); border-radius: 8px; padding: 6px 14px; font-size: 15px; color: var(--ink); font-weight: 500; }
+  .slide.section { color: #fff; justify-content: center; padding: 72px 96px; }
+  .slide.section.s-blue { background: var(--blue); }
+  .slide.section.s-green { background: var(--teal); }
+  .slide.section.s-yellow { background: var(--g-yellow); color: var(--ink); }
+  .slide.section .num { font-size: 110px; font-weight: 500; opacity: .35; line-height: 1; }
+  .slide.section h2 { font-size: 50px; font-weight: 500; margin: 8px 0 16px; position: relative; }
+  .slide.section p { font-size: 22px; opacity: .92; margin: 0; line-height: 1.6; max-width: 820px; position: relative; }
+  .slide.cover > :not(.shape):not(.foot), .slide.section > :not(.shape):not(.foot) { position: relative; }
+  .slide.cover .foot { color: #9aa0a6; }
+  .slide.section .foot { color: currentColor; opacity: .6; }
+
+  /* ledger bars */
+  .bar { display: flex; height: 44px; border-radius: 10px; overflow: hidden; font-size: 13px; color: #fff; font-weight: 500; }
+  .bar > div { display: flex; align-items: center; justify-content: center; white-space: nowrap; overflow: hidden; border-right: 2px solid #fff; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: var(--muted); }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .cmp { display: grid; grid-template-columns: 110px 1fr 96px; gap: 6px 12px; align-items: center; font-size: 15px; }
+  .cmp .track { position: relative; height: 26px; }
+  .cmp > span { white-space: nowrap; }
+  .cmp .track div { position: absolute; left: 0; height: 12px; border-radius: 6px; }
+  .cmp .track .tg { top: 0; background: #dadce0; }
+  .cmp .track .pub { top: 14px; }
+
+  /* hierarchy */
+  .stack { display: flex; flex-direction: column; gap: 8px; }
+  .lvl { display: grid; grid-template-columns: 70px 190px 1fr; align-items: center; border-radius: 12px; padding: 10px 16px; font-size: 16px; }
+  .lvl b { font-size: 14px; color: var(--muted); font-weight: 500; }
+  .lvl .name { font-weight: 500; font-size: 18px; }
+
+  /* timeline */
+  .tl { position: relative; margin-top: 8px; }
+  .tl .row { display: grid; grid-template-columns: 250px 1fr; align-items: center; height: 38px; font-size: 15px; }
+  .tl .row > span b { font-weight: 500; color: var(--blue); }
+  .tl .lane { position: relative; height: 100%; border-left: 1px solid var(--line); }
+  .tl .seg { position: absolute; top: 6px; height: 26px; border-radius: 13px; color: #fff; font-size: 12px; font-weight: 500; display: flex; align-items: center; padding: 0 10px; white-space: nowrap; }
+  .tl .axis { display: grid; grid-template-columns: 250px 1fr; font-size: 12px; color: #9aa0a6; }
+  .tl .axis .ticks { position: relative; height: 18px; }
+  .tl .axis .ticks span { position: absolute; transform: translateX(-50%); }
+
+  /* road map */
+  .road { display: flex; gap: 0; align-items: stretch; }
+  .road .step { flex: 1; position: relative; padding: 18px 18px 18px 30px; color: #fff; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 50%, calc(100% - 22px) 100%, 0 100%, 22px 50%); margin-right: -14px; }
+  .road .step:first-child { clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 50%, calc(100% - 22px) 100%, 0 100%); padding-left: 20px; border-radius: 14px 0 0 14px; }
+  .road .step h4 { margin: 0 0 6px; font-size: 18px; font-weight: 500; }
+  .road .step p { margin: 0; font-size: 14px; opacity: .95; line-height: 1.5; }
+
+  /* 流程页 */
+  .stepno { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: var(--blue); font-weight: 500; font-size: 14px; margin: 0 auto 6px; box-shadow: var(--shadow); flex: none; }
+  .stepno.inv { background: #fff; color: var(--blue); }
+  .loopbar { display: flex; align-items: center; gap: 12px; background: var(--bg); border-radius: 14px; padding: 12px 18px; font-size: 16px; }
+  .loopbar .stepno { margin: 0; }
+  .loopbar b { font-weight: 500; }
+  .node.gate { flex: .85; }
+  .taskcard { flex: 1; background: #202124; box-shadow: none; }
+  .taskcard h3 { color: #fff; }
+  .taskcard pre { margin: 6px 0 0; font-family: "Roboto Mono", "SF Mono", Menlo, Consolas, monospace; font-size: 14px; line-height: 1.6; color: #e8eaed; white-space: pre; }
+  ol.steps { margin: 6px 0 0; padding-left: 0; list-style: none; counter-reset: s; font-size: 16px; line-height: 1.5; }
+  ol.steps li { counter-increment: s; position: relative; padding: 0 0 12px 40px; }
+  ol.steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: #fff; color: var(--blue); font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; }
+  ol.steps li:not(:last-child)::after { content: ""; position: absolute; left: 12px; top: 28px; bottom: 2px; width: 2px; background: rgba(26,115,232,.25); }
+  .card.violet ol.steps li::before { color: var(--violet); }
+  .card.violet ol.steps li:not(:last-child)::after { background: rgba(147,52,230,.25); }
+  ol.steps b { font-weight: 500; }
+  .slide.section.s-red { background: var(--red); }
+
+  /* 以文档为中心：3×3 辐射图 */
+  .hub { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 12px; }
+  .hub > div { border-radius: 14px; padding: 10px 12px; display: flex; flex-direction: column; justify-content: center; text-align: center; font-size: 16px; font-weight: 500; line-height: 1.4; }
+  .hub .spoke { background: var(--bg); }
+  .hub .spoke span { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 400; color: var(--muted); line-height: 1.45; }
+  .hub .center { background: #1a73e8; color: #fff; font-weight: 400; font-size: 14px; box-shadow: 0 0 0 6px var(--blue-bg); }
+  .hub .center b { font-size: 19px; font-weight: 500; margin-bottom: 4px; }
+  .pill-no { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 13px; margin-right: 8px; vertical-align: 2px; }
+
+  #progress { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--google-bar); background-size: 100vw 4px; transition: width .2s; z-index: 10; }
+
+  @media print {
+    @page { size: 1280px 720px; margin: 0; }
+    html, body { overflow: visible; background: #fff; height: auto; }
+    #stage { position: static; transform: none !important; width: 1280px; height: auto; }
+    .slide { display: flex !important; position: relative; width: 1280px; height: 720px; page-break-after: always; break-after: page; }
+    #progress { display: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    /* PDF 里阴影会栅格化成灰框，打印时换成浅色描边 */
+    .card, .stepno { box-shadow: none; }
+    .card:not(.blue):not(.teal):not(.amber):not(.red):not(.violet):not(.taskcard), .stepno { border: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- 1. 封面 -->
+<section class="slide cover">
+  <div class="shape circle" style="width:360px; height:360px; right:-70px; top:-90px; background:var(--g-blue)"></div>
+  <div class="shape quarter" style="width:230px; height:230px; right:250px; bottom:-10px; background:var(--g-red); border-radius:100% 0 0 0"></div>
+  <div class="shape" style="width:150px; height:150px; right:70px; bottom:110px; background:var(--g-yellow); border-radius:28px; transform:rotate(12deg)"></div>
+  <div class="shape circle" style="width:96px; height:96px; right:330px; top:190px; background:var(--g-green)"></div>
+  <div class="gbar"><i style="background:var(--g-blue)"></i><i style="background:var(--g-red)"></i><i style="background:var(--g-yellow)"></i><i style="background:var(--g-green)"></i></div>
+  <div class="pills"><span>可执行模型</span><span>多 agent 协作</span><span>设计空间搜索</span><span>证据等级</span><span>以文档为中心</span><span>持续回标</span></div>
+  <h1>AI for Chip：<br>用可执行模型和多 agent 设计芯片</h1>
+  <div class="sub">驱动、流程、向下延伸与长远目标<br>以一颗大模型推理芯片为例</div>
+  <div class="meta">仓库状态：2026-09-29 · 芯片的目标值与架构细节已做模糊化处理，只用于说明方法<br>文中结论均为 <b>MODEL</b> / <b>PLANNING_ESTIMATE</b> 等级，不是产品承诺<br>← → / 空格翻页 · F 全屏 · 打印即每页一张</div>
+</section>
+
+<!-- 2. 目录 -->
+<section class="slide">
+  <div class="kicker">Agenda</div>
+  <h2>内容</h2>
+  <p class="lead">四部分：为什么要这样做、架构设计的流程怎么运转、怎样向下延伸到 RTL 和后端、要走到哪里。</p>
+  <div class="body">
+    <div class="grid4 agenda" style="flex:1">
+      <div class="card blue"><h3>01 驱动</h3><ul class="b"><li>痛点 1：架构决策靠经验拍板</li><li>芯片研发的团队与交互</li><li>痛点 2：往下的研发靠沟通对齐</li><li>这次的对象：一颗什么芯片</li></ul></div>
+      <div class="card teal"><h3>02 流程：架构设计</h3><ul class="b"><li>流程全景</li><li>可执行模型与时间账</li><li>设计空间 → 搜索 → 唯一方案</li><li>多 agent 组织与协作协议</li><li>两阶段与 Gate</li><li>按设计目的组织 workflow</li><li>硬规则与测试</li></ul></div>
+      <div class="card red"><h3>03 向下延伸</h3><ul class="b"><li>本项目的位置</li><li>以文档为中心的四个条件</li><li>文档与 RTL 匹配、理解一致、端到端用例</li><li>Review：前提与风险</li><li>试点：通信核</li></ul></div>
+      <div class="card violet"><h3>04 长远目标</h3><ul class="b"><li>模型随研发回标</li><li>流程路线：近期 / 中期 / 长期</li><li>总结</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. 章节：驱动 -->
+<section class="slide section s-blue">
+  <div class="shape circle" style="width:420px; height:420px; right:-120px; top:-140px; background:rgba(255,255,255,.12)"></div>
+  <div class="shape circle" style="width:220px; height:220px; right:180px; bottom:-80px; background:rgba(255,255,255,.12)"></div>
+  <div class="shape pill" style="width:180px; height:28px; right:96px; bottom:170px; background:rgba(255,255,255,.22)"></div>
+  <div class="num">01</div>
+  <h2>驱动：为什么要这样做</h2>
+  <p>两个痛点：架构决策靠经验拍板；往下的研发靠沟通对齐。
+  第 02 部分用可执行模型和多 agent 回答前者，第 03 部分用以设计文档为中心的流程回答后者。</p>
+</section>
+
+<!-- 4. 问题 -->
+<section class="slide">
+  <div class="kicker">Why · 痛点 1：架构阶段</div>
+  <h2>经验拍板的芯片架构设计有什么问题</h2>
+  <p class="lead">以往的架构设计，常常是一群人凭经验和感觉拍板。</p>
+  <div class="body">
+    <div class="col">
+      <div class="grid2">
+        <div class="card red"><h3>细节覆盖不全</h3><p>计算核、片上存储、互联、存储接口、封装、编译器、kernel、调度……没人能在脑子里同时装下全部细节。</p></div>
+        <div class="card red"><h3>说不清哪些细节重要</h3><p>无法回答“这一项改动让最终 TPS 变了多少”，敏感项和余量都靠猜。</p></div>
+        <div class="card red"><h3>经验会带偏</h3><p>上一代的经验在新的模型结构（MLA、线性注意力、稀疏注意力、MoE）上可能不再成立。</p></div>
+        <div class="card red"><h3>讨论变成观点之争</h3><p>谁的声音大谁赢，而不是看数字；结论不可追溯、不可复现。</p></div>
+      </div>
+    </div>
+    <div class="col" style="flex:.8">
+      <div class="card blue" style="flex:1; display:flex; flex-direction:column; justify-content:center">
+        <h3 style="font-size:24px">AI for Chip 的做法</h3>
+        <ul class="b" style="margin-top:8px">
+          <li>把架构写成<b>可执行模型</b>：spec 一改，TPS/usr 跟着变</li>
+          <li>让<b>多个 AI agent</b> 各管一块，展开人装不下的细节</li>
+          <li>用<b>搜索</b>在设计空间里选方案，备选和落选理由都留档</li>
+          <li>用<b>测试和 Gate</b> 守住一致性，人只审查和拍板</li>
+        </ul>
+        <p style="margin-top:16px; font-size:18px; color:var(--ink)">每个结论都能追溯到<br><b>是哪一项、变了多少、证据是什么</b>。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>来源：README.md「为什么这样做」</span><span></span></div>
+</section>
+
+<!-- 5. 研发团队与交互 -->
+<section class="slide">
+  <div class="kicker">Why · 背景：谁和谁在沟通</div>
+  <h2>芯片研发中的常见团队与交互</h2>
+  <p class="lead">一颗芯片从定义到量产，通常要十几个团队接力；团队之间交换的主要是规格、约束和反馈。</p>
+  <div class="body">
+    <div class="col" style="flex:.62; gap:10px">
+      <div class="card blue" style="padding:12px 18px"><h3 style="font-size:17px; margin-bottom:4px">定义</h3><p style="font-size:14px">产品与算法（目标负载、指标）· 架构与性能建模</p></div>
+      <div class="card teal" style="padding:12px 18px"><h3 style="font-size:17px; margin-bottom:4px">前端实现</h3><p style="font-size:14px">微架构与 RTL 设计 · IP / PHY（SerDes、存储接口）· DFT</p></div>
+      <div class="card amber" style="padding:12px 18px"><h3 style="font-size:17px; margin-bottom:4px">验证</h3><p style="font-size:14px">RTL 验证（UVM / 形式化）· 指令与参考模型 · 仿真器、FPGA / Palladium 原型</p></div>
+      <div class="card violet" style="padding:12px 18px"><h3 style="font-size:17px; margin-bottom:4px">软件</h3><p style="font-size:14px">编译器 · runtime / 驱动 / 固件 · 算子库与模型适配</p></div>
+      <div class="card red" style="padding:12px 18px"><h3 style="font-size:17px; margin-bottom:4px">后端与制造</h3><p style="font-size:14px">综合 / 布局布线 / 时序签核 · 封装与 SI / PI / 散热 · 硅后 bring-up 与量产测试</p></div>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:14px">
+        <tr><th style="width:150px">接口</th><th>主要交互内容</th></tr>
+        <tr><td>产品 / 算法 → 架构</td><td>目标模型与负载、TPS / 功耗 / 成本目标、算子清单与精度要求</td></tr>
+        <tr><td>架构 ⇄ RTL 设计</td><td>模块划分、微架构规格、接口与 PPA 预算 ⇄ 实现可行性、面积与时序反馈</td></tr>
+        <tr><td>RTL 设计 ⇄ 验证</td><td>设计规格、寄存器与协议 ⇄ 验证计划、覆盖率、bug 与规格澄清</td></tr>
+        <tr><td>架构 → 仿真器</td><td>功能与周期行为（参考模型）；仿真器再作为验证的 golden model 和软件的早期平台</td></tr>
+        <tr><td>架构 / RTL ⇄ 软件</td><td>ISA、寄存器、描述符格式、编程模型 ⇄ 可调度性、算子需求、易用性问题</td></tr>
+        <tr><td>RTL ⇄ 后端 / DFT</td><td>网表、时序约束、floorplan、扫描与 MBIST ⇄ 时序违例、拥塞、面积、ECO</td></tr>
+        <tr><td>后端 ⇄ 封装 / 架构</td><td>bump 与 I/O 岸线、功耗与热密度、供电 ⇄ 封装面积、互联带宽上限</td></tr>
+        <tr><td>硅后 → 全部团队</td><td>bring-up 问题、errata、软件绕路（workaround）、下一代改进项</td></tr>
+      </table>
+      <p class="note">几乎每条接口交换的都是“规格 + 反馈”：规格一改，所有下游都要重新对齐——这就是下一页的沟通成本。</p>
+    </div>
+  </div>
+  <div class="foot"><span>行业常见分工示意，不同公司的团队拆分和叫法不同</span><span></span></div>
+</section>
+
+<!-- 6. 沟通问题 -->
+<section class="slide">
+  <div class="kicker">Why · 痛点 2：往下的研发</div>
+  <h2>大量工作量产生于沟通，信息不透明埋下问题</h2>
+  <p class="lead">芯片研发里写代码往往不是最慢的；最慢的是各团队对同一份规格对齐理解，以及规格变了之后没人知道。</p>
+  <div class="body" style="flex-direction:column; gap:16px">
+    <div class="grid2">
+      <div class="card red" style="display:flex; gap:18px; align-items:center">
+        <svg viewBox="0 0 220 200" width="170" height="155" style="flex:none"><g stroke="#ea4335" stroke-opacity=".45" stroke-width="1.4"><line x1="110" y1="22" x2="165.2" y2="44.8"/><line x1="110" y1="22" x2="188" y2="100"/><line x1="110" y1="22" x2="165.2" y2="155.2"/><line x1="110" y1="22" x2="110" y2="178"/><line x1="110" y1="22" x2="54.8" y2="155.2"/><line x1="110" y1="22" x2="32" y2="100"/><line x1="110" y1="22" x2="54.8" y2="44.8"/><line x1="165.2" y1="44.8" x2="188" y2="100"/><line x1="165.2" y1="44.8" x2="165.2" y2="155.2"/><line x1="165.2" y1="44.8" x2="110" y2="178"/><line x1="165.2" y1="44.8" x2="54.8" y2="155.2"/><line x1="165.2" y1="44.8" x2="32" y2="100"/><line x1="165.2" y1="44.8" x2="54.8" y2="44.8"/><line x1="188" y1="100" x2="165.2" y2="155.2"/><line x1="188" y1="100" x2="110" y2="178"/><line x1="188" y1="100" x2="54.8" y2="155.2"/><line x1="188" y1="100" x2="32" y2="100"/><line x1="188" y1="100" x2="54.8" y2="44.8"/><line x1="165.2" y1="155.2" x2="110" y2="178"/><line x1="165.2" y1="155.2" x2="54.8" y2="155.2"/><line x1="165.2" y1="155.2" x2="32" y2="100"/><line x1="165.2" y1="155.2" x2="54.8" y2="44.8"/><line x1="110" y1="178" x2="54.8" y2="155.2"/><line x1="110" y1="178" x2="32" y2="100"/><line x1="110" y1="178" x2="54.8" y2="44.8"/><line x1="54.8" y1="155.2" x2="32" y2="100"/><line x1="54.8" y1="155.2" x2="54.8" y2="44.8"/><line x1="32" y1="100" x2="54.8" y2="44.8"/></g><g fill="#d93025"><circle cx="110" cy="22" r="9"/><circle cx="165.2" cy="44.8" r="9"/><circle cx="188" cy="100" r="9"/><circle cx="165.2" cy="155.2" r="9"/><circle cx="110" cy="178" r="9"/><circle cx="54.8" cy="155.2" r="9"/><circle cx="32" cy="100" r="9"/><circle cx="54.8" cy="44.8" r="9"/></g></svg>
+        <div><h3>今天：点对点对齐</h3><p>架构、RTL、RTL 验证、指令验证、算子验证、仿真器、编译器与底软、后端，8 个环节两两沟通就是 <b>28 条线</b>。真实规格散落在 RTL、邮件、会议纪要和个人记忆里；文档落后于代码，同一句话各方理解不同。</p></div>
+      </div>
+      <div class="card teal" style="display:flex; gap:18px; align-items:center">
+        <svg viewBox="0 0 220 200" width="170" height="155" style="flex:none"><g stroke="#1e8e3e" stroke-opacity=".6" stroke-width="2"><line x1="110" y1="100" x2="110" y2="22"/><line x1="110" y1="100" x2="165.2" y2="44.8"/><line x1="110" y1="100" x2="188" y2="100"/><line x1="110" y1="100" x2="165.2" y2="155.2"/><line x1="110" y1="100" x2="110" y2="178"/><line x1="110" y1="100" x2="54.8" y2="155.2"/><line x1="110" y1="100" x2="32" y2="100"/><line x1="110" y1="100" x2="54.8" y2="44.8"/></g><g fill="#34a853"><circle cx="110" cy="22" r="9"/><circle cx="165.2" cy="44.8" r="9"/><circle cx="188" cy="100" r="9"/><circle cx="165.2" cy="155.2" r="9"/><circle cx="110" cy="178" r="9"/><circle cx="54.8" cy="155.2" r="9"/><circle cx="32" cy="100" r="9"/><circle cx="54.8" cy="44.8" r="9"/></g><rect x="86" y="80" width="48" height="40" rx="8" fill="#1a73e8"/><text x="110" y="105" font-size="15" fill="#fff" text-anchor="middle" font-family="sans-serif">Spec</text></svg>
+        <div><h3>目标：以文档为中心</h3><p>每个环节只和文档对齐，<b>8 条线</b>。文档与 RTL 同源、同步变更；差异由机器检查发现，而不是等到联调或回片。</p></div>
+      </div>
+    </div>
+    <div class="flow" style="height:96px">
+      <div class="node" style="background:var(--red-bg)"><b>信息不透明</b>规格分散、滞后、有歧义</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--red-bg)"><b>理解不一致</b>RTL、验证、软件各按各的理解</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--red-bg)"><b>验证不充分</b>测试计划按“理解”写，漏掉的正是误解处</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--red-bg)"><b>bug 埋在硅里</b>联调、Palladium 或回片后才发现</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:#d93025; color:#fff"><b>周期 delay</b>ECO、改版、软件绕路</div>
+    </div>
+    <p class="note">关键点：验证只能发现“和验证工程师的理解不一致”的 bug；如果设计和验证读的是同一份含糊的文档、各自脑补，误解处恰恰没人测。</p>
+  </div>
+  <div class="foot"><span>28 = 8 × 7 / 2；示意图，不是统计数据</span><span></span></div>
+</section>
+
+<!-- 7. 这是一颗什么芯片 -->
+<section class="slide">
+  <div class="kicker">The chip, in brief</div>
+  <h2>这次的对象：一颗大模型 Decode 推理芯片</h2>
+  <p class="lead">芯片本身只是流程的第一个用例；这里只说它大致是什么、为什么难，不展开具体架构。</p>
+  <div class="body">
+    <div class="col">
+      <div class="grid2">
+        <div class="card blue"><div class="big" style="font-size:34px">单用户吞吐</div><p>目标是每个用户每秒生成的 token 数（TPS/usr），而不是整机吞吐</p></div>
+        <div class="card teal"><div class="big" style="font-size:34px">模型已达标</div><p>当前发布点在模型里达到目标 <span class="tag model">MODEL</span>，尚未物理签核</p></div>
+      </div>
+      <table class="t">
+        <tr><td style="width:120px"><b>工作负载</b></td><td>多个前沿 MoE 大模型的 Decode；单用户、超长上下文</td></tr>
+        <tr><td><b>系统</b></td><td>多个封装组成一个张量并行副本，封装之间直接互访片上存储</td></tr>
+        <tr><td><b>封装</b></td><td>多 Compute Die + 外置高带宽存储</td></tr>
+        <tr><td><b>Die 内</b></td><td>异构计算核（矩阵 + 向量）、多级片上存储、数据搬运、片上网络、通信单元</td></tr>
+      </table>
+    </div>
+    <div class="col" style="flex:.85">
+      <div class="card amber" style="flex:1">
+        <h3>为什么适合检验这套流程</h3>
+        <ul class="b" style="font-size:16px; line-height:1.6">
+          <li><b>没有 batch 摊薄</b>：每个 token 都要读一遍激活权重和长上下文，还要做数百次跨卡集合通信，上限由带宽和通信时延决定，不是峰值算力</li>
+          <li><b>耦合强</b>：存储带宽、通信时延、片上存储、预取、融合相互影响，只看单点会误判</li>
+          <li><b>多个模型结构不同</b>：多种注意力变体与 MoE，上一代经验不一定适用</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>架构细节已模糊化，仅用于说明方法</span><span></span></div>
+</section>
+
+<!-- 8. 章节：流程 -->
+<section class="slide section s-green">
+  <div class="shape circle" style="width:420px; height:420px; right:-120px; top:-140px; background:rgba(255,255,255,.12)"></div>
+  <div class="shape circle" style="width:220px; height:220px; right:180px; bottom:-80px; background:rgba(255,255,255,.12)"></div>
+  <div class="shape pill" style="width:180px; height:28px; right:96px; bottom:170px; background:rgba(255,255,255,.22)"></div>
+  <div class="num">02</div>
+  <h2>流程：架构设计阶段</h2>
+  <p>回答痛点 1。可执行模型算结论，搜索在设计空间里选方案，多 agent 分工展开，测试守住一致，人审查拍板。</p>
+</section>
+
+<!-- 9. 流程全景 -->
+<section class="slide">
+  <div class="kicker">Overview</div>
+  <h2>流程全景：一个会回标的闭环</h2>
+  <p class="lead">每一步都有机器可读的输入输出，都落在仓库里；改了任何一环，下游会被重算或被测试拦下。</p>
+  <div class="body" style="flex-direction:column; gap:14px">
+    <div class="flow" style="height:170px">
+      <div class="node" style="background:var(--bg)"><span class="stepno">1</span><b>需求与工作负载</b>模型 manifest、算子账、场景矩阵</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--amber-bg)"><span class="stepno">2</span><b>设计空间</b>各 agent 输入里的全部备选与 ASSUMPTION</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:#1a73e8; color:#fff"><span class="stepno inv">3</span><b>可执行模型</b>逐算子、逐集合通信的时间账 + 面积功耗容量</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--blue-bg)"><span class="stepno">4</span><b>搜索</b>可行优先，按目标选出唯一方案写入 out/</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--teal-bg)"><span class="stepno">5</span><b>测试与 Gate</b>sha256 绑定、守恒、D-Gate / Q-Gate</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--violet-bg)"><span class="stepno">6</span><b>文档与 ADR</b>引用 out/ 数字，人审查后签核</div>
+    </div>
+    <div class="loopbar"><span class="stepno inv">7</span><span><b>回标</b>：RTL、综合、Palladium、实测逐项替换 ASSUMPTION → 回到第 2 / 3 步重跑，结论翻转会被看见</span></div>
+    <div class="grid3">
+      <div class="card"><h3>AI agent 做什么</h3><p>按任务卡在自己的目录里写模型、列设计空间、跑搜索、写文档；只读已发布的上游产物。</p></div>
+      <div class="card"><h3>人做什么</h3><p>定目标和约束；审查 agent 的产出：没有幻觉、设计正确、能和落地对齐；在 ADR 上拍板。</p></div>
+      <div class="card"><h3>仓库保证什么</h3><p>单一数据来源、生成物不手改、目录边界和一致性由 <code>npm test</code> 强制。</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>来源：README.md、teams/council/docs/17、18</span><span></span></div>
+</section>
+
+<!-- 10. 可执行模型 -->
+<section class="slide">
+  <div class="kicker">Executable model</div>
+  <h2>可执行模型：把架构和性能连起来</h2>
+  <p class="lead">硬件 spec、软件策略和模型参数都是输入；端到端 TPS/usr 是算出来的结果。</p>
+  <div class="body" style="flex-direction:column; gap:22px">
+    <div class="flow" style="height:270px">
+      <div class="col" style="flex:1; gap:10px">
+        <div class="node" style="background:var(--blue-bg)"><b>硬件 spec</b>计算 / 存储 / 互联 / 面积功耗</div>
+        <div class="node" style="background:var(--teal-bg)"><b>软件策略</b>融合、预取、重叠、调度、精度</div>
+        <div class="node" style="background:var(--amber-bg)"><b>模型参数</b>层数、hidden、专家、attention、dtype</div>
+      </div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:#1a73e8; color:#fff; flex:1.1"><b style="font-size:20px">数学模型</b>逐算子、逐集合通信的时间账<br>面积 / 功耗 / 容量约束</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--violet-bg); flex:1.1"><b style="font-size:20px">端到端 TPS/usr</b>+ 瓶颈<br>+ 每项机制的贡献（逐项回退）</div>
+      <div class="arrow">↺</div>
+      <div class="node" style="background:var(--bg); flex:.9">反馈<br>哪一项最敏感？<br>哪里有余量？</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>例：一个参数改变了设计议程</h3>
+        <p>模型显示：每次集合通信的时延下限只要上浮<b>不到 20%</b>，TPS/usr 就跌破目标。
+        于是这个下限的物理推导成了阻塞项，并直接催生了一个新单元——专用通信核。</p>
+      </div>
+      <div class="card">
+        <h3>例：冻结顺序是算出来的</h3>
+        <p>同一 Die、同一优化，外置存储带宽减半，TPS/usr <b>几乎腰斩</b>。
+        所以存储档位必须先于 Compute Die 冻结——这是模型给出的顺序，不是讨论出来的。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>数值已模糊化为比例；来源：设计基线文档的敏感度分析、未决问题清单</span><span></span></div>
+</section>
+
+<!-- 11. 时间账 -->
+<section class="slide">
+  <div class="kicker">Traceability · 时间账</div>
+  <h2>可追溯：TPS/usr 能拆到每一微秒、每一项机制</h2>
+  <p class="lead"><span class="mono">raw = compute − hidden + comm + wait − overlap</span> → e2e → <b class="hlb">TPS/usr</b>：每一项都能展开到具体算子、具体集合通信和具体机制。</p>
+  <div class="body" style="flex-direction:column; gap:14px">
+    <div>
+      <div class="note" style="margin-bottom:6px">计入项（示意，比例取自模型）</div>
+      <div class="bar">
+        <div style="flex:224.84; background:#1a73e8">kernel</div>
+        <div style="flex:177.64; background:#669df6">数据装载</div>
+        <div style="flex:32.14; background:#aecbfa"></div>
+        <div style="flex:268.96; background:#ea4335">通信协议</div>
+        <div style="flex:183.00; background:#f28b82">时延下限补足</div>
+        <div style="flex:22.35; background:#fbbc04"></div>
+      </div>
+      <div class="note" style="margin:10px 0 6px">扣除项（被掩盖）</div>
+      <div class="bar" style="width:14.65%">
+        <div style="flex:106.91; background:#34a853">被掩盖</div>
+        <div style="flex:26.27; background:#81c995"></div>
+      </div>
+      <div class="legend" style="margin-top:10px">
+        <span><i style="background:#1a73e8"></i>kernel</span>
+        <span><i style="background:#669df6"></i>数据装载</span>
+        <span><i style="background:#aecbfa"></i>归约 + launch + Die 间</span>
+        <span><i style="background:#ea4335"></i>集合通信协议时间</span>
+        <span><i style="background:#f28b82"></i>补足到时延下限</span>
+        <span><i style="background:#fbbc04"></i>DMA 等待</span>
+        <span><i style="background:#34a853"></i>被掩盖的装载</span>
+        <span><i style="background:#81c995"></i>计算与通信重叠</span>
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <h3>逐项回退：每项机制值多少</h3>
+        <table class="t" style="font-size:14px">
+          <tr><td>关掉专用装载通道</td><td class="n">约 −11%</td></tr>
+          <tr><td>预取退回逐层</td><td class="n">约 −10%</td></tr>
+          <tr><td>关掉 softmax 融合</td><td class="n">约 −6%</td></tr>
+        </table>
+      </div>
+      <div class="card red"><h3>瓶颈一眼可见</h3><p>集合通信占 raw 的<b>一半以上</b>，而且各类协议时间都被时延下限兜底 → 下一步该投入通信，而不是继续压 kernel。</p></div>
+      <div class="card"><h3>口径差不算收益</h3><p>换一种集合通信计数口径，TPS 差约 15%；这是口径差，不能读作优化收益。经验增益因子全部为 1。</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>数值已模糊化为比例与示意；来源：设计基线文档的时间账与逐项回退</span><span></span></div>
+</section>
+
+<!-- 12. 设计空间搜索 -->
+<section class="slide">
+  <div class="kicker">Design method</div>
+  <h2>设计空间 → 搜索 → 唯一方案</h2>
+  <p class="lead">人给起点：目标、约束、目标排序和排除项（ruled）；agent 在自己的范围内列全备选并搜索，<code>out/</code> 只放唯一的最终方案。</p>
+  <div class="body" style="flex-direction:column; gap:20px">
+    <div class="flow" style="height:150px">
+      <div class="node" style="background:var(--amber-bg); flex:1.2"><b style="font-size:18px">设计空间（agent 输入）</b>
+        <span class="mono" style="font-size:12px">teams/&lt;team&gt;/inputs/*_design_space.json</span>
+        全部备选、每项的 ASSUMPTION 与来源<br>约束、目标、排除项（ruled）及理由</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:#1a73e8; color:#fff"><b style="font-size:18px">搜索</b>枚举组合<br>逐个用详细模型回放<br>可行优先 → 目标排序</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--teal-bg); flex:1.1"><b style="font-size:18px">最终方案（out/）</b>
+        <span class="mono" style="font-size:12px">out/detailed/*_design.json</span>
+        只含胜出方案 + 设计空间哈希<br>测试保证与重新搜索的结果一致</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--violet-bg)"><b style="font-size:18px">设计文档</b>引用方案；每个备选<br>落选在哪一条准则</div>
+    </div>
+    <div class="grid3">
+      <div class="card"><h3>不靠争论</h3><p>每个备选都有落选理由（面积、功耗、TPS、掩盖失败）；换了假设重跑即可，结论翻转也看得见。</p></div>
+      <div class="card"><h3>边界清楚</h3><p>备选只在 agent 自己的输入里；下游只读 <code>out/</code> 的最终方案，不被候选列表污染。</p></div>
+      <div class="card"><h3>已采用</h3><p>通信核：10 维、<b>十万量级</b>组合，数千个可行<br>计算核矩阵:向量配比：3 维、几十个组合，个位数可行</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>来源：硬件团队 agent 定义；单元设计搜索的生成物</span><span></span></div>
+</section>
+
+<!-- 13. 两个实例 -->
+<section class="slide">
+  <div class="kicker">Worked examples</div>
+  <h2>两个实例：一个问题怎样走完流程</h2>
+  <p class="lead">两项都不改发布点，结果都是 <span class="tag model">MODEL</span>，等回标。</p>
+  <div class="body">
+    <div class="col">
+      <div class="card violet" style="flex:1">
+        <h3>通信核：从瓶颈到新单元</h3>
+        <ol class="steps">
+          <li><b>发现</b>：时间账显示通信占 raw 一半以上，时延下限没有物理推导</li>
+          <li><b>参考</b>：业界公开的专用通信引擎设计</li>
+          <li><b>设计空间</b>：放置、触发方式、描述符生成、下发、计数、存储…… 共 10 维</li>
+          <li><b>搜索</b>：十万量级组合 → 数千可行 → 选出唯一方案，控制开销远低于预算</li>
+          <li><b>落地</b>：单元规格文档、ADR（PROPOSED）、等待 RTL 回标</li>
+        </ol>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card blue" style="flex:1">
+        <h3>矩阵:向量配比：“32:1 还是 16:1？”</h3>
+        <ol class="steps">
+          <li><b>把问题变成准则</b>：所有目标模型的每个 kernel，向量工作都要被矩阵时间掩盖</li>
+          <li><b>设计空间</b>：向量 lane 数 × 低精度输入方式 × 指数单元</li>
+          <li><b>搜索</b>：个位数可行 → 选出唯一配比；约束项来自某个模型的特定算子，而不是主力模型</li>
+          <li><b>落选理由</b>：lane 少了掩盖失败或 TPS 下降；lane 多了功耗超限</li>
+          <li><b>结论带前提</b>：只跑主力模型时需要的 lane 更少；原生低精度矩阵输入只有在面积开销低于某个阈值时才划算</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>数值已模糊化；来源：两个单元的设计文档与 ADR</span><span></span></div>
+</section>
+
+<!-- 14. 与性能仿真器对比 -->
+<section class="slide">
+  <div class="kicker">Compare</div>
+  <h2>两个层次：架构内的微调，和从需求出发的架构搜索</h2>
+  <p class="lead">低降速仿真器在<b>一个确定的架构</b>上做微调、迭代；agent 流程把需求接到实现，<b>架构本身是待定的输出</b>，搜索范围横跨候选架构、并行度、存储档位和接口。</p>
+  <p class="note" style="margin:-14px 0 0"><b>降速</b>（slowdown）= 仿真耗时 ÷ 真实硬件耗时。降速越低，仿真跑得越快：微调需要它足够低才迭代得动，宽搜索需要它足够低才枚举得完。</p>
+  <div class="body" style="flex-direction:column; gap:16px">
+    <div class="grid2">
+      <div class="card" style="border-left:6px solid var(--faint)">
+        <h3>固定的架构内：微调与迭代</h3>
+        <ul class="b" style="font-size:15.5px; line-height:1.5">
+          <li>架构是<b>输入</b>，已经定好；改的是参数</li>
+          <li>工程师提假设 → 仿真验证 → 再改一版</li>
+          <li>回答"这台机器怎么调到最好"</li>
+        </ul>
+      </div>
+      <div class="card blue" style="border-left:6px solid var(--blue)">
+        <h3>从需求到实现：跨架构搜索</h3>
+        <ul class="b" style="font-size:15.5px; line-height:1.5">
+          <li>架构是<b>输出</b>，待定；需求、约束、目标是起点</li>
+          <li>先列全候选 → 逐个回放 → 排序 → 选出唯一方案</li>
+          <li>回答"该造一台什么样的机器，以及为什么不是别的"</li>
+        </ul>
+      </div>
+    </div>
+    <table class="t tight">
+      <tr><th style="width:104px"></th><th style="width:44%">固定的架构内：微调与迭代</th><th>从需求到实现：跨架构搜索</th></tr>
+      <tr><td><b>搜索对象</b></td><td>已定架构下的参数：tile、buffer、流水、时钟</td><td>架构本身：候选结构、并行度、存储档位、接口与拓扑</td></tr>
+      <tr><td><b>空间大小</b></td><td>单点邻域，几十个组合；靠迭代收敛</td><td>跨层次，十万量级组合；靠枚举与排序收敛</td></tr>
+      <tr><td><b>结论的形式</b></td><td>这个架构下最优的一组参数</td><td>定成什么架构 + 每个落选方案的落选理由</td></tr>
+      <tr><td><b>精度要求</b></td><td><b>要高</b>：微调的收益本来就小，误差会淹没信号</td><td>可先粗后细：粗筛要广度，定案前再细算</td></tr>
+      <tr><td><b>典型失败</b></td><td>精确地算错了一个方案：输入架构本身不对</td><td>假设不真：理由齐全，但建立在没回标的模型上</td></tr>
+    </table>
+  </div>
+  <div class="foot"><span>观点页；仿真器本身仍是唯一的数字来源</span><span></span></div>
+</section>
+
+<!-- 15. 多 agent 组织 -->
+<section class="slide">
+  <div class="kicker">Organization</div>
+  <h2>多 agent 组织：每个 agent 只装自己那一块</h2>
+  <p class="lead">单个人或单个 agent 的上下文装不下整颗芯片；按工业界团队切分，仓库目录就是上下文边界。</p>
+  <div class="body">
+    <div class="col" style="flex:1.25">
+      <table class="t" style="font-size:15px">
+        <tr><th style="white-space:nowrap">团队 / 目录</th><th style="white-space:nowrap">Agent</th><th>负责</th></tr>
+        <tr><td><b>模型</b><br><code>teams/model/</code></td><td style="white-space:nowrap">MODEL-01…06</td><td>模型 manifest、算子与 workload 账、场景矩阵、routing、golden trace、模型 KPI</td></tr>
+        <tr><td><b>硬件</b><br><code>teams/hardware/</code></td><td style="white-space:nowrap">HW-01…07</td><td>封装、计算核、片上存储、存储接口、互联、PPA/RAS、通信核；唯一硬件规格</td></tr>
+        <tr><td><b>软件</b><br><code>teams/software/</code></td><td style="white-space:nowrap">SW-01…07</td><td>runtime、编译器、kernel、融合、集合通信重叠、调度、profiler</td></tr>
+        <tr><td><b>架构委员会</b><br><code>teams/council/</code></td><td style="white-space:nowrap">A0 · D1–D7 · Q1–Q9</td><td>A0 总架构师；D 方向级、Q 量化级；ADR、跨团队集成、Gate 判定</td></tr>
+        <tr><td><b>独立验证</b><br><code>teams/vv/</code></td><td style="white-space:nowrap">V&amp;V</td><td>验证计划与证据等级；只能阻止 Gate，不能改被测团队的输入</td></tr>
+      </table>
+    </div>
+    <div class="col">
+      <div class="grid2">
+        <div class="card"><h3>目录即边界</h3><p><code>teams/&lt;team&gt;/</code> 不依赖其他团队、<code>integration/</code> 或 <code>out/</code>，由结构测试强制。</p></div>
+        <div class="card"><h3>contract 即接口</h3><p>跨团队只读 <code>contract.json</code> 和 <code>out/</code> 生成物，不通过聊天传数字。</p></div>
+        <div class="card"><h3>集成在团队之外</h3><p><code>integration/</code> 把各团队输入连成流水线，结果写进 <code>out/</code>。</p></div>
+        <div class="card"><h3>人按角色审查</h3><p>内容可以由 AI 生成，但由对应角色的人审查：无幻觉、设计正确、能落地。</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>来源：teams/*/README.md、20_INDUSTRIAL_AGENT_ORGANIZATION.md、18_AGENT_CATALOG_AND_INTERACTION_PROTOCOL.md</span><span></span></div>
+</section>
+
+<!-- 16. 协作协议 -->
+<section class="slide">
+  <div class="kicker">Protocol</div>
+  <h2>协作协议：任务卡进，handoff 出</h2>
+  <p class="lead">agent 之间不靠对话传递关键数字；每次交互都是一份带版本、假设和 blocker 的机器可读产物。</p>
+  <div class="body">
+    <div class="col" style="flex:.8">
+      <div class="card taskcard">
+        <h3>任务卡（模板节选）</h3>
+<pre>Agent ID / Stage / Objective
+Inputs:   artifact · schema 版本 · 假设
+Outputs:  文档 · 机器可读结果
+          可执行模型 · 测试
+Constraints:
+          allowed / forbidden paths
+          单位 · 证据等级
+Acceptance: 不变量 · 覆盖 · gate
+Handoff:  Decision · Assumptions
+          Files · Validation · Risks · Next</pre>
+      </div>
+    </div>
+    <div class="col">
+      <div class="flow" style="height:78px; font-size:14px">
+        <div class="node" style="background:var(--bg)">任务卡</div>
+        <div class="arrow">➜</div>
+        <div class="node" style="background:var(--blue-bg)">团队目录内实现<br><span class="note">+ contract.json</span></div>
+        <div class="arrow">➜</div>
+        <div class="node" style="background:var(--teal-bg)">Handoff packet</div>
+        <div class="arrow">➜</div>
+        <div class="node" style="background:var(--violet-bg)">Council 集成<br><span class="note">ADR + Gate</span></div>
+      </div>
+      <div class="card">
+        <h3>交互规则</h3>
+        <ul class="b" style="font-size:15px; line-height:1.5">
+          <li>只消费<b>已发布版本</b>的输入，不读别人的未提交工作区</li>
+          <li>关键数字只走 schema / JSON / 报告 / ADR，<b>不走聊天上下文</b></li>
+          <li>每份输出标明输入版本、输出版本、假设、约束检查和 blocker</li>
+          <li>输入不足时输出 <code>BLOCKED_CONFIG</code> 和 nextActions，<b>不得静默补全</b></li>
+          <li>量化阶段发现方向要变：经 A0 新建 ADR 回到方向阶段，<b>不偷偷改硬件 profile</b></li>
+        </ul>
+      </div>
+      <table class="t" style="font-size:14px">
+        <tr><th>共享对象</th><th>生命周期</th></tr>
+        <tr><td>Operator Manifest</td><td>draft → validated → frozen / blocked</td></tr>
+        <tr><td>Architecture Candidate</td><td>proposed → selected / rejected</td></tr>
+        <tr><td>Gate Decision</td><td>open → pass / fail / blocked</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="foot"><span>来源：18_AGENT_CATALOG_AND_INTERACTION_PROTOCOL.md 第 2、5、7 节；detailed/DETAIL_AGENT_TASK_CARD.md</span><span></span></div>
+</section>
+
+<!-- 17. 两阶段 + Gate -->
+<section class="slide">
+  <div class="kicker">Two stages</div>
+  <h2>两阶段：先定方向，再做量化，各有一道 Gate</h2>
+  <p class="lead">不一上来就做算子级精确模型；方向阶段淘汰候选，量化阶段用事件回放证明。</p>
+  <div class="body" style="flex-direction:column; gap:18px">
+    <div class="flow" style="height:150px">
+      <div class="node" style="background:var(--blue-bg); flex:1.3"><b style="font-size:18px">Stage A 方向级（D1–D7）</b>算术强度 + 带宽 + 通信时延 + 粗算力 + 面积<br>→ 至多 3 个架构候选和粗略 TPS/usr</div>
+      <div class="arrow">➜</div>
+      <div class="node gate" style="background:var(--teal-bg)"><b style="font-size:18px">D-Gate</b>面积守恒 · 多模型可比<br>瓶颈分类 · 敏感度扫描<br>候选 ≤ 3 · 最差模型达标</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--violet-bg); flex:1.3"><b style="font-size:18px">Stage B 量化级（Q1–Q9）</b>算子 / tile / 队列 / 互联 / 存储 / 集合通信 / 调度<br>→ 事件回放、P50/P95/P99、PPA、RAS</div>
+      <div class="arrow">➜</div>
+      <div class="node gate" style="background:var(--red-bg)"><b style="font-size:18px">Q-Gate</b>场景矩阵的每个槽位<br>模型 × 并行度 × 存储档位<br>全部达到 *_OBSERVED</div>
+    </div>
+    <div class="grid3">
+      <div class="card teal"><h3>D-Gate：PASS</h3><p>全部检查成立。范围限定为“仅规划比较，不等于架构冻结”。所有目标模型的规划估计都过目标 <span class="tag plan">PLANNING_ESTIMATE</span>，最难的模型是约束模型。</p></div>
+      <div class="card red"><h3>Q-Gate：未通过</h3><p>全部槽位仍是 PLANNING_ESTIMATE；Q3–Q6 共享 manifest 和 Q8 细粒度 TPS 未完成。规划数字不能当作达标证据。</p></div>
+      <div class="card"><h3>Gate 由独立校验器算</h3><p><code>integration/governance/evaluate_gates.js</code> 从生成物计算判定；任何 runner 都不得自己写 PASS。第一个失败项就是根因。</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>来源：17_TWO_STAGE_ARCHITECTURE_OPERATING_MODEL.md、teams/vv/docs/VV_PLAN.md 第 0、3、4 节</span><span></span></div>
+</section>
+
+<!-- 18. 按设计目的组织 workflow -->
+<section class="slide">
+  <div class="kicker">Workflow</div>
+  <h2>按设计目的组织 workflow：一个目的，一组 agent</h2>
+  <p class="lead">团队回答“谁负责”，workflow 回答“为了什么”。一个设计目的对应一个 workflow：跨团队挑一组 agent 协作，产物写进 <code>out/</code>，由 Gate 判定是否完成。</p>
+  <div class="body" style="flex-direction:column; gap:14px">
+    <div class="flow wf" style="height:112px">
+      <div class="node" style="background:var(--blue); color:#fff; flex:.9"><b style="font-size:17px">W1 规格定级</b>单芯片 / 单 Die<br>大致算力规格</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--amber-bg)"><b>输入（人给）</b>目标模型<br>TPS/usr 目标<br>面积 · 工艺</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--blue-bg); flex:1.2"><b>6 个方向 agent 并行</b>D1 负载 · D2 带宽<br>D3 算力 · D4 通信<br>D5 封装 · D6 软件</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--blue-bg)"><b>集成</b>D7 粗 TPS 排序<br>A0 选候选</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--teal-bg); flex:1.2"><b>产物</b>≤ 3 个候选<br>每 Die 算力 · Die 数<br>存储带宽 · 粗 TPS/usr</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--teal); color:#fff; flex:.6"><b>D-Gate</b></div>
+    </div>
+    <div class="flow wf" style="height:112px">
+      <div class="node" style="background:#9334e6; color:#fff; flex:.9"><b style="font-size:17px">W2 详细设计</b>模块划分与<br>模块规格参数</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--amber-bg)"><b>输入</b>W1 选中的候选<br>模块边界 · 约束</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--violet-bg); flex:1.2"><b>量化与映射</b>Q1 manifest · Q2 roofline<br>Q3 tile · Q4 NoC<br>Q5 kernel cycle</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--violet-bg)"><b>单元与执行</b>HW-01…07 单元搜索<br>Q6 调度 · Q7 PPA<br>Q8 细粒度 TPS</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--teal-bg); flex:1.2"><b>产物</b>单元规格、事件回放<br>TPS P50 / P99、PPA</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--red); color:#fff; flex:.6"><b>Q-Gate</b>Q9 + V&amp;V</div>
+    </div>
+    <div class="grid4">
+      <div class="card" style="padding:14px 18px"><h3 style="font-size:17px">目的即边界</h3><p style="font-size:14px">每个 workflow 只对一个设计目的负责；输入、agent 组合、产物和完成判据写在脚本里。</p></div>
+      <div class="card" style="padding:14px 18px"><h3 style="font-size:17px">产物串联</h3><p style="font-size:14px">workflow 之间只经 <code>out/</code> 衔接：W2 读 W1 选中的候选，不读 W1 的对话。</p></div>
+      <div class="card" style="padding:14px 18px"><h3 style="font-size:17px">agent 复用</h3><p style="font-size:14px">同一个 agent（如通信核 agent）可进多个 workflow；团队 ownership 不变。</p></div>
+      <div class="card" style="padding:14px 18px"><h3 style="font-size:17px">失败回流</h3><p style="font-size:14px">W2 发现方向不成立 → A0 开 ADR → 重跑 W1；不在 W2 里偷偷改规格。</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>W1 ≈ Stage A（D1–D7），W2 ≈ Stage B（B0–B5 / Q1–Q9）；来源：17、19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md</span><span></span></div>
+</section>
+
+<!-- 19. workflow 目录 -->
+<section class="slide">
+  <div class="kicker">Workflow catalog</div>
+  <h2>workflow 目录：从定规格到向下延伸</h2>
+  <p class="lead">每个设计目的一个 workflow。有的已经在跑，有的只有确定性流水线、还没写成 agent workflow，状态如实标出。</p>
+  <div class="body">
+    <table class="t tight" style="font-size:14px">
+      <tr><th style="width:170px">Workflow（设计目的）</th><th>agent 组合</th><th>产物</th><th style="width:96px">完成判据</th><th style="width:270px">状态</th></tr>
+      <tr><td><b>W1 规格定级</b><br>单芯片 / 单 Die 算力</td><td>D1–D6 并行 → D7 集成 → A0</td><td>≤ 3 个候选：算力、带宽、Die 数、粗 TPS</td><td>D-Gate</td><td><span class="tag ok">流水线已有</span> <code>stage_a.js</code>；agent workflow 待写</td></tr>
+      <tr><td><b>W2 架构详细设计</b><br>模块与规格参数</td><td>Q1–Q9 + HW-01…07 单元 agent + V&amp;V</td><td>单元规格、事件回放 TPS、PPA、ADR</td><td>Q-Gate</td><td><span class="tag plan">部分</span> 两个单元已搜索定案；Q3–Q6、Q8 未完成</td></tr>
+      <tr><td><b>W2.x 单元设计搜索</b><br>W2 的子 workflow</td><td>单元 owner agent → 搜索 → 文档 agent</td><td><code>out/detailed/*_design.json</code> + 设计文档</td><td>回归测试</td><td><span class="tag ok">已采用</span> 计算核配比、通信核</td></tr>
+      <tr><td><b>W3 跨团队评审</b><br>冻结前找差距</td><td>7 探针 → 5 lead → 接口配对 → 对抗核验 → Council → Critic</td><td>claim ledger、blocker、取证清单</td><td>Council 报告</td><td><span class="tag ok">已有</span> 2026-09-26 跑过一次，112 个 agent</td></tr>
+      <tr><td><b>W4 知识与参照</b><br>假设是否偏离行业</td><td>按领域的调研 agent → 汇总</td><td>SOTA 知识卡、外部参照系</td><td>不作证据</td><td><span class="tag ok">已有</span> learning、external references</td></tr>
+      <tr><td><b>W5 模块实现</b><br>向下延伸</td><td>文档 / RTL / 验证 / 仿真器 / 编译器 agent + 各环节工程师</td><td>RTL、测试、回标参数</td><td>端到端用例</td><td><span class="tag prop">PROPOSED</span> 先用通信核试点</td></tr>
+    </table>
+  </div>
+  <div class="foot"><span>来源：integration/orchestration/README.md、integration/pipelines/、17 / 19 号文档</span><span></span></div>
+</section>
+
+<!-- 20. 硬规则 -->
+<section class="slide">
+  <div class="kicker">Rules</div>
+  <h2>硬规则：让 AI 写出来的数字可信</h2>
+  <p class="lead">agent 产出很快，风险是“看起来合理”的数字；这些规则都由测试强制，<code>npm test</code> 不过就不能合入。</p>
+  <div class="body">
+    <div class="col">
+      <div class="card"><h3>① 每个数字都有来源和证据等级</h3>
+        <p style="margin-top:6px">
+          <span class="tag assume">ASSUMPTION</span> 假设 →
+          <span class="tag model">MODEL</span> 模型推导 →
+          <span class="tag plan">PLANNING_ESTIMATE</span> 规划估计 →
+          <span class="tag ok">MODEL_OBSERVED</span> 模型观测 →
+          <span class="tag ok">SILICON_OBSERVED</span> 实测</p></div>
+      <div class="card"><h3>② 单一来源</h3><p>硬件规格只在一份机器可读文件里；文档只引用，不另行定义数值。</p></div>
+      <div class="card"><h3>③ 生成物不手改</h3><p><code>out/</code> 全部由脚本重算，测试用 sha256 把生成物绑定到输入。</p></div>
+    </div>
+    <div class="col">
+      <div class="card"><h3>④ 一致性由测试强制</h3><p>spec、搜索结果、规划模型、contract、文档和看板不一致时，测试失败。</p></div>
+      <div class="card"><h3>⑤ 不许靠口径变化宣称收益</h3><p>经验增益因子全部为 1；任何折扣都要有事件/资源模型或实测证据。</p></div>
+      <div class="card"><h3>⑥ 改规格要走 ADR</h3><p>每个架构决策一份 ADR；TPS、功耗或面积变化超过阈值进入变更评审。口头确认不能关闭 BLOCKER。</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>来源：README.md、14_TPS_OBSERVATION_METRICS.md、OPEN_ISSUES.md「关闭纪律」</span><span></span></div>
+</section>
+
+<!-- 21. 测试与一致性 -->
+<section class="slide">
+  <div class="kicker">Tests &amp; gates</div>
+  <h2>测试守住一致性：失败了就改上游</h2>
+  <p class="lead">agent 越多、改动越快，越需要机器检查。测试不看“写得像不像”，只看数字是否守恒、可复现、同源。</p>
+  <div class="body" style="flex-direction:column; gap:18px">
+    <div class="flow" style="height:92px">
+      <div class="node" style="background:var(--amber-bg)"><b>teams/*/src、inputs</b>各 agent 的输入</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--blue-bg)"><b>integration/pipelines</b>npm run … 重算</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--teal-bg)"><b>out/ 生成物</b>带输入哈希，已提交</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:#1a73e8; color:#fff"><b>npm test</b>26 个测试</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--red-bg)"><b>失败</b>改上游 source 重跑<br>不改测试、不手改产物</div>
+    </div>
+    <div class="grid4">
+      <div class="card"><h3>unit · 2</h3><p>单位换算、算子与 SRAM 模拟物理、LSE 合并语义、mailbox 生命周期</p></div>
+      <div class="card"><h3>regression · 10</h3><p>搜索可复现、设计基线与 TPS 基线、manifest 一致、sizing 守恒、文档引用存档数字</p></div>
+      <div class="card"><h3>governance · 13</h3><p>Gate 判定、候选选择、跨团队 contract 与哈希、集成新鲜度、看板</p></div>
+      <div class="card"><h3>structure · 1</h3><p>目录、require 与链接可解析、团队之间不互相依赖</p></div>
+    </div>
+    <div class="card">
+      <h3>守恒检查（例）</h3>
+      <p>面积：各单元之和 = 封装包络 · 算子字节 / FLOP：规划账 ↔ 详细模型 · 集合通信次数：总数 = 各类之和 ·
+        时间账：文档 ↔ 流水线产物 · 输入哈希：产物里的 <code>inputHash</code> = 当前 source</p>
+    </div>
+  </div>
+  <div class="foot"><span>来源：teams/vv/docs/VV_PLAN.md 第 2 节；tests/</span><span></span></div>
+</section>
+
+<!-- 22. 章节：向下延伸 -->
+<section class="slide section s-red">
+  <div class="shape circle" style="width:420px; height:420px; right:-120px; top:-140px; background:rgba(255,255,255,.12)"></div>
+  <div class="shape circle" style="width:220px; height:220px; right:180px; bottom:-80px; background:rgba(255,255,255,.12)"></div>
+  <div class="shape pill" style="width:180px; height:28px; right:96px; bottom:170px; background:rgba(255,255,255,.22)"></div>
+  <div class="num">03</div>
+  <h2>向下延伸：以设计文档为中心的芯片全流程</h2>
+  <p>回答痛点 2。本项目定下模块和模块规格；往下的详细设计、RTL、验证、仿真器、编译器和后端，都以同一套设计文档为中心展开：文档完整、与 RTL 精确匹配、人和 AI 理解一致、端到端用例把关。</p>
+</section>
+
+<!-- 23. 本项目的位置 -->
+<section class="slide">
+  <div class="kicker">Scope</div>
+  <h2>本项目的位置：架构设计是整条链路的起点</h2>
+  <p class="lead">往下每一个环节都要从硬件设计文档里取信息；文档不准，问题会在下游某处以 bug 或返工的形式出现。</p>
+  <div class="body">
+    <div class="col" style="flex:.62">
+      <div class="card blue" style="flex:1">
+        <h3>本项目完成的：架构设计</h3>
+        <ul class="b" style="font-size:15px; line-height:1.55">
+          <li><b>确定模块</b>：计算核、片上存储与数据搬运、片上网络、存储接口、Die 间与封装间互联、通信核、调度、封装</li>
+          <li><b>确定规格参数</b>：数量、接口、拓扑、位宽、性能与面积功耗预算（单元级）</li>
+          <li><b>给出依据</b>：可执行模型、设计空间搜索、证据等级、ADR</li>
+          <li><b>交付</b>：单元级 spec + 唯一的机器可读硬件规格</li>
+        </ul>
+        <p style="margin-top:10px; font-size:14px">单元内部流水线与 RTL 暂不展开——这正是往下延伸的部分。</p>
+      </div>
+    </div>
+    <div class="col">
+      <table class="t" style="font-size:14px">
+        <tr><th style="white-space:nowrap">向下展开的环节</th><th>要从文档里拿到什么</th><th>文档不准的后果</th></tr>
+        <tr><td><b>模块详细设计</b></td><td>单元规格、接口契约、性能与面积预算</td><td>微架构偏离架构预算，发现时已晚</td></tr>
+        <tr><td><b>RTL 生成</b></td><td>端口、位宽、时钟域、寄存器、协议时序</td><td>模块间接口对不上，集成返工</td></tr>
+        <tr><td><b>RTL 验证</b></td><td>功能点、边界条件、背压 / 错误 / 复位流程</td><td>验证计划漏项，bug 逃逸到硅</td></tr>
+        <tr><td><b>指令验证</b></td><td>指令编码、语义、异常行为</td><td>参考模型和 RTL 各执一词</td></tr>
+        <tr><td><b>模型算子验证</b></td><td>Tile IR、dtype、取整点、归约顺序</td><td>数值偏差定位不到单元</td></tr>
+        <tr><td><b>仿真器构建</b></td><td>周期、带宽、队列深度、仲裁策略</td><td>性能预测与 RTL / 硅片不符</td></tr>
+        <tr><td><b>编译器与底软</b></td><td>descriptor 格式、寄存器、同步与内存序</td><td>软件晚于硬件就绪，驱动踩坑</td></tr>
+        <tr><td><b>后端</b></td><td>面积、功耗、时钟预算，floorplan，I/O 岸线</td><td>时序 / 面积不收敛，回头改架构</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="foot"><span>来源：README.md（交付深度为单元级）、11_PLAN_AND_DELIVERABLES.md P6 / P7</span><span></span></div>
+</section>
+
+<!-- 24. 以文档为中心 -->
+<section class="slide">
+  <div class="kicker">Spec as the source</div>
+  <h2>核心：详细设计文档是唯一真源，下游从它派生、向它回写</h2>
+  <p class="lead">四个条件同时成立，AI agent 才能真正简化流程；少一个，AI 只是把错误更快地复制到下游。</p>
+  <div class="body">
+    <div class="col" style="flex:1.15">
+      <div class="hub">
+        <div class="spoke">本项目架构模型<span>派生：单元预算<br>回写：回标参数</span></div>
+        <div class="spoke">RTL 生成<span>派生：端口、寄存器、参数<br>回写：实现偏差</span></div>
+        <div class="spoke">RTL 验证<span>派生：功能点、断言、覆盖<br>回写：歧义与 bug</span></div>
+        <div class="spoke">后端<span>派生：PPA 与时钟预算<br>回写：面积 / 功耗 / 时序</span></div>
+        <div class="center"><b>详细设计文档</b>结构化 · 条款带 ID<br>机器可读 · 版本化<br><span class="mono" style="font-size:12px">单一真源</span></div>
+        <div class="spoke">指令验证<span>派生：编码与语义<br>回写：参考模型差异</span></div>
+        <div class="spoke">编译器与底软<span>派生：descriptor、Tile IR<br>回写：软件需求</span></div>
+        <div class="spoke">仿真器<span>派生：周期与仲裁<br>回写：与 RTL 的周期误差</span></div>
+        <div class="spoke">模型算子验证<span>派生：dtype、精度准则<br>回写：数值偏差</span></div>
+      </div>
+    </div>
+    <div class="col" style="gap:12px">
+      <div class="card" style="padding:14px 20px"><h3><span class="pill-no">1</span>全流程都有详细文档</h3><p>每个环节的输入和输出都是文档或机器可读产物，不靠口头和聊天传规格。</p></div>
+      <div class="card" style="padding:14px 20px"><h3><span class="pill-no">2</span>RTL 与文档精确匹配</h3><p>“匹配”必须能被机器检查：能生成的从文档生成，不能生成的逐条追踪到实现和测试。</p></div>
+      <div class="card" style="padding:14px 20px"><h3><span class="pill-no">3</span>人和 AI 的理解一致</h3><p>每个环节有工程师把关：AI 展开和生成，工程师定意图、审边界条件、签核。</p></div>
+      <div class="card" style="padding:14px 20px"><h3><span class="pill-no">4</span>端到端用例保质量</h3><p>同一套用例从模型 golden 跑到 RTL 和硅片，数值和时间都与预期对账。</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>本项目已有雏形：单一硬件规格、contract.json、Tile IR 契约、文档引用 out/ 数字的回归测试</span><span></span></div>
+</section>
+
+<!-- 25. 文档与 RTL 匹配 -->
+<section class="slide">
+  <div class="kicker">Pillar 2 · Spec ↔ RTL</div>
+  <h2>“RTL 与文档精确匹配”要变成可检查的</h2>
+  <p class="lead">自然语言文档没法被机器比对；匹配关系要靠生成和追踪两种手段落实，并在 CI 里持续检查。</p>
+  <div class="body" style="flex-direction:column; gap:16px">
+    <div class="flow" style="height:110px">
+      <div class="node" style="background:var(--violet-bg)"><b>规格条款</b>每条有 ID、证据等级<br>接口 / 寄存器 / 参数结构化</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--blue-bg)"><b>生成</b>RTL 包与端口、C 头文件<br>仿真器配置、文档表格</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--blue-bg)"><b>实现与验证</b>RTL 模块、断言<br>测试、覆盖点</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--teal-bg)"><b>追踪矩阵</b>条款 → 实现 → 测试 → 覆盖<br>缺一项 CI 失败</div>
+    </div>
+    <div class="grid2" style="flex:1">
+      <div class="card">
+        <h3>四条规则</h3>
+        <ul class="b" style="font-size:15px; line-height:1.55">
+          <li><b>能生成的就生成</b>：端口、位宽、寄存器、参数、descriptor 编解码从同一份结构化 spec 生成，一处改、处处变</li>
+          <li><b>不能生成的就追踪</b>：状态机、背压、错误和复位流程逐条对应 RTL 位置、断言和测试</li>
+          <li><b>双向同步</b>：RTL 改了文档没改，CI 失败；和今天“文档必须引用 out/ 存档数字”的测试是同一机制</li>
+          <li><b>反向解释</b>：让 AI 从 RTL 反推行为说明，与原 spec 做 diff，找语义漂移</li>
+        </ul>
+      </div>
+      <div class="card amber">
+        <h3>独立性：别让同一个误解同时写进设计和测试</h3>
+        <p>写 RTL 的 agent 和写验证 / 参考模型的 agent 必须分开，各自只读 spec，不读对方的实现。
+        否则两边共享同一个误解，<b>测试全过、bug 仍在</b>。</p>
+        <p style="margin-top:10px">本项目的 V&amp;V 已按这个原则组织：只能阻止 Gate，不能改被测团队的输入；参考模型（可执行模型、mailbox 生命周期、LSE 合并语义的单元测试）和 RTL 应分属不同 agent。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>来源：tests/regression（文档引用存档数字）、docs/architecture/contracts/TILE_IR.md、teams/vv/docs/VV_PLAN.md</span><span></span></div>
+</section>
+
+<!-- 26. 人和 AI 理解一致 -->
+<section class="slide">
+  <div class="kicker">Pillar 3 · Human in the loop</div>
+  <h2>人和 AI 的理解一致：工程师放在每个环节的关口上</h2>
+  <p class="lead">工程师的角色从“写”转向“定意图、审边界、签核”；每个关口都有明确的签核产物，而不是一句“看过了”。</p>
+  <div class="body" style="flex-direction:column; gap:14px">
+    <table class="t" style="font-size:14px">
+      <tr><th style="white-space:nowrap">环节</th><th>AI agent 做</th><th>工程师确认（对齐点）</th><th style="white-space:nowrap">签核产物</th></tr>
+      <tr><td><b>详细设计</b></td><td>按架构预算展开微架构、接口时序、异常与复位流程</td><td>设计意图、边界条件、是否守住架构预算</td><td>条款化 spec 冻结</td></tr>
+      <tr><td><b>RTL</b></td><td>由 spec 生成 RTL 与集成代码</td><td>可综合性、时序与面积风险、编码规范</td><td>lint / CDC / 综合报告</td></tr>
+      <tr><td><b>RTL 验证</b></td><td>验证计划、testbench、断言、随机激励</td><td>功能点是否列全、覆盖模型是否对</td><td>覆盖率闭合、bug 趋势</td></tr>
+      <tr><td><b>指令 / 算子验证</b></td><td>随机指令、算子 golden 比对</td><td>参考模型是否独立、精度准则是否合理</td><td>比对报告</td></tr>
+      <tr><td><b>仿真器</b></td><td>从 spec 生成周期模型</td><td>与 RTL 的周期误差是否在容限内</td><td>校准报告（回标模型）</td></tr>
+      <tr><td><b>编译器与底软</b></td><td>从寄存器表、Tile IR 生成驱动和 lowering</td><td>同步语义、内存序、错误处理</td><td>端到端用例通过</td></tr>
+      <tr><td><b>后端</b></td><td>整理约束，汇总 floorplan 与时序反馈</td><td>PPA 取舍、是否要回改架构</td><td>面积 / 功耗 / 时序回写 spec</td></tr>
+    </table>
+    <div class="grid3">
+      <div class="card blue"><h3>复述对齐</h3><p>工程师用自己的话复述关键条款，AI 比对与 spec 的差异；差异就是需要澄清的地方。</p></div>
+      <div class="card blue"><h3>主动暴露歧义</h3><p>AI 遇到未定义或有歧义的条款输出 <code>BLOCKED_CONFIG</code>，不得静默补全——本项目协作协议里已有的规则。</p></div>
+      <div class="card blue"><h3>按风险分级审查</h3><p>接口、跨时钟域、错误 / 复位、协议边界必须人签；其余由机器检查加抽检，避免人成为瓶颈。</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>来源：18_AGENT_CATALOG_AND_INTERACTION_PROTOCOL.md 第 5 节（BLOCKED_CONFIG）；11_PLAN_AND_DELIVERABLES.md P6 / P7</span><span></span></div>
+</section>
+
+<!-- 27. 端到端用例 -->
+<section class="slide">
+  <div class="kicker">Pillar 4 · End-to-end tests</div>
+  <h2>端到端用例：同一套用例贯穿每一层</h2>
+  <p class="lead">一个用例从模型 golden 出发，逐层往下跑；每一层都对账数值和时间，失败时能定位到哪一层、哪个算子、哪个单元。</p>
+  <div class="body" style="flex-direction:column; gap:16px">
+    <div class="flow" style="height:118px">
+      <div class="node" style="background:var(--amber-bg)"><b>模型 golden</b>参考实现 + golden trace<br><span class="note">MODEL-05</span></div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--bg)"><b>编译器输出</b>Tile IR、kernel、collective graph</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--blue-bg)"><b>性能模型 / 仿真器</b>逐算子时间账</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--blue-bg)"><b>RTL 仿真 / Palladium</b>cycle 级</div>
+      <div class="arrow">➜</div>
+      <div class="node" style="background:var(--teal-bg)"><b>FPGA / 硅片</b>实测</div>
+    </div>
+    <div class="grid2" style="grid-template-columns:1fr 1fr; gap:16px">
+      <div class="card"><h3>每一层对账两件事</h3>
+        <p><b>数值</b>：与 golden 比对，容差按精度策略（dtype、取整点、归约顺序）<br>
+        <b>时间</b>：与时间账比对，每个算子、每次集合通信都有预算；超出即指向具体单元</p></div>
+      <div class="card"><h3>用例从哪里来</h3>
+        <p>每个目标模型的一层 / 整网 decode；场景矩阵（并行度 × 存储档位）；错误注入（超时、poison、复位）；最坏情况与 P99。
+        本项目已有场景矩阵、golden trace、精度策略和 Q-Gate 槽位。</p></div>
+    </div>
+    <div class="card amber">
+      <h3>补充：端到端用例必要，但不充分</h3>
+      <p>端到端能抓住集成错误和语义误解，但发现得晚、定位代价高。它要和单元级测试、形式验证、覆盖率闭合一起用：
+      单元层保证局部正确，端到端保证整体一致；时间账负责把端到端的失败拆回到单元。</p>
+    </div>
+  </div>
+  <div class="foot"><span>来源：teams/model/README.md（MODEL-03 / 05）、teams/software/docs/PRECISION_POLICY.md、teams/vv/docs/VV_PLAN.md</span><span></span></div>
+</section>
+
+<!-- 28. Review：前提与风险 -->
+<section class="slide">
+  <div class="kicker">Review</div>
+  <h2>Review：这条路线成立的前提与风险</h2>
+  <p class="lead">方向是对的：信息透明和同源是芯片研发提速的关键。下面是要提前处理的六个问题，以及如何衡量“真的简化了”。</p>
+  <div class="body" style="flex-direction:column; gap:14px">
+    <div class="grid3">
+      <div class="card amber"><h3>文档必须可检查</h3><p>自然语言 spec 无法机器比对。接口、寄存器、参数、时序、状态机要结构化，文字只解释意图。</p></div>
+      <div class="card amber"><h3>AI 的错误会相关</h3><p>同一个 AI 写 spec、RTL 和测试，会共享同一个误解。参考模型和验证要独立来源、独立 agent。</p></div>
+      <div class="card amber"><h3>文档量会爆炸</h3><p>文档是视图，不是源：表格和数字从结构化 spec 生成；否则维护成本只是从代码转移到了文档。</p></div>
+      <div class="card amber"><h3>端到端发现得晚</h3><p>不能替代单元验证和形式验证；用例贯穿各层，但定位要靠分层测试和时间账。</p></div>
+      <div class="card amber"><h3>人审查会成为瓶颈</h3><p>AI 产出越快，审查越吃紧。按风险分级，把人力集中在接口、边界条件和签核上。</p></div>
+      <div class="card amber"><h3>工具和 IP 的边界</h3><p>综合、STA、形式、DRC 仍由 EDA 签核；PHY、存储接口、SerDes 等外购 IP 的文档来自供应商，也要纳入同一追踪体系。</p></div>
+    </div>
+    <div class="card">
+      <h3>怎么衡量是否真的简化了</h3>
+      <p>跨团队澄清问题数 · 文档与 RTL 漂移数 · bug 发现阶段分布（逃逸到 Palladium / 硅片的比例） · 覆盖率闭合时间 ·
+        spec 变更传到全链路的时间 · 回片前后 bug 数 · 软件就绪时间相对硬件的滞后</p>
+    </div>
+  </div>
+  <div class="foot"><span>评审意见；指标为建议，尚未在本项目中度量</span><span></span></div>
+</section>
+
+<!-- 29. 试点 -->
+<section class="slide">
+  <div class="kicker">Next step · proposal</div>
+  <h2>下一步：选一个单元走通全链路 <span class="tag prop" style="font-size:14px">PROPOSED</span></h2>
+  <p class="lead">通信核适合做第一个试点：边界清楚、规模小、已有搜索选出的方案，而且模型正等着它的 cycle 数回标。</p>
+  <div class="body">
+    <div class="col" style="flex:1.2">
+      <div class="card violet" style="flex:1">
+        <h3>试点路径：Comm Core</h3>
+        <ol class="steps">
+          <li><b>结构化 spec</b>：描述符格式、触发条件、寄存器、接口从单元设计文档条款化</li>
+          <li><b>RTL 生成</b>：触发逻辑、描述符生成、发送通道</li>
+          <li><b>独立验证</b>：断言 + 随机激励；mailbox 生命周期与 epoch 语义做参考模型</li>
+          <li><b>周期回标</b>：cycle 数、控制路径时延回填设计空间，重跑搜索，看结论是否翻转</li>
+          <li><b>编译器</b>：生成集合通信图与描述符模板</li>
+          <li><b>端到端</b>：一层 decode 的各类集合通信在 RTL 仿真中跑通，与时间账对账</li>
+        </ol>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card"><h3>为什么选它</h3><p>控制开销的模型值远低于预算上限；但有两项备选只差纳秒级余量，<b>回标后可能翻转</b>——正好检验“回标 → 重搜 → 改设计”的闭环。</p></div>
+      <div class="card"><h3>试点的退出条件</h3><p>spec 条款 100% 可追踪到 RTL 和测试；文档与 RTL 漂移为 0；覆盖率闭合；周期模型与 RTL 误差在容限内；通信时延下限拿到控制路径一项的实测依据。</p></div>
+      <div class="card"><h3>之后</h3><p>按同一模板推广到存储、互联、计算核；Tile IR 成为编译器、仿真器和 RTL 的共同输入。</p></div>
+    </div>
+  </div>
+  <div class="foot"><span>提案；数值已模糊化</span><span></span></div>
+</section>
+
+<!-- 30. 章节：长远目标 -->
+<section class="slide section s-yellow">
+  <div class="shape circle" style="width:420px; height:420px; right:-120px; top:-140px; background:rgba(255,255,255,.12)"></div>
+  <div class="shape circle" style="width:220px; height:220px; right:180px; bottom:-80px; background:rgba(255,255,255,.12)"></div>
+  <div class="shape pill" style="width:180px; height:28px; right:96px; bottom:170px; background:rgba(255,255,255,.22)"></div>
+  <div class="num">04</div>
+  <h2>长远目标：模型随研发一起变准</h2>
+  <p>今天的数字大多是 MODEL 和 ASSUMPTION。往下每一步研发（RTL、Palladium、综合、实测）既按文档落实细节，也逐项替换模型里的假设，直到整套模型对着硅片校准——下一代芯片从更准的起点开始。</p>
+</section>
+
+<!-- 31. 模型变准 -->
+<section class="slide">
+  <div class="kicker">Calibration</div>
+  <h2>一个随研发不断校准的架构模型</h2>
+  <p class="lead">研发中各团队做的事，就是把细节落实，同时用真实数据替换模型里的假设。</p>
+  <div class="body" style="flex-direction:column; gap:22px">
+    <div class="road" style="height:140px">
+      <div class="step" style="background:#9aa0a6"><h4>现在</h4><p>ASSUMPTION / MODEL<br>工程系数、下限口径<br>可追溯但未校准</p></div>
+      <div class="step" style="background:#1a73e8"><h4>研发中</h4><p>RTL、综合、Palladium cycle<br>逐项替换假设值</p></div>
+      <div class="step" style="background:#34a853"><h4>研发完成</h4><p>SILICON_OBSERVED<br>整套模型对着实测校准</p></div>
+      <div class="step" style="background:#a142f4"><h4>下一代芯片</h4><p>改参数即可评估<br>起点比这一代更准</p></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>要回标的项（例）</h3>
+        <table class="t" style="font-size:14px">
+          <tr><td>launch 开销缩放、专家预测命中率</td><td>trace / Palladium</td></tr>
+          <tr><td>集合通信时延下限</td><td>拓扑 + 通信核 RTL</td></tr>
+          <tr><td>面积、功耗、工艺折算系数</td><td>综合、布局布线、PHY</td></tr>
+          <tr><td>向量指令数、解包吞吐、特殊函数单元面积</td><td>kernel cycle model</td></tr>
+          <tr><td>通信核 cycle 数、控制路径时延</td><td>RTL / 周期模型</td></tr>
+        </table>
+      </div>
+      <div class="card blue">
+        <h3>为什么值得</h3>
+        <ul class="b" style="font-size:15px; line-height:1.6">
+          <li>每一次回标都直接落到某个参数，重跑搜索就知道<b>设计要不要变</b></li>
+          <li>设计空间和落选理由都留在仓库里：假设变了，<b>结论翻转看得见</b></li>
+          <li>模型、规格、文档、测试同源：知识沉淀在仓库，而不是在个人经验里</li>
+          <li>下一代芯片（新模型、新工艺、新存储）从校准过的模型起步</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>来源：README.md「模型会随研发一起变准」、21_TPS_DESIGN_BASELINE.md 第 7 节、OPEN_ISSUES.md</span><span></span></div>
+</section>
+
+<!-- 32. 流程路线 -->
+<section class="slide">
+  <div class="kicker">Roadmap</div>
+  <h2>流程路线：从规划估计走到硅片实测</h2>
+  <p class="lead">芯片按 P0–P7 逐级冻结；流程本身也要一步步补齐，让每一级冻结都有模型和测试撑着。</p>
+  <div class="body" style="flex-direction:column; gap:18px">
+    <div class="grid3" style="flex:1">
+      <div class="card blue">
+        <h3>近期 · P0–P2（约 0–8 周）</h3>
+        <ul class="b" style="font-size:15px; line-height:1.55">
+          <li>其余 agent 的设计也改成“设计空间 → 搜索 → 唯一方案”，Final Tuning 搜索是下一个候选</li>
+          <li>把 W1 规格定级写成 agent workflow（D1–D6 并行 → D7 → A0），产物接 <code>stage_a.js</code></li>
+          <li>Stage B 事件回放接入，Q-Gate 槽位从 PLANNING_ESTIMATE 走向 MODEL_OBSERVED</li>
+          <li>关闭模型结构和存储档位两个阻塞项，在选定档位下达到目标并留出冻结余量</li>
+        </ul>
+      </div>
+      <div class="card teal">
+        <h3>中期 · P3–P6（约 6–24 周）</h3>
+        <ul class="b" style="font-size:15px; line-height:1.55">
+          <li>单 Die → 单封装 → 多封装副本逐级冻结，每级都由模型给出余量</li>
+          <li>统一 Tile IR：编译器、模拟器、固件和 RTL 用同一份描述</li>
+          <li>通信核（PROPOSED）试点：文档 → RTL → 验证 → 回标走通全链路</li>
+          <li>综合、floorplan 回标面积功耗；全部 BLOCKER 有关闭证据</li>
+        </ul>
+      </div>
+      <div class="card violet">
+        <h3>长期 · P7 之后</h3>
+        <ul class="b" style="font-size:15px; line-height:1.55">
+          <li>RTL 与 Palladium trace 回灌模型参数</li>
+          <li>硅片实测把模型校准到 SILICON_OBSERVED</li>
+          <li>同一套流程和模型用于下一代芯片：换模型、换工艺、换存储都是改参数重跑</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <h3>什么时候算“流程可以支撑进入 RTL”</h3>
+      <p>性能模型不再依赖未解释的全局经验缩放 · 选定档位在时间账里达到目标并留出冻结余量 · P99 与最坏情况通过 ·
+        所有 BLOCKER 有关闭证据 · 规格可直接分解为 RTL、IP、firmware、compiler 和验证工作包</p>
+    </div>
+  </div>
+  <div class="foot"><span>来源：11_PLAN_AND_DELIVERABLES.md、HIGH_LEVEL_ARCHITECTURE.md 第 11 节、OPEN_ISSUES.md</span><span></span></div>
+</section>
+
+<!-- 33. 总结 -->
+<section class="slide">
+  <div class="kicker">Summary</div>
+  <h2>总结</h2>
+  <p class="lead">一句话：<b>把芯片架构设计变成一个可执行、可追溯、会随研发变准的模型，由多个 agent 协作推进；再以设计文档为中心，把同样的方法延伸到 RTL、验证、软件和后端。</b></p>
+  <div class="body">
+    <div class="col">
+      <div class="grid4">
+        <div class="card blue"><h3>驱动</h3><p>两个痛点：架构决策靠经验拍板，装不下全部细节、说不清敏感项；往下的研发靠沟通对齐，信息不透明导致验证不足、bug 埋得深、周期拖期。第一个用例是一颗大模型 Decode 推理芯片。</p></div>
+        <div class="card teal"><h3>流程</h3><p>可执行模型 + 时间账；人给起点，agent 搜索设计空间，out/ 只放唯一方案；按团队切分的多 agent，任务卡进、handoff 出；按设计目的组成 workflow，两道 Gate 判完成；证据等级与单一来源，测试守恒、失败改上游。</p></div>
+        <div class="card red"><h3>向下延伸</h3><p>以详细设计文档为唯一真源：文档完整、与 RTL 可检查地匹配、工程师在每个关口对齐理解、端到端用例贯穿各层。先用通信核走通全链路。</p></div>
+        <div class="card violet"><h3>长远目标</h3><p>用 RTL、Palladium、综合和实测逐项替换假设，最终得到对着硅片校准的模型；流程和模型服务下一代芯片。</p></div>
+      </div>
+      <div class="card" style="margin-top:6px">
+        <h3>上手</h3>
+        <p><span class="mono">npm test</span> 全部测试 · <span class="mono">npm run search:final</span> Final Tuning 搜索 · <span class="mono">npm run model:planning</span> 多模型规划 ·
+          <span class="mono">npm run commcore:search</span> / <span class="mono">aicore:search</span> 单元设计搜索</p>
+        <p style="margin-top:8px">入口文档：
+          <a href="../../teams/council/docs/17_TWO_STAGE_ARCHITECTURE_OPERATING_MODEL.md">两阶段流程</a> ·
+          <a href="../../teams/council/docs/18_AGENT_CATALOG_AND_INTERACTION_PROTOCOL.md">agent 目录与协议</a> ·
+          <a href="../../teams/vv/docs/VV_PLAN.md">V&amp;V 计划</a> ·
+          <a href="21_TPS_DESIGN_BASELINE.md">TPS/usr 设计基线</a> ·
+          <a href="OPEN_ISSUES.md">未决问题</a> ·
+          <a href="HIGH_LEVEL_ARCHITECTURE.md">高层架构</a> ·
+          <a href="../../teams/council/adr/README.md">ADR 索引</a></p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Node.js 18+，无第三方依赖</span><span></span></div>
+</section>
+
+</div>
+<div id="progress"></div>
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var progress = document.getElementById('progress');
+  var cur = 0;
+  slides.forEach(function (s, i) {
+    var f = s.querySelector('.foot span:last-child');
+    if (f) f.textContent = (i + 1) + ' / ' + slides.length;
+  });
+  function fit() {
+    var k = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = 'scale(' + k + ') translate(-50%, -50%)';
+  }
+  function show(i) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, j) { s.classList.toggle('active', j === cur); });
+    progress.style.width = ((cur + 1) / slides.length * 100) + '%';
+    if (location.hash !== '#' + (cur + 1)) history.replaceState(null, '', '#' + (cur + 1));
+  }
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ' || k === 'Enter') { show(cur + 1); e.preventDefault(); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' || k === 'Backspace') { show(cur - 1); e.preventDefault(); }
+    else if (k === 'Home') show(0);
+    else if (k === 'End') show(slides.length - 1);
+    else if (k === 'f' || k === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+      else document.exitFullscreen && document.exitFullscreen();
+    }
+  });
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('a')) return;
+    show(e.clientX > window.innerWidth / 2 ? cur + 1 : cur - 1);
+  });
+  var tx = null;
+  document.addEventListener('touchstart', function (e) { tx = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (tx === null) return;
+    var dx = e.changedTouches[0].clientX - tx; tx = null;
+    if (Math.abs(dx) > 40) show(dx < 0 ? cur + 1 : cur - 1);
+  });
+  window.addEventListener('resize', fit);
+  fit();
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1);
+})();
+</script>
+</body>
+</html>

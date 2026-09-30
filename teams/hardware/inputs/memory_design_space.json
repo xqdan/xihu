@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "memory-design-space-v0.1",
+  "owner": "HW-04 MC subsystem (co-sign HW-03 SRAM/TMA, HW-05 NoC, Model capacity)",
+  "status": "UNVERIFIED",
+  "document": "teams/hardware/docs/04_MEMORY_SUBSYSTEM_MC.md",
+  "scope": "Every alternative the memory domain considers for the MC subsystem: how many cubes, how much bandwidth per cube, how much capacity per cube, and which of the alternatives in section 5 of the document it commits to. integration/detailed/memory_search.js enumerates the product of the searched dimensions, drops combinations that violate a stated constraint, scores the rest on the three-model per-token byte demand and the K3 detailed replay, and writes only the winner to out/detailed/memory_design.json. The per-option comparison is quoted in the document.",
+  "evidence": "UNVERIFIED: this file was drafted from the repository documents and the published baseline by an agent, not derived by the memory domain owner. Every option below carries an evidence string that says where its number came from. The bandwidth tiers, the cube count grid, the capacity options and the reference part are taken from k3_mc_baseline.json (ADR-0019, references/README.md); the per-token byte demand is taken from out/workload/planning_operator_workload.json#operators and, for K3, from the k3_rdma_final_tuning_model.js replay. Anything that is neither in the baseline nor in a replay is labelled ASSUMPTION and must be calibrated or deleted by the domain owner before this space is treated as agreed. B-002 (the bandwidth gap) is the blocker this space exists to close.",
+  "caliber": {
+    "mcGBs": "per memory cube, link bandwidth, GB/s, raw (before TECH.mcUtil); the die-facing figure is memoryCubesPerComputeDie x mcGBs x mcUtil, capped by the UCIe port bandwidth",
+    "capacityGBPerCube": "per memory cube usable capacity in GB, before ECC and sparing",
+    "sustained_vs_raw": "the published point is quoted at TECH.mcUtil = 0.7 (per the baseline); a tier is not a sustained claim",
+    "reason": "without this block, a downstream consumer cannot tell whether a GB/s figure may be compared against a limit; the previous round reported an internal identity as a spec comparison for exactly this reason"
+  },
+  "requirements": {
+    "models": ["Kimi K3", "GLM-5.2", "DeepSeek-V4-Pro"],
+    "modelsReason": "the repository serves three models; a cube count or tier that only closes K3 does not close the package",
+    "publishedPoint": "stretchMc640GBs",
+    "tpsTolerance": 0.001,
+    "tpsReason": "the K3 detailed replay at the published point must keep TPS/usr within 0.1% of the published value; the search may not move the published point, only reach it more cheaply",
+    "capacityFloorGBPerRank": 49.2,
+    "capacityFloorReason": "K3 model backing per rank at 1M context (out/workload planning, tpsDesign.dataMovement); a capacity below this cannot hold one K3 request regardless of bandwidth",
+    "minTpsPerUser": 1000,
+    "minTpsReason": "the program goal (baseline.goal.target) is 1000 TPS/usr; a candidate below it does not close the bandwidth blocker even if it is the cheapest in its class",
+    "dieAreaLimitMm2": 400,
+    "cardPowerLimitW": 2800,
+    "placementWindowMm2": 5248,
+    "limitsReason": "k3_mc_baseline.json#tpsDesign.hardware.limits (ADR-0021 P1) and package.placementWindowMm2 (ADR-0018); the die limits reflect liquid cooling (ADR-0005). Caliber caveat: this domain's card power is 8 x die + MC + the fixed 80 W, but it does not charge the shared-port term the physical domain adds (45.5141376 W, O.chargeSharedPortCost), so 2800 W is a looser check here than in the HW-09 space by exactly that difference (2722.9593600 + 45.5141376 = 2768.4734976). Stated rather than silently tolerated; see 04 section 5.1.1 and 09 section 3"
+  },
+  "constraints": [
+    "the per-die deliverable bandwidth must not exceed the per-die UCIe port bandwidth (the link is the limit, not the cube): a candidate whose cube count x tier implies more than the port can carry is infeasible, not merely expensive",
+    "capacity: cubesPerCard x capacityGBPerCube >= the K3 per-rank backing floor, accounting for ECC overhead",
+    "the package placement window must hold the compute dies plus the cubes (8 x computeDieArea + nCubes x memoryCubeAreaMm2Planning <= placementWindowMm2)",
+    "the card power budget must hold (the MC term the model charges plus the compute dies)",
+    "the K3 detailed replay at the published point must keep TPS/usr within tpsTolerance"
+  ],
+  "objective": [
+    "feasible first",
+    "lowest manufacturing risk tier (a REFERENCE-class part is not the same product as a STRETCH_AGGRESSIVE one)",
+    "least MC power at the card level",
+    "largest capacity margin above the per-rank floor"
+  ],
+  "dimensions": {
+    "mcGBs": {
+      "question": "Link bandwidth per memory cube",
+      "options": {
+        "320": {"gbs": 320, "classification": "REFERENCE", "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube (REFERENCE); the reference part's KGD spec, the P1 regression's compatibility point"},
+        "400": {"gbs": 400, "classification": "GRID", "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube (GRID)"},
+        "480": {"gbs": 480, "classification": "DEFAULT_SEARCH_CAP", "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube; 1.5x the reference value, the default search cap"},
+        "560": {"gbs": 560, "classification": "AGGRESSIVE", "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube; above the default cap, a report must mark it"},
+        "640": {"gbs": 640, "classification": "STRETCH_AGGRESSIVE", "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube; the P1 Final Tuning stretch point, not a manufacturing default. This is the published point"}
+      }
+    },
+    "cubesPerCard": {
+      "question": "Memory cubes per card",
+      "options": {
+        "8": {"cubes": 8, "evidence": "k3_mc_baseline.json#bandwidthTiers.cubeCountGrid"},
+        "16": {"cubes": 16, "evidence": "k3_mc_baseline.json#bandwidthTiers.cubeCountGrid; the current spec (card.memoryCubes, 2 per compute die)"},
+        "24": {"cubes": 24, "evidence": "k3_mc_baseline.json#bandwidthTiers.cubeCountGrid"},
+        "32": {"cubes": 32, "evidence": "k3_mc_baseline.json#bandwidthTiers.cubeCountGrid; document section 5 route 2, which the document already calls unsupported by package edge, shoreline and power"}
+      }
+    },
+    "capacityGBPerCube": {
+      "question": "Usable capacity per memory cube",
+      "options": {
+        "8": {"capacityGB": 8, "evidence": "k3_mc_baseline.json#referenceMemoryCube.capacityOptionsGB; 4Hi prototype option, 128 GB per card at 16 cubes"},
+        "16": {"capacityGB": 16, "evidence": "k3_mc_baseline.json#referenceMemoryCube.capacityOptionsGB; 8Hi option, 256 GB per card at 16 cubes, the capacity-priority line in document section 0"}
+      }
+    },
+    "route": {
+      "question": "Which of the document's section 5 routes this design commits to closing the 320 -> >=580 GB/s gap with",
+      "options": {
+        "mcX": {"route": "mcX", "evidence": "document section 5 route 1: a single cube raised to about 640 GB/s, new PHY / base die. Modelled by the mcGBs dimension alone; this option exists so that a pick of mcX with mcGBs=320 is a contradiction the search can reject rather than a silent inconsistency"},
+        "moreCubes": {"route": "moreCubes", "evidence": "document section 5 route 2: more cubes per card. Modelled by cubesPerCard; the document states package edge, shoreline and power do not support 32"},
+        "dualDataPlane": {"route": "dualDataPlane", "evidence": "document section 5 route 3: two 320 GB/s data planes per logical cube, doubling PHY, bumps and controllers. UNVERIFIED: not modelled in the search (the model has one bandwidth number per cube). It appears here so the space records it as a live alternative rather than implying the search covered it"},
+        "fewerBytesPerToken": {"route": "fewerBytesPerToken", "evidence": "document section 5 route 4: FP8 dense, compression, more SRAM reuse. This changes the byte demand, not the cube: it belongs to the software/compute domain and is outside this space's dimensions. UNVERIFIED: it is the route that would make mcGBs=320 sufficient and it is not yet costed"},
+        "nearMemoryCompute": {"route": "nearMemoryCompute", "evidence": "document section 5 route 5 / architectureRoute.alternativeNotInBaseline: near-memory compute in the cube, a different architecture route, not part of the baseline. UNVERIFIED and deliberately not modelled here"}
+      }
+    },
+    "eccOverhead": {
+      "question": "How much of the raw cube capacity is charged to ECC and sparing",
+      "options": {
+        "0": {"overhead": 0, "evidence": "not charged: the baseline capacity figures are taken as usable"},
+        "0.0625": {"overhead": 0.0625, "evidence": "ASSUMPTION: 1/16 for sideband ECC on a 16 GB cube; the reference part's ECC scheme is not in references/README.md, so this value is a placeholder the domain owner must replace or delete"}
+      }
+    }
+  },
+  "ruled": {
+    "internalMma": {
+      "chosen": "no matrix compute inside the cube (external-memory-cube route)",
+      "alternatives": ["near-memory-compute cube"],
+      "reason": "baseline.architectureRoute: the main line is an external Memory Cube with no tensor unit inside; near-memory compute is a fallback route and is not in the performance sign-off. The route dimension keeps the alternative visible without pretending the search scored it"
+    },
+    "cubePerDieBinding": {
+      "chosen": "2 cubes bound per compute die, addressed by the local MC ports",
+      "alternatives": ["a shared pool of cubes reachable from any die over the mesh"],
+      "reason": "card.memoryCubesPerComputeDie = 2 and the page-home rule in document section 7. A shared pool would move MC traffic onto the NoC, which is a different (and much larger) floorplan change; UNVERIFIED whether the mesh has the headroom"
+    },
+    "capacityVsBandwidth": {
+      "chosen": "bandwidth determines the design (document section 3.1: performance is set by bandwidth, not capacity)",
+      "alternatives": ["size the cube by the multi-request KV working set"],
+      "reason": "at 1M context one request uses 20-40% of the 8 GB tier, so capacity is a margin question, not a binding one for B=1. The capacity dimension is still searched because it changes the package area and the BOM, and a 16 GB cube can be the wrong answer on power"
+    },
+    "stripe": {
+      "chosen": "MC0/MC1 stripe per die with 8 MiB weight tile objects",
+      "alternatives": ["finer interleave across all 16 cubes"],
+      "reason": "document section 7 address mapping. UNVERIFIED: the document does not give a stripe granularity study; a global 16-way interleave would raise bank-level service at the cost of address translation and of every weight tile straddling more cubes"
+    }
+  }
+}
