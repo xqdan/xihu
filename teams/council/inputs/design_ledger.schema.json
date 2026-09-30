@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "design-ledger-v0.1",
+  "title": "DesignLedger",
+  "description": "跨 workflow 的唯一串联机制。每个 workflow 第一步读它、最后一步回写它。跨 stage 信息只走它，不走脚本 import，也不走对话上下文。设计依据见 teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "currentStage",
+    "strategyVersions",
+    "frozenDecisions",
+    "rejectedOptions",
+    "budgetBalance",
+    "openBlockers",
+    "evidenceIndex"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "currentStage": {
+      "type": "string",
+      "enum": [
+        "contract",
+        "intake",
+        "direction",
+        "dgate",
+        "compute",
+        "memory",
+        "comm",
+        "physical",
+        "detail.freeze",
+        "detail.workload",
+        "detail.events",
+        "detail.execute",
+        "detail.integrate",
+        "converge",
+        "verify",
+        "backflow",
+        "audit",
+        "explore"
+      ]
+    },
+    "strategyVersions": {
+      "type": "object",
+      "description": "本次运行使用的策略版本。策略变了历史结论的可复现性就变了，缺了它同输入两次跑出不同结果无法解释",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+$"
+      }
+    },
+    "frozenDecisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "decision", "lockedAt"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^ADR-\\d{4}$" },
+          "decision": { "type": "string", "minLength": 1 },
+          "lockedAt": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" }
+        }
+      }
+    },
+    "rejectedOptions": {
+      "type": "array",
+      "description": "被否方案及其理由。没有它，重跑一个 stage 会重新发明已否方案",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stage", "optionId", "reason", "rejectedBy"],
+        "properties": {
+          "stage": { "type": "string", "minLength": 1 },
+          "optionId": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "rejectedBy": {
+            "type": "string",
+            "minLength": 1,
+            "description": "否决者 agentId 或确定性脚本路径"
+          },
+          "evidence": { "type": "string" }
+        }
+      }
+    },
+    "budgetBalance": {
+      "type": "object",
+      "description": "全局预算余额。跨域取舍以它为准，任何一域不得超预算",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["total", "committed", "free"],
+        "properties": {
+          "total": { "type": ["number", "null"] },
+          "committed": { "type": ["number", "null"] },
+          "free": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "openBlockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "owner", "unblockCondition"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "owner": { "type": "string", "minLength": 1 },
+          "unblockCondition": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evidenceIndex": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claimId", "evidence", "level"],
+        "properties": {
+          "claimId": { "type": "string", "minLength": 1 },
+          "evidence": {
+            "type": "string",
+            "minLength": 1,
+            "description": "文件路径:行号，或字面量 UNVERIFIED；不得留空"
+          },
+          "level": { "type": "string", "enum": ["E0", "E1", "E2", "E3"] }
+        }
+      }
+    }
+  }
+}
