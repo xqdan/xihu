@@ -2,6 +2,7 @@
 
 - [`teams/council/docs/AGENT_WORKSTREAM_PLAN.md`](../../teams/council/docs/AGENT_WORKSTREAM_PLAN.md)：并行 agent workstream、依赖图、合并顺序和签核闸门。
 - [`teams/council/docs/AGENT_METRICS_MATRIX.md`](../../teams/council/docs/AGENT_METRICS_MATRIX.md)：A0–A13 按模块拆解的量化指标、交付物、依赖和退出条件。
+- [`PROJECT_OVERVIEW_SLIDES.html`](PROJECT_OVERVIEW_SLIDES.html)：项目介绍幻灯片，聚焦 AI for Chip 流程（驱动、流程、以设计文档为中心向 RTL / 验证 / 软件 / 后端延伸、长远目标；芯片架构只有一页概览），浏览器打开，← → 翻页；对外讲述用，芯片目标值与架构参数已模糊化，准确数字以本目录文档和 `out/` 为准。
 
 版本：2026-09-26。
 
