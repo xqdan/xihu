@@ -98,7 +98,40 @@ assert(an.k3Only.lanes <= lanes, 'K3 alone cannot need more lanes than three mod
 const overhead = space.dimensions.lowPrecisionInput.options.nativeTensor.matrixAreaOverhead;
 assert.strictEqual(stored.design.lowPrecisionInput.option === 'nativeTensor', overhead < an.nativeBreakEvenMatrixOverhead, 'break-even decides the premise');
 
-// 6. The document quotes the design, the comparison and the analysis.
+// 6. The candidate set is persisted next to the winner with a reproducible
+// fingerprint. The design artifact deliberately holds no candidate list (see
+// section 2); this file is where the excluded candidates survive, so that a
+// downstream consumer which merges or excludes them can be checked against a
+// stored set instead of against a console log.
+const candStored = JSON.parse(fs.readFileSync('out/detailed/matrix_vector_candidates.json', 'utf8'));
+const candFresh = JSON.parse(JSON.stringify(S.candidates(result)));
+close(candStored, candFresh, 'matrixVectorCandidates');
+assert.strictEqual(candStored.candidates.length, candStored.totalCandidates, 'every enumerated candidate is listed');
+assert.strictEqual(candStored.feasibleCandidates, candStored.candidates.filter(c => c.feasible).length, 'feasible count matches the list');
+assert.strictEqual(candStored.designSpace.sha256, stored.designSpace.sha256, 'candidate set comes from the same design space as the winner');
+assert.strictEqual(candStored.candidates.filter(c => c.chosen).length, 1, 'exactly one candidate is the winner');
+assert.deepStrictEqual(candStored.candidates.find(c => c.chosen).pick, winPick, 'the chosen candidate is the winner of the design artifact');
+// The ranking is the search's own: feasible first, then area, then power.
+for (let i = 1; i < candStored.candidates.length; i++) {
+  const a = candStored.candidates[i - 1], b = candStored.candidates[i];
+  assert(a.feasible >= b.feasible, `candidate ${i} ranks a feasible candidate below an infeasible one`);
+  if (a.feasible === b.feasible && a.feasible) assert(a.areaMm2 <= b.areaMm2 + 1e-9, `candidate ${i} breaks the area ranking`);
+  if (b.feasible) assert(b.tpsPerUser >= stored.requirements.models.length && b.tpsPerUser > 0, `candidate ${i} has no replay`);
+}
+// The fingerprint must be over the scored set, not over the file: recomputing
+// it after a re-serialization of the same candidates must not change it.
+const reshuffled = {...candStored, candidates: [...candStored.candidates].reverse()};
+assert.strictEqual(S.candidates(result).candidateSetSha256, candStored.candidateSetSha256, 'fingerprint is not stable across runs');
+assert.strictEqual(candStored.candidateSetSha256, (() => {
+  const canon = reshuffled.candidates.map(c => ({pick: Object.fromEntries(Object.entries(c.pick).sort(([p], [q]) => (p < q ? -1 : 1))),
+    feasible: c.feasible, violations: [...c.violations].sort(), lanes: c.lanes,
+    areaMm2: Number(c.areaMm2.toFixed(9)), diePowerW: Number(c.diePowerW.toFixed(9)),
+    tpsPerUser: c.tpsPerUser === null ? null : Number(c.tpsPerUser.toFixed(9))}));
+  canon.sort((a, b) => (JSON.stringify(a.pick) < JSON.stringify(b.pick) ? -1 : 1));
+  return crypto.createHash('sha256').update(JSON.stringify(canon)).digest('hex');
+})(), 'fingerprint depends on enumeration order');
+
+// 7. The document quotes the design, the comparison and the analysis.
 const doc = fs.readFileSync('teams/hardware/docs/02_AI_CORE.md', 'utf8');
 const f1 = v => (v === null ? '—' : v.toFixed(1)), f2 = v => (v === null ? '—' : v.toFixed(2));
 const combos = ['vectorUnpack/sfu', 'vectorUnpack/polynomial', 'nativeTensor/sfu', 'nativeTensor/polynomial'];

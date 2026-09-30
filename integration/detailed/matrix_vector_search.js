@@ -22,6 +22,12 @@
  * area including the overheads, then die power.
  *
  * build() writes only the winner (out/detailed/matrix_vector_design.json);
+ * candidates() writes the whole scored candidate set with a fingerprint over it
+ * (out/detailed/matrix_vector_candidates.json), so that a downstream consumer
+ * which merges or excludes candidates can be checked against a persisted set
+ * instead of against a console log. A winner-only artifact cannot do that:
+ * "every exclusion is traceable" is not verifiable if the excluded entries were
+ * never written down.
  * alternatives() gives the best candidate of every option and analysis() the
  * lanes sweep, the kernel bound table, the unpack attribution, the native-input
  * break-even overhead and the K3-only variant, which the document quotes.
@@ -43,6 +49,25 @@ const read = p => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8'));
 const BATCHES = [1, 2, 4, 8, 16];
 const NATIVE_TECH = {unpackParamsPerLaneCycle: Infinity};
 const EPS = 1e-9;
+
+// Fingerprint of a candidate set. Stable across runs and across machines:
+// the fields are sorted, the numbers rounded to their reported precision, and
+// the digest is taken over JSON with an explicit key order. A fingerprint that
+// depends on enumeration order or on float formatting noise is worse than none --
+// it would disagree between two identical searches.
+function fingerprint(candidates) {
+  const canon = candidates.map(c => ({
+    pick: Object.fromEntries(Object.entries(c.pick).sort(([a], [b]) => (a < b ? -1 : 1))),
+    feasible: c.feasible,
+    violations: [...c.violations].sort(),
+    lanes: c.lanes,
+    areaMm2: Number(c.areaMm2.toFixed(9)),
+    diePowerW: Number(c.diePowerW.toFixed(9)),
+    tpsPerUser: c.tpsPerUser === null ? null : Number(c.tpsPerUser.toFixed(9)),
+  }));
+  canon.sort((a, b) => (JSON.stringify(a.pick) < JSON.stringify(b.pick) ? -1 : 1));
+  return crypto.createHash('sha256').update(JSON.stringify(canon)).digest('hex');
+}
 
 function hardware(x) {
   const lMacs = x.lEngines * x.lRows * x.lCols, hMacs = x.hEngines * x.hRows * x.hCols;
@@ -183,12 +208,14 @@ function lostOn(a, w) {
 function search(ctx = context(), req = ctx.space.requirements) {
   const D = ctx.space.dimensions, dims = Object.keys(D);
   let best = null, candidates = 0, feasible = 0;
+  const all = [];
   const perOption = Object.fromEntries(dims.map(d => [d, {}]));
   const walk = (i, pick) => {
     if (i === dims.length) {
       candidates++;
       const e = evaluate(ctx, {...pick}, req);
       if (e.feasible) feasible++;
+      all.push(e);
       if (!best || better(e, best)) best = e;
       for (const d of dims) { const cur = perOption[d][pick[d]]; if (!cur || better(e, cur)) perOption[d][pick[d]] = e; }
       return;
@@ -196,7 +223,7 @@ function search(ctx = context(), req = ctx.space.requirements) {
     for (const n of Object.keys(D[dims[i]].options)) { pick[dims[i]] = n; walk(i + 1, pick); }
   };
   walk(0, {});
-  return {ctx, req, best, perOption, counts: {candidates, feasible}};
+  return {ctx, req, best, perOption, all, counts: {candidates, feasible}};
 }
 
 const summary = e => ({pick: e.pick, feasible: e.feasible, violations: e.violations, lanes: e.lanes, dieRatio: e.ratio.die, hCoreRatio: e.ratio.hCore,
@@ -210,6 +237,49 @@ function alternatives(result = search()) {
     for (const [n, e] of Object.entries(opts)) out[d][n] = {chosen: n === best.pick[d], lostOn: n === best.pick[d] ? null : lostOn(e, best), ...summary(e)};
   }
   return out;
+}
+
+// The whole scored candidate set, with a fingerprint over it.
+// Written next to the winner so that any downstream consumer which merges,
+// ranks or excludes candidates can be checked against a persisted set:
+// given this file, "candidate X was excluded because Y" is reproducible;
+// given only the winner it is not, because the excluded entries were never
+// written down anywhere that survives the run.
+// Ordering is by the search's own ranking (feasible first, then area, power,
+// name) so the consumer does not have to re-derive it.
+function candidates(result = search()) {
+  const {best, req, all, counts, ctx} = result;
+  const ranked = [...all].sort((a, b) => (better(a, b) ? -1 : better(b, a) ? 1 : 0));
+  const entries = ranked.map(e => ({
+    optionId: Object.entries(e.pick).map(([d, n]) => `${d}=${n}`).join('|'),
+    pick: e.pick,
+    feasible: e.feasible,
+    violations: e.violations,
+    chosen: e === best,
+    lostOn: e === best ? null : lostOn(e, best),
+    lanes: e.lanes,
+    ratio: e.ratio,
+    binding: e.binding,
+    areaMm2: e.areaMm2,
+    area: e.area,
+    diePowerW: e.diePowerW,
+    tpsPerUser: e.system.feasible ? e.system.tpsPerUser : null,
+    rawLatencyUs: e.system.feasible ? e.system.rawLatencyUs : null,
+  }));
+  return {
+    status: 'MODEL (search over the HW-02 design space; the candidate set behind out/detailed/matrix_vector_design.json, not FROZEN)',
+    designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(ctx.space.dimensions)},
+    requirements: {models: req.models, hiddenCoreClasses: req.hiddenCoreClasses, tpsTolerance: req.tpsTolerance},
+    ranking: 'feasible first, then die area including the option overheads, then die power, then pick',
+    totalCandidates: counts.candidates,
+    feasibleCandidates: counts.feasible,
+    // The fingerprint is over the scored set, not over the file: recomputing it
+    // from a fresh search must reproduce this value. It is what makes
+    // "these are the candidates that were searched" checkable rather than asserted.
+    candidateSetSha256: fingerprint(entries),
+    candidates: entries,
+    regenerate: 'node integration/pipelines/generate_matrix_vector_design.js (npm run aicore:search); enforced by tests/regression/test_matrix_vector_design.js',
+  };
 }
 
 // Where the published point's unpack time sits: per-op kernel time above the
@@ -295,4 +365,4 @@ function build(result = search()) {
   };
 }
 
-module.exports = {SPACE_FILE, context, evaluate, search, alternatives, analysis, build, replay};
+module.exports = {SPACE_FILE, context, evaluate, search, candidates, alternatives, analysis, build, replay};

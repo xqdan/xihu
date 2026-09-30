@@ -1,0 +1,1854 @@
+{
+  "status": "MODEL (search over the HW-02 design space; the candidate set behind out/detailed/matrix_vector_design.json, not FROZEN)",
+  "designSpace": {
+    "file": "teams/hardware/inputs/matrix_vector_design_space.json",
+    "sha256": "6fbf9ed3d8b4233c41a0d2c1ccc08bc490a9cbd882f561cd89aab02cbeab8777",
+    "dimensions": [
+      "vectorLanes",
+      "lowPrecisionInput",
+      "expUnit"
+    ]
+  },
+  "requirements": {
+    "models": [
+      "Kimi K3",
+      "GLM-5.2",
+      "DeepSeek-V4-Pro"
+    ],
+    "hiddenCoreClasses": [
+      "H"
+    ],
+    "tpsTolerance": 0.001
+  },
+  "ranking": "feasible first, then die area including the option overheads, then die power, then pick",
+  "totalCandidates": 52,
+  "feasibleCandidates": 6,
+  "candidateSetSha256": "9b401112441387dfaa7103805c6ab738f35ac2e749aab4aaef08f29ff9ebb241",
+  "candidates": [
+    {
+      "optionId": "vectorLanes=704|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "704",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": true,
+      "lostOn": null,
+      "lanes": 704,
+      "ratio": {
+        "die": 16.484848484848484,
+        "lCore": 2.909090909090909,
+        "hCore": 43.63636363636363
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 363.59817406073546,
+      "area": {
+        "die": 361.9795656573741,
+        "matrixOverhead": 0,
+        "vectorOverhead": 1.6186084033613444
+      },
+      "diePowerW": 283.5251200000001,
+      "tpsPerUser": 1101.7656334895737,
+      "rawLatencyUs": 775.7555951294273
+    },
+    {
+      "optionId": "vectorLanes=512|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "512",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 512,
+      "ratio": {
+        "die": 22.666666666666668,
+        "lCore": 4,
+        "hCore": 60
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 367.63652027922285,
+      "area": {
+        "die": 357.56517910275227,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 1.1771697478991596
+      },
+      "diePowerW": 280.52992000000006,
+      "tpsPerUser": 1101.8102497292393,
+      "rawLatencyUs": 775.7241820094616
+    },
+    {
+      "optionId": "vectorLanes=576|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "576",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 576,
+      "ratio": {
+        "die": 20.14814814814815,
+        "lCore": 3.5555555555555554,
+        "hCore": 53.333333333333336
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 369.25512868258414,
+      "area": {
+        "die": 359.03664128762614,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 1.3243159663865547
+      },
+      "diePowerW": 281.52832000000006,
+      "tpsPerUser": 1101.7447994750125,
+      "rawLatencyUs": 775.7702646820974
+    },
+    {
+      "optionId": "vectorLanes=640|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "640",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 640,
+      "ratio": {
+        "die": 18.133333333333333,
+        "lCore": 3.2,
+        "hCore": 48
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 370.8737370859455,
+      "area": {
+        "die": 360.5081034725001,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 1.4714621848739495
+      },
+      "diePowerW": 282.52672000000007,
+      "tpsPerUser": 1101.7562580855144,
+      "rawLatencyUs": 775.7621964281286
+    },
+    {
+      "optionId": "vectorLanes=704|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "704",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 704,
+      "ratio": {
+        "die": 16.484848484848484,
+        "lCore": 2.909090909090909,
+        "hCore": 43.63636363636363
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 370.87373708594555,
+      "area": {
+        "die": 361.9795656573741,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 283.5251200000001,
+      "tpsPerUser": 1100.812938735634,
+      "rawLatencyUs": 776.4269701285876
+    },
+    {
+      "optionId": "vectorLanes=704|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "704",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 704,
+      "ratio": {
+        "die": 16.484848484848484,
+        "lCore": 2.909090909090909,
+        "hCore": 43.63636363636363
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 372.4923454893069,
+      "area": {
+        "die": 361.9795656573741,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 1.6186084033613444
+      },
+      "diePowerW": 283.5251200000001,
+      "tpsPerUser": 1101.7656334895737,
+      "rawLatencyUs": 775.7555951294273
+    },
+    {
+      "optionId": "vectorLanes=256|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "256",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 256,
+      "ratio": {
+        "die": 45.333333333333336,
+        "lCore": 8,
+        "hCore": 120
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 351.67933036325644,
+      "area": {
+        "die": 351.67933036325644,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 276.53632,
+      "tpsPerUser": 821.65783733344,
+      "rawLatencyUs": 1040.2150577357731
+    },
+    {
+      "optionId": "vectorLanes=256|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "256",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 256,
+      "ratio": {
+        "die": 45.333333333333336,
+        "lCore": 8,
+        "hCore": 120
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 352.267915237206,
+      "area": {
+        "die": 351.67933036325644,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0.5885848739495798
+      },
+      "diePowerW": 276.53632,
+      "tpsPerUser": 961.6245159880898,
+      "rawLatencyUs": 888.809343450059
+    },
+    {
+      "optionId": "vectorLanes=320|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "320",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 320,
+      "ratio": {
+        "die": 36.266666666666666,
+        "lCore": 6.4,
+        "hCore": 96
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 353.1507925481304,
+      "area": {
+        "die": 353.1507925481304,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 277.53472,
+      "tpsPerUser": 890.6498842506671,
+      "rawLatencyUs": 959.6373050898025
+    },
+    {
+      "optionId": "vectorLanes=320|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "320",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 320,
+      "ratio": {
+        "die": 36.266666666666666,
+        "lCore": 6.4,
+        "hCore": 96
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 353.8865236405674,
+      "area": {
+        "die": 353.1507925481304,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0.7357310924369748
+      },
+      "diePowerW": 277.53472,
+      "tpsPerUser": 1019.3057545696919,
+      "rawLatencyUs": 838.5127336612296
+    },
+    {
+      "optionId": "vectorLanes=384|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "384",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 384,
+      "ratio": {
+        "die": 30.22222222222222,
+        "lCore": 5.333333333333333,
+        "hCore": 80
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 354.6222547330043,
+      "area": {
+        "die": 354.6222547330043,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 278.53312,
+      "tpsPerUser": 943.3455792235477,
+      "rawLatencyUs": 906.0315472134242
+    },
+    {
+      "optionId": "vectorLanes=384|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "384",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 384,
+      "ratio": {
+        "die": 30.22222222222222,
+        "lCore": 5.333333333333333,
+        "hCore": 80
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 355.50513204392865,
+      "area": {
+        "die": 354.6222547330043,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0.8828773109243697
+      },
+      "diePowerW": 278.53312,
+      "tpsPerUser": 1061.6219750699825,
+      "rawLatencyUs": 805.0896409190404
+    },
+    {
+      "optionId": "vectorLanes=448|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "448",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 448,
+      "ratio": {
+        "die": 25.904761904761905,
+        "lCore": 4.571428571428571,
+        "hCore": 68.57142857142857
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 356.0937169178783,
+      "area": {
+        "die": 356.0937169178783,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 279.53152,
+      "tpsPerUser": 985.1754516918071,
+      "rawLatencyUs": 867.5620705257192
+    },
+    {
+      "optionId": "vectorLanes=448|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "448",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 448,
+      "ratio": {
+        "die": 25.904761904761905,
+        "lCore": 4.571428571428571,
+        "hCore": 68.57142857142857
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 357.12374044729006,
+      "area": {
+        "die": 356.0937169178783,
+        "matrixOverhead": 0,
+        "vectorOverhead": 1.0300235294117648
+      },
+      "diePowerW": 279.53152,
+      "tpsPerUser": 1091.3592362295938,
+      "rawLatencyUs": 783.1526286923254
+    },
+    {
+      "optionId": "vectorLanes=512|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "512",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 512,
+      "ratio": {
+        "die": 22.666666666666668,
+        "lCore": 4,
+        "hCore": 60
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 357.56517910275227,
+      "area": {
+        "die": 357.56517910275227,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 280.52992000000006,
+      "tpsPerUser": 1018.9689200843659,
+      "rawLatencyUs": 838.7899158200914
+    },
+    {
+      "optionId": "vectorLanes=512|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "512",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 512,
+      "ratio": {
+        "die": 22.666666666666668,
+        "lCore": 4,
+        "hCore": 60
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 358.7423488506514,
+      "area": {
+        "die": 357.56517910275227,
+        "matrixOverhead": 0,
+        "vectorOverhead": 1.1771697478991596
+      },
+      "diePowerW": 280.52992000000006,
+      "tpsPerUser": 1101.771070241925,
+      "rawLatencyUs": 775.7517671190814
+    },
+    {
+      "optionId": "vectorLanes=576|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "576",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 576,
+      "ratio": {
+        "die": 20.14814814814815,
+        "lCore": 3.5555555555555554,
+        "hCore": 53.333333333333336
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 359.03664128762614,
+      "area": {
+        "die": 359.03664128762614,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 281.52832000000006,
+      "tpsPerUser": 1046.8983620213091,
+      "rawLatencyUs": 816.412448148866
+    },
+    {
+      "optionId": "vectorLanes=576|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "576",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 576,
+      "ratio": {
+        "die": 20.14814814814815,
+        "lCore": 3.5555555555555554,
+        "hCore": 53.333333333333336
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 360.3609572540127,
+      "area": {
+        "die": 359.03664128762614,
+        "matrixOverhead": 0,
+        "vectorOverhead": 1.3243159663865547
+      },
+      "diePowerW": 281.52832000000006,
+      "tpsPerUser": 1101.7354189869714,
+      "rawLatencyUs": 775.7768698103025
+    },
+    {
+      "optionId": "vectorLanes=640|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "640",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 640,
+      "ratio": {
+        "die": 18.133333333333333,
+        "lCore": 3.2,
+        "hCore": 48
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 360.5081034725001,
+      "area": {
+        "die": 360.5081034725001,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 282.52672000000007,
+      "tpsPerUser": 1070.3715061209045,
+      "rawLatencyUs": 798.5086017455246
+    },
+    {
+      "optionId": "vectorLanes=256|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "256",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 256,
+      "ratio": {
+        "die": 45.333333333333336,
+        "lCore": 8,
+        "hCore": 120
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 360.5735017918279,
+      "area": {
+        "die": 351.67933036325644,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 276.53632,
+      "tpsPerUser": 899.1041963678471,
+      "rawLatencyUs": 950.6137977707472
+    },
+    {
+      "optionId": "vectorLanes=256|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "256",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 256,
+      "ratio": {
+        "die": 45.333333333333336,
+        "lCore": 8,
+        "hCore": 120
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 361.16208666577745,
+      "area": {
+        "die": 351.67933036325644,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0.5885848739495798
+      },
+      "diePowerW": 276.53632,
+      "tpsPerUser": 1069.4346971239838,
+      "rawLatencyUs": 799.2080834850319
+    },
+    {
+      "optionId": "vectorLanes=640|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "640",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 640,
+      "ratio": {
+        "die": 18.133333333333333,
+        "lCore": 3.2,
+        "hCore": 48
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 361.97956565737405,
+      "area": {
+        "die": 360.5081034725001,
+        "matrixOverhead": 0,
+        "vectorOverhead": 1.4714621848739495
+      },
+      "diePowerW": 282.52672000000007,
+      "tpsPerUser": 1101.753845894587,
+      "rawLatencyUs": 775.7638948896671
+    },
+    {
+      "optionId": "vectorLanes=704|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "704",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: k3Tps",
+      "lanes": 704,
+      "ratio": {
+        "die": 16.484848484848484,
+        "lCore": 2.909090909090909,
+        "hCore": 43.63636363636363
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 361.9795656573741,
+      "area": {
+        "die": 361.9795656573741,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 283.5251200000001,
+      "tpsPerUser": 1087.0239806476652,
+      "rawLatencyUs": 786.2759883104062
+    },
+    {
+      "optionId": "vectorLanes=320|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "320",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 320,
+      "ratio": {
+        "die": 36.266666666666666,
+        "lCore": 6.4,
+        "hCore": 96
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 362.04496397670187,
+      "area": {
+        "die": 353.1507925481304,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 277.53472,
+      "tpsPerUser": 954.2994654699683,
+      "rawLatencyUs": 895.6317022350382
+    },
+    {
+      "optionId": "vectorLanes=320|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "320",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 320,
+      "ratio": {
+        "die": 36.266666666666666,
+        "lCore": 6.4,
+        "hCore": 96
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 362.78069506913886,
+      "area": {
+        "die": 353.1507925481304,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0.7357310924369748
+      },
+      "diePowerW": 277.53472,
+      "tpsPerUser": 1101.663189170575,
+      "rawLatencyUs": 775.8277331062916
+    },
+    {
+      "optionId": "vectorLanes=768|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "768",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 768,
+      "ratio": {
+        "die": 15.11111111111111,
+        "lCore": 2.6666666666666665,
+        "hCore": 40
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 363.451027842248,
+      "area": {
+        "die": 363.451027842248,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 284.52352,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=384|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "384",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 384,
+      "ratio": {
+        "die": 30.22222222222222,
+        "lCore": 5.333333333333333,
+        "hCore": 80
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 363.51642616157574,
+      "area": {
+        "die": 354.6222547330043,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 278.53312,
+      "tpsPerUser": 995.0218488771807,
+      "rawLatencyUs": 858.9769718778846
+    },
+    {
+      "optionId": "vectorLanes=384|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "384",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 384,
+      "ratio": {
+        "die": 30.22222222222222,
+        "lCore": 5.333333333333333,
+        "hCore": 80
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 364.3993034725001,
+      "area": {
+        "die": 354.6222547330043,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0.8828773109243697
+      },
+      "diePowerW": 278.53312,
+      "tpsPerUser": 1101.855506883188,
+      "rawLatencyUs": 775.6923202376526
+    },
+    {
+      "optionId": "vectorLanes=832|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "832",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 832,
+      "ratio": {
+        "die": 13.948717948717949,
+        "lCore": 2.4615384615384617,
+        "hCore": 36.92307692307692
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 364.92249002712197,
+      "area": {
+        "die": 364.92249002712197,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 285.52192,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=448|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "448",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed",
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed, k3Tps",
+      "lanes": 448,
+      "ratio": {
+        "die": 25.904761904761905,
+        "lCore": 4.571428571428571,
+        "hCore": 68.57142857142857
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 364.9878883464497,
+      "area": {
+        "die": 356.0937169178783,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 279.53152,
+      "tpsPerUser": 1026.3039913895987,
+      "rawLatencyUs": 832.7950216227883
+    },
+    {
+      "optionId": "vectorLanes=768|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "768",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 768,
+      "ratio": {
+        "die": 15.11111111111111,
+        "lCore": 2.6666666666666665,
+        "hCore": 40
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 365.2167824640967,
+      "area": {
+        "die": 363.451027842248,
+        "matrixOverhead": 0,
+        "vectorOverhead": 1.7657546218487394
+      },
+      "diePowerW": 284.52352,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=448|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "448",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "hKernelExposed"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 448,
+      "ratio": {
+        "die": 25.904761904761905,
+        "lCore": 4.571428571428571,
+        "hCore": 68.57142857142857
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 366.0179118758615,
+      "area": {
+        "die": 356.0937169178783,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 1.0300235294117648
+      },
+      "diePowerW": 279.53152,
+      "tpsPerUser": 1101.8560625134403,
+      "rawLatencyUs": 775.69192908119
+    },
+    {
+      "optionId": "vectorLanes=896|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "896",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 896,
+      "ratio": {
+        "die": 12.952380952380953,
+        "lCore": 2.2857142857142856,
+        "hCore": 34.285714285714285
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 366.39395221199595,
+      "area": {
+        "die": 366.39395221199595,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 286.5203200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=512|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "512",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: k3Tps",
+      "lanes": 512,
+      "ratio": {
+        "die": 22.666666666666668,
+        "lCore": 4,
+        "hCore": 60
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 366.4593505313237,
+      "area": {
+        "die": 357.56517910275227,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 280.52992000000006,
+      "tpsPerUser": 1051.085818307167,
+      "rawLatencyUs": 813.1599150271085
+    },
+    {
+      "optionId": "vectorLanes=832|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "832",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 832,
+      "ratio": {
+        "die": 13.948717948717949,
+        "lCore": 2.4615384615384617,
+        "hCore": 36.92307692307692
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 366.8353908674581,
+      "area": {
+        "die": 364.92249002712197,
+        "matrixOverhead": 0,
+        "vectorOverhead": 1.9129008403361345
+      },
+      "diePowerW": 285.52192,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=960|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "960",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 960,
+      "ratio": {
+        "die": 12.088888888888889,
+        "lCore": 2.1333333333333333,
+        "hCore": 32
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 367.8654143968698,
+      "area": {
+        "die": 367.8654143968698,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 287.5187200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=576|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "576",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: k3Tps",
+      "lanes": 576,
+      "ratio": {
+        "die": 20.14814814814815,
+        "lCore": 3.5555555555555554,
+        "hCore": 53.333333333333336
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 367.9308127161976,
+      "area": {
+        "die": 359.03664128762614,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 281.52832000000006,
+      "tpsPerUser": 1071.202650367355,
+      "rawLatencyUs": 797.8890403302738
+    },
+    {
+      "optionId": "vectorLanes=896|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "896",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 896,
+      "ratio": {
+        "die": 12.952380952380953,
+        "lCore": 2.2857142857142856,
+        "hCore": 34.285714285714285
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 368.4539992708195,
+      "area": {
+        "die": 366.39395221199595,
+        "matrixOverhead": 0,
+        "vectorOverhead": 2.0600470588235296
+      },
+      "diePowerW": 286.5203200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=1024|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "1024",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 1024,
+      "ratio": {
+        "die": 11.333333333333334,
+        "lCore": 2,
+        "hCore": 30
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 369.3368765817438,
+      "area": {
+        "die": 369.3368765817438,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 288.5171200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=640|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "640",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "k3Tps"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: k3Tps",
+      "lanes": 640,
+      "ratio": {
+        "die": 18.133333333333333,
+        "lCore": 3.2,
+        "hCore": 48
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 369.40227490107156,
+      "area": {
+        "die": 360.5081034725001,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 282.52672000000007,
+      "tpsPerUser": 1087.394231836962,
+      "rawLatencyUs": 786.0082660701514
+    },
+    {
+      "optionId": "vectorLanes=960|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "960",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 960,
+      "ratio": {
+        "die": 12.088888888888889,
+        "lCore": 2.1333333333333333,
+        "hCore": 32
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 370.07260767418074,
+      "area": {
+        "die": 367.8654143968698,
+        "matrixOverhead": 0,
+        "vectorOverhead": 2.207193277310924
+      },
+      "diePowerW": 287.5187200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=1024|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "1024",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 1024,
+      "ratio": {
+        "die": 11.333333333333334,
+        "lCore": 2,
+        "hCore": 30
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 690.8571428571429
+      },
+      "areaMm2": 371.69121607754215,
+      "area": {
+        "die": 369.3368765817438,
+        "matrixOverhead": 0,
+        "vectorOverhead": 2.3543394957983192
+      },
+      "diePowerW": 288.5171200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=768|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "768",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 768,
+      "ratio": {
+        "die": 15.11111111111111,
+        "lCore": 2.6666666666666665,
+        "hCore": 40
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 372.3451992708194,
+      "area": {
+        "die": 363.451027842248,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 284.52352,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=832|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "832",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 832,
+      "ratio": {
+        "die": 13.948717948717949,
+        "lCore": 2.4615384615384617,
+        "hCore": 36.92307692307692
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 373.8166614556934,
+      "area": {
+        "die": 364.92249002712197,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 285.52192,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=768|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "768",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 768,
+      "ratio": {
+        "die": 15.11111111111111,
+        "lCore": 2.6666666666666665,
+        "hCore": 40
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 374.11095389266814,
+      "area": {
+        "die": 363.451027842248,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 1.7657546218487394
+      },
+      "diePowerW": 284.52352,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=896|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "896",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 896,
+      "ratio": {
+        "die": 12.952380952380953,
+        "lCore": 2.2857142857142856,
+        "hCore": 34.285714285714285
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 375.2881236405674,
+      "area": {
+        "die": 366.39395221199595,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 286.5203200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=832|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "832",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 832,
+      "ratio": {
+        "die": 13.948717948717949,
+        "lCore": 2.4615384615384617,
+        "hCore": 36.92307692307692
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 375.72956229602954,
+      "area": {
+        "die": 364.92249002712197,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 1.9129008403361345
+      },
+      "diePowerW": 285.52192,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=960|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "960",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 960,
+      "ratio": {
+        "die": 12.088888888888889,
+        "lCore": 2.1333333333333333,
+        "hCore": 32
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 376.75958582544126,
+      "area": {
+        "die": 367.8654143968698,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 287.5187200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=896|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "896",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 896,
+      "ratio": {
+        "die": 12.952380952380953,
+        "lCore": 2.2857142857142856,
+        "hCore": 34.285714285714285
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 377.34817069939095,
+      "area": {
+        "die": 366.39395221199595,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 2.0600470588235296
+      },
+      "diePowerW": 286.5203200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=1024|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "1024",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 1024,
+      "ratio": {
+        "die": 11.333333333333334,
+        "lCore": 2,
+        "hCore": 30
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 378.23104801031525,
+      "area": {
+        "die": 369.3368765817438,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 288.5171200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=960|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "960",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 960,
+      "ratio": {
+        "die": 12.088888888888889,
+        "lCore": 2.1333333333333333,
+        "hCore": 32
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 378.9667791027522,
+      "area": {
+        "die": 367.8654143968698,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 2.207193277310924
+      },
+      "diePowerW": 287.5187200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    },
+    {
+      "optionId": "vectorLanes=1024|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "1024",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": false,
+      "violations": [
+        "systemInfeasible"
+      ],
+      "chosen": false,
+      "lostOn": "infeasible: systemInfeasible",
+      "lanes": 1024,
+      "ratio": {
+        "die": 11.333333333333334,
+        "lCore": 2,
+        "hCore": 30
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 487.5
+      },
+      "areaMm2": 380.5853875061136,
+      "area": {
+        "die": 369.3368765817438,
+        "matrixOverhead": 8.894171428571429,
+        "vectorOverhead": 2.3543394957983192
+      },
+      "diePowerW": 288.5171200000001,
+      "tpsPerUser": null,
+      "rawLatencyUs": null
+    }
+  ],
+  "regenerate": "node integration/pipelines/generate_matrix_vector_design.js (npm run aicore:search); enforced by tests/regression/test_matrix_vector_design.js"
+}

@@ -13,6 +13,8 @@
     "baseline:sync": "node integration/pipelines/sync_baseline_spec.js",
     "aicore:search": "node integration/pipelines/generate_matrix_vector_design.js",
     "commcore:search": "node integration/pipelines/generate_comm_core_design.js",
+    "memory:search": "node integration/pipelines/generate_memory_design.js",
+    "physical:search": "node integration/pipelines/generate_physical_design.js",
     "dashboard": "node integration/pipelines/generate_direction_feedback.js && node integration/pipelines/generate_global_dashboard.js",
     "workload:planning": "node integration/pipelines/generate_planning_operator_workload.js",
     "contracts": "node integration/pipelines/generate_team_contracts.js",

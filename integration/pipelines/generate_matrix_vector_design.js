@@ -1,9 +1,13 @@
 'use strict';
 /* Generate out/detailed/matrix_vector_design.json: the AI Core matrix:vector
  * design chosen by the search over the HW-02 design space
- * (teams/hardware/inputs/matrix_vector_design_space.json). Only the winner is
- * written; the per-option comparison and the analysis tables are printed for
- * the document (teams/hardware/docs/02_AI_CORE.md, section 2.5). See
+ * (teams/hardware/inputs/matrix_vector_design_space.json). The winner goes to
+ * the design artifact; the whole scored candidate set (with a fingerprint over
+ * it) goes to out/detailed/matrix_vector_candidates.json, which is what a
+ * consumer that merges or excludes candidates is checked against -- a
+ * winner-only artifact makes "every exclusion is traceable" unverifiable.
+ * The per-option comparison and the analysis tables are printed for the
+ * document (teams/hardware/docs/02_AI_CORE.md, section 2.5). See
  * integration/detailed/matrix_vector_search.js for the method.
  *
  * Run after npm run baseline:sync: node integration/pipelines/generate_matrix_vector_design.js
@@ -15,12 +19,15 @@ const S = require('../detailed/matrix_vector_search.js');
 const root = path.resolve(__dirname, '../..');
 const result = S.search();
 const out = S.build(result);
+const cand = S.candidates(result);
 fs.writeFileSync(path.join(root, 'out/detailed/matrix_vector_design.json'), `${JSON.stringify(out, null, 2)}\n`);
+fs.writeFileSync(path.join(root, 'out/detailed/matrix_vector_candidates.json'), `${JSON.stringify(cand, null, 2)}\n`);
 const alt = S.alternatives(result), an = S.analysis(result);
 const f = (v, n = 1) => (v === null || v === Infinity ? '—' : v.toFixed(n));
 console.log(JSON.stringify({
   design: Object.fromEntries(Object.entries(out.design).map(([d, v]) => [d, v.option])),
   search: {candidates: out.designSpace.candidates, feasible: out.designSpace.feasible},
+  candidateSetSha256: cand.candidateSetSha256,
   ratio: out.ratio, binding: out.binding, areaMm2: out.evaluation.areaMm2, tpsPerUser: out.evaluation.k3System.tpsPerUser,
   alternatives: Object.fromEntries(Object.entries(alt).map(([d, o]) => [d, Object.fromEntries(Object.entries(o).map(([n, v]) =>
     [n, `${v.chosen ? 'chosen' : v.lostOn}; ${JSON.stringify(v.pick)} die ${f(v.dieRatio)}:1, H ${f(v.hCoreRatio)}:1, `
