@@ -1,0 +1,199 @@
+{
+  "status": "MODEL (search over the physical design space: area conservation + per-unit limits + K3 detailed replay; not FROZEN, does not change the published point)",
+  "owner": "Hardware (package / power / RAS); co-sign Council (system budget)",
+  "document": "teams/hardware/docs/09_PACKAGE_POWER_RAS.md",
+  "designSpace": {
+    "file": "teams/hardware/inputs/physical_design_space.json",
+    "sha256": "4de2c7e896f76a1c67dd04a8472516b2ce9a5c0559c16fca0eba303f5d46698b",
+    "dimensions": [
+      "process",
+      "matrixTFPerMm2",
+      "cooling",
+      "reserveFraction"
+    ],
+    "candidates": 24,
+    "feasible": 2,
+    "constraints": [
+      "die area <= 400 mm2 and die power <= 300 W, both including any keep-out and port scaling the candidate charges",
+      "card power <= 2800 W (the MC term and the fixed overhead are charged, not assumed away)",
+      "package area (dies + cubes) + reserve <= the 5248 mm2 placement window",
+      "PHY shoreline <= the die edge budget (4 x sqrt(dieArea) x phyEdgeFraction); the published point sits at 24.21 / 52.95 mm and this constraint is what a naive lane increase breaks first",
+      "the K3 detailed replay at the published point keeps TPS/usr within tpsTolerance",
+      "every area term must be classifiable as logic, SRAM or PHY: k3_physical_basis.resize throws on an unclassified term, and that must stay true"
+    ],
+    "objective": [
+      "feasible first",
+      "most conservative keep-out premise (a smaller keep-out is a stronger claim about what the vendor accepts, and nothing in this repository supports it)",
+      "largest package area reserve within that premise (the placement window is the resource that cannot be bought back later)",
+      "largest die power margin below the cooling ceiling",
+      "lowest process risk (a scaled basis is a promise about a node, not a measurement)"
+    ],
+    "note": "only the winning design is written here; the alternatives stay in the design space and in the document"
+  },
+  "requirements": {
+    "models": [
+      "Kimi K3",
+      "GLM-5.2",
+      "DeepSeek-V4-Pro"
+    ],
+    "tpsTolerance": 0.001,
+    "dieAreaLimitMm2": 400,
+    "diePowerLimitW": 300,
+    "cardPowerLimitW": 2800,
+    "placementWindowMm2": 5248
+  },
+  "caliber": {
+    "dieArea": "per compute die, mm2, on the searched process basis, including the charged shared-port scaling cost",
+    "diePower": "per compute die, W, at the published frequency",
+    "cardPower": "per card = 8 x diePower + the MC term + fixed overhead, W",
+    "packageArea": "sum of all placed logic area in the placement window, mm2, before keep-out",
+    "reason": "package area conservation is stated as placed area + keep-out = usable window; a candidate that only balances the identity without comparing against the 5248 mm2 window has not been checked against the spec"
+  },
+  "assumptions": {
+    "dies": 8,
+    "memoryCubes": 16,
+    "cubeAreaMm2Planning": 100,
+    "cardFixedOverheadW": 80,
+    "cooling": "liquid",
+    "coolingNote": "ASSUMPTION (O-015): the repository has no thermal model; cooling selects which ceiling applies, it does not derive one",
+    "processSource": "integration/detailed/k3_physical_basis.js (ASSUMPTION B-006: public node figures, not PDK or macro data)"
+  },
+  "hardware": {
+    "publishedX": {
+      "nL": 8,
+      "nH": 4,
+      "lRows": 1,
+      "lCols": 256,
+      "lEngines": 8,
+      "hRows": 48,
+      "hCols": 128,
+      "hEngines": 5,
+      "ghz": 1,
+      "vectorLanes": 512,
+      "lMiB": 1,
+      "hMiB": 4,
+      "lBanks": 64,
+      "hBanks": 64,
+      "bankBytes": 64,
+      "sharedMiB": 16,
+      "sharedSlices": 16,
+      "tmaEngines": 4,
+      "tmaBytes": 512,
+      "nocBytes": 256,
+      "nocLanes": 4,
+      "reduceLanes": 4096,
+      "ucieLanes": 128,
+      "ucieGbps": 64,
+      "mcGBs": 640,
+      "rdmaLanes": 16,
+      "weightTileMiB": 8,
+      "kvTile": 32768,
+      "headTile": 96,
+      "depth": 4,
+      "windowFraction": 1
+    },
+    "publishedDieAreaMm2": 373.7139860943489,
+    "publishedDiePowerW": 286.2191872000001,
+    "publishedCardPowerW": 2768.473497600001
+  },
+  "design": {
+    "process": {
+      "option": "SF4",
+      "process": "SF4",
+      "evidence": "k3_physical_basis.js BASIS.process; logic 57x32 / 51x28 = 1.277, SRAM 0.0262 / 0.021 = 1.248, PHY unscaled. ASSUMPTION (B-006): public node figures, not PDK or macro data. This is the published point"
+    },
+    "matrixTFPerMm2": {
+      "option": "3.2",
+      "tfPerMm2": 3.2,
+      "evidence": "k3_physical_basis.js BASIS.matrixTFPerMm2; 0.000625 mm2 per BF16 MAC, twice the historical value. ASSUMPTION (B-006), needs a MAC-array macro. This is the published point"
+    },
+    "cooling": {
+      "option": "liquid",
+      "cooling": "liquid",
+      "diePowerLimitW": 300,
+      "cardPowerLimitW": 2800,
+      "evidence": "card.cooling and BASIS.limits (ADR-0005, decision 2026-09-25): cold plate, die 300 W, card 2800 W. This is the published point. ASSUMPTION (O-015): cold plate, VRM and card power delivery are not modelled"
+    },
+    "reserveFraction": {
+      "option": "0.1254",
+      "reserve": 0.1254,
+      "evidence": "the published point: 658.29 / 5248, from document section 1. Recorded as the observed value, not a chosen one"
+    }
+  },
+  "ruled": {
+    "dieCount": {
+      "chosen": "8 compute dies + 16 memory cubes",
+      "reason": "ADR-0018 fixes the 7-reticle package boundary and the 4x2 die arrangement; a single larger die would exceed the reticle limit. The count is the given, not a searched dimension, so it appears here rather than as a dimension the search pretends to explore"
+    },
+    "frequency": {
+      "chosen": "1.0 GHz fixed",
+      "reason": "card.powerLimitW is the binding constraint at the published point (2768.47 / 2800 W, 98.9% used), and the physical strategy explicitly prefers lowering frequency over relaxing thermal margin. UNVERIFIED: no voltage/frequency curve is in the repository, so a frequency sweep cannot be scored here"
+    },
+    "nearMemoryCompute": {
+      "chosen": "no compute inside the cube, cube area stays at the planning 100 mm2",
+      "reason": "architectureRoute keeps near-memory compute out of the baseline; 16 x 100 mm2 = 1600 mm2 is 30% of the window, and any growth there comes out of the reserve"
+    },
+    "thermals": {
+      "chosen": "cooling carried as an ASSUMPTION (O-015), limits checked but not derived",
+      "reason": "the repository has no thermal model: no theta-JA, no cold-plate curve, no ambient. A search that scored die power against a derived temperature would be inventing the model. The dimension is limited to which ceiling applies, and the document states the limitation"
+    },
+    "degradation": {
+      "chosen": "failure degradation is a route with a stated result, checked in the document, not searched here",
+      "reason": "the physical strategy requires a degradation mode with a route and a performance result; the repository has no per-failure performance model to score one with. UNVERIFIED and deliberately excluded, so the space does not imply it was scored"
+    }
+  },
+  "evaluation": {
+    "k3System": {
+      "publishedTpsPerUser": 1101.771070241925,
+      "tpsPerUser": 1101.771070241925,
+      "rawLatencyUs": 775.7517671190814
+    },
+    "process": "SF4",
+    "matrixTFPerMm2": 3.2,
+    "dieAreaMm2": 373.7139860943489,
+    "diePowerW": 286.2191872000001,
+    "diePowerLimitW": 300,
+    "cardPowerW": 2768.473497600001,
+    "cardPowerLimitW": 2800,
+    "mcPowerW": 398.72,
+    "packageAreaMm2": 4589.711888754791,
+    "reserveMm2": 0.18891124520905578,
+    "shorelineMm": 24.21333333333333,
+    "edgeBudgetMm": 52.94630302642081,
+    "area": {
+      "matrix": 111.17714285714285,
+      "vector": 11.771697478991596,
+      "sram": 39.60695389266818,
+      "banks": 32.699159663865544,
+      "cores": 12.26218487394958,
+      "tma": 21.45882352941176,
+      "noc": 35.91593949579831,
+      "reduce": 44.40954621848739,
+      "ucie": 22.336,
+      "rdma": 10.6,
+      "misc": 15.327731092436974,
+      "sharedPorts": 16.148806991596636
+    },
+    "power": {
+      "matrix": 133.69344,
+      "vector": 7.9872000000000005,
+      "sram": 28.483200000000007,
+      "noc": 11.9808,
+      "tma": 3.84,
+      "reduce": 32.768,
+      "ucie": 31.45728,
+      "rdma": 6.720000000000001,
+      "control": 23.6,
+      "sharedPorts": 5.6892672
+    },
+    "areaConservation": {
+      "windowMm2": 5248,
+      "placedMm2": 4589.711888754791,
+      "keepOutMm2": 658.0992000000001,
+      "overUnderMm2": 0.18891124520860103,
+      "toleranceMm2": 0,
+      "satisfied": true
+    }
+  },
+  "regenerate": "node integration/pipelines/generate_physical_design.js (npm run physical:search); enforced by tests/regression/test_physical_design.js"
+}

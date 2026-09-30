@@ -181,7 +181,7 @@ confidence 分配原则：厂商数据表与厂商路线图 = `vendor_datasheet`
 - **applies_when**：做一个大于 3.3× reticle 的封装方案，需要在「整片硅中介层」「RDL+局部硅桥」「RDL only」三条路线间选型；或者需要解释为什么大面积封装的成本不随面积线性增长。
 - **not_applicable_when**：不适用于 (a) 封装面积在 3.3× reticle 以内——CoWoS-S 在这个区间仍是密度与成熟度最优，上 CoWoS-L 不划算；(b) 需要全封装范围均匀极高互联密度（比如大规模 die 间全互联）——LSI 是局部结构，密度不均匀；LSI 的数量与位置受 die 排布约束；(c) 需要向供应商索取 RDL 层数与线密度数据来算账——公开资料没有这张表，只能走封装厂的设计规则文档；(d) 把它当作「RDL 开销占比很低」的证据——公开资料没有给出任何占比数字。
 - **project_premises**：7-reticle
-- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 1 节与第 7 节冻结交付物清单：当前「余量（RDL、间距、keep-out、PDN、维修）= 658.29 mm²」是一个**集总余量**，没有把 RDL 走线面积与 LSI 桥面积分开。行动项：向封装厂索取三样东西——(1) 7-reticle 面积下 RDL 的可用层数与每层走线密度；(2) LSI 桥的数量/位置规则与最小尺寸；(3) die-to-die 高密度互联区（`k3_mc_baseline.json#package` 里的 die fabric 端口）落在哪几条边上。然后用这三项把 658.29 mm² 拆成 RDL + LSI + keep-out + PDN 四笔，看是否仍然非负。
+- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 1 节与第 8 节冻结交付物清单：当前「余量（RDL、间距、keep-out、PDN、维修）= 658.29 mm²」是一个**集总余量**，没有把 RDL 走线面积与 LSI 桥面积分开。行动项：向封装厂索取三样东西——(1) 7-reticle 面积下 RDL 的可用层数与每层走线密度；(2) LSI 桥的数量/位置规则与最小尺寸；(3) die-to-die 高密度互联区（`k3_mc_baseline.json#package` 里的 die fabric 端口）落在哪几条边上。然后用这三项把 658.29 mm² 拆成 RDL + LSI + keep-out + PDN 四笔，看是否仍然非负。
 - **sources**：
   - TSMC 先进封装路线与 CoWoS-S/R/L 三路线划分（含 CoWoS-L 的 LSI 硅桥 + RDL 混合结构与 12× HBM 支持），2026，https://m.elecfans.com/article/8224977.html
   - Bits, FLOPS, and Watts: A Systems-Level Perspective of Scaling LLMs（CoWoS-S/R/L 变体与封装尺寸跨 reticle 的描述），UNVERIFIED，https://github.com/asheeshgoja/bits-flops-and-watts/raw/main/Bits,%20FLOPS,%20and%20Watts_%20A%20Systems-Level%20Perspective%20of%20Scaling%20LLMs.pdf
@@ -213,7 +213,7 @@ confidence 分配原则：厂商数据表与厂商路线图 = `vendor_datasheet`
 - **applies_when**：做封装面积预算时把内存按「每 stack 固定 footprint + 固定带宽」的离散档位来排布；或者评估在给定封装面积下最多能挂几档内存；或者为内存侧算功耗与热点。
 - **not_applicable_when**：不适用于 (a) 片外/机架级内存池——那些不占用封装面积，footprint 账不成立；(b) 用 footprint 反推「还剩几档」而不计入 keep-out、TSV 落区、bump map 与维修余量——121 mm² 是裸堆叠体的尺寸，实际占位更大；(c) 把 1.2 pJ/bit 直接用于系统功耗预算——不同来源差到 3 倍，必须确认是 die 级还是含 PHY 的接口级；(d) 把 5–8 W/stack 当作冷板热点估算——冷板关心的是热流密度（W/cm²）与热点位置，不是 stack 总功耗；(e) 12-Hi 与 8-Hi 的散热表现不同，12-Hi 通过减薄 die 与先进 MUF 维持同一高度，热阻特性不等价。
 - **project_premises**：封装面积锁死 MC 颗数
-- **what_to_check_here**：去核 `teams/hardware/inputs/k3_mc_baseline.json` 的 `memoryCubeAreaMm2Planning=100` 与 `memoryCubes=16`：公开参照系是 HBM3E 每 stack 的裸叠体 footprint 为 11 × 11 = 121 mm²。行动项：(1) 向 MC 供应商索取其「100 mm² 规划值」的定义——是裸叠体 footprint、还是含 TSV 落区/bump map/keep-out 的占位面积，两者差多少；(2) 索取每 MC 的功耗实测（当前基线里 MC 功耗按 16 × (7 W + 640 GB/s × 0.7 × 8 bit × 5 pJ/bit) 计算，其中 5 pJ/bit 这个接口能耗系数与 HBM3E 的公开区间关系需要单独确认）；(3) 索取每 MC 的热阻与热点位置（`teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 5 节已把「MC 堆叠热点」列为验证项）。
+- **what_to_check_here**：去核 `teams/hardware/inputs/k3_mc_baseline.json` 的 `memoryCubeAreaMm2Planning=100` 与 `memoryCubes=16`：公开参照系是 HBM3E 每 stack 的裸叠体 footprint 为 11 × 11 = 121 mm²。行动项：(1) 向 MC 供应商索取其「100 mm² 规划值」的定义——是裸叠体 footprint、还是含 TSV 落区/bump map/keep-out 的占位面积，两者差多少；(2) 索取每 MC 的功耗实测（当前基线里 MC 功耗按 16 × (7 W + 640 GB/s × 0.7 × 8 bit × 5 pJ/bit) 计算，其中 5 pJ/bit 这个接口能耗系数与 HBM3E 的公开区间关系需要单独确认）；(3) 索取每 MC 的热阻与热点位置（`teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 6 节已把「MC 堆叠热点」列为验证项）。
 - **sources**：
   - Micron HBM3E Product Brief（8-Hi 24GB，>9.2 Gb/s，>1.2 TB/s，11mm × 11mm × 0.72mm，16 通道 / 2 伪通道），2023，https://www.jp.micron.com/content/dam/micron/global/public/documents/products/product-flyer/hbm3e-product-brief.pdf
   - SK hynix HBM3E 产品页（9.6 Gbps、>1.23 TB/s、36 GB、MR-MUF 散热改善 10%），2024，https://www.directindustry.com/ja/prod/sk-hynix/product-34497-2687699.html
@@ -231,7 +231,7 @@ confidence 分配原则：厂商数据表与厂商路线图 = `vendor_datasheet`
 - **applies_when**：封装 XY 面积已经触顶、shoreline 带宽已经用尽，需要在不增加封装面积的前提下提升 die 间或 die-内存带宽；或者需要降低跨 die 传输的 pJ/bit。
 - **not_applicable_when**：不适用于 (a) 散热受限的设计——3D 堆叠让下层 die 的结温上升，在液冷边界附近（见 SOTA-PPA-09/10）会先撞热墙再撞面积墙；(b) 需要高良率大面积的堆叠——键合面积越大、层数越多，良率损失越快，公开资料没有给出可外推的良率-面积曲线；(c) 把 300000 GB/s/mm² 当作可得值——那是 1 µm 间距的理论面密度，不是任何量产产品的实测；(d) 用 SoIC 的 5× 能效提升做系统级功耗预算——那是互连层的能效，不是系统能效。
 - **project_premises**：封装面积锁死 MC 颗数
-- **what_to_check_here**：去核 `teams/hardware/docs/06_MULTIDIE_AND_SCALEOUT.md` 与 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 5 节：当前设计是 4×2 的平面 die 排布 + 环互联，属于纯 2.5D。行动项：如果在面积锁死后需要更多带宽，把「3D 堆叠 MC 或堆叠部分 compute die」作为一个候选方案送进封装评估，向封装厂索取三件事——(1) 6 µm 键合间距在中介层面积量级上的可用键合区域与 keep-out；(2) 堆叠后的热阻增量（下层 die 到冷板的等效热阻）；(3) 堆叠后的良率与维修策略。这三项与 `teams/hardware/inputs/k3_mc_baseline.json#package` 的 `memoryCubeAreaMm2Planning=100` 直接联动。
+- **what_to_check_here**：去核 `teams/hardware/docs/06_MULTIDIE_AND_SCALEOUT.md` 与 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 6 节：当前设计是 4×2 的平面 die 排布 + 环互联，属于纯 2.5D。行动项：如果在面积锁死后需要更多带宽，把「3D 堆叠 MC 或堆叠部分 compute die」作为一个候选方案送进封装评估，向封装厂索取三件事——(1) 6 µm 键合间距在中介层面积量级上的可用键合区域与 keep-out；(2) 堆叠后的热阻增量（下层 die 到冷板的等效热阻）；(3) 堆叠后的良率与维修策略。这三项与 `teams/hardware/inputs/k3_mc_baseline.json#package` 的 `memoryCubeAreaMm2Planning=100` 直接联动。
 - **sources**：
   - TSMC 2025 北美技术论坛：SoIC 混合键合 6 µm 量产、9.5× CoWoS 上叠 1.6nm 于 2nm 之上，2025，https://www.chinatimes.com/realtimenews/20250424001162-260410?chdtv
   - On-Package Memory with UCIe（UCIe-2D/2.5D/3D 带宽面密度与 bump pitch 对照表），2025，https://browse-export.arxiv.org/pdf/2510.06513
@@ -264,7 +264,7 @@ confidence 分配原则：厂商数据表与厂商路线图 = `vendor_datasheet`
 - **applies_when**：封装内带宽已被面积锁死、且负载能容忍跨封装时延（如 all-reduce、KV 卸载、专家并行的 all-to-all），此时用外挂换面积是成立的。
 - **not_applicable_when**：不适用于 (a) 单 token decode 的时延敏感路径——跨封装往返的时延量级与片内差 1–2 个数量级（见 `interconnect-collective.md` SOTA-IC-10/16），对 B=1 的 ITL 是直接伤害；(b) 把 CPO 当作降低封装内热负荷的方案——它把热负荷移到了封装边缘，形成新的热点位置；(c) 把外挂带宽当作「不受面积约束」——封装边缘的 shoreline、供电 bump 与冷板覆盖范围仍然约束它可以引出多少；(d) 用「外挂无限」来回避封装内面积账，只有在时延预算允许时才成立。
 - **project_premises**：封装面积锁死 MC 颗数
-- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 2 节端口表与第 5 节散热验证项：scale-out 端口登记为「16 lane × 112 Gbps = 168 GB/s/Die，800 GB/s/卡（上限）」，且第 5 节已把「scale-out PHY 边缘热点」列为验证项。行动项：(1) 向光模块 / SerDes 供应商索取 168 GB/s/Die 与 800 GB/s/卡的**真实功耗**——09 号文档第 3.2 节已明确把「高速 SerDes / 光模块真实功耗」列为尚未可靠计入的项目，而卡功耗余量只有 31.53 W；(2) 索取封装边缘在 CPO 形态下的热流密度（W/cm²）与冷板能否覆盖到边缘，(3) 确认 800 GB/s/卡的上限是 shoreline 约束还是时延约束。
+- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 2 节端口表与第 6 节散热验证项：scale-out 端口登记为「16 lane × 112 Gbps = 168 GB/s/Die，800 GB/s/卡（上限）」，且第 5 节已把「scale-out PHY 边缘热点」列为验证项。行动项：(1) 向光模块 / SerDes 供应商索取 168 GB/s/Die 与 800 GB/s/卡的**真实功耗**——09 号文档第 4.2 节已明确把「高速 SerDes / 光模块真实功耗」列为尚未可靠计入的项目，而卡功耗余量只有 31.53 W；(2) 索取封装边缘在 CPO 形态下的热流密度（W/cm²）与冷板能否覆盖到边缘，(3) 确认 800 GB/s/卡的上限是 shoreline 约束还是时延约束。
 - **sources**：
   - TSMC 2025 北美技术论坛：COUPE 紧凑型通用光子引擎硅光子整合（与 N12/N3 HBM4 基础裸晶并列公布），2025，https://www.chinatimes.com/realtimenews/20250424001162-260410?chdtv
   - 串联（112G XSR）与并联（UCIe）D2D 的 pJ/bit 对照（并联 <0.25–0.6 pJ/b，串联 ~1.2 pJ/b），2025，https://browse-export.arxiv.org/pdf/2510.06513
@@ -280,7 +280,7 @@ confidence 分配原则：厂商数据表与厂商路线图 = `vendor_datasheet`
 - **applies_when**：判断一个给定卡级功耗是否还在单相冷板的舒适区；或者为「封装面积一定时能承受多少总功耗」找边界；或者规划冷却路线的换代时点。
 - **not_applicable_when**：不适用于 (a) 把 1500/2000 W 当作芯片的耐温上限——这是冷板能力的边界，不是结温边界；(b) 把冷板级 TDP 直接等同于封装内所有 die 的功耗之和——冷板覆盖的是裸片区域，基板边缘、VRM、连接器的热量走不同路径；(c) 把 2000 W 上限套到定制冷板或浸没式方案上——那些是不同技术路线，边界不同；(d) 忽略流量与压差的二阶约束——同样 2000 W，流量不足时压差与泵功耗会成为新瓶颈；(e) 把两相的 2026–2027 时点当作已达成——那是预测。
 - **project_premises**：液冷前提
-- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 3.2 节与第 5 节：当前卡功耗 2768.47 W（上限 2800 W）、每 Die 286.22 W（上限 300 W），冷却登记为「liquid (cold plate)」并且是 ASSUMPTION（O-015）。行动项：公开资料的对照系是——单相冷板的实用上限约 2000 W（卡级 TDP 口径），**单相**冷却 1000 W 需约 1.5 L/min。请冷板供应商针对 2800 W 级卡给出：(1) 明确的技术路线（单相 / 两相 / MLCP）——当前文档只写「液冷（冷板）」，没有区分；(2) 该路线下所需流量、压差与入口温度；(3) 单相若在 2800 W 不可行，两相或 MLCP 方案的成本与时点。这一项直接决定 `k3_mc_baseline.json#basis.cooling` 的 ASSUMPTION 能否转成已验证前提。
+- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 4.2 节与第 6 节：当前卡功耗 2768.47 W（上限 2800 W）、每 Die 286.22 W（上限 300 W），冷却登记为「liquid (cold plate)」并且是 ASSUMPTION（O-015）。行动项：公开资料的对照系是——单相冷板的实用上限约 2000 W（卡级 TDP 口径），**单相**冷却 1000 W 需约 1.5 L/min。请冷板供应商针对 2800 W 级卡给出：(1) 明确的技术路线（单相 / 两相 / MLCP）——当前文档只写「液冷（冷板）」，没有区分；(2) 该路线下所需流量、压差与入口温度；(3) 单相若在 2800 W 不可行，两相或 MLCP 方案的成本与时点。这一项直接决定 `k3_mc_baseline.json#basis.cooling` 的 ASSUMPTION 能否转成已验证前提。
 - **sources**：
   - IDTechEx: Two-Phase Cold Plate Cooling Will Take Off as Early as 2026-2027（单相 D2C 在 ~1500W 遇瓶颈、~2000W 达实用上限；GPU TDP 轨迹 2025 1400–1600W / 2026 1600–1800W / 2027 up to 3600W），2025，https://www.idtechex.com/en/research-article/two-phase-cold-plate-cooling-will-take-off-as-early-as-2026-2027/34068
   - DQI India / IDTechEx: Two-phase liquid cooling — the future of high-end GPUs（1000W 芯片单相 ~1.5 L/min vs 两相 ~0.3 L/min；冷板系统 USD 200–400），2025，https://www.dqindia.com/esdm/two-phase-liquid-cooling-the-future-of-high-end-gpus-10567529
@@ -296,7 +296,7 @@ confidence 分配原则：厂商数据表与厂商路线图 = `vendor_datasheet`
 - **applies_when**：需要把「每 Die 多少 W」换算成「冷板能不能带走」；或者要判断热点（而非平均功率）是否构成约束。
 - **not_applicable_when**：不适用于 (a) 把厂商 demo 当作可外推保证——那些是特定流量/流体/测试台上的最好结果，且多为单点功率而非长期可靠性数据；(b) 用冷板热阻直接推结温而不加 TIM、IHS、扩散热阻——冷板热阻只是热路径的一段（MLCP 的价值正是删掉其中几段，见 SOTA-PPA-11）；(c) 把 500 W/cm² 当作封装级平均热流——那是冷板在热点区域的能力，封装级平均热流密度通常远低于此（例如整颗 2-reticle 封装的总功率除以封装面积）；(d) 跨流体比较——两相数字基于 R515B 一类制冷剂，单相基于 PG25 水-乙二醇，不可混用；(e) 忽略设施水温：两相能在 >40 °C 设施水下工作，这是它相对单相的系统级优势，不是芯片级差异。
 - **project_premises**：液冷前提
-- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 3.1 节与第 5 节：每 Die 286.22 W，Die 面积 373.71 mm²（SF4）。行动项：(1) 算出每 Die 的**平均**热流密度（286.22 W / 373.71 mm²）与公开的行业冷板口径（单相 250–300 W/cm²、两相 >500 W/cm²）对照，确认平均热流不是约束；(2) 真正要核的是**热点热流密度**——09 号文档第 3.1 节的功耗构成显示矩阵占 47%（133.69 W）而面积分布未知，请 H Core 的 floorplan owner 给出矩阵阵列的实际占位面积，由此算热点 W/cm²，再与冷板的 >500 W/cm²（两相）或 250–300 W/cm²（单相）对照；(3) 索取 MC 侧的等效热流密度（第 5 节已列「MC 堆叠热点」为验证项）；(4) 在冻结交付物清单（第 7 节）里把「热仿真与冷板需求」这一项明确到「必须输出 W/cm² 云图」，而不是只输出温度场。
+- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 4.1 节与第 6 节：每 Die 286.22 W，Die 面积 373.71 mm²（SF4）。行动项：(1) 算出每 Die 的**平均**热流密度（286.22 W / 373.71 mm²）与公开的行业冷板口径（单相 250–300 W/cm²、两相 >500 W/cm²）对照，确认平均热流不是约束；(2) 真正要核的是**热点热流密度**——09 号文档第 4.1 节的功耗构成显示矩阵占 47%（133.69 W）而面积分布未知，请 H Core 的 floorplan owner 给出矩阵阵列的实际占位面积，由此算热点 W/cm²，再与冷板的 >500 W/cm²（两相）或 250–300 W/cm²（单相）对照；(3) 索取 MC 侧的等效热流密度（第 6 节已列「MC 堆叠热点」为验证项）；(4) 在冻结交付物清单（第 8 节）里把「热仿真与冷板需求」这一项明确到「必须输出 W/cm² 云图」，而不是只输出温度场。
 - **sources**：
   - ACT 单相/两相冷板数据表（单相 300 W/cm²、0.045 °C·cm²/W、>1.5 LPM/kW；两相 >500 W/cm²、0.035 °C·cm²/W、0.7 LPM/kW），2026，https://www.1-act.com/wp-content/uploads/2026/09/LCP-CS-01_LiquidColdPlates-DataCenters-CutSheet_V1_2026-09-03_Web.pdf
   - ACT 两相冷板数据表（>500 W/cm²、0.080 °C·cm²/W、<0.8 LPM/kW、流体温度 20–60 °C、单一相 ~250 W/cm² / ~0.150 °C·cm²/W），2025，https://www.1-act.com/wp-content/uploads/2025/11/TPCP-CS-01_TwoPhaseColdPlates-DataCenters-CutSheet_V1_2025-11-12_Web.pdf
@@ -315,7 +315,7 @@ confidence 分配原则：厂商数据表与厂商路线图 = `vendor_datasheet`
 - **applies_when**：冷板的热阻与热流密度是瓶颈（而非流量或压差），且能接受冷板与芯片深度耦合（需与封装设计同步做）；也适用于想在 >2000 W 级保住单相工质的场景。
 - **not_applicable_when**：不适用于 (a) 需要现场可更换冷板的设计——IHS 与冷板一体化后不可独立更换，维修策略必须重做；(b) 泄漏后果不可接受的部署——冷却液直接接触芯片，风险等级高于传统冷板；(c) 把 0.03 °C·cm²/W 当作在产保证——那是最好条件下的口径，且 MLCP 尚未进入量产验证；(d) 短期项目——2025-11 的口径是还需 3–4 个季度到量产，若项目时间窗更紧则不可用；(e) 微通道对压降敏感的系统——微米级流道的压降与堵塞敏感性远高于毫米级流道。
 - **project_premises**：液冷前提
-- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 5 节散热验证项与第 7 节冻结交付物：当前验证项已列「Compute Die 和 MC 共面/热阻」「冷板流量、压差、入口温度」「单泵/单回路故障」。行动项：把 MLCP 是否入选作为显式决策记录下来。若要入选，需向冷板供应商索取三项：(1) 在目标 Flow/压差下微通道的热阻与热流密度实测；(2) 冷板-芯片共面设计与封装厂（中介层/基板）的接口定义——因为 IHS 被删掉后，封装翘曲会直接传递到冷板贴合面（与 SOTA-PPA-13 联动）；(3) 泄漏检测与单回路故障下的保护策略（09 号文档第 5 节已列单泵/单回路故障，但未定义泄漏检测）。
+- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 6 节散热验证项与第 8 节冻结交付物：当前验证项已列「Compute Die 和 MC 共面/热阻」「冷板流量、压差、入口温度」「单泵/单回路故障」。行动项：把 MLCP 是否入选作为显式决策记录下来。若要入选，需向冷板供应商索取三项：(1) 在目标 Flow/压差下微通道的热阻与热流密度实测；(2) 冷板-芯片共面设计与封装厂（中介层/基板）的接口定义——因为 IHS 被删掉后，封装翘曲会直接传递到冷板贴合面（与 SOTA-PPA-13 联动）；(3) 泄漏检测与单回路故障下的保护策略（09 号文档第 6 节已列单泵/单回路故障，但未定义泄漏检测）。
 - **sources**：
   - ZEISS / 工控网：液冷技术新趋势 — AI 服务器微通道水冷板（MLCP）质量保证（微通道 50–150 µm、换热系数 2–3×、热阻低至 0.03 °C·cm²/W、量产仍需 3–4 个季度、泄漏为核心瓶颈），2025，http://c.gongkong.com/PhoneVersion/NewDetail?newsId=447073
 - **confidence**：industry_survey
@@ -330,7 +330,7 @@ confidence 分配原则：厂商数据表与厂商路线图 = `vendor_datasheet`
 - **applies_when**：卡功耗接近上限、需要判断余量是否被 PDN 吃掉；或者在 chiplet 划分与供电结构（板级 VRM vs 封装内 IVR）之间选型。
 - **not_applicable_when**：不适用于 (a) 把 5× 垂直功率密度当作系统级功耗节省——它是供电传输密度，不是能效倍数；(b) 用「供电 bump 数 ∝ 功率」直接算面积而不问 I_bump——I_bump 随基板材料、层数、bump 类型变化，公开资料没有通用值；(c) 中低功耗设计（<数百瓦）——PDN 通常不是约束，讨论供电结构收益有限；(d) 忽略交流阻抗与 SSN——IR drop 只是直流项，开关噪声在大电流跳变下可能更严重；公开资料中关于大封装 SSN 的量化数据未在本轮检索中获得。
 - **project_premises**：液冷前提
-- **what_to_check_here**：去核 `teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware` 与 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 3.2 节：卡功耗余量只有 31.53 W，而文档已自列「VRM 损耗」「PDN/IR-drop/SSN」「PVT guardband」「老化和漏电」均为尚未可靠计入的项目（第 3.2 节与第 7 节）。行动项：(1) 索取一个显式的 PDN 损耗预算（VRM 效率、基板与中介层 IR drop 百分比、SSN 余量），并确认它是否已在 2768.47 W 里含；若不含，则 31.53 W 的余量在公开口径下不足以覆盖这些项的总和。(2) 向封装厂确认目标封装面积对应的基板层数（公开口径为大封装 18–20 层），以及该层数对 IR drop 与载板交期的影响。(3) 把「供电 bump 面积」显式写进 placement window 的 658.29 mm² 余量拆分里（当前余量项写的是「RDL、间距、keep-out、PDN、维修」，PDN 已出现但无分量）。
+- **what_to_check_here**：去核 `teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware` 与 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 4.2 节：卡功耗余量只有 31.53 W，而文档已自列「VRM 损耗」「PDN/IR-drop/SSN」「PVT guardband」「老化和漏电」均为尚未可靠计入的项目（第 4.2 节与第 8 节）。行动项：(1) 索取一个显式的 PDN 损耗预算（VRM 效率、基板与中介层 IR drop 百分比、SSN 余量），并确认它是否已在 2768.47 W 里含；若不含，则 31.53 W 的余量在公开口径下不足以覆盖这些项的总和。(2) 向封装厂确认目标封装面积对应的基板层数（公开口径为大封装 18–20 层），以及该层数对 IR drop 与载板交期的影响。(3) 把「供电 bump 面积」显式写进 placement window 的 658.29 mm² 余量拆分里（当前余量项写的是「RDL、间距、keep-out、PDN、维修」，PDN 已出现但无分量）。
 - **sources**：
   - TSMC 2025 北美技术论坛：新型集成型电压调节器（IVR）相对板级独立电源管理芯片具 5 倍垂直功率密度传输，2025，https://www.chinatimes.com/realtimenews/20250424001162-260410?chdtv
   - 电子发烧友：为支撑 5.5 倍及以上光罩封装，高端 ABF 载板升级至 18–20 层，2026，https://m.elecfans.com/article/8224977.html
@@ -347,7 +347,7 @@ confidence 分配原则：厂商数据表与厂商路线图 = `vendor_datasheet`
 - **applies_when**：评估一个多 reticle 封装的组装良率风险与冷板贴合方案；或者在「加金属盖 / 无盖」之间选型。
 - **not_applicable_when**：不适用于 (a) 把 1500/3000/4000 µm 当作本项目可比的翘曲预算——那是晶圆级（整片晶圆）封装的量级，与 chiplet 级 CoWoS 封装的翘曲不是同一个尺度问题；(b) 用翘曲数字直接推良率——公开资料只给翘曲量级，没有翘曲-良率曲线；(c) 忽略无盖方案对冷板设计的影响——无盖会改变热路径与共面性要求，与 SOTA-PPA-11（MLCP 删掉 IHS）是同一个决策面；(d) 短期评估——翘曲是老化与多次热循环后的累积现象，单次仿真的结果不代表寿命末期。
 - **project_premises**：7-reticle
-- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 5 节与第 7 节：第 5 节验证项包含「Compute Die 和 MC 共面/热阻」「冷板流量、压差、入口温度」，第 7 节冻结交付物包含「热仿真与冷板需求」「封装厂、PHY/IP、MC 供应商确认」。行动项：(1) 向封装厂索取 82 × 64 mm 中介层尺寸下的翘曲预算（含回流焊后与寿命末期的两种情况），以及盖板方案（有盖/无盖）的推荐；(2) 确认「Compute Die 和 MC 共面」这一验证项的验收数值是多少 µm——当前文档只写了验证项名称，没有给出共面容差指标，这是一个可量化的缺口；(3) 若选择 MLCP 或两相冷板（冷板与芯片深度耦合），把翘曲传递到冷板贴合面的路径显式建模，并在冻结交付物里增加「共面容差 + TIM 厚度公差」的联合预算。
+- **what_to_check_here**：去核 `teams/hardware/docs/09_PACKAGE_POWER_RAS.md` 第 6 节与第 8 节：第 6 节验证项包含「Compute Die 和 MC 共面/热阻」「冷板流量、压差、入口温度」，第 8 节冻结交付物包含「热仿真与冷板需求」「封装厂、PHY/IP、MC 供应商确认」。行动项：(1) 向封装厂索取 82 × 64 mm 中介层尺寸下的翘曲预算（含回流焊后与寿命末期的两种情况），以及盖板方案（有盖/无盖）的推荐；(2) 确认「Compute Die 和 MC 共面」这一验证项的验收数值是多少 µm——当前文档只写了验证项名称，没有给出共面容差指标，这是一个可量化的缺口；(3) 若选择 MLCP 或两相冷板（冷板与芯片深度耦合），把翘曲传递到冷板贴合面的路径显式建模，并在冻结交付物里增加「共面容差 + TIM 厚度公差」的联合预算。
 - **sources**：
   - ECTC 2024 Special Session on Metrology（晶圆级封装的翘曲台阶 1500 µm → 3000 µm → 4000 µm；SoW 检测挑战），2024，https://ectc.net/files/2024highlights/2024%20ECTC%20Special%20Session%20on%20Metrology.pdf
 - **confidence**：industry_survey
@@ -363,7 +363,7 @@ confidence 分配原则：厂商数据表与厂商路线图 = `vendor_datasheet`
 
 4. **HBM4 的换代参数在本轮未取到 horizon（2026-01）内的可核查一手来源**。JEDEC HBM4（2048-bit 接口、每 stack >2 TB/s、2026 年量产、不与 HBM3E 控制器兼容）这些方向性事实在 2025 年已由标准组织与厂商公布，但本轮检索命中的比较表均来自 horizon 之后的日期，因此不纳入卡片，只在本文档第 3 节记录存在性。取证对象：JEDEC HBM4 标准文本与 SK hynix / Samsung / Micron 的 HBM4 数据表。
 
-5. **多 die 封装内 die 间温度不均匀（thermal non-uniformity）的量级**：工程上反复被提到（本项目 09 号文档第 5 节也列了「8 Die 热不均匀」），但没有任何一份公开资料给出「同一封装内最热 die 与最冷 die 的温差」分布。取证对象：热仿真报告或 TTV 实测数据。这一项对 TP 类同步语义的系统尤其重要，因为最慢 rank 决定 step 完成时间。
+5. **多 die 封装内 die 间温度不均匀（thermal non-uniformity）的量级**：工程上反复被提到（本项目 09 号文档第 6 节也列了「8 Die 热不均匀」），但没有任何一份公开资料给出「同一封装内最热 die 与最冷 die 的温差」分布。取证对象：热仿真报告或 TTV 实测数据。这一项对 TP 类同步语义的系统尤其重要，因为最慢 rank 决定 step 完成时间。
 
 6. **两相冷板在 >2000 W 且长时间运行下的可靠性数据**：目前只有厂商 demo 与短期测试（如 ASME InterPACK 2025 的 0–3 kW TTV 测试），没有部署年限级别的可靠性数据。两相工质（R515B 一类）的 GWP 与安全合规性也是未解项。
 
