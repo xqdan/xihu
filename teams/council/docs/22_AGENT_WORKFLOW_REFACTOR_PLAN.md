@@ -157,9 +157,15 @@ const head = agentId => HEAD.replace('__AGENT__', agentId)
    约束靠 prompt 陈述，不靠运行时强制。真正的强制只有一条：没有写权限。
 
 **确定性数字不由 agent 产生**，因此也不由注入决定。枚举与打分在仓库内的脚本里跑，
-产物带设计空间 sha256；agent 只读产物、只解释取舍。搜索脚本会写 `out/`，
-所以它**由主循环在调用 workflow 之前运行**，路径经 `args.searchArtifact` 传入——
+产物带设计空间 sha256；agent 只解释取舍。搜索脚本会写 `out/`，
+所以它**由主循环在调用 workflow 之前运行**——
 不能让 workflow 里的 agent 去执行它，否则"agent 全程只读"这条硬护栏为了拿候选集就破了。
+
+C 组四域读取产物这一步同样**不由 agent 做**：agent 转写候选数值，等于让 LLM 产出了后面所有裁决
+唯一依据的数字，且没有东西核对"转写 = 原文"。主循环先跑 `integration/pipelines/search_brief.js brief <域>`
+（读产物、核对设计空间哈希、重跑搜索复核指纹、取前 N 个候选），结果经 `args.searchBrief` 传入；
+`args.searchArtifact` 只作溯源记录。workflow 返回、文件落盘之后，再跑 `search_brief.js verify <域>`，
+核对落盘的 winner 是不是产物里的一行（逐字段一致）、是否可行、run record 指纹是否一致。
 
 ## 3. Agent Roster（12 个策略）
 
@@ -255,7 +261,8 @@ const head = agentId => HEAD.replace('__AGENT__', agentId)
 export const meta = { name: 'design-compute', description: '...', phases: [...] }
 
 const BRIEF = args.brief                    // 主循环传入，脚本不读文件
-const SEARCH_ARTIFACT = args.searchArtifact // 主循环跑好的搜索结果路径；本 workflow 不跑搜索
+const SEARCH_ARTIFACT = args.searchArtifact // 搜索产物路径，仅作溯源记录；本 workflow 不读它、不跑搜索
+const SEARCH_BRIEF = args.searchBrief       // search_brief.js 读取并核验过的候选集；数值的唯一来源
 if (!BRIEF) throw new Error('design.compute 需要 args.brief')
 if (BRIEF.stage !== 'compute') throw new Error('brief.stage 与 workflow 不符；契约串了')
 
@@ -265,10 +272,9 @@ const policy = await agent(`${head('compute-expert')}\n\nbrief：\n${BRIEF_JSON}
 if (policy.verdict === 'DIRECTION_BACKFLOW') return { verdict: 'DIRECTION_BACKFLOW', files: [] }
 if (policy.verdict === 'BLOCKED_CONFIG')   return { verdict: 'BLOCKED_CONFIG', blockedFields: policy.blockedFields, files: [] }
 
-// 2 只读搜索产物 —— ok=false 时退回，不用估算代替
-const search = await agent(`你的角色：只读产物。不得执行任何命令、不得重算或补齐任何数值…`,
-  { label: 'read-search-artifact', phase: 'Deterministic search', effort: 'low', schema: SEARCH_SCHEMA })
-if (!search || !search.ok) return { verdict: 'BLOCKED_CONFIG', reason: '搜索产物不可用', files: [] }
+// 2 确定性取数 —— 没有 agent：候选集已由脚本核验，ok=false 时退回，不用估算代替
+const search = { ...SEARCH_BRIEF, candidates: SEARCH_BRIEF.candidates || [] }
+if (!search.ok) return { verdict: 'BLOCKED_CONFIG', reason: '搜索产物不可用', files: [] }
 
 const candidateBrief = { ...search, candidates: search.candidates.slice(0, MAX_CANDIDATES) }
 
