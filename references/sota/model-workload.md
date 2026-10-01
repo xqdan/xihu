@@ -213,7 +213,7 @@ V3.2 与 V3.2-Exp 的关系（报告原文口径）：**架构完全相同，唯
 
 **本文件** 没有覆盖但公开资料里存在、且值得下一轮补上的部分（见 `unresolved`）。
 
-**刷新建议：** MoE 架构与 KV 量化方案的半衰期很短（见各卡片的 `relative_validity`）。建议按 `README.md` 的机制只重跑本单元：`Workflow({scriptPath: '.../k3_agent_learning.workflow.js', args: {as_of: '<新日期>', units: ['model-workload']}})`。本文件刻意把 `as_of` 收在 2026-01，重跑时应由 `args.as_of` 显式给出新日期。
+**刷新建议：** MoE 架构与 KV 量化方案的半衰期很短（见各卡片的 `relative_validity`）。建议按 `README.md` 的机制只重跑本单元：`Workflow({scriptPath: '.../design.learn.workflow.js', args: {as_of: '<新日期>', units: ['model-workload']}})`。本文件刻意把 `as_of` 收在 2026-01，重跑时应由 `args.as_of` 显式给出新日期。
 
 ## 6. 知识卡
 
@@ -311,7 +311,7 @@ V3.2 与 V3.2-Exp 的关系（报告原文口径）：**架构完全相同，唯
 - **applies_when**：核对"权重与 KV 的实际开销"时：MLA 是公开资料里 KV 压缩幅度最大、被最大规模部署验证过的一档，把"每 token 每层 KV 字节数"的整体量级判断锚在这里是合理的。也适用于判断"KV 容量规划是否必须假设展开形式"。
 - **not_applicable_when**：MLA 的压缩比与 head 数、head_dim 强相关，不能跨架构搬运：128 head × 128 dim 与 64 head × 256 dim 恰好都得到 32768 的展开值，是巧合而非常数。若部署对象不用 MLA（用 GQA/MHA），这套压缩不成立。另外 MLA 需要模型训练时就采用该结构，不是推理期可开关的优化。
 - **project_premises**：FP8 KV
-- **what_to_check_here**：取部署对象的资格矩阵，确认 attention 类型是否为 MLA/DSA 以及 kv_lora_rank / qk_rope_head_dim 的实际取值；用这些字段重算"每 token 每层 KV 字节数"，并与 `docs/architecture/HIGH_LEVEL_ARCHITECTURE.md` 第 2 节里 shared SRAM 余量依赖 FP8 KV 的推导对齐（`k3_agent_learning.workflow.js` 的 compute-core 单元 premises 也引用了这一条）。
+- **what_to_check_here**：取部署对象的资格矩阵，确认 attention 类型是否为 MLA/DSA 以及 kv_lora_rank / qk_rope_head_dim 的实际取值；用这些字段重算"每 token 每层 KV 字节数"，并与 `docs/architecture/HIGH_LEVEL_ARCHITECTURE.md` 第 2 节里 shared SRAM 余量依赖 FP8 KV 的推导对齐（`design.learn.workflow.js` 的 compute-core 单元 premises 也引用了这一条）。
 - **sources**：
   - transformers PR #48761 [DSA] Cache compressed MLA latents instead of expanded K/V（逐 token 缓存字节数与 2048/4096 token 的 GiB 实测），2026，https://github.com/huggingface/transformers/pull/48761
   - DeepSeek-V3 Technical Report / 官方 README（MLA 用于高效推理），2024，https://github.com/deepseek-ai/DeepSeek-V3/blob/main/README.md
@@ -327,7 +327,7 @@ V3.2 与 V3.2-Exp 的关系（报告原文口径）：**架构完全相同，唯
 - **applies_when**：做 KV 容量档位规划时，2.0× 是公开资料里"FP8 KV"被普遍接受的容量收益；若考虑更低位宽，需要按 3.56× 而非 4× 记账。也适用于纠正"位宽减半就容量翻倍"这类账面推导。
 - **not_applicable_when**：2.0× 与 3.56× 是通用账面比，只有在 KV 确实是显存/容量瓶颈时才转化为收益；对短上下文或 sliding-window 占比较高的模型，收益会明显缩水（混合注意力模型里跳过 sliding-window 层往往更好）。这两个比值也不包含量化带来的精度代价与计算路径改动，不能用来单独支撑"FP8 KV 总收益 2 倍"的结论。
 - **project_premises**：FP8 KV
-- **what_to_check_here**：核 `docs/architecture/HIGH_LEVEL_ARCHITECTURE.md` 第 2 节与 `k3_agent_learning.workflow.js` 中 compute-core 单元的 "shared SRAM 余量依赖 FP8 KV" 是否按 2.0× 记账；确认部署对象的 attention 是全局注意力还是混合（含 sliding-window），因为后者会稀释 FP8 的收益；确认用的是 e4m3 而非 e5m2。
+- **what_to_check_here**：核 `docs/architecture/HIGH_LEVEL_ARCHITECTURE.md` 第 2 节与 `design.learn.workflow.js` 中 compute-core 单元的 "shared SRAM 余量依赖 FP8 KV" 是否按 2.0× 记账；确认部署对象的 attention 是全局注意力还是混合（含 sliding-window），因为后者会稀释 FP8 的收益；确认用的是 e4m3 而非 e5m2。
 - **sources**：
   - SGLang 官方文档 Quantized KV Cache（容量比表、E4M3/E5M2 对照），2025，https://docs.sglang.io/docs/advanced_features/quantized_kv_cache.md
 - **confidence**：vendor_datasheet

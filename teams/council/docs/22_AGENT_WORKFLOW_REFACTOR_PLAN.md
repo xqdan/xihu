@@ -43,17 +43,22 @@ D2 一个人管 MC + SRAM + TMA 三件事，Q1 是"阶段"而不是"专家"。�
 
 ### 1.3 现有编排脚本盘点
 
+下表的"重构后归属"已全部落地（S7 完成时删除）：`integration/orchestration/` 下现在只有 `design.*.workflow.js` 一套流程，旧脚本一个不留。本表保留，是为了让后来的人知道那些脚本去哪了——**两套流程并行时，同一件事有两个说法，谁也说不清哪个算数**。
+
 | 脚本 | 当前作用 | 重构后归属 |
 |---|---|---|
-| `k3_multiteam_review.workflow.js` | 五团队 probe+lead、六接口配对、blocker 三视角核验 | → `design.verify` 的骨架，保留 |
-| `k3_external_references.workflow.js` | 为 premises 找外部参照系 | → `design.audit` 的一个视角 |
-| `k3_agent_learning.workflow.js` | 一次性沉淀 `references/sota/` | 保持一次性，产物改为按领域绑定到策略输入 |
+| `k3_multiteam_review.workflow.js` | 五团队 probe+lead、六接口配对、blocker 三视角核验 | → `design.verify` 的骨架；"按 ownership 覆盖 + 三视角对抗核验"保留在 `design.verify` / `design.audit` |
+| `k3_external_references.workflow.js` | 为 premises 找外部参照系 | → `design.audit` 的一个可选阶段（传 `args.premises` 时启用），产物落 `references/external/` |
+| `k3_agent_learning.workflow.js` | 一次性沉淀 `references/sota/` | → `design.learn.workflow.js`，仍是一次性；产物按领域登记注入点（见下） |
 | `integration/pipelines/stage_a.js` | Stage A 方向级运行 | → `design.direction` 的确定性内核 |
 | `integration/pipelines/stage_b.js` | Stage B 详细运行 | → D 组 5 个 workflow 的确定性内核 |
 | `generate_matrix_vector_design.js` | AI Core 设计空间搜索 | → `design.compute` 的确定性内核 |
 | `generate_comm_core_design.js` | Comm Core 设计空间搜索 | → `design.comm` 的确定性内核 |
 | `generate_team_contracts.js` | 合成本团队 contract | → `design.contract` 的确定性内核 |
 | `generate_direction_feedback.js` | 方向反馈 | → `design.backflow` 的确定性内核 |
+| `integration/pipelines/generate_review_ledger.js` | 把 `k3_multiteam_review` 的返回值落成 `out/reviews/` ledger | 保留并改向：读 `out/verification/` 下 `design.verify` / `design.audit` 落盘的报告，照抄门控结论而不判定它 |
+
+**知识库的注入点**（上面第三行的"按领域绑定到策略输入"）登记在 `design.learn.workflow.js` 的 `UNITS[].consumedBy` 与返回值的 `binding` 字段里，实际注入在各领域 workflow 的 prompt 头部——注入的是**路径**不是正文，理由与策略正文相同：一份来源，各自自读。
 
 **关键区分**：`integration/pipelines/*` 和 `integration/detailed/*` 是**确定性模型**。workflow 调用它们，策略 agent 不得替代它们。
 
@@ -206,9 +211,9 @@ const head = agentId => HEAD.replace('__AGENT__', agentId)
 | D | `design.detail.execute` | schedule/PPA | 2 | 串行 | B3 |
 | D | `design.detail.integrate` | fine TPS + delta 归因 | — | 串行 | B4 |
 | D | `design.converge` | 架构定型 + ADR | — | 串行 | A0 扩权 |
-| E | `design.verify` | 独立门控 | 每类检查一 agent（≥6） | verifier 汇总 | `k3_multiteam_review` |
+| E | `design.verify` | 独立门控 | 每类检查一 agent（≥6） | verifier 汇总 | 原 `k3_multiteam_review`（已并入本格） |
 | E | `design.backflow` | 不达标回流 | — | 串行 | `generate_direction_feedback.js` |
-| E | `design.audit` | 证据/口径复核 | 4 视角 | verifier 汇总 | `k3_external_references` |
+| E | `design.audit` | 证据/口径复核 | 4 视角 | verifier 汇总 | 原 `k3_external_references`（已并入本格的可选阶段） |
 | X | `design.explore` | 单 agent 探索（**受控逃生口**，见 §5.3） | 1 | — | 新建 |
 
 ### 4.2 每个 Workflow 的策略实例
@@ -407,7 +412,7 @@ return { verdict: ok ? 'INVARIANT_OK' : 'INVARIANT_VIOLATED', winner: ok ? merge
 | **S4** | 复制到 `design.memory` / `design.comm` / `design.physical` | 3 个 workflow | S3 | 复用骨架，仅换主策略与设计空间；4 域共享同一 `design_ledger` |
 | **S5** | B 组：`design.contract` / `design.direction` / `design.dgate` | 3 个 workflow | S3 | `design.direction` 从 6–12 候选收敛到 ≤3；`design.dgate` 结论与 `evaluate_gates.js` 一致，且不含 `PASS` 字面量 |
 | **S6** | D 组 5 个串行 workflow + `design.converge` | 6 个 workflow | S4、S5 | 粗估-细估 delta 有归因；`DIRECTION_BACKFLOW` / `LOCAL_DETAIL_FIX` 分支可执行 |
-| **S7** | E 组 3 个横切 workflow + `design.explore` | 4 个 workflow | S6 | `k3_multiteam_review` 迁为 `design.verify`；verify/audit 的策略注入里确认不含设计中间产物 |
+| **S7** | E 组 3 个横切 workflow + `design.explore` | 4 个 workflow | S6 | 原 `k3_multiteam_review` 已并入 `design.verify` 并删除；verify/audit 的策略注入里确认不含设计中间产物 |
 | **S8** | 文档与结构测试收口 | 改 `17/18/19`、`AGENTS.md`、`docs/README.md`、`docs/architecture/README.md`、`test_project_structure.js` | S7 | `npm test` 全绿；`17/18/19` 里 D\*/Q\* 已明确标注为"阶段名，非 agent" |
 
 **S3 是关键切片**：只有它跑通，才知道策略颗粒度、N 该取多少、旁证约束的传递方式对不对。S1/S2 是它的前置，S4–S7 是它的复制。

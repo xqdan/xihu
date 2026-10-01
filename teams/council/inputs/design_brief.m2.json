@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "1.0",
+  "stage": "compute",
+  "runId": "m2-compute-20260930",
+  "sourceCommit": "c16b26e",
+  "objective": "AI Core 的 matrix:vector 配比取哪一组（vectorLanes × 低精度输入路径 × exp 单元），使 K3 / GLM-5.2 / DeepSeek-V4-Pro 三模型的 H-core kernel 全部隐藏向量时间，且 die 面积与功耗不超限",
+  "hardConstraints": [
+    {
+      "id": "C-AREA-DIE",
+      "text": "单颗 compute die 面积不超过 400 mm2",
+      "source": "ADR-0018",
+      "value": 400
+    },
+    {
+      "id": "C-POWER-DIE",
+      "text": "单颗 compute die 功耗不超过 300 W",
+      "source": "ADR-0018",
+      "value": 300
+    },
+    {
+      "id": "C-POWER-CARD",
+      "text": "整卡功耗不超过 2800 W",
+      "source": "ADR-0005",
+      "value": 2800
+    },
+    {
+      "id": "C-HIDE-H",
+      "text": "每个 H-core kernel 的向量时间必须被矩阵时间隐藏（kernel bound >= core MACs:lanes）",
+      "source": "teams/hardware/inputs/matrix_vector_design_space.json",
+      "value": null
+    },
+    {
+      "id": "C-TPS-TOL",
+      "text": "只改 vectorLanes（及原生输入的 unpack）时，K3 detailed replay 的 TPS/usr 必须保持在既有发布点的 0.1% 以内",
+      "source": "teams/hardware/inputs/matrix_vector_design_space.json",
+      "value": 0.001
+    },
+    {
+      "id": "C-MODELS-3",
+      "text": "结论必须覆盖 K3、GLM-5.2、DeepSeek-V4-Pro 三个模型，不得只对 K3 成立",
+      "source": "ADR-0009",
+      "value": 3
+    },
+    {
+      "id": "C-PEAK-SEP",
+      "text": "数学 peak、effective peak、measured/calibrated peak 必须分开陈述；利用率必须有 trace 来源",
+      "source": "teams/hardware/inputs/matrix_vector_design_space.json",
+      "value": null
+    },
+    {
+      "id": "C-FFN-TP",
+      "text": "FFN/MoE 为 TP-only，不建 expert all-to-all 或 dispatch/combine",
+      "source": "ADR-0020",
+      "value": null
+    },
+    {
+      "id": "C-SPEC-SINGLE",
+      "text": "P1 是唯一硬件规格；MC320 与 MC640 必须分离陈述，MC640 只能是 stretch",
+      "source": "ADR-0021",
+      "value": null
+    }
+  ],
+  "budget": {
+    "areaMm2": 400,
+    "powerW": 300,
+    "bandwidthGBs": 1280
+  },
+  "shapeIntent": "先用确定性搜索把 matrix:vector 配比在 K3 详细回放上收敛，只在搜索给出的可行集里做取舍；倾向于保留 P1 发布点的 512 lanes 与 vector 解包路径，除非能证明原生低精度张量输入在面积/功耗上更划算——原生输入多 8% 的矩阵面积，必须由省下的向量解包周期挣回来。语义上不得把 dequant 代价藏进 peak。",
+  "allowedDesignSpace": "teams/hardware/inputs/matrix_vector_design_space.json",
+  "forbidden": [
+    "不得给出 TPS/usr 或任何整机级性能数字（本 stage 只报核内配比与时间）",
+    "不得手工填写面积或功耗；必须取自规格文件或搜索脚本产物",
+    "不得引入第二份硬件规格，不得用 MC640 数字冒充可制造默认值",
+    "不得通过降低精度换取算力，除非同时给出软件侧精度验收路径",
+    "不得输出 PASS / D_GATE_PASSED 字面量"
+  ],
+  "exitCriteria": [
+    "winner 的每个数值字段都能指回确定性搜索产物",
+    "搜索产物的设计空间 sha256 已记录，与磁盘上的设计空间文件一致",
+    "K3 detailed replay 的 TPS/usr 仍在发布点 0.1% 以内",
+    "三模型 H-core kernel 的隐藏条件全部成立",
+    "die 面积与功耗在限值内",
+    "integrated winner 通过 invariant-checker 的全部检点项"
+  ],
+  "evidenceLevelFloor": "E1",
+  "profileBinding": {
+    "physicalProfile": "P1",
+    "mcProfile": "MC320"
+  }
+}

@@ -10,7 +10,7 @@
 > [`teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](../../teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md) 为准。
 > `17`/`18`/`19` 描述的是被它取代的方法论：阶段划分、退出条件与证据要求仍然成立，
 > 但其中的 `A0`/`D1`–`D7`/`Q1`–`Q9` 是**阶段名，不是 agent**；
-> 现行实现里"谁在什么阶段被调起"由 `teams/council/agent_roster.json` 与
+> 现行实现里"谁在什么阶段被调起"由 `teams/council/inputs/agent_roster.json` 与
 > `integration/orchestration/design.*.workflow.js` 决定。
 > 本目录其余章节（架构结论、TPS 基线、硬件规格、contracts）不受该次重构影响。
 
