@@ -103,9 +103,19 @@ assert(wfFiles.length > 0, 'integration/orchestration 下必须存在 design.*.w
 for (const name of wfFiles) {
   const src = fs.readFileSync(path.join(wfDir, name), 'utf8');
 
-  // 脚本必须能被解析（不是 Node 入口，但不该有语法错误）
-  const parsed = spawnSync(process.execPath, ['--check', path.join(wfDir, name)], { encoding: 'utf8' });
-  assert.strictEqual(parsed.status, 0, `${name} 语法错误：\n${parsed.stderr}`);
+  // 脚本必须能被解析（不是 Node 入口，但不该有语法错误）。
+  // 不能直接 node --check：workflow 在运行时是包在函数里执行的，顶层 return 合法，
+  // 而裸检查会把它判成 `Illegal return statement`，把每个 design.*.workflow.js
+  // 都误报成语法错误。所以按运行时的真实形态还原：剥掉 export，外面包一层 async 函数。
+  const os = require('os');
+  const tmp = path.join(os.tmpdir(), `syntax-${name}-${process.pid}.mjs`);
+  fs.writeFileSync(tmp, `async function __w__() {\n${src.replace(/^export const meta/m, 'const meta')}\n}\n`);
+  try {
+    const parsed = spawnSync(process.execPath, ['--check', tmp], { encoding: 'utf8' });
+    assert.strictEqual(parsed.status, 0, `${name} 语法错误：\n${parsed.stderr}`);
+  } finally {
+    try { fs.unlinkSync(tmp); } catch (_) {}
+  }
 
   // meta 必须是纯字面量：name 与 description 直接可读，phases 至少一项
   assert(/export const meta = \{/.test(src), `${name} 必须导出 meta`);

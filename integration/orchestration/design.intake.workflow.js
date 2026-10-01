@@ -383,6 +383,27 @@ ${JSON.stringify(finalBrief)}
 // ---------------------------------------------------------------------------
 const framingOk = rounds.some((r) => r.framing === 'FRAMING_OK')
 
+// ---------------------------------------------------------------------------
+// architect 的三个裁决在这里被消费。之前这三个值只出现在上面 BRIEF_SCHEMA 的枚举里，
+// 没有任何分支读它们——枚举写全了、路由是空的：一个裁决值如果只决定"返回字段长什么样"，
+// 那它就是一则注释，不是一条边。
+//
+//   ARCH_FREEZE        → 注入契约可定稿，交下游
+//   D_GATE_PROPOSAL    → brief 定稿，但下一格是 dgate 裁定候选集，不是直接开工
+//   DIRECTION_BACKFLOW → 不落盘，交回 direction（循环内已就地终止）
+//
+// 落盘仍要求 framing-critic 通过：架构师说"可以冻结"与框架审查说"没有实质缺口"
+// 是两件事，缺任何一件都不该把 brief 发下去。三个裁决一个都没有（architect 没给出）
+// 说明这一轮没走完，同样不落盘。
+// ---------------------------------------------------------------------------
+const ROUTE = {
+  ARCH_FREEZE: {lands: true, next: 'downstream'},
+  D_GATE_PROPOSAL: {lands: true, next: 'dgate'},
+  DIRECTION_BACKFLOW: {lands: false, next: 'direction'},
+}
+const route = ROUTE[verdict] || {lands: false, next: null}
+const briefLanded = framingOk && route.lands
+
 const ledgerSeed = {
   schemaVersion: '1.0',
   currentStage: STAGE,
@@ -424,16 +445,18 @@ return {
   runId: RUN_ID,
   sourceCommit: SOURCE_COMMIT,
   verdict,
+  // 裁决的消费点：next 决定下一格走哪条边（dgate 还是直接下游），改这个表就等于改路由。
+  nextStage: route.next,
   framingOk,
   rounds,
   absentExperts: absent,
   blockedExperts: blocked.map((p) => p.agentId),
-  brief: framingOk ? finalBrief : null,
+  brief: briefLanded ? finalBrief : null,
   // 未通过时也保留草稿，供人看差在哪，但标注了未被采纳
-  draftBrief: framingOk ? null : finalBrief,
+  draftBrief: briefLanded ? null : finalBrief,
   openGaps: finalGaps,
   ledgerSeed,
-  files: framingOk
+  files: briefLanded
     ? [{ path: `${REPO}/teams/council/inputs/design_brief.intake.json`, content: JSON.stringify(finalBrief, null, 2) }]
     : [],
 }
