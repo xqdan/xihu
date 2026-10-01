@@ -12,6 +12,11 @@ const path = require('path');
 const assert = require('assert');
 const { spawnSync } = require('child_process');
 
+// 门控字面量的判据只有一处定义：evaluate_gates.js 的 FORBIDDEN_GATE_LITERALS。
+// 这里不再自己写正则——同一判据两份实现，改一份另一份不动，而这个检查的失效
+// 方式正是"某个字面量不再被拦"。
+const { gateLiteralPattern } = require('../../integration/governance/evaluate_gates');
+
 const root = path.resolve(__dirname, '../..');
 const rosterPath = path.join(root, 'teams/council/inputs/agent_roster.json');
 const roster = JSON.parse(fs.readFileSync(rosterPath, 'utf8').replace(/^﻿/, ''));
@@ -128,14 +133,14 @@ for (const name of wfFiles) {
   assert(!/\bfs\./.test(src), `${name} 不得使用 fs；落盘由主循环完成`);
   assert(!/Date\.now\(|Math\.random\(|new Date\(\)/.test(src), `${name} 不得取时间或随机数；会破坏 resume`);
 
-  // 门控结论只能来自确定性脚本
+  // 门控结论只能来自确定性脚本。判据取自 evaluate_gates.js 的
+  // FORBIDDEN_GATE_LITERALS：这里不再自己写正则。
+  // 覆盖面与原来的两条正则等价（PASS / D_GATE_PASSED / Q_GATE_PASSED 都拦），
+  // 改的是"三处各写一份"——字面量表加一个成员时，三处必须同时改，漏一处就少拦一个。
+  const gateRe = gateLiteralPattern();
   for (const line of src.split(/\r?\n/)) {
-    if (/\bD_GATE_PASSED\b|\bQ_GATE_PASSED\b/.test(line) && !/不得|禁止|不判|严禁/.test(line)) {
+    if (gateRe.test(line) && !/不得|禁止|不判|严禁/.test(line)) {
       assert(false, `${name} 出现门控字面量：${line.trim()}`);
-    }
-    // PASS 作为独立词出现即违规（结论只能由 evaluate_gates.js 产生）
-    if (/(?<![A-Z_])PASS(?![A-Z_])/.test(line) && !/不得|禁止|不判|严禁/.test(line)) {
-      assert(false, `${name} 出现 PASS 字面量：${line.trim()}`);
     }
   }
 }

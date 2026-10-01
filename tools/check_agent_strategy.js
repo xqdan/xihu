@@ -16,6 +16,11 @@
 const fs = require('fs');
 const path = require('path');
 
+// 门控字面量的判据只有一处定义：evaluate_gates.js 的 FORBIDDEN_GATE_LITERALS。
+// 这里不再自己写正则——同一判据两份实现，改一份另一份不动，而这个检查的失效
+// 方式正是"某个字面量不再被拦"。
+const { gateLiteralPattern } = require('../integration/governance/evaluate_gates');
+
 const root = path.resolve(__dirname, '..');
 const ROSTER = path.join(root, 'teams/council/inputs/agent_roster.json');
 const STRATEGY_DIRS = [
@@ -103,20 +108,25 @@ function checkRosterFields(roster) {
 
 // ---- 2. 策略正文文件的边界 ----
 
-const PATH_LIKE = [
-  /\b(?:out|teams|integration|docs|archive|references|tests|tools)\/[A-Za-z0-9_.@/-]+/,
-  /\b[A-Za-z0-9_.@/-]+\.(?:json|js|md|html|pdf|csv|yaml|yml)\b/,
-  /(?:^|\s)\/Users\//,
-  /(?:^|\s)\.\/[A-Za-z0-9_]/,
-];
+// 路径形态：带目录的路径，或带已知扩展名的裸文件名。
+// 裸文件名这一支是必要的——"读 k3_mc_baseline.json" 一样是编排指令，
+// 与"读 out/xxx.json"没有区别。曾经这里要求路径里必须有 `/`，
+// 于是裸文件名一律漏网；12 份策略正文当时恰好一个文件名都没写，
+// 所以那个洞没被触发，但它是敞着的。
+const PATH_SHAPE = '(?:[A-Za-z0-9_./-]+\\/)?[A-Za-z0-9_.-]+\\.(?:json|js|md|html|pdf|csv|yaml|yml|txt)\\b';
 
 // 只判"指示读/写某个路径"这类不可判定的违规。
 // 策略里引用规格文件或 ADR 作为证据来源是必要的（如“面积须取自 k3_mc_baseline.json”），
 // 那不是编排逻辑，所以不能见到路径就报错——否则会把正确的策略也判违规。
+// 判据因此落在**动词**上：有没有读写动词，而不是有没有文件名。
+const PATH_READ_VERB = '(?:读|读取|打开|加载|扫|扫描|遍历|看)';
+const PATH_WRITE_VERB = '(?:写|写入|落盘|保存|产出到|输出到|生成到)';
+
 const PATH_DIRECTIVE = [
-  /(?:读|读取|打开|加载|扫|扫描|遍历|看)\s*[`"']?[A-Za-z0-9_./-]*\//,
-  /(?:写|写入|落盘|保存|产出到|输出到|生成到)\s*[`"']?[A-Za-z0-9_./-]*\//,
-  /\b(?:read|load|open|scan|write|save|dump|emit)\s+into\s+[A-Za-z0-9_./-]+\//,
+  new RegExp(`${PATH_READ_VERB}\\s*[\`"']?${PATH_SHAPE}`),
+  new RegExp(`${PATH_WRITE_VERB}\\s*[\`"']?${PATH_SHAPE}`),
+  /\b(?:read|load|open|scan)\s+(?:the\s+)?[A-Za-z0-9_./-]*\/[A-Za-z0-9_./-]+/,
+  /\b(?:write|save|dump|emit)\s+(?:to\s+|into\s+)?[A-Za-z0-9_./-]*\/[A-Za-z0-9_./-]+/,
   /(?:^|\s)\/Users\//,
 ];
 
@@ -128,8 +138,6 @@ const CONTRACT_DIRECTIVE = [
   /^\s*(?:readPaths|writePaths|allowedPaths|outputPath)\s*:/,
   /\b(?:readPaths|writePaths|allowedPaths|outputPath)\b/,
 ];
-
-const GATE_LITERAL = /\b(?:PASS|D_GATE_PASSED|Q_GATE_PASSED)\b/;
 
 function strategyFiles() {
   const files = [];
@@ -149,7 +157,7 @@ function checkStrategyFile(file) {
 
   lines.forEach((line, i) => {
     const at = `${rel}:${i + 1}`;
-    if (GATE_LITERAL.test(line) && !/不得|禁止|不判|严禁/.test(line)) {
+    if (gateLiteralPattern().test(line) && !/不得|禁止|不判|严禁/.test(line)) {
       fail(at, '出现 PASS / *_GATE_PASSED 字面量；门控结论只能由 evaluate_gates.js 产生');
     }
     if (/^\s*```/.test(line)) {
@@ -221,21 +229,29 @@ function checkVerdictConsumption(strategies, roster) {
   }
 }
 
-function knownVerdicts(roster) {
-  return new Set(roster.verdictValues);
-}
-
-// ---- 4. --self-test：注入假策略，证明校验会报错 ----
+// ---- 4. --self-test：注入假策略，证明校验会报错、且不误报 ----
 
 function selfTest() {
   const probeDir = STRATEGY_DIRS[0];
   const created = [];
   try {
     fs.mkdirSync(probeDir, { recursive: true });
-    const cases = [
+
+    // 违规样本：每一个都必须被识别。改判据时这一组只会变长，不会变短。
+    const violating = [
       {
         name: '__selftest_path_leak.md',
         body: '跑之前先读 out/direction/architecture_candidates.json 拿到候选。\n',
+      },
+      {
+        // 裸文件名与带目录的路径一样是编排指令。这一条曾经漏网：
+        // 旧判据要求路径里必须有 `/`，而"读 x.json"没有。
+        name: '__selftest_bare_filename.md',
+        body: '跑之前先读 k3_mc_baseline.json 拿到 estimatedAreaMm2。\n',
+      },
+      {
+        name: '__selftest_write_directive.md',
+        body: '结论写入 ledger.json。\n',
       },
       {
         name: '__selftest_contract_leak.md',
@@ -250,25 +266,69 @@ function selfTest() {
         body: '参考实现：\n```js\nif (x) return PASS\n```\n',
       },
     ];
-    for (const c of cases) {
+
+    // 合法样本：每一个都必须放行。这一组守的是**误报**。
+    // 误报的代价不是"多报几条"：正文被判违规之后，所有人会去关掉这个检查，
+    // 而不是去改策略，于是检查本身消失。所以"不误伤"和"能拦住"一样是判据的一部分。
+    const legal = [
+      {
+        // 硬线第 2 条允许引用规格文件作为证据来源（见 PATH_DIRECTIVE 上方注释）。
+        // 判据落在动词上：这句话里没有读写动词，所以放行。
+        name: '__selftest_legal_evidence_ref.md',
+        body: '- 面积须取自 k3_mc_baseline.json 的 estimatedAreaMm2，不得手工估值。\n',
+      },
+      {
+        name: '__selftest_legal_adr_ref.md',
+        body: '- 必须引用唯一硬件规格文件（ADR-0021）。出现第二份规格即为违规。\n',
+      },
+      {
+        // 禁止句里必须能提到门控字面量——12 份正文都这么写。
+        // 这一条守的是豁免规则（!/不得|禁止|不判|严禁/），不是字面量检查本身。
+        name: '__selftest_legal_prohibition.md',
+        body: '## 禁止\n\n- 不得输出 TPS/usr，不得写 PASS 或 D_GATE_PASSED 字面量。\n',
+      },
+      {
+        // 有读动词但没有路径：说的是"不许读什么"，不是"去读哪里"。
+        name: '__selftest_legal_verb_without_path.md',
+        body: '- 不得读设计过程的中间产物，只能读已落盘的最终产物。\n',
+      },
+      {
+        name: '__selftest_legal_prose.md',
+        body: '- 频率、电压、面积密度必须引用规格文件的字段，不得手工估值。\n',
+      },
+    ];
+
+    const all = [...violating, ...legal];
+    for (const c of all) {
       const p = path.join(probeDir, c.name);
       fs.writeFileSync(p, c.body);
       created.push(p);
     }
 
     const roster = loadRoster();
-    const { strategies } = checkRosterFields(roster);
+    checkRosterFields(roster);
     for (const p of created) checkStrategyFile(p);
 
+    const rel = (c) => path.relative(root, path.join(probeDir, c.name));
     const caught = new Set(failures.map((f) => f.split(':')[0]));
-    const expected = new Set(created.map((p) => path.relative(root, p)));
-    const missed = [...expected].filter((e) => !caught.has(e));
-    if (missed.length) {
-      console.error('SELF-TEST FAILED：以下被注入的策略未被识别为违规');
-      for (const m of missed) console.error(`  MISSED ${m}`);
+    const missed = violating.map(rel).filter((e) => !caught.has(e));
+    const falsePositives = legal.map(rel).filter((e) => caught.has(e));
+
+    if (missed.length || falsePositives.length) {
+      console.error('SELF-TEST FAILED');
+      for (const m of missed) console.error(`  MISSED        ${m}（应拦未拦）`);
+      for (const f of falsePositives) console.error(`  FALSE POSITIVE ${f}（合法却被拦）`);
+      if (falsePositives.length) {
+        console.error('  该文件命中的判据：');
+        for (const line of failures) {
+          if (falsePositives.some((f) => line.startsWith(`${f}:`))) console.error(`    ${line}`);
+        }
+      }
       return 1;
     }
-    console.log(`SELF-TEST PASS：4 类注入全部被识别（路径泄漏 / 契约泄漏 / 门控字面量 / 代码块）`);
+    console.log(`SELF-TEST PASS：${violating.length} 类注入全部被识别`
+      + `（路径泄漏 / 裸文件名 / 写指令 / 契约泄漏 / 门控字面量 / 代码块），`
+      + `${legal.length} 类合法正文全部放行`);
     return 0;
   } finally {
     for (const p of created) { try { fs.unlinkSync(p); } catch (_) {} }
