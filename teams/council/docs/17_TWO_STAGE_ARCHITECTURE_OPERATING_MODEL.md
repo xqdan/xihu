@@ -1,8 +1,27 @@
 # 两阶段架构设计 Operating Model
 
 版本：2026-09-21  
-状态：`PROPOSED / ARCHITECTURE OPERATING MODEL v0.1`
+状态：`SUPERSEDED（方法论保留） / ARCHITECTURE OPERATING MODEL v0.1`
+
+> **本文档描述的方法论仍然有效，但流程已不再由“agent 之间互相交接”实现。**
+> 现行流程见 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md)：
+> agent 定义只是无状态策略集合，设计过程由 `integration/orchestration/` 下的 workflow 承载，
+> 每个阶段一格、由脚本注入输入并落盘产物。阅读本文时请把“某个 agent 做某件事”
+> 读成“某个 stage 的 workflow 调起某个策略实例做某件事”。
+> 本文保留的价值在于：它写清了每个阶段要回答的问题、退出条件和证据要求——
+> 那些判据没有变，变的只是谁来承载它们。
+
 > 详细设计的工作包化组织见 [`19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md`](19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md)。Stage B 不再被视为 Q1-Q9 的无条件串行链，而是 B0 控制面、B1 量化闭环、B2 物理事件、B3 执行/PPA、B4 TPS 集成、B5 验证与反馈六个可门控工作包。
+
+## 0. 关于本文中的 D\* 与 Q\*
+
+**`A0`/`D1`–`D7`/`Q1`–`Q9` 是阶段名，不是 agent。**
+
+它们是本文编写时（2026-09-21）用来给工作流分段的一套编号：一个编号代表"某一类设计工作及其退出条件"，不代表一个常驻角色、一份 prompt 或一个可调用的实例。
+
+现行实现里，这些编号一律落在 workflow 的 stage 上（见 `integration/orchestration/` 与 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md)），而实际"干活"的是 `teams/council/strategies/` 下的 12 个策略（architect / integrator / invariant-checker / framing-critic / gate-keeper / verifier / compute-/memory-/comm-/software-/physical-/model-expert）。同一个策略可以在多个 stage 上被调起；一个 stage 也可以调起多个策略实例。
+
+因此本文的读法是：**"D3 输出 compute envelope" 的意思是"compute 方向那一段工作产出一份 compute envelope"**，而不是"存在一个叫 D3 的 agent"。凡需要知道"谁在做"的地方，以 roster 与 workflow 为准。
 
 ## 1. 核心设计思路
 
@@ -41,7 +60,9 @@ Stage B 的目的才是回答：
 
 ### 2.1 Agent 层级
 
-| 层级 | Agent | 责任 | 主要输出 |
+下表左列的 `A0`/`D1`–`D7`/`Q1`–`Q9` **是阶段名，不是 agent**（见 §0）。表中"责任"一列描述的是该阶段的工作内容，不是某个角色的职责说明。
+
+| 层级 | 阶段编号 | 责任 | 主要输出 |
 |---|---|---|---|
 | L0 | A0 Chief Architect / Integrator | 维护假设、候选、门控和架构决策 | candidate register、ADR、gate status |
 | L1 | D1 Workload Direction | 模型族、decode/prefill、粗 FLOP/bytes、关键算术强度区间 | workload direction sheet |
@@ -214,6 +235,8 @@ next_detail_questions
 
 ### 4.4 Stage A 的退出门槛 D-Gate
 
+（`D-Gate` 是**门控名**，不是 agent，也不是一个可签发的角色。门控结论只由 `integration/governance/evaluate_gates.js` 计算。）
+
 只有候选同时满足以下条件，才进入 Stage B：
 
 1. 7-reticle area 守恒；
@@ -266,6 +289,8 @@ manifest
 - run_id/provenance/golden trace。
 
 ### 5.4 Stage B 退出门槛 Q-Gate
+
+（同 `D-Gate`：`Q-Gate` 是**门控名**，不是 agent，结论只由 `integration/governance/evaluate_gates.js` 计算。）
 
 1. 三模型逐层输入可生成 DAG 或明确 blocked；
 2. TP8/16/32 可执行，不再硬编码 TP32；
@@ -329,6 +354,8 @@ Rollback condition
 ```
 
 ## 7. Agent 运作规则
+
+（本节的 `D*`/`Q*`/`A0` 同样是阶段名，见 §0；"Stage A Agent"读作"Stage A 各阶段的工作"。）
 
 1. Stage A Agent 只修改 `out/direction/`、`integration/planning/` 和 `integration/pipelines/stage_a.js`。
 2. Stage B Agent 只修改 `teams/council/docs/detailed/`、`out/detailed/`、`integration/detailed/` 和 `integration/pipelines/stage_b.js`。

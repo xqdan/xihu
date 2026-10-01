@@ -1,7 +1,25 @@
 # 详细架构设计 Operating Model
 
 版本：2026-09-22  
-状态：`BASELINE / DETAIL DESIGN FLOW v0.2`
+状态：`SUPERSEDED（工作包划分保留） / DETAIL DESIGN FLOW v0.2`
+
+> **B0–B5 的工作包划分与退出条件仍然有效，但它不再由"九个 Q agent 互相 handoff"实现。**
+> 现行流程见 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md)：
+> `integration/orchestration/` 下的 `design.*.workflow.js` 一个 stage 一格，
+> 脚本注入已落盘产物、收下返回值、自己落盘；被调起的是 `teams/council/strategies/` 下的策略实例，
+> 不持有路径也不持有输出契约。
+> 本文的读法：**"Qx 输出 yyy"读作"xxx 那一段工作产出一份 yyy"**。
+
+## 0. 关于本文中的 Q\* 与 B\*
+
+**`Q1`–`Q9` 是阶段名，不是 agent；`B0`–`B5` 是工作包名，不是 agent。**
+
+本文写成于 2026-09-22，用 `Q*` 编号指代详细设计中的各段工作，用 `B*` 把这段工作组织成六个可门控工作包。这两套编号现在**都只作为阶段/工作包名保留**：
+
+- 本文中每一处 `Q1`…`Q9` 指的是"某一段详细设计工作及其退出条件"，不对应 `teams/council/strategies/` 里的任何文件；
+- §2 表格"主要 Agent"一列已按此改写为阶段编号；
+- §8.2 决策分支里的 `LOCAL_DETAIL_FIX` / `DIRECTION_BACKFLOW` / `PPA_DIRECTION_BACKFLOW` / `BLOCKED_CONFIG` / `PERFORMANCE_MISS` 是**裁决枚举**，由 workflow 消费，不是某个 agent 的名字；
+- 门控结论（Q-Gate、`PASS`）不由任何 agent 给出，只由 `integration/governance/evaluate_gates.js` 计算。
 
 ## 1. 设计原则
 
@@ -36,7 +54,7 @@ B0 控制面与候选绑定
 
 ## 2. Stage B 的层级结构
 
-| 层级 | 工作包 | 核心问题 | 主要 Agent | 主要输出 |
+| 层级 | 工作包 | 核心问题 | 涉及阶段 | 主要输出 |
 |---|---|---|---|---|
 | L0 | B0 Control Plane | 本次到底量化哪个候选、哪个模型和哪个 profile？ | A0/Q0 | detail run manifest、provenance |
 | L1 | B1 Quantification | 工作负载、算术强度、Roofline 和资源 sizing 是否支持方向？ | Q1/Q2 | manifest、DAG、operator ledger、sizing |
@@ -274,6 +292,8 @@ Q9 负责证据检查，A0 负责决策，不允许 Q8 自己宣布通过。
 9. 细粒度结果满足 PPA、thermal、RAS 和 P99 约束。
 
 ### 8.2 决策分支
+
+下图的右侧是**裁决枚举**（由 workflow 消费），不是 agent 名；`Q-Gate`/`PASS` 是门控名与门控结论，只由 `integration/governance/evaluate_gates.js` 计算。
 
 ```text
 Q-Gate

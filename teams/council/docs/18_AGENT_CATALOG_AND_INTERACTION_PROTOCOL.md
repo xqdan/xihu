@@ -1,7 +1,33 @@
 # Agent Catalog and Interaction Protocol
 
 版本：2026-09-21  
-状态：`BASELINE / AGENT CONTRACT v0.1`
+状态：`SUPERSEDED（协议保留） / AGENT CONTRACT v0.1`
+
+> **本文的交互协议仍然有效，但"agent 目录"这一层已经不存在了。**
+> 现行流程见 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md)：
+> agent 定义只是无状态策略集合（`teams/council/agent_roster.json` 下 12 个策略，
+> 正文在 `teams/council/strategies/`），不持有路径、不持有输出契约、不产出决定性数字；
+> 所有上下文由 `integration/orchestration/` 下的 workflow 在运行时注入。
+> 读本文时请把"某个 Agent 的输出"读成"某个 stage 的落盘产物"，
+> 把"Agent 之间的交互"读成"workflow 在阶段之间传递的输入"。
+> 本文保留的价值：§2 的共享对象与生命周期、§5 的交互规则、§7 的任务卡模板，
+> 这三部分描述的是**约束**，约束没有变，变的只是承载它的东西。
+
+## 0. 关于本文中的 D\* 与 Q\*
+
+**`A0`/`D1`–`D7`/`Q1`–`Q9` 是阶段名，不是 agent。**
+
+本文写成于 2026-09-21，当时把设计工作按"方向级 D\* / 详细级 Q\*"编号，
+并用这些编号指代承担该段工作的角色。这个用法现在**只保留为阶段编号**：
+本文中每一处 `D1`…`Q9` 指的都是"某一段工作及其退出条件"，
+不是一份可以被调起的角色定义，也不对应 `teams/council/strategies/` 里的任何文件。
+
+- 现行"谁在什么情况下被调起"由 roster 决定：12 个策略，按业务分（compute / memory / comm / physical / software / model / architect / integrator / invariant-checker / framing-critic / gate-keeper / verifier）；
+- 现行"某段工作怎么做"由 `integration/orchestration/design.*.workflow.js` 决定：一个 stage 一个 workflow，脚本注入输入、收下返回值、落盘产物；
+- 门控结论（D-Gate / Q-Gate / PASS）在任何地方都不由"某个 agent"给出，只由 `integration/governance/evaluate_gates.js` 计算。
+
+因此 §3 的各小节应读作**阶段说明**："3.2 D1：Workload Direction"是"方向级工作负载那一段要产出什么"，
+不是"存在一个叫 D1 的 agent"。同上，§3 里"**职责**/**输入**/**输出**/**约束**/**交互**"五个小标题描述的是阶段契约。
 
 ## 1. 目的
 
@@ -28,6 +54,9 @@
 
 ## 2. 共享对象和生命周期
 
+> 本节表格 Producer/Consumer 两列里的 `D*`/`Q*`/`A0` 是**阶段名，不是 agent**（见 §0）：
+> "Producer = D1"读作"由方向级工作负载那一段产出"。
+
 ### 2.1 共享对象
 
 | 对象 | Producer | Consumer | 生命周期 |
@@ -51,7 +80,7 @@
   "schemaVersion": "...",
   "runId": "...",
   "stage": "direction | quantification",
-  "agentId": "D1 | ... | Q9 | A0",
+  "agentId": "阶段名（D1…Q9、A0），不是策略名",
   "candidateId": "...",
   "modelId": "K3 | GLM-5.2 | DeepSeek-V4-Pro",
   "phase": "decode | prefill | both",
@@ -72,6 +101,12 @@
 ```
 
 ## 3. Agent 角色定义
+
+> **本节各小节的编号是阶段名，不是 agent**（见 §0）。
+> `3.1 A0` … `3.17 Q9` 描述的是"那一段工作要产出什么、受什么约束"；
+> 现行流程里真正被调起的是 `teams/council/strategies/` 下的 12 个策略实例，
+> 由 `integration/orchestration/` 的 workflow 在对应 stage 上注入输入。
+> 本节的价值在于它写清了每段工作的输入/输出/约束——这部分是契约，没有变。
 
 ## 3.1 A0：Chief Architect / Integrator
 
@@ -719,6 +754,12 @@ Q9 -> A0 -> gate decision
 ```
 
 ## 4. 高层设计流程：Agent 交互时序
+
+> 下图中的 `A0`/`D1`–`D7`/`Q1`–`Q9`/`D-Gate`/`Q-Gate` 全部是**阶段名与门控名，不是 agent**
+> （见 §0）。读法：箭头表示"上一段的产物是下一段的输入"，
+> 而不是"某个角色把东西交给另一个角色"。
+> 现行实现里这条链路由 `integration/orchestration/` 下的 workflow 串起，
+> 每格自己落盘产物，下一格从 `out/` 读——不通过对话或内存传递。
 
 ```text
 A0 初始化目标/约束/版本

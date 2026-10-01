@@ -102,4 +102,54 @@ for (const team of ['model', 'hardware', 'software']) {
   JSON.parse(fs.readFileSync(path.join(root, 'teams', team, 'contract.json'), 'utf8'));
 }
 
-console.log(`PASS repository structure: ${files.length} files, all local requires and links resolve, no cross-team or archive dependencies`);
+// ---------------------------------------------------------------------------
+// Docs vs flow: the operating-model documents describe stage names, not agents.
+//
+// The refactor (teams/council/docs/22_*) moved the design process into
+// integration/orchestration/ workflows and reduced an "agent" to a stateless
+// policy. 17/18/19 predate that and still label their sections D1..D7 / Q1..Q9.
+// Those labels are kept as *stage names*; if a future edit turns one of them
+// back into a role ("the D3 agent decides..."), the docs and the roster start
+// disagreeing and readers go looking for an agent that does not exist.
+// ---------------------------------------------------------------------------
+const FLOW_DOC = 'teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md';
+const STAGE_NAME_DOCS = [
+  'teams/council/docs/17_TWO_STAGE_ARCHITECTURE_OPERATING_MODEL.md',
+  'teams/council/docs/18_AGENT_CATALOG_AND_INTERACTION_PROTOCOL.md',
+  'teams/council/docs/19_DETAILED_ARCHITECTURE_OPERATING_MODEL.md',
+];
+
+assert(fs.existsSync(path.join(root, FLOW_DOC)), `Missing flow document: ${FLOW_DOC}`);
+
+// Every doc that uses the old notation must say, in the document itself, that
+// the notation is a stage name and must point at the document that supersedes it.
+const notSuperseded = [];
+for (const doc of STAGE_NAME_DOCS) {
+  const text = fs.readFileSync(path.join(root, doc), 'utf8');
+  if (!text.includes('阶段名，不是 agent')) notSuperseded.push(`${doc}: 未标注 D*/Q* 是阶段名`);
+  if (!text.includes('22_AGENT_WORKFLOW_REFACTOR_PLAN.md')) notSuperseded.push(`${doc}: 未指向 22 号文档`);
+  if (!/SUPERSEDED/.test(text)) notSuperseded.push(`${doc}: 状态未标 SUPERSEDED`);
+}
+assert.deepEqual(notSuperseded, [], `Stage-name / supersession markers:\n${notSuperseded.join('\n')}`);
+
+// AGENTS.md and the two READMEs are the entry points; a reader who lands on any
+// of them must not be able to conclude that D*/Q* are agents.
+const entryPoints = ['AGENTS.md', 'docs/README.md', 'docs/architecture/README.md'];
+const entryProblems = [];
+for (const doc of entryPoints) {
+  const text = fs.readFileSync(path.join(root, doc), 'utf8');
+  if (!text.includes(FLOW_DOC)) entryProblems.push(`${doc}: 未指向 ${FLOW_DOC}`);
+  if (!text.includes('阶段名，不是 agent')) entryProblems.push(`${doc}: 未写明 D*/Q* 是阶段名`);
+}
+assert.deepEqual(entryProblems, [], `Entry-point flow pointers:\n${entryProblems.join('\n')}`);
+
+// The stage-name claim has to stay true: the roster still defines exactly the
+// 12 strategies the docs say actually run, and no D*/Q* label leaked into it.
+const roster = JSON.parse(fs.readFileSync(path.join(root, 'teams/council/inputs/agent_roster.json'), 'utf8'));
+const strategyNames = roster.strategies.map(s => s.agentId);
+const leakedStageNames = strategyNames.filter(n => /^[DQ]\d+$/.test(n) || n === 'A0');
+assert.deepEqual(leakedStageNames, [], `D*/Q*/A0 are stage names, not roster strategies:\n${leakedStageNames.join('\n')}`);
+assert.strictEqual(new Set(strategyNames).size, strategyNames.length, 'agent_roster.json 有重名策略');
+assert(strategyNames.length === 12, `agent_roster.json 的策略数应为 12，实为 ${strategyNames.length}；文档里的 D*/Q* 由此才能成立`);
+
+console.log(`PASS repository structure: ${files.length} files, all local requires and links resolve, no cross-team or archive dependencies, and the flow docs mark D*/Q* as stage names`);
