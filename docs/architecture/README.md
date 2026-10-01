@@ -6,6 +6,14 @@
 
 版本：2026-09-26。
 
+> **流程文档的权威顺序**：设计流程以
+> [`teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](../../teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md) 为准。
+> `17`/`18`/`19` 描述的是被它取代的方法论：阶段划分、退出条件与证据要求仍然成立，
+> 但其中的 `A0`/`D1`–`D7`/`Q1`–`Q9` 是**阶段名，不是 agent**；
+> 现行实现里"谁在什么阶段被调起"由 `teams/council/agent_roster.json` 与
+> `integration/orchestration/design.*.workflow.js` 决定。
+> 本目录其余章节（架构结论、TPS 基线、硬件规格、contracts）不受该次重构影响。
+
 本目录把现有搜索和模拟器整理成一套可逐步冻结的芯片设计文档。硬件规格只有一份（P1，ADR-0021）。
 目标交付深度为**单元级**：明确 Tensor Core、Vector Core、TMA、SRAM、
 NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的数量、
@@ -103,6 +111,7 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 
 | 文档 | 负责范围 |
 | --- | --- |
+| [22_AGENT_WORKFLOW_REFACTOR_PLAN.md](../../teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md) | **现行流程**：agent 只是无状态策略集合，设计过程由 `integration/orchestration/` 下的 workflow 承载；四条硬边界、`design.*` 各格定义与收口判据 |
 | [15_MODELING_REVIEW_BY_AGENT.md](../../teams/council/docs/15_MODELING_REVIEW_BY_AGENT.md) | 按 agent 的建模评审 |
 | [16_ARITHMETIC_INTENSITY_AGENT.md](../../teams/council/docs/16_ARITHMETIC_INTENSITY_AGENT.md) | 算术强度 / Roofline / sizing agent |
 | [17_TWO_STAGE_ARCHITECTURE_OPERATING_MODEL.md](../../teams/council/docs/17_TWO_STAGE_ARCHITECTURE_OPERATING_MODEL.md) | Stage A 方向 / Stage B 量化两阶段流程 |

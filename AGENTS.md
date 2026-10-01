@@ -8,6 +8,12 @@
 
 ## 1. Team ownership
 
+> **流程以 [`teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md) 为准。**
+> agent 定义只是无状态策略集合，不持有路径、不持有输出契约、不产出决定性数字；
+> 设计过程由 `integration/orchestration/design.*.workflow.js` 承载，运行时上下文全部由 workflow 注入。
+> `17`/`18`/`19` 是被该文档取代的方法论文档；其中的 `A0`/`D1`–`D7`/`Q1`–`Q9` 与
+> 本文下面的 `D1–D7`/`Q1–Q9` 一样，**是阶段名，不是 agent**。
+
 | Team | Directory | Ownership |
 |---|---|---|
 | Hardware | `teams/hardware/`（`inputs/` 硬件基线规格，`src/` resource profiles 与 compute node，`docs/` 硬件单元设计文档） | Package/floorplan, AI Core, SRAM/TMA, MC, NoC/Die-to-Die, Collective/RDMA, Comm Core, PPA/RAS |
@@ -23,7 +29,7 @@
 - `out/` 只放 pipeline 生成物，不手工编辑；`archive/` 只读，不被活代码引用。
 - 设计文档放在签核它的团队目录：硬件单元设计 `teams/hardware/docs/`，软件设计 `teams/software/docs/`，模型部署方案 `teams/model/docs/deployment/`；`docs/architecture/` 只放系统级、跨团队文档。
 
-D1–D7 and Q1–Q9 remain compatibility aliases for the flow, but new work items must use `HW-*`, `SW-*`, `MODEL-*`, `ARCH-*`, or `VV-*` IDs.
+D1–D7 and Q1–Q9 are **stage names, not agents** — they label a segment of the design flow and its exit conditions, nothing more. Same for A0 and for the `B0`–`B5` work packages in `19`. The strategies that actually run are the 12 in `teams/council/agent_roster.json` (bodies under `teams/council/strategies/`), invoked per stage by the workflows in `integration/orchestration/`. New work items must use `HW-*`, `SW-*`, `MODEL-*`, `ARCH-*`, or `VV-*` IDs — never a `D*`/`Q*` label, which would re-invent the role that no longer exists.
 
 ## 2. Parallel work rules
 
@@ -61,3 +67,16 @@ D1–D7 and Q1–Q9 remain compatibility aliases for the flow, but new work item
 - 性能结论包含模型版本、输入假设、seed 和单位；
 - 规划估算、validated replay、silicon observation 明确区分；
 - PR 可以由不熟悉上下文的 reviewer 独立复现。
+
+**在现行流程（22 号文档）下，上面五条逐条仍然成立**，只是检查方式变了：
+
+| 第几条 | 现在的落点 |
+|---|---|
+| 一致 | `out/` 下的产物由脚本/workflow 生成、被测试用 sha256 钉住；文档与产物的口径由 `tests/governance/` 下的测试对齐 |
+| `npm test` / `check:structure` | 不变，仍是合并前的硬门槛 |
+| 模型版本/假设/seed/单位 | 产物里的 provenance 字段（`sourceCommit`、`manifest hash`、`runId`、`seed`、`profile`）；缺任一项，`design.verify` 的 V-PROVENANCE 一类检查判 `unverifiable`，而检不了不作为通过处理 |
+| 三种结论分开 | profile 分离是 `design.verify` 的 V-PROFILE 检查项；`MC320`/`MC640` 混用、peak 当 sustained、粗估当细估都是失败项 |
+| 可独立复现 | 落盘产物是设计者唯一无法再解释的形态——验证只读 `out/` 下的产物，不读设计过程的申报、候选与草稿 |
+
+推论：**结论要能被引用，就必须先落进 `out/`**，且只能由脚本或 workflow 生成。
+写在对话里、写在 `scratch/` 下（`design.explore` 的产物）或写在某个 agent 的自述里，都不构成证据。

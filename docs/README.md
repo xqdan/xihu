@@ -14,6 +14,9 @@
 - 团队设计文档（按签核团队存放）：硬件单元设计 [`teams/hardware/docs/`](../teams/hardware/docs/)，软件设计 [`teams/software/docs/`](../teams/software/docs/)，模型部署方案 [`teams/model/docs/deployment/`](../teams/model/docs/deployment/README.md)。
 - 架构决策记录（ADR）：[`teams/council/adr/`](../teams/council/adr/README.md)。
 - 运行模型、agent 目录与 Stage B 详细设计规格：[`teams/council/docs/`](../teams/council/docs/)。
+  其中 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](../teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md)
+  是**现行流程的唯一权威描述**（agent 是无状态策略集合，设计过程由 `integration/orchestration/` 下的 workflow 承载）；
+  `17`/`18`/`19` 三份是被它取代的方法论文档——阶段划分、退出条件与证据要求仍然有效，但其中的 `D*`/`Q*` 是**阶段名，不是 agent**。
 
 新增详细规格时，优先按 `ARCH-xx` 编号放入对应模块，并保持每份文档具有：
 范围、需求、接口、预算、正常/错误流程、模型、验证和未决项。
