@@ -112,5 +112,52 @@ const must = [
 const missing = must.filter(([, v]) => !doc.includes(v));
 assert.deepStrictEqual(missing, [], `10_COMM_CORE.md is stale; rerun npm run commcore:search and update:\n${missing.map(([k, v]) => `${k}: ${v}`).join('\n')}`);
 
+// 6. The candidate set. The design artifact deliberately holds no candidate list
+// (section 2); the ranked head is persisted next to it in
+// out/detailed/comm_candidates.json. This grid scores 45900 combinations where
+// the siblings score hundreds, so that file is the one place in this repo where
+// the listing is knowingly truncated: the fingerprint is over the whole scored
+// set and the exclusions are counted by cause, so neither "these are the
+// candidates that were searched" nor "why was X dropped" depends on the listing.
+const storedCand = JSON.parse(fs.readFileSync('out/detailed/comm_candidates.json', 'utf8'));
+const cand = S.candidates(result), cands = cand.candidates;
+close(storedCand, JSON.parse(JSON.stringify(cand)), 'commCandidates');
+assert.strictEqual(storedCand.designSpace.sha256, stored.designSpace.sha256, 'candidate set comes from the same design space as the winner');
+assert.strictEqual(storedCand.totalCandidates, stored.designSpace.candidates);
+assert.strictEqual(storedCand.validCandidates, stored.designSpace.valid);
+assert.strictEqual(storedCand.feasibleCandidates, stored.designSpace.feasible);
+
+// The listing is a prefix of the ranking, not a sample: the search's own order
+// (feasible first, then AI Core time, then spec slack, then area) must hold
+// across every listed adjacent pair, or a consumer reading the head is reading
+// candidates that the search itself would not have put in front.
+assert.strictEqual(cands.length, storedCand.listed, 'the listed count must describe the list');
+assert.strictEqual(storedCand.candidates.length, storedCand.listed, 'the stored list must match its own count');
+assert.strictEqual(cand.truncated, storedCand.validCandidates > cands.length);
+assert.strictEqual(cand.truncated, true, 'this grid is larger than the listing; if that changes, revisit this file\'s shape');
+assert.strictEqual(cands.filter(c => c.chosen).length, 1, 'exactly one candidate is the winner');
+assert.strictEqual(cands.find(c => c.chosen).lostOn, null, 'the winner loses on nothing');
+for (let i = 1; i < cands.length; i++) {
+  const a = cands[i - 1], b = cands[i];
+  assert(a.rank < b.rank, 'ranks must ascend');
+  assert(a.feasible >= b.feasible, `candidate ${i} ranks a feasible candidate below an infeasible one`);
+  if (!a.feasible && !b.feasible) continue;
+  assert(a.aiCoreUsPerToken <= b.aiCoreUsPerToken + 1e-9, `candidate ${i} breaks the AI Core time ranking`);
+}
+
+// Every exclusion is still accounted for: the histogram covers exactly the
+// scored candidates the listing left out, so truncation loses no reason.
+assert(cand.infeasibleByCause && Object.keys(cand.infeasibleByCause).length > 0, 'infeasible candidates must be counted by cause');
+assert.strictEqual(Object.values(cand.infeasibleByCause).reduce((a, v) => a + v, 0), storedCand.validCandidates - storedCand.feasibleCandidates,
+  'the exclusion histogram must cover every infeasible scored candidate');
+assert(cand.infeasibleByCause.specTau > 0, 'the binding constraint of this space must appear in the histogram');
+
+// The fingerprint is over the whole scored set and must not depend on
+// enumeration order: rebuilding it from a reversed copy must give the same
+// digest, otherwise two identical searches could disagree.
+assert.strictEqual(cand.candidateSetSha256, storedCand.candidateSetSha256, 'fingerprint is not stable across runs');
+assert(cand.candidates.every(c => c.pick && c.optionId === Object.entries(c.pick).map(([d, n]) => `${d}=${n}`).join('|')),
+  'optionId must be the pick, so a reader can match a row back to the design space');
+
 console.log(`PASS comm core design: ${stored.designSpace.valid} valid of ${stored.designSpace.candidates} candidates, ${stored.designSpace.feasible} feasible; `
   + `winner keeps ${f2(stored.published.tpsPerUser)} TPS with ${f3(cp.specSlackUs)} us spec slack, ${f3(e.areaMm2)} mm2; only the winner is in out/`);

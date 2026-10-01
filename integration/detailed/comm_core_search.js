@@ -217,10 +217,30 @@ function lostOn(a, w) {
   return 'tie';
 }
 
+const optionId = pick => Object.entries(pick).map(([d, n]) => `${d}=${n}`).join('|');
+
+// Compact projection of an evaluate() result: exactly the fields the ranking
+// reads, plus the numbers a reader needs to see why a candidate lost. The full
+// result carries the per-class breakdown (classes, steps, area) and this grid
+// scores 45900 candidates, so retaining the full objects is hundreds of
+// megabytes; the projection is what candidates() needs and nothing more.
+const score = e => ({
+  optionId: optionId(e.pick), pick: {...e.pick}, feasible: e.feasible, violations: [...e.violations],
+  aiCoreUsPerToken: e.aiCoreUsPerToken, specSlackUs: e.specSlackUs, areaMm2: e.areaMm2,
+  controlUs: e.classes.reduce((a, k) => a + k.controlUs, 0), slowest: {...e.slowest},
+  collectivesPerToken: e.load.collectivesPerToken, wqesPerToken: e.load.wqesPerToken,
+  wireBytesPerToken: e.load.wireBytesPerToken, utilization: e.load.utilization,
+  graphBytes: e.load.graphBytes, graphStoredLocally: e.load.graphStoredLocally,
+});
+
 function search(ctx = context()) {
   const D = ctx.space.dimensions, dims = Object.keys(D);
   let best = null, candidates = 0, validCount = 0, feasible = 0;
   const perOption = Object.fromEntries(dims.map(d => [d, {}]));
+  // Every valid combination, as a scored projection. Invalid combinations never
+  // reach here -- valid() drops them before evaluation, so they have no score to
+  // report and appear only as the gap between counts.candidates and counts.valid.
+  const all = [];
   const walk = (i, pick) => {
     if (i === dims.length) {
       candidates++;
@@ -228,6 +248,7 @@ function search(ctx = context()) {
       validCount++;
       const e = evaluate(ctx, {...pick});
       if (e.feasible) feasible++;
+      all.push(score(e));
       if (!best || better(e, best)) best = e;
       for (const d of dims) { const cur = perOption[d][pick[d]]; if (!cur || better(e, cur)) perOption[d][pick[d]] = e; }
       return;
@@ -235,7 +256,7 @@ function search(ctx = context()) {
     for (const n of Object.keys(D[dims[i]].options)) { pick[dims[i]] = n; walk(i + 1, pick); }
   };
   walk(0, {});
-  return {ctx, best, perOption, counts: {candidates, valid: validCount, feasible}};
+  return {ctx, best, perOption, all, counts: {candidates, valid: validCount, feasible}};
 }
 
 const controlOf = e => name => e.classes.find(k => k.name === name).controlUs;
@@ -253,6 +274,99 @@ function alternatives(result = search()) {
     }
   }
   return out;
+}
+
+// The candidate set behind out/detailed/comm_core_design.json: the whole scored
+// set is fingerprinted, the listed rows are bounded.
+//
+// The siblings (memory, physical, matrix:vector) list every scored candidate
+// because their grids are small -- 400, 24 and a few hundred -- so the file is a
+// few hundred kilobytes and "candidate X was excluded because Y" is answerable
+// straight out of it. This grid scores 45900 combinations, and the projection
+// above costs about 1 KB each: listing all of them would commit tens of
+// megabytes to a repository that tracks out/, for a file whose only consumer
+// (design.comm) reads the top 12 and slices to them anyway. So the split here is
+// explicit rather than silent:
+//
+//   * candidateSetSha256 is taken over every scored candidate, so "these are the
+//     candidates that were searched" is checkable from a fresh run whatever the
+//     listing shows;
+//   * the listed rows are the ranked head, `listed` says how many, and
+//     `infeasibleByCause` counts every excluded candidate by its violation set,
+//     so no exclusion reason disappears into the truncation.
+//
+// Ordering is the search's own (feasible first, then least AI Core time, then
+// largest spec slack, then least area, then name); a consumer must not re-rank.
+const CANDIDATE_LIMIT = 512;
+
+// Fingerprint of a candidate set. Stable across runs and machines: fields
+// sorted, numbers rounded to reported precision, digest over JSON with an
+// explicit key order. A fingerprint that depends on enumeration order is worse
+// than none -- it would disagree between two identical searches.
+function fingerprint(entries) {
+  const canon = entries.map(c => {
+    const pick = Object.fromEntries(Object.entries(c.pick).sort(([a], [b]) => (a < b ? -1 : 1)));
+    return {
+      pick, feasible: c.feasible, violations: [...c.violations].sort(),
+      aiCoreUsPerToken: Number(c.aiCoreUsPerToken.toFixed(9)), specSlackUs: Number(c.specSlackUs.toFixed(9)),
+      areaMm2: Number(c.areaMm2.toFixed(9)), controlUs: Number(c.controlUs.toFixed(9)),
+    };
+  });
+  canon.sort((a, b) => (JSON.stringify(a.pick) < JSON.stringify(b.pick) ? -1 : 1));
+  return crypto.createHash('sha256').update(JSON.stringify(canon)).digest('hex');
+}
+
+function candidates(result = search()) {
+  const {ctx, best, all, counts} = result, {space} = ctx;
+  const ranked = [...all].sort((a, b) => (better(a, b) ? -1 : better(b, a) ? 1 : 0));
+  const winner = optionId(best.pick);
+  const entries = ranked.slice(0, CANDIDATE_LIMIT).map((e, i) => ({
+    rank: i + 1,
+    ...e,
+    chosen: e.optionId === winner,
+    lostOn: e.optionId === winner ? null : lostOn(e, best),
+  }));
+  // Every exclusion, by cause. The ranked head is dominated by feasible
+  // candidates, so without this the reasons the other ~39000 were dropped would
+  // be absent from the file that exists to make exclusions reproducible.
+  const infeasibleByCause = {};
+  for (const e of all) {
+    if (e.feasible) continue;
+    const k = [...e.violations].sort().join('+') || 'unspecified';
+    infeasibleByCause[k] = (infeasibleByCause[k] || 0) + 1;
+  }
+  return {
+    status: 'MODEL (search over the HW-07 design space on the detailed protocol model; the candidate set behind out/detailed/comm_core_design.json, not FROZEN)',
+    designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(space.dimensions)},
+    requirements: {graphBuffers: space.requirements.graphBuffers, maxUtilization: space.requirements.maxUtilization,
+      wqeBytes: space.requirements.wqeBytes, patchEntryBytes: space.requirements.patchEntryBytes,
+      descriptorBytes: space.requirements.descriptorBytes, peerEntryBytes: space.requirements.peerEntryBytes,
+      specTauUs: O.OPT.tauUs},
+    // The caliber the consumer compares against the spec. Same reason as the
+    // siblings: without it, "the internal identity holds" gets read as "the
+    // area meets the spec". Cycle counts and areas are ASSUMPTIONs (O-018).
+    fieldCaliber: {
+      areaIncludesPortCost: 'yes',
+      powerScope: 'die',
+      note: 'area sum includes the txLanes lane scaling (wqeGeneration.laneAreaMm2 x lanes) and the '
+        + 'management-core area; cycle counts and areas are ASSUMPTIONs at the die clock (O-018), '
+        + 'not calibrated values; this artifact carries no power field',
+    },
+    ranking: space.objective.join(', '),
+    // Sibling convention: totalCandidates is the enumerated product, feasible the
+    // feasible count. `valid` sits between them because this grid -- unlike the
+    // siblings' -- drops invalid combinations before scoring, so the two counts
+    // do not account for every enumerated combination on their own.
+    totalCandidates: counts.candidates,
+    validCandidates: counts.valid,
+    feasibleCandidates: counts.feasible,
+    listed: entries.length,
+    truncated: counts.valid > entries.length,
+    infeasibleByCause,
+    candidateSetSha256: fingerprint(all),
+    candidates: entries,
+    regenerate: 'node integration/pipelines/generate_comm_core_design.js (npm run commcore:search); enforced by tests/regression/test_comm_core_design.js',
+  };
 }
 
 function build(result = search()) {
@@ -291,4 +405,4 @@ function build(result = search()) {
   };
 }
 
-module.exports = {SPACE_FILE, context, evaluate, search, alternatives, build, replay, signalOpt};
+module.exports = {SPACE_FILE, context, evaluate, search, alternatives, candidates, build, replay, signalOpt};
