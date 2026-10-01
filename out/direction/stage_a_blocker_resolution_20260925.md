@@ -2,7 +2,7 @@
 
 Run ID: `stage-a-20260925-token-time`
 Manifest hash: `dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f`
-Source commit: `d21ac56a49032cf6636650a27acae1f2283f9500`
+Source commit: `edd0a053911ef6e0db68512bb3579070044588c8`
 
 ## Planning token time (integration/planning/token_time.js)
 
@@ -29,6 +29,7 @@ Source commit: `d21ac56a49032cf6636650a27acae1f2283f9500`
   "formalSelectionRecorded": true,
   "selectionResolvable": true,
   "selectionMeetsTarget": true,
+  "expectedRegisterState": "D_GATE_PASSED",
   "registerConsistent": true,
   "failedChecks": [],
   "decision": "PASS"

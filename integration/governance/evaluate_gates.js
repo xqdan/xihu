@@ -96,6 +96,9 @@ function evaluateDirectionGate(env, score, register) {
     formalSelectionRecorded,
     selectionResolvable,
     selectionMeetsTarget,
+    // Runners derive the candidate register's decisionState from this field instead of
+    // re-implementing the PASS -> register-state mapping.
+    expectedRegisterState,
     registerConsistent: register.decisionState === expectedRegisterState,
     failedChecks,
     decision
@@ -204,7 +207,6 @@ function writeGateStatus() {
     : {decision: 'NOT_RUN'};
   const out = {
     schemaVersion: 'architecture-gate-status-v0.2',
-    evaluatedAt: new Date().toISOString(),
     sourceDirectionalRunId: score.runId,
     sourceDetailedRunId: fs.existsSync(detailPath)
       ? read('out/detailed/detailed_architecture_run.json').runId

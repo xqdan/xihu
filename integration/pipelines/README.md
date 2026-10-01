@@ -15,6 +15,7 @@ npm run model:planning      # generate_planning_operator_workload -> stage_a -> 
 npm test
 ```
 
+- Reproducibility: generated artifacts carry no wall-clock time, and `tests/governance/test_regeneration_reproducible.js` reruns the four `*:search` scripts and `model:planning` in a scratch copy and requires `out/` to match byte for byte. The only environment input is `K3_SOURCE_COMMIT` (read by `stage_a.js` / `stage_b.js`), which pins the provenance commit for that comparison; leave it unset for a real run. After any change to a generator or its inputs, rerun the pipelines and commit `out/` together with the change, or this test fails. `search:final` and `baseline:sync` are not part of that rerun.
 - `generate_planning_operator_workload.js`: K3 operator FLOP/byte rows derived from `teams/model/src/design_engine.js` (single K3 shape source, FP8 KV 656 B/token/layer) and reconciled with the detailed plan; GLM-5.2 and DeepSeek-V4-Pro rows come from the Model team derivation `teams/model/src/workload_derivation.js` (manifest `shape` plus explicit ASSUMPTION fields, MTP excluded, ADR-0007). It also fits the planning token-time calibration on the K3 detailed published point and checks it at MC320 (ADR-0008).
 - `stage_a.js`: Stage A direction comparison. The resource envelope comes from `integration/planning/directional_envelope.js`; the D-Gate is computed by `integration/governance/evaluate_gates.js`.
 - `stage_b.js`: Stage B planning quantification of the selected candidates.

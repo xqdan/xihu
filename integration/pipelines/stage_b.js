@@ -33,7 +33,9 @@ const write = (relativePath, value) => {
   fs.writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`, 'utf8');
 };
 const hashFile = relativePath => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, relativePath))).digest('hex');
-const sourceCommit = (() => {
+// K3_SOURCE_COMMIT pins the provenance commit so a regeneration can be compared byte-for-byte
+// (tests/governance/test_regeneration_reproducible.js); it is never set for a real run.
+const sourceCommit = process.env.K3_SOURCE_COMMIT || (() => {
   try {
     return execFileSync('git', ['rev-parse', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim();
   } catch {

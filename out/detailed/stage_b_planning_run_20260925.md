@@ -3,7 +3,7 @@
 Run ID: `stage-b-20260925-planning`
 Manifest hash: `dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f`
 Run mode: `PLANNING_QUANTIFICATION`
-Source commit: `d21ac56a49032cf6636650a27acae1f2283f9500`
+Source commit: `edd0a053911ef6e0db68512bb3579070044588c8`
 
 ## Gate result
 
