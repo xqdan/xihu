@@ -60,7 +60,24 @@ const HEAD = [
   '不得输出 TPS/usr 或任何全局性能指标；不得输出 PASS / D_GATE_PASSED 字面量。',
 ].join('\n')
 
-const head = (agentId) => HEAD.replace('__AGENT__', agentId)
+// 领域知识注入（知识不是证据）—— 见 design.compute 里的同名说明。
+// 注入的是**路径**不是正文：一份来源，各自自读；抄进 prompt 就多出一份会漂移的副本。
+const KNOWLEDGE = {
+  'comm-expert': 'references/sota/interconnect-collective.md',
+  'memory-expert': 'references/sota/memory-subsystem.md',
+  'physical-expert': 'references/sota/package-ppa.md',
+}
+const knowledgeHead = (agentId) => {
+  const p = KNOWLEDGE[agentId]
+  if (!p) return []
+  return [
+    `本领域的行业参照（**知识，不是证据**）：${REPO}/${p}`,
+    '它用来判断本项目的假设是否偏离行业常规、值不值得花力气去要实测数据，不能证明本项目任何数字。',
+    '它没有仓库出处：不得作为任何 claim 的 evidence，不得覆盖、修正或重算仓库里的任何基线数字；有冲突时以仓库文件为准。',
+    '若该文件不存在或读不到，跳过这一段按没有参照系继续——不要凭印象补出"行业通常怎么做"。',
+  ]
+}
+const head = (agentId) => [HEAD.replace('__AGENT__', agentId), ...knowledgeHead(agentId)].join('\n')
 
 const BRIEF_JSON = JSON.stringify(BRIEF, null, 2)
 

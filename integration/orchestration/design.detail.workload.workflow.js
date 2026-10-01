@@ -81,7 +81,25 @@ const HEAD = [
   '本格的强度、Roofline 与三条 sizing 比都由 stage_b.js 算好并绑在产物里：只读、只解释，不得重算或改写。',
 ].join('\n')
 
-const head = (agentId) => HEAD.replace('__AGENT__', agentId)
+// 领域知识注入（知识不是证据）—— 见 design.compute 里的同名说明。
+// 这一格的参照系随 agentId 走：model-expert 拿到模型侧的量化学参照，
+// compute/memory 专家拿到各自领域的，而不是所有人共用一份。
+const KNOWLEDGE = {
+  'model-expert': 'references/sota/model-workload.md',
+  'compute-expert': 'references/sota/compute-core.md',
+  'memory-expert': 'references/sota/memory-subsystem.md',
+}
+const knowledgeHead = (agentId) => {
+  const p = KNOWLEDGE[agentId]
+  if (!p) return []
+  return [
+    `本领域的行业参照（**知识，不是证据**）：${REPO}/${p}`,
+    '它用来判断本项目的假设是否偏离行业常规、值不值得花力气去要实测数据，不能证明本项目任何数字。',
+    '它没有仓库出处：不得作为任何 claim 的 evidence，不得覆盖、修正或重算仓库里的任何基线数字；有冲突时以仓库文件为准。',
+    '若该文件不存在或读不到，跳过这一段按没有参照系继续——不要凭印象补出"行业通常怎么做"。',
+  ]
+}
+const head = (agentId) => [HEAD.replace('__AGENT__', agentId), ...knowledgeHead(agentId)].join('\n')
 
 const BRIEF_JSON = JSON.stringify(BRIEF, null, 2)
 

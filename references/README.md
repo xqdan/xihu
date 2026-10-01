@@ -13,6 +13,15 @@
 
 ## `sota/`
 
-领域 SOTA/经典方案知识库，由 `integration/orchestration/k3_agent_learning.workflow.js` 一次性生成，供评审探针判断"本项目的假设是否偏离行业常规"。见 [`sota/README.md`](sota/README.md)。
+领域 SOTA/经典方案知识库，由 `integration/orchestration/design.learn.workflow.js`（一次性脚本）生成，供各领域专家实例判断"本项目的假设是否偏离行业常规"。见 [`sota/README.md`](sota/README.md)。
 
 与上面的资料清单不同，`sota/` 的条目**不是证据**：没有仓库内出处，不得作为 claim 的 evidence，也不得用来改写任何基线数字。
+
+## `external/`
+
+按前提临时的外部参照系，由 `design.audit` 的可选阶段（传入 `args.premises` 时）生成，文件名形如 `external_references_<runId>.md`。
+
+它和 `sota/` 的分工：`sota/` 按领域一次性沉淀，回答"这个领域通常怎么做"；`external/` 按前提每轮调研，回答"这个系数偏离常规吗"。
+
+两者都不是证据。`external/` 的条目尤其要注意：它落在 `references/` 下而非 `out/` 下，是刻意的——`design.audit` 与 `design.verify` 的 intake 门只接受 `out/` 下的路径，参照系因此永远进不了下一轮的复核对象，也就没有被当成证据的机会。
+

@@ -1,6 +1,6 @@
 # 领域 SOTA 知识库（knowledge, not evidence）
 
-本目录由 `integration/orchestration/k3_agent_learning.workflow.js` 一次性生成。它回答的问题只有一类：
+本目录由 `integration/orchestration/design.learn.workflow.js` 一次性生成。它回答的问题只有一类：
 
 > 这个领域的同行**通常怎么做**、那些"当作给定条件"的系数**通常取多少**。
 
@@ -42,7 +42,7 @@
 知识会过期（HBM 代际、互联标准、MoE 结构都在变）。每个单元带 `review_due_months`（默认 12 个月）与 `as_of`。刷新时只重跑需要更新的单元：
 
 ```js
-Workflow({scriptPath: '.../k3_agent_learning.workflow.js', args: {as_of: '2026-10-01', units: ['memory-subsystem']}})
+Workflow({scriptPath: '.../design.learn.workflow.js', args: {as_of: '2026-10-01', units: ['memory-subsystem']}})
 ```
 
 `as_of` 必须由 `args` 传入——workflow 脚本里取不到当前时间（`Date.now()` 会破坏 resume），拿不到就写 `UNVERIFIED` 而不是猜一个日期。

@@ -29,7 +29,7 @@
 - `out/` 只放 pipeline 生成物，不手工编辑；`archive/` 只读，不被活代码引用。
 - 设计文档放在签核它的团队目录：硬件单元设计 `teams/hardware/docs/`，软件设计 `teams/software/docs/`，模型部署方案 `teams/model/docs/deployment/`；`docs/architecture/` 只放系统级、跨团队文档。
 
-D1–D7 and Q1–Q9 are **stage names, not agents** — they label a segment of the design flow and its exit conditions, nothing more. Same for A0 and for the `B0`–`B5` work packages in `19`. The strategies that actually run are the 12 in `teams/council/agent_roster.json` (bodies under `teams/council/strategies/`), invoked per stage by the workflows in `integration/orchestration/`. New work items must use `HW-*`, `SW-*`, `MODEL-*`, `ARCH-*`, or `VV-*` IDs — never a `D*`/`Q*` label, which would re-invent the role that no longer exists.
+D1–D7 and Q1–Q9 are **stage names, not agents** — they label a segment of the design flow and its exit conditions, nothing more. Same for A0 and for the `B0`–`B5` work packages in `19`. The strategies that actually run are the 12 in `teams/council/inputs/agent_roster.json` (bodies under `teams/council/strategies/`), invoked per stage by the workflows in `integration/orchestration/`. New work items must use `HW-*`, `SW-*`, `MODEL-*`, `ARCH-*`, or `VV-*` IDs — never a `D*`/`Q*` label, which would re-invent the role that no longer exists.
 
 ## 2. Parallel work rules
 

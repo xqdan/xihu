@@ -166,7 +166,7 @@ for (const k of S7) {
 const PHASES = {
   verify: ['Landed artifact intake', 'Independent checks', 'Gate evidence', 'Architect sign-off'],
   backflow: ['Attribution triage', 'Expert claim', 'Direction ruling', 'Framing check'],
-  audit: ['Landed artifact intake', 'Four lenses', 'Consolidation'],
+  audit: ['Landed artifact intake', 'Four lenses', 'Consolidation', 'External reference frame'],
   explore: ['Explore', 'Scratch landing'],
 };
 for (const k of S7) {
@@ -176,7 +176,9 @@ for (const k of S7) {
   assert(/description: '[^']+'/.test(t), `${FILE[k]} 的 meta.description 不得为空`);
   assert(/whenToUse: '[^']+'/.test(t), `${FILE[k]} 的 meta.whenToUse 必须写明何时用它与需要哪些 args`);
 
-  const order = [...t.matchAll(/^phase\('([^']+)'\)/gm)].map((m) => m[1]);
+  // 允许缩进：可选阶段（如 design.audit 的外部参照系）本身就是条件执行的，
+  // 它的 phase() 调用必须写在 if 块里。要求"必须在行首"会把这类阶段误判成缺失。
+  const order = [...t.matchAll(/^\s*phase\('([^']+)'\)/gm)].map((m) => m[1]);
   assert.deepStrictEqual(order, PHASES[k], `${FILE[k]} 的 phase 顺序不符`);
 
   const metaBlock = t.slice(0, t.indexOf('\n}'));
@@ -271,19 +273,75 @@ assert(/notDirectionLevel/.test(src.backflow),
 for (const k of ['verify', 'backflow', 'audit']) {
   const all = returnBodies(src[k]);
   const landing = all[all.length - 1].body;
-  const gateName = (landing.match(/files:\s*([A-Za-z_$][\w$]*)\s*\?/) || [])[1];
-  assert(gateName, `${FILE[k]} 的落盘 files 必须由一个门控变量决定，不得无条件落盘`);
 
-  const decl = new RegExp(`const\\s+${gateName}\\s*=\\s*([^\\n]*)`).exec(src[k]);
-  assert(decl, `${FILE[k]} 的门控变量 ${gateName} 必须在落盘前声明`);
-  const expr = decl[1];
-  // 门控必须合取**多个**条件：E 组的每一格都有"检查结果"与"裁决意见"两条独立来源，
-  // 只受其中一条门控，另一条就形同虚设。
-  assert(/&&/.test(expr), `${FILE[k]} 的门控 ${gateName} 必须由多个条件合取，不得只看单一信号`);
+  // 落盘有两种合法形态：
+  //   (a) files: <gate> ? [...] : []   —— 门控贴在落盘处（verify / backflow）
+  //   (b) files: [...a, ...b]          —— 每类各自具名声明（audit：报告 + 参照系）
+  // (b) 允许存在，是因为"报告受门控、参照系不受门控"是刻意的划分。但它把门控挪出了
+  // landing，所以要顺着名字摸回声明——否则这一节会静默地什么都不验，比红更坏。
+  //
+  // 判据是**写不写 out/**，不是"是不是三元"：audit 的两类都是三元
+  // （reportFiles 受 ok，referenceFiles 受 externalReferences），拿三元形状当门控判据
+  // 会把参照系也当成一道证据门。真正的分界线是 out/ 下的产物会被下一轮当依据引用
+  // （intake 门只收 out/ 下的产物），references/ 下的不会。
+  // 于是：写 out/ 的那类必须受合取门控，不写 out/ 的那类必须只写 references/。
+  const direct = (landing.match(/files:\s*([A-Za-z_$][\w$]*)\s*\?/) || [])[1];
+  const spread = direct ? null : (landing.match(/files:\s*\[([^\]]*)\]/) || [])[1];
+  assert(direct || spread,
+    `${FILE[k]} 的落盘 files 既不是门控三元也不是展开数组，无法判定是否受门控`);
 
-  // 不通过的那一支必须是 files: []——不写，而不是"标注一下仍然写"。
-  const emptyLast = new RegExp(`files:\\s*${gateName}\\s*\\?[\\s\\S]+?:\\s*\\[\\]`).test(landing);
-  assert(emptyLast, `${FILE[k]} 检点不通过的那一支必须是 files: []，不得仍然落盘`);
+  // 每一类落盘取两条信息：它的门控条件，以及它声明里写了哪些路径。
+  const classes = [];
+  if (direct) {
+    const m = new RegExp(`files:\\s*${direct}\\s*\\?([\\s\\S]*):\\s*\\[\\]`).exec(landing);
+    assert(m, `${FILE[k]} 检点不通过的那一支必须是 []，不得仍然落盘`);
+    classes.push({name: direct, cond: null, body: m[1]});
+  } else {
+    const names = [...spread.matchAll(/\.\.\.\s*([A-Za-z_$][\w$]*)/g)].map((m) => m[1]);
+    assert(names.length, `${FILE[k]} 的落盘展开数组里没有具名成员，无法判定门控`);
+    for (const n of names) {
+      const d = new RegExp(`const\\s+${n}\\s*=\\s*([\\s\\S]*?)\\n\\n`).exec(src[k]);
+      assert(d, `${FILE[k]} 的落盘成员 ${n} 必须在落盘前声明`);
+      const decl = d[1];
+      const q = decl.indexOf('?');
+      assert(q >= 0,
+        `${FILE[k]} 的落盘成员 ${n} 必须是门控三元——不受控的落盘会让不成立的结论也写下去`);
+      assert(/:\s*\[\]\s*$/.test(decl),
+        `${FILE[k]} 的落盘成员 ${n} 不通过的那一支必须是 []，不得仍然落盘`);
+      classes.push({name: n, cond: decl.slice(0, q), body: decl});
+    }
+  }
+
+  // 证据必须真的落下来：一类都不写 out/ 时，本格跑完等于什么也没留下。
+  const evidence = classes.filter((c) => /out\//.test(c.body));
+  assert(evidence.length, `${FILE[k]} 至少要有一类落盘写 out/，否则本格跑完不留证据`);
+
+  for (const c of evidence) {
+    // 门控必须合取**多个**条件：E 组的每一格都有"检查结果"与"裁决意见"两条独立来源，
+    // 只受其中一条门控，另一条就形同虚设。
+    // 合取可能写在门控变量自己的声明上（形态 a），也可能写在它引用的上游变量上
+    // （形态 b：reportFiles = ok ? ...，真正的 && 在 ok 上），所以穿透一层。
+    // 只穿一层：需要穿两层说明门控链已经绕到读不懂，那时该改代码而不是改测试。
+    const seen = new Set([c.name]);
+    let expr = c.cond || (new RegExp(`const\\s+${c.name}\\s*=\\s*([^\\n]*)`).exec(src[k]) || ['', ''])[1];
+    while (!/&&/.test(expr)) {
+      const next = (expr.match(/(?<![.\w$])([A-Za-z_$][\w$]*)\s*(?:&&|\?|$)/) || [])[1];
+      if (!next || seen.has(next)) break;
+      const up = new RegExp(`const\\s+${next}\\s*=\\s*([^\\n]*)`).exec(src[k]);
+      if (!up) break;
+      seen.add(next);
+      expr = up[1];
+    }
+    assert(/&&/.test(expr), `${FILE[k]} 的落盘 ${c.name} 必须由多个条件合取，不得只看单一信号`);
+  }
+
+  // 不写 out/ 的那一类（参照系）只能写 references/ 下的路径。
+  // 这条把 design.audit 的做法变成规矩，不是给它开后门：绕开门控之所以可接受，
+  // 唯一理由是它到不了证据位。
+  for (const c of classes.filter((x) => !/out\//.test(x.body))) {
+    assert(/references\//.test(c.body),
+      `${FILE[k]} 的不受门控落盘 ${c.name} 必须只写 references/ 下的路径——它不能是可被引作依据的证据`);
+  }
 }
 
 // 三格各自的门控必须真的把"结论与事实自相矛盾"算进去。
@@ -312,7 +370,12 @@ assert(/lensSelfContradictions/.test(src.audit) && /droppedFindings/.test(src.au
 // ---------------------------------------------------------------------------
 const ARGS_ALLOW = {
   verify: ['repo', 'brief', 'runId', 'artifacts', 'gateStatusArtifact', 'registerArtifact', 'gateCommand'],
-  audit: ['repo', 'brief', 'runId', 'artifacts', 'referenceArtifact', 'baselineArtifact'],
+  // audit 多一个 premises：合并 k3_external_references 时带进来的可选入口。
+  // 它**不**进四个视角与汇总的 prompt——那两类只吃 out/ 下的已落盘产物（见第三层硬拦）。
+  // premises 只喂给可选的外部参照系阶段，那一阶段不产出裁决、不落 out/。
+  // 换句话说它是注入面白名单上的一格，不是 §9.2 那条边界的一个例外：
+  // 边界管的是"策略能不能读到设计中间产物"，而 premises 是调用方声明的**给定条件**。
+  audit: ['repo', 'brief', 'runId', 'artifacts', 'referenceArtifact', 'baselineArtifact', 'premises'],
 };
 for (const [k, allow] of Object.entries(ARGS_ALLOW)) {
   const used = [...new Set([...src[k].matchAll(/\bargs\.([A-Za-z_$][\w$]*)/g)].map((m) => m[1]))];
@@ -385,9 +448,25 @@ const LANDING_DIR = {
 for (const [k, dir] of Object.entries(LANDING_DIR)) {
   const paths = [...src[k].matchAll(/path: `\$\{REPO\}([^`]+)`/g)].map((m) => m[1]);
   assert(paths.length > 0, `${FILE[k]} 必须声明落盘路径`);
-  for (const p of paths) {
-    assert(p.startsWith(dir), `${FILE[k]} 的落盘路径 ${p} 不在 ${dir} 下`);
+
+  // 产物分两类，位置就是这两类的分界：
+  //   out/<stage>/  —— 证据位。下一轮会被当依据读（intake 门只收 out/ 下的产物），
+  //                    所以它必须落在本格自己的目录里，且受门控（第 6 节）。
+  //   references/   —— 参照系位。它是"同类系统取值区间"，不是本项目的依据，
+  //                    进不了 intake 门，因此可以不受门控、可以跨轮留存。
+  // 别的目录一律不行：scratch/probes 是非证据目录，落那儿等于悄悄丢产物。
+  const evidence = paths.filter((p) => p.startsWith(dir));
+  const frame = paths.filter((p) => !p.startsWith(dir));
+  assert(evidence.length > 0, `${FILE[k]} 没有任何落盘路径在 ${dir} 下——本格跑完不留证据`);
+  for (const p of frame) {
+    assert(p.startsWith('/references/'),
+      `${FILE[k]} 的落盘路径 ${p} 既不在 ${dir} 下也不在 /references/ 下；`
+      + '产物只有两个去处：证据位（out/ 本格目录）或参照系位（references/）');
   }
+  // 参照系位不是"第二个证据位"：谁都能往里写就等于绕开了上面那道门。
+  // 目前只有 audit 需要它（外部参照系随前提每轮调研），别的格要加就得同时说明理由。
+  assert(frame.length <= 1,
+    `${FILE[k]} 声明了 ${frame.length} 条参照系落盘路径；参照系位至多一处，多了就成了绕开证据门的旁路`);
 }
 
 // verify 与 audit 都落 out/verification/，所以两者的文件名必须不同——
