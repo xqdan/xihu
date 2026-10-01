@@ -9,6 +9,30 @@ const read = relativePath => JSON.parse(
   fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/^﻿/, '')
 );
 
+// The gate decision literals, in one place. This is the only file allowed to
+// PRODUCE them; every other file is allowed only to mention them in a
+// prohibition. The checkers (tools/check_agent_strategy.js and
+// tests/governance/test_agent_strategy_boundary.js) both import this list
+// rather than restating the regex -- a restated list drifts, and the failure
+// mode of a drifted gate check is that a literal stops being caught.
+//
+// `FORBIDDEN_GATE_LITERALS` is the closed set a file must never emit as its own
+// conclusion. Add a member here and both checkers start enforcing it.
+const FORBIDDEN_GATE_LITERALS = ['PASS', 'D_GATE_PASSED', 'Q_GATE_PASSED'];
+
+// `PASS` is a substring of the others, so a naive alternation would match
+// `D_GATE_PASSED` at the `PASS` alternative and report the wrong literal. The
+// members are matched longest-first, and the boundary is written by hand
+// because `\b` does not fire between `_` and a letter -- the same trap noted at
+// `mentionsVerdict` in tools/check_agent_strategy.js.
+function gateLiteralPattern() {
+  const ordered = [...FORBIDDEN_GATE_LITERALS]
+    .sort((a, b) => b.length - a.length)
+    .map(v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|');
+  return new RegExp(`(?<![A-Z0-9_])(${ordered})(?![A-Z0-9_])`);
+}
+
 // Independent D-Gate validator. It recomputes every check from the artifacts;
 // runners must consume its result instead of writing a decision literal.
 // The candidate register's decisionState is DERIVED from this function, so it
@@ -204,5 +228,7 @@ module.exports = {
   evaluateDirectionGate,
   evaluateQuantificationGate,
   observationCoverage,
-  writeGateStatus
+  writeGateStatus,
+  FORBIDDEN_GATE_LITERALS,
+  gateLiteralPattern
 };
