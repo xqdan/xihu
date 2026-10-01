@@ -15,6 +15,8 @@
     "commcore:search": "node integration/pipelines/generate_comm_core_design.js",
     "memory:search": "node integration/pipelines/generate_memory_design.js",
     "physical:search": "node integration/pipelines/generate_physical_design.js",
+    "workflow:brief": "node integration/pipelines/search_brief.js brief",
+    "workflow:verify-landed": "node integration/pipelines/search_brief.js verify",
     "dashboard": "node integration/pipelines/generate_direction_feedback.js && node integration/pipelines/generate_global_dashboard.js",
     "workload:planning": "node integration/pipelines/generate_planning_operator_workload.js",
     "contracts": "node integration/pipelines/generate_team_contracts.js",

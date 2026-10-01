@@ -52,6 +52,7 @@ const ARGS = {
   'const RUN_ID = args.runId': 'the run identifier for the ledger patch',
   'const MAX_CANDIDATES = args.maxCandidates': 'the fan-out bound',
   'const SEARCH_ARTIFACT = args.searchArtifact': 'the artifact the main loop already generated',
+  'const SEARCH_BRIEF = args.searchBrief': 'the candidate set integration/pipelines/search_brief.js already read and verified',
   'const SEARCH_COMMAND_FOR_RECORD = args.searchCommand': 'the command recorded for replay'
 };
 for (const d of DOMAINS) {
@@ -67,6 +68,10 @@ for (const d of DOMAINS) {
   const t = text[d];
   assert(/if \(!BRIEF\) throw new Error\(/.test(t), `design.${d}: missing the missing-brief guard`);
   assert(/if \(!SEARCH_ARTIFACT\) \{/.test(t), `design.${d}: missing the missing-artifact guard`);
+  assert(/if \(!SEARCH_BRIEF\) \{/.test(t), `design.${d}: missing the missing-search-brief guard`);
+  // The candidate numbers every later verdict rests on come from the verified brief.
+  // An agent that reads the artifact and transcribes it brings back an unchecked copy.
+  assert(!t.includes("label: 'read-search-artifact'"), `design.${d}: no agent may read and transcribe the search artifact`);
   assert(t.includes(`if (BRIEF.stage !== '${d}') {`), `design.${d}: missing the wrong-stage guard`);
   assert(t.includes(`const STAGE = '${d}'`), `design.${d}: STAGE must be '${d}'`);
   // Every guard error names the workflow it came from, so a failure in a run

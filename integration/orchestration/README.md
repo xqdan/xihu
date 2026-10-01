@@ -22,7 +22,7 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 
 每个脚本都遵守同一条契约，下面不再重复：
 
-- **脚本不读文件、不写文件。** brief、ledger、搜索产物由主循环经 `args` 传入；策略正文由 agent 自己按 `agentId` 读 `teams/council/strategies/<agentId>.md`。
+- **脚本不读文件、不写文件。** brief、ledger、搜索产物由主循环经 `args` 传入（C 组的搜索产物以 `args.searchBrief` 传入，由 `integration/pipelines/search_brief.js` 读取并核验，见下）；策略正文由 agent 自己按 `agentId` 读 `teams/council/strategies/<agentId>.md`。
 - **agent 全程只读。** 搜索与确定性计算在主循环或 `integration/pipelines/` 下运行，绝不在 workflow 内运行。
 - **裁决枚举是数据不是结论。** 专家报 `LOCAL_DETAIL_FIX` / `DIRECTION_BACKFLOW` / `BLOCKED_CONFIG` / `PPA_DIRECTION_BACKFLOW`，architect 报 `ARCH_FREEZE` / `D_GATE_PROPOSAL`，脚本用 `switch` 拿它们决定走哪条边。
 - **没有任何 agent 能宣布门控通过。** 门控结论只由 [`integration/governance/evaluate_gates.js`](../governance/evaluate_gates.js) 计算；workflow 与策略里不得出现 `PASS` 字面量。
@@ -144,6 +144,23 @@ Workflow({scriptPath: '.../design.audit.workflow.js', args: {brief, artifacts, p
 5. **所有扫描与重搜**（MC480/560 约束内重搜、档位/mcUtil/τ 扫描、联合回退）都是 agent 在只读模式下临时算的，没有入库，因此在 ledger 里一直是 `UNVERIFIED`。需要由 `integration/pipelines/` 下的脚本生成到 `out/`。
 
 第 5 条是新流程能否成立的关键：`design.verify` 要做产物级门控，就必须有机器可读的搜索结果可读。搜索留在 agent 的临时上下文里，verify 手里就只有结论没有依据，只能继续标 `UNVERIFIED`。
+
+## C 组的取数与落盘核对
+
+C 组四域读搜索产物这一步没有 agent：转写候选数值的若是 LLM，就没有任何东西核对"转写 = 原文"，而这些数值是合并、旁证、检点全部裁决的唯一数字来源。主循环的调用顺序：
+
+```sh
+npm run aicore:search                       # 先跑确定性搜索（compute；其余域见 integration/pipelines/README.md）
+npm run -s workflow:brief -- compute > /tmp/compute.brief.json   # 读产物、核哈希、重跑搜索复核指纹，取前 N 个候选
+# 调 design.compute，args.searchBrief = 上面的 JSON；落盘返回的 files
+npm run -s workflow:verify-landed -- compute                     # 落盘后：winner 必须是产物里的一行
+```
+
+`brief` 在产物过期、指纹对不上、缺候选明细时给出 `ok:false`，workflow 据此退回 `BLOCKED_CONFIG`。`verify` 检查 winner 逐字段等于产物那一行、可行、run record 的指纹一致、被排除的 optionId 都在产物里；任何一项不成立都以非零退出。产物没有声明字段口径（目前只有 comm 的 `fieldCaliber` 声明了）时，`brief` 把口径字段一律记为 `UNVERIFIED`，不替产物推断。
+
+另一条同类规则：旁证阶段（`constraint:*`）任何一路专家调用失败，workflow 退回 `BLOCKED_CONFIG` 并在 `absentLateral` 里点名——缺席的一侧不能当作"没有意见"。
+
+`tests/regression/test_c_group_workflow_behavior.js` 用 mock 运行时真正执行这四个脚本，覆盖上述两条。
 
 ## 落盘方式
 

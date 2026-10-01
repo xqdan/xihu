@@ -1,10 +1,10 @@
 export const meta = {
   name: 'design-compute',
   description: 'K3 设计 compute 域：专家提搜索策略与守恒判据，确定性脚本枚举打分，integrator 合并，invariant-checker 检点后落盘',
-  whenToUse: 'C 组四域的标准骨架。需要 args.brief（intake 产出的 DesignBrief）与 args.searchArtifact（主循环已生成好的搜索结果路径）。本 workflow 不执行搜索、不写文件。',
+  whenToUse: 'C 组四域的标准骨架。需要 args.brief（intake 产出的 DesignBrief）args.searchArtifact（主循环已生成好的搜索结果路径，仅作记录）与 args.searchBrief（search_brief.js 核验过的候选集）。本 workflow 不执行搜索、不写文件。',
   phases: [
     { title: 'Search policy', detail: 'compute-expert 提出搜哪些维度、哪些必须排除、按什么排序' },
-    { title: 'Deterministic search', detail: '由脚本枚举并打分；agent 只取回结果，不得自行计算' },
+    { title: 'Deterministic search', detail: '由脚本枚举并打分，并由 search_brief.js 读取核验；workflow 内没有 agent 参与取数' },
     { title: 'Constraint recall', detail: 'memory / physical 专家对候选集给出侧向约束' },
     { title: 'Merge', detail: 'integrator 合并候选，记录冲突与排除依据' },
     { title: 'Invariant check', detail: 'invariant-checker 强制检点；不通过则不落盘' },
@@ -35,10 +35,15 @@ const MAX_CANDIDATES = args.maxCandidates || 12
 // 主循环侧的调用顺序：跑搜索 → 跑 workflow 并传入候选集 → 落盘 workflow 返回的 files。
 const SEARCH_ARTIFACT = args.searchArtifact
 const SEARCH_COMMAND_FOR_RECORD = args.searchCommand || 'UNVERIFIED'
+// 已核验的候选集（search_brief.js brief 的输出）；workflow 不自己读产物，也不让 agent 转写数值。
+const SEARCH_BRIEF = args.searchBrief
 
 if (!BRIEF) throw new Error('design.compute 需要 args.brief（intake 阶段产出的 DesignBrief）')
 if (!SEARCH_ARTIFACT) {
   throw new Error('design.compute 需要 args.searchArtifact（已由主循环生成好的搜索结果路径）；本 workflow 不执行搜索')
+}
+if (!SEARCH_BRIEF) {
+  throw new Error('design.compute 需要 args.searchBrief（主循环用 node integration/pipelines/search_brief.js brief compute 生成）；本 workflow 不读搜索产物')
 }
 if (BRIEF.stage !== 'compute') {
   // brief 的 stage 与 workflow 名称必须一致，否则会把别的阶段的契约拿来用
@@ -217,59 +222,24 @@ phase('Deterministic search')
 // 只有 winner 的产物无法让 integrator 复核排除理由，所以缺候选明细即视为产物不合格。
 // 这不是形式要求：上一轮 integrator 报出的候选集来自脚本 stdout，事后无法从任何
 // 落盘产物复核，导致"每条排除理由都可追溯"这个声明本身不可验证。
-const search = await agent(
-  `你的角色：只读产物。不得执行任何命令、不得重算或补齐任何数值、不得修改口径。
-
-产物路径：${SEARCH_ARTIFACT}
-
-步骤：
-1. 读取该 JSON 产物。
-2. 原样取回：设计空间 sha256、候选总数、可行候选数、
-   以及**排名靠前的至多 ${MAX_CANDIDATES} 个候选**（含 optionId 与每个候选的全部数值字段）。
-3. 若产物缺失、不可解析，或**不含候选明细数组**（只有 winner），
-   设 ok=false 并在 notes 里说明缺什么——不要用估算或从别处拼凑代替。
-4. 若可行候选为 0，如实回报 candidates=[] 并说明产物给出的不可行原因。
-5. 逐字段注明口径：面积字段是否含端口缩放成本、功耗字段是 die 级还是卡级。
-   口径未标注时记 UNVERIFIED，不要替产物补一个口径。
-
-搜索策略要求本次覆盖的维度：${JSON.stringify(policy.dims.map((d) => d.name))}
-排序判据（产物应当已按此排序，你不能改序）：${JSON.stringify(policy.ranking)}`,
-  { label: 'read-search-artifact', phase: 'Deterministic search', effort: 'low', schema: {
-    type: 'object',
-    additionalProperties: false,
-    required: ['ok', 'designSpaceSha256', 'candidates', 'totalCandidates', 'feasibleCandidates', 'coversAllDims', 'fieldCaliber', 'notes'],
-    properties: {
-      ok: { type: 'boolean', description: '产物是否存在、可解析且含候选明细' },
-      designSpaceSha256: { type: 'string', description: '产物内自带的设计空间指纹；取不到写 UNVERIFIED' },
-      totalCandidates: { type: ['number', 'null'] },
-      feasibleCandidates: { type: ['number', 'null'] },
-      candidates: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          required: ['optionId', 'values'],
-          properties: {
-            optionId: { type: 'string' },
-            values: { type: 'string', description: '该候选的全部数值字段，原样取自产物，JSON 字符串' },
-          },
-        },
-      },
-      coversAllDims: { type: 'array', items: { type: 'string' }, description: '策略要求但产物未覆盖的维度' },
-      fieldCaliber: {
-        type: 'object',
-        additionalProperties: false,
-        required: ['areaIncludesPortCost', 'powerScope', 'note'],
-        properties: {
-          areaIncludesPortCost: { type: 'string', enum: ['yes', 'no', 'UNVERIFIED'] },
-          powerScope: { type: 'string', enum: ['die', 'card', 'both', 'UNVERIFIED'] },
-          note: { type: 'string' },
-        },
-      },
-      notes: { type: 'string' },
-    },
-  } },
-)
+// 第二步（确定性，没有 agent）：搜索产物由主循环用 integration/pipelines/search_brief.js 读取、
+// 核验并取前 N 个候选，经 args.searchBrief 传入。这一步以前由一个 agent 把候选数值转写出来——
+// 转写者是 LLM，而这些数值是后面合并、旁证、检点全部裁决唯一的数字来源，却没有任何东西
+// 核对"转写 = 原文"。现在取回、指纹核对（设计空间哈希 + 重跑搜索）都在脚本里完成，
+// workflow 只消费结果；落盘之后由 `search_brief.js verify` 再核对 winner 是否为产物里的一行。
+//
+// coversAllDims 是机械比对：策略点名的维度，在产物的设计空间维度名里找不到（忽略大小写与符号、
+// 允许子串）即记为未覆盖。它只用来在日志与 runRecord 里提示，不拦截流程。
+const dimNorm = (s) => String(s).toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')
+const designDims = (SEARCH_BRIEF.dimensions || []).map(dimNorm)
+const search = {
+  ...SEARCH_BRIEF,
+  candidates: SEARCH_BRIEF.candidates || [],
+  coversAllDims: policy.dims.map((d) => d.name).filter((name) => {
+    const n = dimNorm(name)
+    return n !== '' && !designDims.some((x) => x.includes(n) || n.includes(x))
+  }),
+}
 
 if (!search || !search.ok) {
   return {
@@ -356,7 +326,28 @@ ${JSON.stringify(candidateBrief, null, 2)}
     ),
 ])
 
-const constraints = [memC, physC].filter(Boolean)
+// 旁证缺席不是"没有意见"：某一路侧向专家调用失败（返回空），它的约束就不存在，
+// 而合并者会把"没人反对"当成通过。缺任何一路都退回，不合并、不落盘。
+const lateral = [
+  ['memory-expert', memC],
+  ['physical-expert', physC],
+]
+const absentLateral = lateral.filter(([, c]) => !c).map(([agentId]) => agentId)
+if (absentLateral.length) {
+  log(`旁证约束缺 ${absentLateral.length} 路：${absentLateral.join(', ')}；退回，不合并`)
+  return {
+    stage: STAGE,
+    runId: RUN_ID,
+    verdict: 'BLOCKED_CONFIG',
+    reason: `旁证约束不完整，缺：${absentLateral.join(', ')}；缺席的一侧不能当作"没有意见"，未合并 winner`,
+    absentLateral,
+    nextActions: absentLateral.map((agentId) => `补齐 ${agentId} 对本域候选集的约束后重跑本格`),
+    searchNode: search,
+    policy,
+    files: [],
+  }
+}
+const constraints = lateral.map(([, c]) => c)
 const backflow = constraints.find((c) => c.verdict === 'DIRECTION_BACKFLOW' || c.verdict === 'PPA_DIRECTION_BACKFLOW')
 if (backflow) {
   return {
@@ -559,6 +550,7 @@ const runRecord = {
   stage: STAGE,
   runId: RUN_ID,
   designSpaceSha256: candidateBrief.designSpaceSha256,
+  searchProvenance: SEARCH_BRIEF.provenance,
   totalCandidates: candidateBrief.totalCandidates,
   feasibleCandidates: candidateBrief.feasibleCandidates,
   evaluated: candidateBrief.candidates.length,
