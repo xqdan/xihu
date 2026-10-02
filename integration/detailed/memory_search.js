@@ -6,6 +6,11 @@
  * document's section 5 routes the design commits to, and the ECC overhead charged
  * to raw capacity. search() enumerates the product and scores every candidate on
  *
+ * Port topology (confirmed by the project owner, 2026-10-02): each memory cube has
+ * its own UCIe port, so the port limit applies per cube and there is no shared-port
+ * term to charge. The per-cube cap min(tier x mcUtil, port) below is therefore the
+ * model, not a simplification.
+ *
  *  1. the per-die deliverable bandwidth -- min(mcGBs x TECH.mcUtil, the UCIe port
  *     bandwidth) x cubesPerComputeDie. The link is the limit, not the cube: a
  *     candidate whose cube count x tier implies more than the port can carry is

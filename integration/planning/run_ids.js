@@ -2,7 +2,7 @@
 /* Run identifiers shared by the Stage A / Stage B runners, tests and the
  * dashboard. Bump RUN_DATE when inputs change so artifacts are not silently
  * regenerated under an older run id. */
-const RUN_DATE = '2026-09-25';
+const RUN_DATE = '2026-10-02';
 const compact = RUN_DATE.replace(/-/g, '');
 module.exports = {
   RUN_DATE,

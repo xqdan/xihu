@@ -380,7 +380,7 @@ Stage A/B 的 18 个槽位用规划 token time，它的 5 个因子在**一个**
 
 ### 6.3 GLM-5.2 与 DeepSeek-V4-Pro：未测量假设的敏感度
 
-这两个模型没有详细模拟器，TPS/usr 是 K3 因子的外推（§6.2）。`out/detailed/stage_b_planning_run_20260925.md` 的 “Assumption sensitivity” 表对每个槽位每次只改一个输入
+这两个模型没有详细模拟器，TPS/usr 是 K3 因子的外推（§6.2）。`out/detailed/stage_b_planning_run_20261002.md` 的 “Assumption sensitivity” 表对每个槽位每次只改一个输入
 （`TT.assumptionSensitivity`，`tests/regression/test_planning_assumption_sensitivity.js` 独立重放并固定结论）。TP32，P1：
 
 | 模型 | MC | 名义 | 每层 +1 次集合通信 | 每层 −1 次 | 10% 注意力权重复制 | 全部复制 | 命中率 0.5 | `kMemory` 1.3 |

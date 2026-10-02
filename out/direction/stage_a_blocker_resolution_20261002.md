@@ -1,8 +1,8 @@
 # Stage A blocker resolution run
 
-Run ID: `stage-a-20260925-token-time`
+Run ID: `stage-a-20261002-token-time`
 Manifest hash: `d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0`
-Source commit: `fc91cc03acdb677197b1d851c743806db1648b93`
+Source commit: `53109efe105ca8c19645c0209288ec5e66c7cd9f`
 
 ## Planning token time (integration/planning/token_time.js)
 

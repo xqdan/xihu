@@ -41,6 +41,25 @@ for (const slot of slots) {
   });
 }
 
+// RES.utilization (0.6) is a nominal planning derate, not a second utilization next to the detailed model's
+// matrixUtil 0.65. kFlop is fitted as a ratio against it, so any other value, with kFlop refitted, gives the
+// same token time: the two numbers are never compared and cannot disagree about a result.
+{
+  const RES = require('../../teams/hardware/src/resource_profiles');
+  const was = RES.utilization, factor = 0.65 / was;
+  try {
+    for (const slot of slots) {
+      const model = TT.planningModel(workload, slot.modelId);
+      const spec = {tp: slot.tp, physicalProfile: slot.physicalProfile, mcProfile: slot.mcProfile};
+      const base = TT.slotTime(model, spec, workload.calibration).tpsPerUser;
+      RES.utilization = was * factor;
+      const refit = TT.slotTime(model, spec, {...workload.calibration, kFlop: workload.calibration.kFlop * factor}).tpsPerUser;
+      RES.utilization = was;
+      assert(Math.abs(base - refit) / base < 1e-12, `${slot.candidateId} ${slot.modelId}: token time depends on the nominal utilization`);
+    }
+  } finally { RES.utilization = was; }
+}
+
 const slotOf = (modelId, tp, mc) => slots.find(s => s.modelId === modelId && s.tp === tp && s.mcProfile === mc && s.physicalProfile === 'P1');
 const caseOf = (slot, id) => slot.assumptionSensitivity.find(c => c.id === id);
 

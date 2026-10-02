@@ -23,7 +23,7 @@ context 分片要求每个 rank 拿到全部 head 的 q，两条路：
 
 ## 为什么不选复制权重
 
-敏感度（`out/detailed/stage_b_planning_run_20260925.md`，TP32，P1）：复制 10% 的注意力权重，GLM 在 MC320 降到 981，低于 1000；全部复制，两个模型在两个 MC 上都远低于目标（GLM 193 / 386，DeepSeek 205 / 410）。
+敏感度（`out/detailed/stage_b_planning_run_20261002.md`，TP32，P1）：复制 10% 的注意力权重，GLM 在 MC320 降到 981，低于 1000；全部复制，两个模型在两个 MC 上都远低于目标（GLM 193 / 386，DeepSeek 205 / 410）。
 
 ## 后果（TP32，P1）
 
