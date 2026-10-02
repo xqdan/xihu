@@ -17,6 +17,7 @@
     "physical:search": "node integration/pipelines/generate_physical_design.js",
     "workflow:brief": "node integration/pipelines/search_brief.js brief",
     "workflow:verify-landed": "node integration/pipelines/search_brief.js verify",
+    "workflow:run": "node integration/pipelines/run_workflow.js",
     "dashboard": "node integration/pipelines/generate_direction_feedback.js && node integration/pipelines/generate_global_dashboard.js",
     "workload:planning": "node integration/pipelines/generate_planning_operator_workload.js",
     "contracts": "node integration/pipelines/generate_team_contracts.js",

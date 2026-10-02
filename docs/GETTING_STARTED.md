@@ -12,7 +12,7 @@
 
 ```sh
 git clone https://github.com/xqdan/xihu.git && cd xihu
-npm test            # 35 个测试文件，全部应输出 PASS；约半分钟
+npm test            # 37 个测试文件，全部应输出 PASS；约半分钟
 ```
 
 `npm test` 失败说明你的工作区和仓库基线不一致，先解决它再做别的。
@@ -158,7 +158,7 @@ console.log('matrixUtil=0.55', f(withTech({matrixUtil: 0.55}, () => O.evaluate(x
 console.log('sharedMiB=12   ', f(O.evaluate({...x, sharedMiB: 12})));                   // 1022.73
 for (const s of [16, 24]) { const r = O.evaluate({...x, sharedMiB: s}), p = r.p;
   console.log(`sharedMiB=${s}`, r.tps.toFixed(2), 'TPS/usr, die', p.dieArea.toFixed(2), 'mm²,', p.diePower.toFixed(2), 'W'); }
-// sharedMiB=16 1101.77 TPS/usr, die 373.71 mm², 286.22 W
+// sharedMiB=16 1101.77 TPS/usr, die 365.34 mm², 283.27 W
 // sharedMiB=24 1101.77 TPS/usr, die 381.64 mm², 286.94 W
 ```
 
@@ -361,7 +361,7 @@ npm test
 
 **单个 agent 做一个任务。** 先写任务卡（职责、允许改的路径、输入版本、输出、验收），完成后交 handoff packet。模板：[`DETAIL_AGENT_TASK_CARD.md`](../teams/council/docs/detailed/DETAIL_AGENT_TASK_CARD.md)、[`DETAIL_HANDOFF_PACKET.md`](../teams/council/docs/detailed/DETAIL_HANDOFF_PACKET.md)，工作流计划见 [`AGENT_WORKSTREAM_PLAN.md`](../teams/council/docs/AGENT_WORKSTREAM_PLAN.md)。在 Claude Code 里让 agent 先读 `AGENTS.md` 和任务卡，只在允许的路径里改。
 
-**跑设计流程。** [`integration/orchestration/`](../integration/orchestration/README.md) 下有 19 个 `design.*.workflow.js`（Claude Code Workflow 脚本，不能用 `node` 运行），按阶段调起 `teams/council/strategies/` 下的 12 个无状态策略：契约 → 需求与方向 → 四个设计域（compute / memory / comm / physical）→ 详细设计链 → 收敛，以及 verify / backflow / audit 三个横切流程。搜索和 Gate 由脚本算，agent 只解释取舍并返回裁决，全程只读，文件由主循环落盘到 `out/`。成本随候选数 N 增长，不适合日常小改动；到目前为止这些 workflow 只经过结构测试和 mock runtime 行为测试，尚未在真实 Workflow runtime 上端到端运行。历史评审存档见 [`teams/council/docs/reviews/`](../teams/council/docs/reviews/)；存档是 `MODEL` 等级的评审意见，不是 ADR，也不是 Gate 结论。
+**跑设计流程。** [`integration/orchestration/`](../integration/orchestration/README.md) 下有 19 个 `design.*.workflow.js`（Claude Code Workflow 脚本，不能用 `node` 运行），按阶段调起 `teams/council/strategies/` 下的 12 个无状态策略：契约 → 需求与方向 → 四个设计域（compute / memory / comm / physical）→ 详细设计链 → 收敛，以及 verify / backflow / audit 三个横切流程。搜索和 Gate 由脚本算，agent 只解释取舍并返回裁决，全程只读，文件由主循环落盘到 `out/`。成本随候选数 N 增长，不适合日常小改动；在 Claude Code 里原生运行；在 Cursor 或终端里用 `npm run workflow:run -- <workflow> --backend claude|cursor|mock`（默认 dry run，加 `--land` 才落盘）。到目前为止这些 workflow 只经过结构测试、mock runtime 行为测试和运行时/驱动器测试（后端用假 CLI、假 SDK），尚未用真实模型端到端运行。历史评审存档见 [`teams/council/docs/reviews/`](../teams/council/docs/reviews/)；存档是 `MODEL` 等级的评审意见，不是 ADR，也不是 Gate 结论。
 
 无论哪种用法，agent 产出的内容都要由对应团队的人审查后才能合入。
 

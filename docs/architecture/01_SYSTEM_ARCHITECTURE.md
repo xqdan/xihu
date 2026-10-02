@@ -4,7 +4,7 @@
 
 本版本把一个 7-reticle advanced package 定义为一个“单芯片”系统边界：8 个 Compute Die、16 个集成 Memory Cube、active interposer/RDL、package-local fabric、package-level collective 和 scale-out endpoint 均属于一个 package。该 package 对软件暴露为一个 TP rank；32 个 package 构成 TP32 replica。
 
-面积规划采用：工程 placement window 约 82×64 mm、5,248 mm²（ADR-0018）；8 × 373.71 mm² Compute Die + 16 × 100 mm² MC = 4,589.71 mm² 裸片面积，余约 658 mm² 给 placement/routing/keep-out。`k3_mc_baseline.json#package` 定义该约束，搜索对每个候选检查。
+面积规划采用：工程 placement window 约 82×64 mm、5,248 mm²（ADR-0018）；8 × 365.34 mm² Compute Die + 16 × 100 mm² MC = 4,522.73 mm² 裸片面积，余约 725 mm²（keep-out 观测值约 658 mm²，其余约 67 mm² 未占用）给 placement/routing/keep-out。`k3_mc_baseline.json#package` 定义该约束，搜索对每个候选检查。
 
 ## 1. 系统边界
 
@@ -60,8 +60,8 @@ flowchart TB
 | TMA | 4 × 512 B/cycle/core，1.64 TB/s/core 有效 |
 | 片上 NoC | 6×6 mesh，256 B/cycle × 4 lane，7.99 TB/s |
 | UCIe（Die 间） | 128 lane × 64 Gbps |
-| Die 面积 | 373.71 mm²（SF4），上限 400 |
-| Die / 卡功耗 | 286.22 W / 2768.47 W，液冷上限 300 W / 2800 W |
+| Die 面积 | 365.34 mm²（SF4），上限 400 |
+| Die / 卡功耗 | 283.27 W / 2744.88 W，液冷上限 300 W / 2800 W |
 | MC | 16 × 640 GB/s（`STRETCH`，B-002），参考档 320 GB/s |
 
 每 Die 另有单独的 collective/reduce 单元、Comm Core（集合通信触发、WQE 下发与接收计数，`PROPOSED`，

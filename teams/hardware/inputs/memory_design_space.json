@@ -24,7 +24,7 @@
     "dieAreaLimitMm2": 400,
     "cardPowerLimitW": 2800,
     "placementWindowMm2": 5248,
-    "limitsReason": "k3_mc_baseline.json#tpsDesign.hardware.limits (ADR-0021 P1) and package.placementWindowMm2 (ADR-0018); the die limits reflect liquid cooling (ADR-0005). Caliber caveat: this domain's card power is 8 x die + MC + the fixed 80 W, but it does not charge the shared-port term the physical domain adds (45.5141376 W, O.chargeSharedPortCost), so 2800 W is a looser check here than in the HW-09 space by exactly that difference (2722.9593600 + 45.5141376 = 2768.4734976). Stated rather than silently tolerated; see 04 section 5.1.1 and 09 section 3"
+    "limitsReason": "k3_mc_baseline.json#tpsDesign.hardware.limits (ADR-0021 P1) and package.placementWindowMm2 (ADR-0018); the die limits reflect liquid cooling (ADR-0005). Caliber caveat: this domain's card power is 8 x die + MC + the fixed 80 W, but it does not charge the shared-port term the physical domain adds (21.915648 W, O.chargeSharedPortCost), so 2800 W is a looser check here than in the HW-09 space by exactly that difference (2722.9593600 + 21.915648 = 2744.8750080). Stated rather than silently tolerated; see 04 section 5.1.1 and 09 section 3"
   },
   "constraints": [
     "the per-die deliverable bandwidth must not exceed the per-die UCIe port bandwidth (the link is the limit, not the cube): a candidate whose cube count x tier implies more than the port can carry is infeasible, not merely expensive",

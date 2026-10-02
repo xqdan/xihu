@@ -136,7 +136,7 @@ flowchart LR
 
 | 项目 | 值 | 等级 |
 |---|---|---|
-| 硬件规格 | P1：8 L + 4 H Core/Die、40 MiB SRAM、1.0 GHz、373.71 mm²；8 Die + 16 MC/卡（ADR-0021） | `MODEL` |
+| 硬件规格 | P1：8 L + 4 H Core/Die、40 MiB SRAM、1.0 GHz、365.34 mm²；8 Die + 16 MC/卡（ADR-0021） | `MODEL` |
 | K3 发布点 | 1101.77 TPS/usr（MC640/TP32）；MC320 下 586.46 | `MODEL` |
 | 三模型规划（TP32/MC640） | K3 1102.4、DeepSeek-V4-Pro 2299.3、GLM-5.2 2416.8 | `PLANNING_ESTIMATE` |
 | D-Gate / Q-Gate | PASS（仅限规划比较）/ 阻塞（无事件时序回放） | — |

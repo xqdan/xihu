@@ -9,7 +9,7 @@
 
 硬件规格只有一份：P1，权威值在
 [`teams/hardware/inputs/k3_mc_baseline.json`](../../teams/hardware/inputs/k3_mc_baseline.json)
-（ADR-0021）。封装面积 = 8 × Die 面积 + 16 × 100 mm²（MC 规划值）= 4589.71 mm²，在 5,248 mm² 窗口内。
+（ADR-0021）。封装面积 = 8 × Die 面积 + 16 × 100 mm²（MC 规划值）= 4522.73 mm²，在 5,248 mm² 窗口内。
 
 ```mermaid
 flowchart LR
@@ -57,8 +57,8 @@ K3 preset 来自
 | Shared SRAM | 16 MiB，16 slices（`sharedSramMiB`） | `MODEL` |
 | 总数据 SRAM | 40 MiB/Die（24 local + 16 shared） | 推导值 |
 | BF16 Dense peak | 278.5 TF/Die（`bf16DenseTflops`） | 推导值 |
-| 面积 | 373.71 mm²/Die（`estimatedAreaMm2`，含共享 SRAM 端口放大成本） | `MODEL` |
-| 功耗 | Die 286.2 W，卡 2768.5 W | `MODEL` |
+| 面积 | 365.34 mm²/Die（`estimatedAreaMm2`，含共享 SRAM 端口放大成本） | `MODEL` |
+| 功耗 | Die 283.3 W，卡 2744.9 W | `MODEL` |
 
 利用率、面积和功耗系数尚未由 memory compiler、标准单元、PHY 宏和综合/布线结果回标。
 共享 SRAM 读写端口的放大（`localWriteRatio`、`tmaPortWriteScale`、`sharedReadScale`）按 bank 面积

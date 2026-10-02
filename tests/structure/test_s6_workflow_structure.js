@@ -470,7 +470,7 @@ assert(/DIRECTION_BACKFLOW/.test(src.events) && /BLOCKED_CONFIG/.test(src.events
 // B3 execute（§6）：三件事。
 //   (a) physical-expert 的 PPA_DIRECTION_BACKFLOW 走专线回 A0，不与软件回流摊平；
 //   (b) 面积守恒容差为 0；
-//   (c) 卡功耗两套口径不得混用（差 45.5141376 W）。
+//   (c) 卡功耗两套口径不得混用（差 21.915648 W）。
 assert(/PPA_DIRECTION_BACKFLOW/.test(src.execute),
   'design.detail.execute 必须消费 physical-expert 的 PPA_DIRECTION_BACKFLOW');
 assert(/d\.verdict === 'PPA_DIRECTION_BACKFLOW'/.test(src.execute),
@@ -479,7 +479,7 @@ assert(/const AREA_TOLERANCE_MM2 = 0\b/.test(src.execute),
   'design.detail.execute 的面积守恒容差必须是 0：它是一条等式，不是不等式');
 assert(/const POWER_CALIBERS = \['MEMORY_DOMAIN', 'PHYSICAL_DOMAIN'\]/.test(src.execute),
   'design.detail.execute 必须钉住两套卡功耗口径');
-assert(/45\.5141376/.test(src.execute),
+assert(/21\.915648/.test(src.execute),
   'design.detail.execute 必须写明两套卡功耗口径的差值，否则混用无法被发现');
 assert(/const SOFTWARE_SCHEMA = declarationSchema\(\['LOCAL_DETAIL_FIX', 'DIRECTION_BACKFLOW', 'BLOCKED_CONFIG'\]\)/.test(src.execute)
   && /const PHYSICAL_SCHEMA = declarationSchema\(\['LOCAL_DETAIL_FIX', 'PPA_DIRECTION_BACKFLOW', 'BLOCKED_CONFIG'\]\)/.test(src.execute),

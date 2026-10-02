@@ -25,10 +25,11 @@ fs.writeFileSync(path.join(root, 'out/detailed/matrix_vector_candidates.json'), 
 const alt = S.alternatives(result), an = S.analysis(result);
 const f = (v, n = 1) => (v === null || v === Infinity ? '—' : v.toFixed(n));
 console.log(JSON.stringify({
-  design: Object.fromEntries(Object.entries(out.design).map(([d, v]) => [d, v.option])),
+  design: out.design ? Object.fromEntries(Object.entries(out.design).map(([d, v]) => [d, v.option])) : null,
+  closest: out.closest ? {pick: out.closest.pick, violations: out.closest.violations, packageReserveMm2: out.closest.packageReserveMm2} : undefined,
   search: {candidates: out.designSpace.candidates, feasible: out.designSpace.feasible},
   candidateSetSha256: cand.candidateSetSha256,
-  ratio: out.ratio, binding: out.binding, areaMm2: out.evaluation.areaMm2, tpsPerUser: out.evaluation.k3System.tpsPerUser,
+  ratio: out.ratio, binding: out.binding, areaMm2: out.evaluation && out.evaluation.areaMm2, tpsPerUser: out.evaluation && out.evaluation.k3System.tpsPerUser,
   alternatives: Object.fromEntries(Object.entries(alt).map(([d, o]) => [d, Object.fromEntries(Object.entries(o).map(([n, v]) =>
     [n, `${v.chosen ? 'chosen' : v.lostOn}; ${JSON.stringify(v.pick)} die ${f(v.dieRatio)}:1, H ${f(v.hCoreRatio)}:1, `
       + `TPS ${f(v.tpsPerUser, 2)}, area ${f(v.areaMm2, 2)} mm2, power ${f(v.diePowerW, 1)} W`]))])),

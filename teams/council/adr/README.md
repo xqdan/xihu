@@ -20,7 +20,7 @@
 | [ADR-0009](ADR-0009-target-metric.md) | ADR-001 | 目标口径 | 2026-09-20 | `FROZEN` |
 | [ADR-0010](ADR-0010-main-memory-route.md) | ADR-002 | 主存储路线 | 2026-09-20 | `BASELINE` |
 | [ADR-0011](ADR-0011-card-organization.md) | ADR-003 | 卡级组织 | 2026-09-20 | `BASELINE` |
-| [ADR-0012](ADR-0012-compute-die-candidate.md) | ADR-004 | Compute Die 候选 | 2026-09-20（2026-09-23 补充） | `MODEL`；数值被 ADR-0005、ADR-0021 取代 |
+| [ADR-0012](ADR-0012-compute-die-candidate.md) | ADR-004 | Compute Die 候选 | 2026-09-20（2026-09-23 补充） | `MODEL`；数值被 ADR-0005、ADR-0021、ADR-0023 取代 |
 | [ADR-0013](ADR-0013-sram-accounting-basis.md) | ADR-005 | SRAM 统计口径 | 2026-09-20 | `FROZEN` |
 | [ADR-0014](ADR-0014-remote-sram-semantics.md) | ADR-006 | 远端 SRAM 语义 | 2026-09-20 | `BASELINE` |
 | [ADR-0015](ADR-0015-lse-reduction.md) | ADR-007 | LSE 归约 | 2026-09-20 | `FROZEN` |
@@ -31,3 +31,4 @@
 | [ADR-0020](ADR-0020-tp-only-ffn-moe.md) | ADR-015 | 三个模型的 FFN/MoE 均按 TP 部署，不用 EP | 2026-09-25 | `DEPLOYMENT_DECISION` |
 | [ADR-0021](ADR-0021-single-hardware-spec.md) | — | 唯一硬件规格 P1；删除 P0 规格与旧搜索产物 | 2026-09-26 | `BASELINE` |
 | [ADR-0022](ADR-0022-comm-core.md) | — | 每 Die 一个 Comm Core，集合通信触发、WQE 下发与接收计数硬件化 | 2026-09-29 | `PROPOSED` |
+| [ADR-0023](ADR-0023-shared-port-write-ratio.md) | — | 回收共享 SRAM 的 local 写端口放大（`localWriteRatio` 1.70 → 1） | 2026-10-02 | `PROPOSED` |

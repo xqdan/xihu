@@ -62,11 +62,11 @@ close(ev.dieGBs, dieGBs, 'die bandwidth is the cube count times the capped per-c
 assert(ev.packageAreaMm2 <= req.placementWindowMm2, 'package within the placement window');
 assert(ev.cardPowerW <= req.cardPowerLimitW, 'card power within its limit');
 // This domain's card power is 8 x die + MC + the fixed 80 W; it does not charge
-// the shared-port term the physical domain adds (45.5141376 W), which is why the
-// two domains publish 2722.9593600 and 2768.4734976 W for the same point.
+// the shared-port term the physical domain adds (21.915648 W), which is why the
+// two domains publish 2722.9593600 and 2744.8750080 W for the same point.
 const replayed = result.ctx.replays[ev.mcGBs];
 close(ev.cardPowerW, result.ctx.dies * replayed.diePowerW + ev.mcPowerW + 80, 'card power is the compute dies plus the MC term plus the fixed overhead');
-assert.strictEqual(Math.round((ev.cardPowerW + 45.5141376) * 1e6) / 1e6, 2768.473498, 'the two domains differ by exactly the shared-port charge');
+assert.strictEqual(Math.round((ev.cardPowerW + 21.915648) * 1e6) / 1e6, 2744.875008, 'the two domains differ by exactly the shared-port charge');
 assert.strictEqual(ev.areaReserveMm2, req.placementWindowMm2 - ev.packageAreaMm2, 'the reserve is what the window has left');
 
 // 4. Capacity is a floor the winner clears without being bound by it. This is

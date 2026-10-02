@@ -123,7 +123,8 @@ function buildSearchBrief(domain, {max = DEFAULT_MAX, recompute = true, artifact
   return {
     ok: true,
     domain,
-    designSpaceSha256: data.candidateSetSha256,
+    candidateSetSha256: data.candidateSetSha256,
+    designSpaceFileSha256: space.sha256,
     totalCandidates: data.totalCandidates,
     feasibleCandidates: data.feasibleCandidates,
     listed: data.candidates.length,
@@ -136,7 +137,7 @@ function buildSearchBrief(domain, {max = DEFAULT_MAX, recompute = true, artifact
       artifactPath: entry.artifact,
       artifactSha256,
       designSpaceFile: space.file,
-      designSpaceSha256: space.sha256,
+      designSpaceFileSha256: space.sha256,
       fingerprintRecomputed: recompute
     },
     notes: caliberStated
@@ -172,8 +173,8 @@ function verifyLandedWinner(domain, winner, runRecord, {artifact} = {}) {
     if (row.feasible !== true) failures.push(`winner ${winner.optionId} is not feasible in the artifact`);
   }
 
-  if (!runRecord || runRecord.designSpaceSha256 !== data.candidateSetSha256) {
-    failures.push(`run record names fingerprint ${runRecord && runRecord.designSpaceSha256}, the artifact has ${data.candidateSetSha256}`);
+  if (!runRecord || runRecord.candidateSetSha256 !== data.candidateSetSha256) {
+    failures.push(`run record names fingerprint ${runRecord && runRecord.candidateSetSha256}, the artifact has ${data.candidateSetSha256}`);
   }
   const excluded = (runRecord && runRecord.merge && runRecord.merge.excluded) || [];
   for (const item of excluded) {

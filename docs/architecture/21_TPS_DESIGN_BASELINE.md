@@ -70,7 +70,7 @@ P1 数字虽已高于 1050，但架构闸门要求可制造的 MC 路线和详�
   面积和功耗一起买到更多 H 算力。
 
 当前发布点的硬件：8 个 L core；4 个 H core，每个 5 × 48×128 engine；每 core 512 向量 lane；
-H local SRAM 4 MiB，KV tile 32768；UCIe 128 lane。Die 373.71 mm²（N4 参考下为 374.86 mm²）、286.22 W，卡 2768.47 W。
+H local SRAM 4 MiB，KV tile 32768；UCIe 128 lane。Die 365.34 mm²（N4 参考下、端口放大之前为 374.86 mm²）、283.27 W，卡 2744.88 W。
 
 ## 2. 时间账
 
@@ -139,10 +139,10 @@ UCIe 回到 128 lane 后，LSE merge 的协议时间降到 0.98 µs，五类都�
 | 项目 | 规格 | 状态 |
 | --- | --- | --- |
 | 卡组织 | 8 Compute Die + 16 MC；每 Die 本地 2 MC；一张卡 = 一个 TP rank；32 张卡构成 TP32 | `BASELINE`（ADR-0011） |
-| 封装 | 7-reticle placement window 5248 mm²；当前占用 4589.71 mm² | `BASELINE`（ADR-0018） |
+| 封装 | 7-reticle placement window 5248 mm²；当前占用 4522.73 mm² | `BASELINE`（ADR-0018） |
 | 工艺 | 三星 SF4 级 4 nm（面积按第 1.2 节折算） | `ASSUMPTION`（B-006） |
 | 散热 | 液冷（冷板）；冷板、VRM、卡供电未建模 | `ASSUMPTION`（O-015） |
-| 卡功耗 | 2768.47 W（上限 2800 W），其中 MC 398.72 W | `MODEL` |
+| 卡功耗 | 2744.88 W（上限 2800 W），其中 MC 398.72 W | `MODEL` |
 | 时钟 | 1.0 GHz（固定，第 1.1 节） | `BASELINE`；实现性待 B-006 |
 
 ### 3.2 计算单元
@@ -168,10 +168,11 @@ UCIe 回到 128 lane 后，LSE merge 的协议时间降到 0.98 µs，五类都�
 | Shared 窗口 | 8 × 16 × 0.85 = 108.80 MiB/卡 | — | 峰值预留 100.24 MiB/卡 |
 | RDMA workspace | 1.26 MiB | — | 集合通信 staging |
 
-Shared SRAM 端口放大（`localWriteRatio` 1.70、`tmaDedicatedPort` ×1.55、`sharedReadScale` 1.18、
-`sharedReadPerWrite` 0.18）已计费：每 Die 16.15 mm²（SF4）、5.69 W，每卡 45.51 W。
+Shared SRAM 端口放大（`localWriteRatio` 1、`tmaDedicatedPort` ×1.55、`sharedReadScale` 1.18、
+`sharedReadPerWrite` 0.18）已计费：每 Die 7.78 mm²（SF4）、2.74 W，每卡 21.92 W。
 在发布点全部关掉后 TPS 只降到 1101.71（第 5 节）。
-每卡 45.51 W 只换来 0.06 TPS，是下一轮可以回收的预算；是否回收由 ADR-0005 的变更流程决定，本文不擅自修改。
+`localWriteRatio` 原为 1.70，由 ADR-0023 降到 1：这一项单独占 8.37 mm²/Die、2.95 W/Die，
+回放里 TPS 不变（1101.77）。剩下的三项仍合计 0.06 TPS，是否继续回收走 ADR-0005 的变更流程。
 
 ### 3.4 数据搬运
 
@@ -208,8 +209,8 @@ DMA 已接近满载。UCIe 回到 128 lane 后 MC 带宽不再被端口截断，
 | UCIe | 22.34 | 31.46 |
 | RDMA | 10.60 | 6.72 |
 | 控制/杂项 | 15.33 | 23.60 |
-| Shared 端口放大 | 16.15 | 5.69 |
-| **合计** | **373.71**（上限 400） | **286.22**（上限 300，液冷） |
+| Shared 端口放大 | 7.78 | 2.74 |
+| **合计** | **365.34**（上限 400） | **283.27**（上限 300，液冷） |
 
 PHY shoreline 占用 24.21 mm，预算 52.95 mm。
 
@@ -309,7 +310,7 @@ TMA 通道与 DMA、算子和集合通信共享 shared 读口和 fabric，与同
 | `kvCache` | 模型格式 | `'bf16'` | 不可行（H local tile） | — | `MODEL`（B-001） |
 
 - 单独回退 `tmaLane` 或 `kvPrefetch`，TPS 会跌破 1000；其余单项回退仍在 1000 以上，但每一项都降低 TPS，余量 78.95 µs 是各项叠加的结果。
-- `sharedPortScaling` 贡献仅 0.06 TPS，代价是每 Die 16.15 mm²、5.69 W（第 3.3 节）。
+- `sharedPortScaling` 贡献仅 0.06 TPS，代价是每 Die 7.78 mm²、2.74 W（第 3.3 节；`localWriteRatio` 已按 ADR-0023 由 1.70 降到 1）。
 - 在发布点开着但**不影响 TPS**的开关：`tilePartialReady`，它只通过 GAIN 起作用。
 - 计数口径切回 `repo-510` 得 941.74 TPS/usr。这是口径差，不能读作优化收益（ADR-0004）。
 

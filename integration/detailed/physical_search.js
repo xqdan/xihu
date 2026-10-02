@@ -95,8 +95,8 @@ function fingerprint(candidates) {
 //
 // One correction against P.resize, stated here rather than patched into the frozen
 // basis file: resize rebuilds dieArea from the classified terms only, so the charged
-// shared-port cost drops out -- 357.565 mm2 where tpsDesign.hardware publishes 373.71
-// and 280.530 W where it publishes 286.219. The missing term is
+// shared-port cost drops out -- 357.565 mm2 where tpsDesign.hardware publishes 365.34
+// and 280.530 W where it publishes 283.269. The missing term is
 // O.chargeSharedPortCost()'s sharedPorts entry (MODEL, O-007), which is a function of
 // the card-level shared-SRAM bandwidth the plan asks for beyond what physical() sized.
 // It is re-derived here on the searched basis: the port area scales with the process
@@ -196,8 +196,8 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
 // The first two keys are in that order for an epistemic reason, and it matters: the
 // reserve is not a resource the design spends, it is a prediction about the vendor's
 // stitch map, RDL and keep-out. Ranking on leftover alone would systematically elect
-// the most generous assumption -- a 10% keep-out leaves 133.5 mm2 of "reserve" and
-// outranks the observed 12.54%, which leaves 0.189 mm2, purely because it claims less
+// the most generous assumption -- a 10% keep-out leaves 200.5 mm2 of "reserve" and
+// outranks the observed 12.54%, which leaves 67.2 mm2, purely because it claims less
 // about the vendor. An option whose premise the repository cannot verify does not earn
 // rank on the budget that premise frees; the same rule holds for what a held-out route
 // would have bought. Within one keep-out level, more leftover is strictly better.
@@ -238,7 +238,7 @@ function lostOn(a, w) {
 // The window identity the space demands (areaConservationTolerance: 0), stated as a
 // check rather than an always-true rearrangement: placed + keep-out must fit the
 // window, with `satisfied` computed and `overUnderMm2` = window - placed - keep-out
-// (the published point lands on 0.189 mm2, i.e. the reserve exactly fills the rest).
+// (the published point leaves 67.172 mm2 since ADR-0023; it was 0.189 mm2 before the shared-port reclaim).
 function conservation(req, reserveFraction, placedMm2) {
   const windowMm2 = req.placementWindowMm2;
   const keepOutMm2 = windowMm2 * reserveFraction;

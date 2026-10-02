@@ -158,7 +158,7 @@ sequenceDiagram
 | Comm Core | 触发到 doorbell 时延、WQE 数、commit 计数、ACK 合并、slot 冻结 | 每 Die | 控制路径（`comm_core_design.json`） |
 | Launch | descriptor 数、doorbell、launch stall | 每 Die | `launch` |
 | 重叠 | shared 专家与集合通信重叠时长 | 每层 | `commOverlap` |
-| 物理 | Core/Die 温度、频率、功率 | 每 Die | 功耗 286.22 W |
+| 物理 | Core/Die 温度、频率、功率 | 每 Die | 功耗 283.27 W |
 | 时间戳 | 每 operator / tile 起止 | 每 tile | 全部 |
 
 ### 5.2 时间账重建

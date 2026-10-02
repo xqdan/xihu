@@ -39,7 +39,7 @@ const OPT={
   // what physical() sized. chargeSharedPortCost=true charges the extra bandwidth
   // as bank/port area and port power using the same TECH coefficients as
   // physical(), and re-checks the die/card limits.
-  localWriteRatio:1.70,tmaDedicatedPort:true,tmaPortWriteScale:1.55,sharedReadScale:1.18,sharedReadPerWrite:.18,
+  localWriteRatio:1,tmaDedicatedPort:true,tmaPortWriteScale:1.55,sharedReadScale:1.18,sharedReadPerWrite:.18,
   chargeSharedPortCost:true,
   // Collective counting basis, forwarded to the simulator. 'reference-393'
   // matches the reference page's target design (93 layers, 92 MoE):

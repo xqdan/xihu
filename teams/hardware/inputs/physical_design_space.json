@@ -46,7 +46,7 @@
       "question": "Which process basis the area is derived on",
       "options": {
         "SF4": {"process": "SF4", "evidence": "k3_physical_basis.js BASIS.process; logic 57x32 / 51x28 = 1.277, SRAM 0.0262 / 0.021 = 1.248, PHY unscaled. ASSUMPTION (B-006): public node figures, not PDK or macro data. This is the published point"},
-        "N4-ref": {"process": "N4-ref", "evidence": "the project's N4 reference coefficients, kept so every historical model replays unchanged; 374.86 mm2 die area vs 373.71 on SF4. Reported as a sensitivity, not a candidate, unless the domain owner reopens the node decision"}
+        "N4-ref": {"process": "N4-ref", "evidence": "the project's N4 reference coefficients, kept so every historical model replays unchanged; 374.86 mm2 die area (before the shared-port charge) vs 365.34 on SF4 (charge included). Reported as a sensitivity, not a candidate, unless the domain owner reopens the node decision"}
       }
     },
     "matrixTFPerMm2": {
@@ -81,7 +81,7 @@
     "frequency": {
       "chosen": "1.0 GHz fixed",
       "alternatives": ["raise frequency to buy compute and spend power"],
-      "reason": "card.powerLimitW is the binding constraint at the published point (2768.47 / 2800 W, 98.9% used), and the physical strategy explicitly prefers lowering frequency over relaxing thermal margin. UNVERIFIED: no voltage/frequency curve is in the repository, so a frequency sweep cannot be scored here"
+      "reason": "card.powerLimitW is the binding constraint at the published point (2744.88 / 2800 W, 98.0% used), and the physical strategy explicitly prefers lowering frequency over relaxing thermal margin. UNVERIFIED: no voltage/frequency curve is in the repository, so a frequency sweep cannot be scored here"
     },
     "nearMemoryCompute": {
       "chosen": "no compute inside the cube, cube area stays at the planning 100 mm2",

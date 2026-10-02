@@ -4,7 +4,7 @@
   "document": "teams/hardware/docs/09_PACKAGE_POWER_RAS.md",
   "designSpace": {
     "file": "teams/hardware/inputs/physical_design_space.json",
-    "sha256": "4de2c7e896f76a1c67dd04a8472516b2ce9a5c0559c16fca0eba303f5d46698b",
+    "sha256": "2237dc86c1ea725465c8559838075c1ee8a2c0b71742cb3cd9963156aa658d9e",
     "dimensions": [
       "process",
       "matrixTFPerMm2",
@@ -92,9 +92,9 @@
       "depth": 4,
       "windowFraction": 1
     },
-    "publishedDieAreaMm2": 373.7139860943489,
-    "publishedDiePowerW": 286.2191872000001,
-    "publishedCardPowerW": 2768.473497600001
+    "publishedDieAreaMm2": 365.3410392708195,
+    "publishedDiePowerW": 283.2693760000001,
+    "publishedCardPowerW": 2744.875008000001
   },
   "design": {
     "process": {
@@ -127,7 +127,7 @@
     },
     "frequency": {
       "chosen": "1.0 GHz fixed",
-      "reason": "card.powerLimitW is the binding constraint at the published point (2768.47 / 2800 W, 98.9% used), and the physical strategy explicitly prefers lowering frequency over relaxing thermal margin. UNVERIFIED: no voltage/frequency curve is in the repository, so a frequency sweep cannot be scored here"
+      "reason": "card.powerLimitW is the binding constraint at the published point (2744.88 / 2800 W, 98.0% used), and the physical strategy explicitly prefers lowering frequency over relaxing thermal margin. UNVERIFIED: no voltage/frequency curve is in the repository, so a frequency sweep cannot be scored here"
     },
     "nearMemoryCompute": {
       "chosen": "no compute inside the cube, cube area stays at the planning 100 mm2",
@@ -150,14 +150,14 @@
     },
     "process": "SF4",
     "matrixTFPerMm2": 3.2,
-    "dieAreaMm2": 373.7139860943489,
-    "diePowerW": 286.2191872000001,
+    "dieAreaMm2": 365.3410392708195,
+    "diePowerW": 283.2693760000001,
     "diePowerLimitW": 300,
-    "cardPowerW": 2768.473497600001,
+    "cardPowerW": 2744.875008000001,
     "cardPowerLimitW": 2800,
     "mcPowerW": 398.72,
-    "packageAreaMm2": 4589.711888754791,
-    "reserveMm2": 0.18891124520905578,
+    "packageAreaMm2": 4522.728314166556,
+    "reserveMm2": 67.17248583344463,
     "shorelineMm": 24.21333333333333,
     "edgeBudgetMm": 52.94630302642081,
     "area": {
@@ -172,7 +172,7 @@
       "ucie": 22.336,
       "rdma": 10.6,
       "misc": 15.327731092436974,
-      "sharedPorts": 16.148806991596636
+      "sharedPorts": 7.775860168067228
     },
     "power": {
       "matrix": 133.69344,
@@ -184,13 +184,13 @@
       "ucie": 31.45728,
       "rdma": 6.720000000000001,
       "control": 23.6,
-      "sharedPorts": 5.6892672
+      "sharedPorts": 2.7394560000000006
     },
     "areaConservation": {
       "windowMm2": 5248,
-      "placedMm2": 4589.711888754791,
+      "placedMm2": 4522.728314166556,
       "keepOutMm2": 658.0992000000001,
-      "overUnderMm2": 0.18891124520860103,
+      "overUnderMm2": 67.17248583344417,
       "toleranceMm2": 0,
       "satisfied": true
     }

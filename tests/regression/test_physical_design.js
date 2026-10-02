@@ -51,8 +51,8 @@ assert(!/"(alternatives|candidates|perOption|sweep)"\s*:\s*[[{]/.test(JSON.strin
 assert(stored.designSpace.feasible > 0 && stored.designSpace.feasible <= stored.designSpace.candidates);
 
 // 3. The winner reproduces the published hardware point. This is the test that
-// keeps the model and the basis honest: 09 section 0 publishes dieArea 373.71,
-// diePower 286.22, card power 2768.47, package 4589.71 and shoreline 24.21/52.95,
+// keeps the model and the basis honest: 09 section 0 publishes dieArea 365.34,
+// diePower 283.27, card power 2744.88, package 4522.73 and shoreline 24.21/52.95,
 // and tpsDesign.hardware is the single hardware spec (ADR-0021 P1). A replay
 // that dropped the shared-port charge reproduces 357.565 mm2 / 280.530 W instead
 // and would fail here -- which is exactly how that modelling error was caught.
@@ -60,10 +60,10 @@ const ev = stored.evaluation, hw = stored.hardware, req = stored.requirements;
 const D = result.ctx.space.dimensions;
 const tol = v => v * 1e-9 * Math.max(1, Math.abs(v));
 for (const [label, got, want] of [
-  ['die area', ev.dieAreaMm2, 373.7139860943489],
-  ['die power', ev.diePowerW, 286.2191872000001],
-  ['card power', ev.cardPowerW, 2768.473497600001],
-  ['package area', ev.packageAreaMm2, 4589.711888754791],
+  ['die area', ev.dieAreaMm2, 365.3410392708195],
+  ['die power', ev.diePowerW, 283.2693760000001],
+  ['card power', ev.cardPowerW, 2744.875008000001],
+  ['package area', ev.packageAreaMm2, 4522.728314166556],
   ['shoreline', ev.shorelineMm, 24.21333333333333],
   ['edge budget', ev.edgeBudgetMm, 52.94630302642081]]) {
   assert(Math.abs(got - want) <= tol(want) + 1e-12, `${label}: ${got} does not reproduce the published ${want}`);
@@ -201,7 +201,7 @@ const must = [
   ['card', `卡 ${f3(ev.cardPowerW)} W`],
   ['package', `裸片 ${f3(ev.packageAreaMm2)} mm²`],
   ['shoreline', `shoreline ${f3(ev.shorelineMm)} / ${f3(ev.edgeBudgetMm)} mm`],
-  ['conservation', `\`${f3(con.placedMm2, 3)} + ${f3(con.keepOutMm2, 3)} = ${f2(con.windowMm2, 0)}\``],
+  ['conservation', `\`${f3(con.placedMm2, 3)} + ${f3(con.keepOutMm2, 3)} ≤ ${f2(con.windowMm2, 0)}\``],
   ['die margin', `**${f3(ev.diePowerLimitW - ev.diePowerW)} W**`],
   ['card margin', `**${f3(ev.cardPowerLimitW - ev.cardPowerW)} W**`],
   ['port area', `357.565 + ${f3(portAreaMm2)} = ${f3(ev.dieAreaMm2)} mm²`],
