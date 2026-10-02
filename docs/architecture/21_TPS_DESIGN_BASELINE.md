@@ -310,6 +310,16 @@ TMA 通道与 DMA、算子和集合通信共享 shared 读口和 fabric，与同
 | `kvCache` | 模型格式 | `'bf16'` | 不可行（H local tile） | — | `MODEL`（B-001） |
 
 - 单独回退 `tmaLane` 或 `kvPrefetch`，TPS 会跌破 1000；其余单项回退仍在 1000 以上，但每一项都降低 TPS，余量 78.95 µs 是各项叠加的结果。
+- **联合回退**（`tpsDesign.software.jointAblation`）：单项回退看起来余量充足，是因为每次只拿掉一项。把一组机制一起回退：
+
+  | 一起回退的机制 | TPS/usr | raw µs |
+  | --- | ---: | ---: |
+  | 调度类：`tmaLane`、`kvPrefetch`、`dmaPreempt`、`commOverlap` | 843.49 | 1013.29 |
+  | kernel 映射类：`softmaxFusion`、`epilogueFusion`、`pvMerge`、`launchBatching` | 976.39 | 875.37 |
+  | 两类全部 | 755.45 | 1131.37 |
+
+  所以 1000 TPS/usr 要求这些机制同时成立，而它们都是 `MODEL`（`launchBatching` 是 `ASSUMPTION`），没有 trace 或 RTL 证据。
+  测试要求每个联合回退都比组内任何一项单独回退更低。
 - `sharedPortScaling` 贡献仅 0.06 TPS，代价是每 Die 7.78 mm²、2.74 W（第 3.3 节；`localWriteRatio` 已按 ADR-0023 由 1.70 降到 1）。
 - 在发布点开着但**不影响 TPS**的开关：`tilePartialReady`，它只通过 GAIN 起作用。
 - 计数口径切回 `repo-510` 得 941.74 TPS/usr。这是口径差，不能读作优化收益（ADR-0004）。
@@ -325,6 +335,43 @@ TMA 通道与 DMA、算子和集合通信共享 shared 读口和 fabric，与同
 | KV tile 16384（发布值为 32768） | FP8 / BF16 | 1094.35 / 1027.08 |
 | KV tile 32768（发布值） | FP8 / BF16 | 1101.77 / 不可行（H local tile） |
 
+### 6.1 没有被任何东西测量的参数
+
+下面几项是模型输入，仓库里没有实测或综合数据。表中是只改这一项、其余不变的详细模型重放（`tpsDesign.sensitivity.assumptions`），
+"盈亏点"是 raw 预算 854.70 µs 仍成立的最低取值（二分求得）。
+
+| 参数 | 发布值 | 重放 | 盈亏点 |
+| --- | ---: | --- | --- |
+| MC 持续效率 `A.TECH.mcUtil` | 0.70 | 0.6 → 961.50；0.65 → 1030.89；0.75 → 1105.78 | 0.63 |
+| 矩阵利用率 `A.TECH.matrixUtil` | 0.65 | 0.55 → 1064.26；0.6 → 1084.95；0.7 → 1101.79 | 0.44 |
+| 向量利用率 `A.TECH.vectorUtil` | 0.35 | 0.25 → 1084.51；0.3 → 1100.71；0.45 → 1101.69 | 0.14 |
+| 专家预测命中率（模拟器输入） | 0.8 | 0.6 → 1067.16；0.7 → 1084.18；0.9 → 1114.97 | 降到 0.3 仍成立 |
+| `launchScale` | 0.45 | 0.7 → 1096.19；1 → 1088.47 | — |
+
+- **最薄的余量是 MC 持续效率**：从 0.70 降到 0.63 就跌破 1000，而它是 spec 里的一个常数，不是 MC 带宽档位（第 1 节的 MC640 风险之外的另一层）。
+  这个数在两处各有一份：详细模型读 `A.TECH.mcUtil`，规划模型读 `bandwidthTiers.sustainedEfficiency`。
+  `tests/regression/test_tps_design_baseline.js` 要求两者相等。
+- 预测命中率在模型里影响较小（降到 0.6 才掉 3.1%），但该参数只作用于模拟器的采纳逻辑，不改变预取任务的大小，所以这个小影响不应读作预测器本身不重要。
+
+### 6.2 规划口径与详细口径的差
+
+Stage A/B 的 18 个槽位用规划 token time，它的 5 个因子在**一个**详细重放点（K3，P1，MC640，TP32）上拟合，没有自由度。
+唯一能拿它与详细模拟器比较的是 K3 TP32 在不同 MC 带宽下的重放（`calibration.validation.holdout`）：
+
+| MC GB/s/颗 | 详细模型 | 规划模型 | 规划相对详细 | 角色 |
+| ---: | ---: | ---: | ---: | --- |
+| 320 | 586.46 | 551.21 | −6.0% | 留出 |
+| 400 | 721.01 | 689.01 | −4.4% | 留出 |
+| 480 | 853.44 | 826.81 | −3.1% | 留出 |
+| 560 | 977.00 | 964.61 | −1.3% | 留出 |
+| 640 | 1101.77 | 1102.41 | +0.1% | 拟合点 |
+
+- 规划模型在带宽越低时越悲观，说明 `kMemory` 不是常数。
+- 观察矩阵里每个槽位带 `corroboration`：K3 TP32 MC640 是 `FITTED_POINT`（残差不是证据），K3 TP32 MC320 是 `DETAILED_HOLDOUT`，
+  其余 16 个槽位（GLM-5.2、DeepSeek-V4-Pro 的全部，以及 K3 的 TP8/TP16）是 `UNCORROBORATED`——没有对应的详细模型，数字是 K3 因子的外推。
+- Stage A 与 Stage B 调用同一个公式、同一组标定，两者的 TPS 差在构造上为 0。因此 `design.detail.integrate` 的粗估-细估 delta 为 0
+  只说明两者同源；它对 `UNCORROBORATED` 槽位不是对账结果，workflow 会把这些槽位单独列出。
+
 几点读法：
 
 - 在同一候选上，MC 低于 640 GB/s 就不达标（560 GB/s 为 977.00）；ADR-0019 的默认上限 480 GB/s 只有 853.44。
@@ -338,6 +385,8 @@ TMA 通道与 DMA、算子和集合通信共享 shared 读口和 fabric，与同
 | 目标、B=1、TP32 | `FROZEN` | — |
 | K3 结构、dtype、FP8 KV | `MODEL` | B-001：模型清单、权重 manifest、FP8 KV 精度评估 |
 | MC 640 GB/s | `BLOCKER` | B-002：供应商规格（或放弃 MC640 另选架构） |
+| MC 持续效率 0.7、矩阵/向量利用率、预测命中率 | `ASSUMPTION` | B-003、B-006：第 6.1 节；MC 持续效率的盈亏点只有 0.63 |
+| GLM-5.2、DeepSeek-V4-Pro、K3 TP8/TP16 的规划 TPS | `ASSUMPTION` | 第 6.2 节：没有详细模型，是 K3 因子的外推 |
 | launchScale、预测命中率 0.8 | `ASSUMPTION` | B-003：runtime trace、专家预测实测 |
 | 卡内拓扑、scale-out、UCIe 128 lane | `BLOCKER` | B-004、B-005：统一拓扑与 PHY 方案 |
 | 频率 1.0 GHz（固定）、面积、功耗系数 | `MODEL` | B-006：synthesis/floorplan/IP 回标 |

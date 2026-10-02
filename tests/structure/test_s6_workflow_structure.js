@@ -502,6 +502,9 @@ assert(/const OBSERVATION_STATES = \['MODEL_OBSERVED', 'PENDING_MODEL_RUN', 'BLO
   'design.detail.integrate 的观察状态必须是四个枚举');
 assert(/const deltaBySlot = new Map/.test(src.integrate) && /deltaPct/.test(src.integrate),
   'design.detail.integrate 的 delta 百分比必须由脚本相减得出，不由任何 agent 产生');
+assert(/const CORROBORATION_KINDS = \['FITTED_POINT', 'DETAILED_HOLDOUT', 'UNCORROBORATED', 'NONE'\]/.test(src.integrate)
+  && /uncorroboratedSlots/.test(src.integrate) && /corroborationBySlot/.test(src.integrate),
+  'design.detail.integrate 必须区分有独立印证的槽位与未印证的槽位：粗估与细估同公式，delta 为 0 不是对账结果');
 assert(/silentDeltas/.test(src.integrate),
   'design.detail.integrate 必须抓住"未被提及的 delta"——不设宽容线，非零就要归位');
 assert(/head\('architect'\)/.test(src.integrate),

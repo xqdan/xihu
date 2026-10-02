@@ -51,6 +51,13 @@
     "planningEstimated": 18,
     "blockedConfig": 0,
     "siliconObserved": 0,
+    "corroboration": {
+      "fittedPoint": 1,
+      "detailedHoldout": 1,
+      "uncorroborated": 16,
+      "heldOutMaxAbsResidualPct": 6.011036642622047,
+      "note": "Stage A and Stage B are the same formula on the same calibration, so their TPS difference is 0 by construction; corroboration is the comparison with the K3 detailed simulator, where one exists."
+    },
     "pendingModelRun": 18,
     "percentComplete": 0,
     "planningPercentComplete": 100,
@@ -104,7 +111,14 @@
           "bound": "memory"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "the detailed simulator maps K3 at TP32 only; this TP is scaled from the TP32 factors"
+      }
     },
     {
       "observationId": "K3-TP8-DECODE-1M-MC640",
@@ -145,7 +159,14 @@
           "bound": "memory"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "the detailed simulator maps K3 at TP32 only; this TP is scaled from the TP32 factors"
+      }
     },
     {
       "observationId": "K3-TP16-DECODE-1M-MC320",
@@ -186,7 +207,14 @@
           "bound": "memory"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "the detailed simulator maps K3 at TP32 only; this TP is scaled from the TP32 factors"
+      }
     },
     {
       "observationId": "K3-TP16-DECODE-1M-MC640",
@@ -227,7 +255,14 @@
           "bound": "memory"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "the detailed simulator maps K3 at TP32 only; this TP is scaled from the TP32 factors"
+      }
     },
     {
       "observationId": "K3-TP32-DECODE-1M-MC320",
@@ -268,7 +303,14 @@
           "bound": "memory"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "DETAILED_HOLDOUT",
+        "detailedTpsPerUser": 586.4584543522183,
+        "planningMinusDetailedPct": -6.011036642622047,
+        "source": "out/workload/planning_operator_workload.json#/calibration/validation/holdout",
+        "note": "not fitted: the residual is the held-out error of the K3 factors"
+      }
     },
     {
       "observationId": "K3-TP32-DECODE-1M-MC640",
@@ -309,7 +351,14 @@
           "bound": "collective"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "FITTED_POINT",
+        "detailedTpsPerUser": 1101.771070241925,
+        "planningMinusDetailedPct": 0.058212936434909324,
+        "source": "out/workload/planning_operator_workload.json#/calibration/validation/holdout",
+        "note": "the calibration point itself: the residual is not evidence"
+      }
     },
     {
       "observationId": "GLM-5.2-TP8-DECODE-1M-MC320",
@@ -350,7 +399,14 @@
           "bound": "memory"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
+      }
     },
     {
       "observationId": "GLM-5.2-TP8-DECODE-1M-MC640",
@@ -391,7 +447,14 @@
           "bound": "memory"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
+      }
     },
     {
       "observationId": "GLM-5.2-TP16-DECODE-1M-MC320",
@@ -432,7 +495,14 @@
           "bound": "memory"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
+      }
     },
     {
       "observationId": "GLM-5.2-TP16-DECODE-1M-MC640",
@@ -473,7 +543,14 @@
           "bound": "collective"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
+      }
     },
     {
       "observationId": "GLM-5.2-TP32-DECODE-1M-MC320",
@@ -514,7 +591,14 @@
           "bound": "collective"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
+      }
     },
     {
       "observationId": "GLM-5.2-TP32-DECODE-1M-MC640",
@@ -555,7 +639,14 @@
           "bound": "collective"
         }
       ],
-      "tpsPerUserShapeRange": null
+      "tpsPerUserShapeRange": null,
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
+      }
     },
     {
       "observationId": "DeepSeek-V4-Pro-TP8-DECODE-1M-MC320",
@@ -599,6 +690,13 @@
       "tpsPerUserShapeRange": {
         "min": 463.84519823480133,
         "max": 498.1588455049878
+      },
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
       }
     },
     {
@@ -643,6 +741,13 @@
       "tpsPerUserShapeRange": {
         "min": 927.6903964696027,
         "max": 996.3176910099756
+      },
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
       }
     },
     {
@@ -687,6 +792,13 @@
       "tpsPerUserShapeRange": {
         "min": 927.6903964696027,
         "max": 996.3176910099756
+      },
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
       }
     },
     {
@@ -731,6 +843,13 @@
       "tpsPerUserShapeRange": {
         "min": 1855.3807929392053,
         "max": 1949.1237606733407
+      },
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
       }
     },
     {
@@ -775,6 +894,13 @@
       "tpsPerUserShapeRange": {
         "min": 1855.3807929392053,
         "max": 1992.6353820199513
+      },
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
       }
     },
     {
@@ -819,6 +945,13 @@
       "tpsPerUserShapeRange": {
         "min": 2299.318900631917,
         "max": 2318.386856188775
+      },
+      "corroboration": {
+        "kind": "UNCORROBORATED",
+        "detailedTpsPerUser": null,
+        "planningMinusDetailedPct": null,
+        "source": null,
+        "note": "no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)"
       }
     }
   ]

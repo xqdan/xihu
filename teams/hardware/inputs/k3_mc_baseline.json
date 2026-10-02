@@ -672,6 +672,51 @@
           }
         }
       ],
+      "jointAblation": {
+        "scheduler": {
+          "keys": [
+            "tmaLane",
+            "kvPrefetch",
+            "dmaPreempt",
+            "commOverlap"
+          ],
+          "ablation": {
+            "feasible": true,
+            "tpsPerUser": 843.4924435808683,
+            "rawLatencyUs": 1013.2880990283724
+          }
+        },
+        "kernelMapping": {
+          "keys": [
+            "softmaxFusion",
+            "epilogueFusion",
+            "pvMerge",
+            "launchBatching"
+          ],
+          "ablation": {
+            "feasible": true,
+            "tpsPerUser": 976.3905447926797,
+            "rawLatencyUs": 875.3678118445281
+          }
+        },
+        "schedulerAndKernelMapping": {
+          "keys": [
+            "tmaLane",
+            "kvPrefetch",
+            "dmaPreempt",
+            "commOverlap",
+            "softmaxFusion",
+            "epilogueFusion",
+            "pvMerge",
+            "launchBatching"
+          ],
+          "ablation": {
+            "feasible": true,
+            "tpsPerUser": 755.4548604332412,
+            "rawLatencyUs": 1131.3725008145393
+          }
+        }
+      },
       "noEffectAtPublishedPoint": [
         {
           "key": "tilePartialReady",
@@ -697,6 +742,127 @@
     "sensitivity": {
       "tauBreakEvenUs": 1.3508882635668533,
       "tauHeadroomUsPerCollective": 0.20088826356685335,
+      "assumptions": {
+        "mcUtil": {
+          "where": "A.TECH.mcUtil",
+          "published": 0.7,
+          "note": "sustained fraction of the MC payload bandwidth (detailed model); the planning model reads the same number from spec.bandwidthTiers.sustainedEfficiency",
+          "replays": {
+            "0.6": {
+              "feasible": true,
+              "tpsPerUser": 961.5046145253564,
+              "rawLatencyUs": 888.9201796735787
+            },
+            "0.65": {
+              "feasible": true,
+              "tpsPerUser": 1030.8929446709303,
+              "rawLatencyUs": 829.0878884360611
+            },
+            "0.75": {
+              "feasible": true,
+              "tpsPerUser": 1105.7780581479992,
+              "rawLatencyUs": 772.9406895017808
+            }
+          },
+          "breakEven": {
+            "valueAtBudget": 0.6284493765729164
+          }
+        },
+        "matrixUtil": {
+          "where": "A.TECH.matrixUtil",
+          "published": 0.65,
+          "note": "achieved fraction of the tensor-engine peak",
+          "replays": {
+            "0.55": {
+              "feasible": true,
+              "tpsPerUser": 1064.2555259650667,
+              "rawLatencyUs": 803.0974083275838
+            },
+            "0.6": {
+              "feasible": true,
+              "tpsPerUser": 1084.9492081199517,
+              "rawLatencyUs": 787.7796013897447
+            },
+            "0.7": {
+              "feasible": true,
+              "tpsPerUser": 1101.7921567815938,
+              "rawLatencyUs": 775.736920471
+            }
+          },
+          "breakEven": {
+            "valueAtBudget": 0.4432002184307748
+          }
+        },
+        "vectorUtil": {
+          "where": "A.TECH.vectorUtil",
+          "published": 0.35,
+          "note": "achieved fraction of the vector-lane peak",
+          "replays": {
+            "0.25": {
+              "feasible": true,
+              "tpsPerUser": 1084.5113259703626,
+              "rawLatencyUs": 788.0976751774485
+            },
+            "0.3": {
+              "feasible": true,
+              "tpsPerUser": 1100.7142072815454,
+              "rawLatencyUs": 776.4966137865391
+            },
+            "0.45": {
+              "feasible": true,
+              "tpsPerUser": 1101.6935927064953,
+              "rawLatencyUs": 775.8063225194389
+            }
+          },
+          "breakEven": {
+            "valueAtBudget": 0.14092509057181812
+          }
+        },
+        "prediction": {
+          "where": "plan.c.prediction (simulator input, 0.8)",
+          "published": 0.8,
+          "note": "expert prefetch hit rate; ASSUMPTION (B-003)",
+          "replays": {
+            "0.6": {
+              "feasible": true,
+              "tpsPerUser": 1067.1630013394495,
+              "rawLatencyUs": 800.9093771317757
+            },
+            "0.7": {
+              "feasible": true,
+              "tpsPerUser": 1084.1807189739066,
+              "rawLatencyUs": 788.3379954494701
+            },
+            "0.9": {
+              "feasible": true,
+              "tpsPerUser": 1114.9660037423528,
+              "rawLatencyUs": 766.5712244427855
+            }
+          },
+          "breakEven": {
+            "valueAtBudget": null,
+            "floor": 0.3,
+            "note": "the budget holds down to the floor"
+          }
+        },
+        "launchScale": {
+          "where": "OPT.launchScale",
+          "published": 0.45,
+          "note": "launch cost saved by batching; ASSUMPTION (B-003)",
+          "replays": {
+            "1": {
+              "feasible": true,
+              "tpsPerUser": 1088.4721900566692,
+              "rawLatencyUs": 785.2298501593838
+            },
+            "0.7": {
+              "feasible": true,
+              "tpsPerUser": 1096.1865258535381,
+              "rawLatencyUs": 779.7038501593948
+            }
+          }
+        }
+      },
       "depth": {
         "1": {
           "feasible": true,

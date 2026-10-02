@@ -224,6 +224,36 @@ for (const row of ledger) {
   });
 }
 
+// What, if anything, the planning number of a slot can be compared with. Stage A and
+// Stage B evaluate the same token-time formula on the same calibration, so their
+// difference is zero by construction and says nothing; the only independent estimate
+// is the K3 detailed simulator, which maps K3 at TP32 only. Every other slot is marked
+// UNCORROBORATED instead of being reconciled to itself.
+const HOLDOUT_SOURCE = 'out/workload/planning_operator_workload.json#/calibration/validation/holdout';
+function corroborationOf(modelId, tp, mcProfile, planningTps) {
+  if (modelId === 'K3' && tp === calibration.slot.tp) {
+    const ref = calibration.validation.holdout.find(h => h.mcGBsPerCube === mcProfiles[mcProfile].payloadGBsPerCube);
+    if (ref) {
+      return {
+        kind: ref.role === 'FITTED' ? 'FITTED_POINT' : 'DETAILED_HOLDOUT',
+        detailedTpsPerUser: ref.detailedTpsPerUser,
+        planningMinusDetailedPct: (planningTps / ref.detailedTpsPerUser - 1) * 100,
+        source: HOLDOUT_SOURCE,
+        note: ref.role === 'FITTED' ? 'the calibration point itself: the residual is not evidence' : 'not fitted: the residual is the held-out error of the K3 factors'
+      };
+    }
+  }
+  return {
+    kind: 'UNCORROBORATED',
+    detailedTpsPerUser: null,
+    planningMinusDetailedPct: null,
+    source: null,
+    note: modelId === 'K3'
+      ? 'the detailed simulator maps K3 at TP32 only; this TP is scaled from the TP32 factors'
+      : 'no detailed model of this model; the K3 factors are extrapolated (planning ASSUMPTION)'
+  };
+}
+
 const observations = matrix.observations.map(observation => {
   // One hardware spec: every observation slot is on it, whatever the previous run recorded.
   const physical = SPEC_PROFILE;
@@ -235,6 +265,7 @@ const observations = matrix.observations.map(observation => {
       ...common,
       status: 'BLOCKED_CONFIG',
       evidenceKind: 'NONE',
+      corroboration: {kind: 'NONE', detailedTpsPerUser: null, planningMinusDetailedPct: null, source: null, note: 'no TPS'},
       tpsPerUser: null,
       rawLatencyUsPerToken: null,
       e2eLatencyUsPerToken: null,
@@ -253,6 +284,7 @@ const observations = matrix.observations.map(observation => {
     ...common,
     status: 'PLANNING_ESTIMATE',
     evidenceKind: 'CALIBRATED_PLANNING_TOKEN_TIME',
+    corroboration: corroborationOf(observation.modelId, observation.tp, observation.mcProfile, result.tpsPerUser),
     tpsPerUser: result.tpsPerUser,
     rawLatencyUsPerToken: result.rawUs,
     e2eLatencyUsPerToken: result.e2eUs,
@@ -267,6 +299,14 @@ const observations = matrix.observations.map(observation => {
 });
 const comparableObservations = observations.filter(item => item.status !== 'BLOCKED_CONFIG');
 const blockedObservations = observations.filter(item => item.status === 'BLOCKED_CONFIG');
+const corroborationCount = kind => comparableObservations.filter(item => item.corroboration.kind === kind).length;
+const corroborationSummary = {
+  fittedPoint: corroborationCount('FITTED_POINT'),
+  detailedHoldout: corroborationCount('DETAILED_HOLDOUT'),
+  uncorroborated: corroborationCount('UNCORROBORATED'),
+  heldOutMaxAbsResidualPct: calibration.validation.heldOutMaxAbsResidualPct,
+  note: 'Stage A and Stage B are the same formula on the same calibration, so their TPS difference is 0 by construction; corroboration is the comparison with the K3 detailed simulator, where one exists.'
+};
 
 const summary = manifest.models.map(model => {
   const modelObservations = comparableObservations.filter(item => item.modelId === model.modelId);
@@ -314,6 +354,7 @@ write('out/workload/tps_observation_matrix.json', {
     planningEstimated: comparableObservations.length,
     blockedConfig: blockedObservations.length,
     siliconObserved: 0,
+    corroboration: corroborationSummary,
     pendingModelRun: comparableObservations.length,
     percentComplete: 0,
     planningPercentComplete: comparableObservations.length / observations.length * 100,
@@ -425,6 +466,7 @@ const detail = {
     comparableSlotCount: comparableObservations.length,
     selectedTauConditions,
     coverageStatus,
+    corroboration: corroborationSummary,
     status: performanceStatus,
     feedback: (blockedObservations.length ? `${blockedObservations.length} slots are BLOCKED_CONFIG and have no TPS. ` : '') + (comparableMeetGate
       ? 'Calibrated planning estimates clear the gate for every comparable slot; this proves nothing until validated event timing replaces them.'
@@ -488,6 +530,7 @@ const report = [
   `- Selected candidate slots meet target: **${selectedSlotsMeetTarget === null ? 'n/a (no formal selection)' : (selectedSlotsMeetTarget ? 'yes' : 'no')}**${formal ? ' (required by the selection rule, not a performance result)' : ''}`,
   ...selectedTauConditions.map(item => `- \`${item.candidateId}\`: every model reaches the target while tau <= ${item.maxTauUsForTarget === null ? 'n/a' : item.maxTauUsForTarget.toFixed(3)} us${item.tauConditional ? ' (tau-conditional)' : ''}`),
   `- Studied candidate slots meet target: **${studiedSlotsMeetTarget === null ? 'n/a' : (studiedSlotsMeetTarget ? 'yes' : 'no')}**`,
+  `- Corroboration: ${corroborationSummary.fittedPoint} fitted point, ${corroborationSummary.detailedHoldout} held out against the K3 detailed simulator (max |residual| ${calibration.validation.heldOutMaxAbsResidualPct.toFixed(1)}%), **${corroborationSummary.uncorroborated} uncorroborated** (extrapolated from the K3 factors)`,
   `- Status: \`${performanceStatus}\``,
   `- Feedback: ${detail.performanceAcceptance.feedback}`,
   '',

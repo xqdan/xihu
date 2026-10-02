@@ -75,6 +75,16 @@ const slotKey = (modelId, tp, mcProfile) => `${modelId}|TP${tp}|${mcProfile}`
 // 观察状态。四个取值之外的第五个不是"更细的状态"，是没人定义过的状态。
 const OBSERVATION_STATES = ['MODEL_OBSERVED', 'PENDING_MODEL_RUN', 'BLOCKED_CONFIG', 'SILICON_OBSERVED']
 
+// 细估能不能被独立的东西印证。Stage A 与 Stage B 是同一个公式、同一组标定，
+// 两者的 TPS 差在构造上就是 0——"delta 为 0"对没有独立估计的槽位不是对账结果。
+// 唯一独立的估计是 K3 详细模拟器，它只映射 K3 的 TP32。取值由 stage_b.js 写进观察矩阵，
+// integrator 逐字转抄：
+//   FITTED_POINT     标定点本身，残差不是证据
+//   DETAILED_HOLDOUT 留出点，残差是 K3 因子在该带宽下的真实外推误差
+//   UNCORROBORATED   没有详细模型，数字是外推
+//   NONE             BLOCKED_CONFIG，没有 TPS
+const CORROBORATION_KINDS = ['FITTED_POINT', 'DETAILED_HOLDOUT', 'UNCORROBORATED', 'NONE']
+
 // 逐位拆分必须覆盖的口径。它们是"这个数是怎么来的"的最小分解，
 // 少一项总时间就有一块无名的来源。
 const BREAKDOWN_FIELDS = ['memoryUs', 'computeUs', 'commUs', 'tmaExposedUs', 'fixedUs']
@@ -104,7 +114,7 @@ const BRIEF_JSON = JSON.stringify(BRIEF, null, 2)
 const SLOT_SCHEMA = {
   type: 'object',
   additionalProperties: false,
-  required: ['slotKey', 'modelId', 'tp', 'mcProfile', 'coarseTps', 'fineTps', 'coarseSource', 'fineSource', 'status'],
+  required: ['slotKey', 'modelId', 'tp', 'mcProfile', 'coarseTps', 'fineTps', 'coarseSource', 'fineSource', 'status', 'corroboration'],
   properties: {
     slotKey: { type: 'string', description: '格式：modelId|TP<8|16|32>|MC<320|640>，逐字按 workflow 给出的键写' },
     modelId: { type: 'string' },
@@ -115,6 +125,8 @@ const SLOT_SCHEMA = {
     coarseSource: { type: 'string', description: '粗估数的出处：文件#字段' },
     fineSource: { type: 'string', description: '细估数的出处：文件#字段' },
     status: { type: 'string', enum: OBSERVATION_STATES },
+    corroboration: { type: 'string', enum: CORROBORATION_KINDS, description: '观察矩阵里该槽位 corroboration.kind 的逐字转抄' },
+    detailedTps: { type: 'number', description: '观察矩阵里 corroboration.detailedTpsPerUser 的逐字转抄；kind 为 FITTED_POINT / DETAILED_HOLDOUT 时必填，其余不写' },
     breakdown: {
       type: 'object',
       description: `逐位拆分；缺一项总时间就有一块无名的来源`,
@@ -323,6 +335,10 @@ const merged = await agent(
   + `   写进 attributions；指不出来就写进 unattributedDelta，**只描述观察到的事实，不要解释原因**。\n`
   + `5. 明确写出这一轮的资源来自哪一份硬件规格；出现第二份就是违规，如实写出。\n`
   + `6. 被排除的口径进 rejectedOptions。\n`
+  + `7. 每个槽位逐字转抄观察矩阵里的 corroboration.kind（${CORROBORATION_KINDS.join(' / ')}）；`
+  + `kind 为 FITTED_POINT / DETAILED_HOLDOUT 时同时转抄 corroboration.detailedTpsPerUser 到 detailedTps。`
+  + `粗估与细估同公式同标定，两者相同不是核对结果；UNCORROBORATED 的槽位不得写成"已对账一致"。\n`
+  + `   注意：键里的 Kimi-K3 在两份产物里的 modelId 是 K3，按 modelId 查找，键仍按上面给出的写。\n`
   + `全部 ${OBSERVATION_COUNT} 位齐备且每一位都归了位写 INTEGRATION_OK；`
   + `有槽位归不了位写 DELTA_UNEXPLAINED。`,
   {label: 'integrator', phase: 'Merge', effort: 'high', schema: MERGE_SCHEMA})
@@ -360,11 +376,18 @@ const slotsMissingTail = merged.slots
 // "是不是唯一一份 ADR-0021 规格"是检点者的判断，脚本只负责把事实摆出来。
 const physicalProfiles = [...new Set(merged.slots.map((s) => s.mcProfile).filter(Boolean))]
 
+const badCorroboration = merged.slots.filter((s) => !CORROBORATION_KINDS.includes(s.corroboration)).map((s) => `${s.slotKey}=${s.corroboration}`)
+const corroboratedWithoutDetailed = merged.slots
+  .filter((s) => ['FITTED_POINT', 'DETAILED_HOLDOUT'].includes(s.corroboration) && !(typeof s.detailedTps === 'number' && s.detailedTps > 0))
+  .map((s) => s.slotKey)
+
 const coverageGaps = [
   ...missingSlots.map((k) => `缺观察位：${k}`),
   ...extraSlots.map((k) => `多出未定义的观察位：${k}`),
   ...duplicatedSlots.map((k) => `观察位重复：${k}`),
   ...badStates.map((s) => `观察状态未定义：${s}`),
+  ...badCorroboration.map((s) => `印证类别未定义：${s}`),
+  ...corroboratedWithoutDetailed.map((k) => `${k}: 声称有详细模拟器印证却没有转抄 detailedTps`),
   ...slotsMissingBreakdown.map((k) => `${k}: 无逐位拆分`),
   ...slotsMissingTail.map((k) => `${k}: 尾延迟分位不全（需 ${TAIL_PERCENTILES.join('/')}）`),
 ]
@@ -397,6 +420,25 @@ const deltaBySlot = new Map(merged.slots.map((s) => {
     deltaPct: deltaPct === null ? null : Math.round(deltaPct * 1e4) / 1e4,
   }]
 }))
+
+// 印证的账：残差由本文件对 fineTps 与 detailedTps 做减法得出（同样不由 agent 产生）。
+const corroborationBySlot = merged.slots.map((s) => ({
+  slotKey: s.slotKey,
+  kind: s.corroboration,
+  fineTps: s.fineTps,
+  detailedTps: typeof s.detailedTps === 'number' ? s.detailedTps : null,
+  residualPct: typeof s.detailedTps === 'number' && s.detailedTps > 0
+    ? Math.round(((s.fineTps / s.detailedTps) - 1) * 100 * 1e4) / 1e4
+    : null,
+}))
+const uncorroboratedSlots = corroborationBySlot.filter((c) => c.kind === 'UNCORROBORATED').map((c) => c.slotKey)
+const corroborationSummary = {
+  fittedPoint: corroborationBySlot.filter((c) => c.kind === 'FITTED_POINT').length,
+  detailedHoldout: corroborationBySlot.filter((c) => c.kind === 'DETAILED_HOLDOUT').length,
+  uncorroborated: uncorroboratedSlots.length,
+  none: corroborationBySlot.filter((c) => c.kind === 'NONE').length,
+  heldOutMaxAbsResidualPct: Math.max(0, ...corroborationBySlot.filter((c) => c.kind === 'DETAILED_HOLDOUT' && c.residualPct !== null).map((c) => Math.abs(c.residualPct))),
+}
 
 const nonzeroDelta = [...deltaBySlot.values()].filter((d) => d.deltaPct !== null && Math.abs(d.deltaPct) > DELTA_EPS)
 
@@ -504,6 +546,8 @@ const artifactDraft = {
   observationCount: merged.slots.length,
   slots: merged.slots,
   deltaBySlot: [...deltaBySlot.values()],
+  corroborationBySlot,
+  corroborationSummary,
   singleHardwareSpec: merged.singleHardwareSpec,
   physicalProfiles,
   attributions: [
@@ -600,6 +644,8 @@ const runRecord = {
   singleHardwareSpec: merged.singleHardwareSpec,
   physicalProfiles: physicalProfiles.slice().sort(),
   deltaBySlot: [...deltaBySlot.values()],
+  corroborationSummary,
+  uncorroboratedSlots,
   nonzeroDeltaCount: nonzeroDelta.length,
   attributedCount: attributedKeys.size,
   unexplainedCount: stillUnexplained.length,
@@ -607,7 +653,9 @@ const runRecord = {
   verifierVerdict: verification ? verification.verdict : 'UNVERIFIED',
   declarants: ['integrator', 'architect', 'verifier', 'invariant-checker'],
   caliber: 'delta 百分比由 workflow 对两个裸值做减法得出，不由任何 agent 产生；'
-    + 'TPS 裸值一律取自 stage_b.js 与 Stage A 的产物',
+    + 'TPS 裸值一律取自 stage_b.js 与 Stage A 的产物；'
+    + '粗估与细估是同一公式同一标定，delta 为 0 对 uncorroboratedSlots 不构成核对，'
+    + '只有 K3 详细模拟器的印证（corroborationSummary）是独立的',
 }
 
 return {
@@ -619,6 +667,8 @@ return {
       : (!okVerified ? 'VERIFY_FAILED' : 'INVARIANT_VIOLATED')),
   slots: ok ? merged.slots : null,
   deltaBySlot: [...deltaBySlot.values()],
+  corroborationSummary,
+  uncorroboratedSlots,
   attributions: artifactDraft.attributions,
   unexplained: stillUnexplained,
   architectVerdict: attribution.verdict,
