@@ -2,7 +2,7 @@
 
 版本：2026-09-22  
 状态：`BASELINE / ARCHITECTURE PLANNING`  
-规格空间来源：`references/k3_1000tps_chip_designs.html`（Kimi K3、目标 1000 TPS/usr 的芯片规格搜索页，已从工作区 `docs/1000tps/` 入库；MC 带宽档位决策见 [ADR-0019](../../teams/council/adr/README.md#adr-011mc-带宽档位与规格网格)）
+规格空间来源：`references/k3_1000tps_chip_designs.html`（Kimi K3、目标 1000 TPS/usr 的芯片规格搜索页，已从工作区 `docs/1000tps/` 入库；MC 带宽档位决策见 [ADR-0019](../../teams/council/adr/ADR-0019-mc-bandwidth-tiers.md)）
 
 ## 1. 文档目的
 

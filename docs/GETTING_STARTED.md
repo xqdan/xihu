@@ -12,7 +12,7 @@
 
 ```sh
 git clone https://github.com/xqdan/xihu.git && cd xihu
-npm test            # 24 个测试文件，全部应输出 PASS；约一分钟
+npm test            # 35 个测试文件，全部应输出 PASS；约半分钟
 ```
 
 `npm test` 失败说明你的工作区和仓库基线不一致，先解决它再做别的。
@@ -335,7 +335,7 @@ npm run model:planning   # 规划模型、Stage A/B、contract、看板
 npm test
 ```
 
-`out/` 下的文件不能手改；测试用 sha256 把它们绑定到输入，漏了重新生成 `npm test` 会失败。Stage A/B 生成物里带 git HEAD 和生成时间，所以每次重新生成都会有 diff，review 时只看数值字段。各入口的说明见 [`integration/pipelines/README.md`](../integration/pipelines/README.md)。
+`out/` 下的文件不能手改；测试用 sha256 把它们绑定到输入，漏了重新生成 `npm test` 会失败。生成物里带 `sourceCommit`（git HEAD），不带墙钟时间；同一提交、同一输入下重新生成必须字节一致（由 `tests/governance/test_regeneration_reproducible.js` 强制），所以出现 diff 就是输入或代码变了。换提交后 `sourceCommit` 与哈希链会变，review 时看数值字段。各入口的说明见 [`integration/pipelines/README.md`](../integration/pipelines/README.md)。
 
 ### 6.2 按团队目录改
 
@@ -361,7 +361,7 @@ npm test
 
 **单个 agent 做一个任务。** 先写任务卡（职责、允许改的路径、输入版本、输出、验收），完成后交 handoff packet。模板：[`DETAIL_AGENT_TASK_CARD.md`](../teams/council/docs/detailed/DETAIL_AGENT_TASK_CARD.md)、[`DETAIL_HANDOFF_PACKET.md`](../teams/council/docs/detailed/DETAIL_HANDOFF_PACKET.md)，工作流计划见 [`AGENT_WORKSTREAM_PLAN.md`](../teams/council/docs/AGENT_WORKSTREAM_PLAN.md)。在 Claude Code 里让 agent 先读 `AGENTS.md` 和任务卡，只在允许的路径里改。
 
-**多团队 agent 评审一个问题。** [`integration/orchestration/`](../integration/orchestration/README.md) 下有一个 Claude Code Workflow 脚本，按团队派探针和 lead，按接口交叉核对，对 blocker 做对抗核验，最后由 Council agent 集成、critic 查漏。全程只读。一次完整运行约 100 个 agent、数百万 token、45 分钟左右，适合需要跨团队给出结论的问题，不适合日常小改动。运行存档见 [`teams/council/docs/reviews/`](../teams/council/docs/reviews/)；存档是 `MODEL` 等级的评审意见，不是 ADR，也不是 Gate 结论。
+**跑设计流程。** [`integration/orchestration/`](../integration/orchestration/README.md) 下有 19 个 `design.*.workflow.js`（Claude Code Workflow 脚本，不能用 `node` 运行），按阶段调起 `teams/council/strategies/` 下的 12 个无状态策略：契约 → 需求与方向 → 四个设计域（compute / memory / comm / physical）→ 详细设计链 → 收敛，以及 verify / backflow / audit 三个横切流程。搜索和 Gate 由脚本算，agent 只解释取舍并返回裁决，全程只读，文件由主循环落盘到 `out/`。成本随候选数 N 增长，不适合日常小改动；到目前为止这些 workflow 只经过结构测试和 mock runtime 行为测试，尚未在真实 Workflow runtime 上端到端运行。历史评审存档见 [`teams/council/docs/reviews/`](../teams/council/docs/reviews/)；存档是 `MODEL` 等级的评审意见，不是 ADR，也不是 Gate 结论。
 
 无论哪种用法，agent 产出的内容都要由对应团队的人审查后才能合入。
 

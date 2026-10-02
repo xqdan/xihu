@@ -5,8 +5,8 @@
 | Group | Checks |
 |---|---|
 | `unit/` | Unit-level invariants: directional units, operator/SRAM simulator physics, LSE merge semantics, mailbox lifecycle. |
-| `regression/` | Search reproducibility (stored `inputHash` against the current sources), design and TPS baselines, K3 manifest consistency, multi-model profiles and TP matrix, TPS observation matrix, detailed sizing conservation. |
-| `governance/` | Gates, candidate selection, cross-team contracts and their hashes, integration freshness, dashboard, Stage A/B runs, agent organization documents. |
-| `structure/` | Repository layout: required directories, local `require` targets and links resolve, and team directories do not depend on other teams, `integration/` or `out/`. |
+| `regression/` | Search reproducibility (stored `inputHash` against the current sources), design and TPS baselines, K3 manifest consistency, multi-model profiles and TP matrix, TPS observation matrix, detailed sizing conservation, behavior of the C-group workflows under a mock runtime. |
+| `governance/` | Gates, candidate selection, cross-team contracts and their hashes, integration freshness, dashboard, Stage A/B runs, agent organization documents, agent strategy boundary and roster `consumers` reconciliation, byte-for-byte regeneration of `out/` (`test_regeneration_reproducible.js`). |
+| `structure/` | Repository layout: required directories, local `require` targets and links resolve, and team directories do not depend on other teams, `integration/` or `out/`; structural checks of the `design.*.workflow.js` scripts (S3–S7 skeletons). |
 
 Tests read committed artifacts in `out/`; when a source changes, regenerate the affected artifacts (see `integration/pipelines/README.md`) instead of editing the test or the artifact.

@@ -3,6 +3,8 @@
 版本：2026-09-22
 状态：`PROPOSED / INDUSTRIAL TEAM OPERATING MODEL`
 
+> **术语说明（2026-10）**：本文与 `inputs/industrial_agent_organization.json` 里的 `agents` 是**团队责任划分（谁对哪块负责）**，不是运行时 agent。运行时被调起的只有 `inputs/agent_roster.json` 的 12 个无状态策略，流程以 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md) 为准。
+
 ## 1. 组织原则
 
 项目按工业界芯片公司的组织方式管理：Hardware、Software、Model 三大专业团队并行产出，Architecture Council 负责跨团队决策，独立 V&V 团队负责验证和 Gate。D/Q 编号保留为流程兼容角色，但不再作为目录的唯一组织方式。

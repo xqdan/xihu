@@ -229,6 +229,55 @@ function checkVerdictConsumption(strategies, roster) {
   }
 }
 
+// ---- 3b. consumers 必须与 workflow 的真实调用点一致 ----
+
+// "谁在什么情况下被调起"由 roster 决定（文档 22 第 3 节），所以 consumers 是
+// 一份对外的陈述。它一旦与代码脱节，读文档的人会以为某个 workflow 有某个专家把关，
+// 而实际没有——这类错在运行时不会报错，只会让评审基于错误的覆盖假设。
+//
+// 判据：
+//   - 静态调用：`head('<id>')` 直接点名策略；
+//   - 动态调用：`head(<变量>)` 从池里取，池里的 id 以带引号字面量的形式写在代码里。
+// 整行注释先剔除，否则"不得……compute-expert……"这类禁止语会被算作调用。
+function strategiesUsedBy(source, ids) {
+  const code = source.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+  const used = new Set();
+  for (const m of code.matchAll(/\bhead\(\s*'([\w-]+)'\s*\)/g)) used.add(m[1]);
+  if (/\bhead\(\s*[^'\s)]/.test(code)) {
+    for (const id of ids) {
+      if (code.includes(`'${id}'`)) used.add(id);
+    }
+  }
+  return used;
+}
+
+function checkConsumers(strategies) {
+  if (!fs.existsSync(WORKFLOW_DIR)) return;
+  const ids = strategies.map((s) => s.agentId);
+  const used = new Map();
+  for (const n of fs.readdirSync(WORKFLOW_DIR)) {
+    const m = n.match(/^(design\..+)\.workflow\.js$/);
+    if (!m) continue;
+    used.set(m[1], strategiesUsedBy(fs.readFileSync(path.join(WORKFLOW_DIR, n), 'utf8'), ids));
+  }
+  for (const s of strategies) {
+    const declared = new Set((s.consumers || []).filter((c) => used.has(c)));
+    for (const c of s.consumers || []) {
+      if (/^design\./.test(c) && !used.has(c)) fail(s.agentId, `consumers 含不存在的 workflow ${c}`);
+    }
+    for (const w of declared) {
+      if (!used.get(w).has(s.agentId)) {
+        fail(s.agentId, `consumers 声明了 ${w}，但该 workflow 没有任何 head('${s.agentId}') 调用或策略池引用`);
+      }
+    }
+    for (const [w, set] of used) {
+      if (set.has(s.agentId) && !(s.consumers || []).includes(w)) {
+        fail(s.agentId, `${w} 调用了该策略，但 roster consumers 没有登记`);
+      }
+    }
+  }
+}
+
 // ---- 4. --self-test：注入假策略，证明校验会报错、且不误报 ----
 
 function selfTest() {
@@ -343,6 +392,7 @@ const roster = loadRoster();
 const { strategies } = checkRosterFields(roster);
 for (const f of strategyFiles()) checkStrategyFile(f);
 checkVerdictConsumption(strategies, roster);
+checkConsumers(strategies);
 
 for (const w of warnings) console.log(`WARN  ${w}`);
 if (failures.length) {

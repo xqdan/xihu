@@ -106,11 +106,14 @@
       ],
       "consumers": [
         "design.compute",
-        "design.direction",
         "design.detail.workload",
         "design.detail.events",
         "design.intake",
-        "design.contract"
+        "design.contract",
+        "design.backflow",
+        "design.converge",
+        "design.memory",
+        "design.physical"
       ]
     },
     {
@@ -160,7 +163,10 @@
         "design.detail.workload",
         "design.detail.events",
         "design.intake",
-        "design.contract"
+        "design.contract",
+        "design.backflow",
+        "design.comm",
+        "design.converge"
       ]
     },
     {
@@ -205,10 +211,11 @@
       "consumers": [
         "design.comm",
         "design.physical",
-        "design.direction",
         "design.detail.events",
         "design.intake",
-        "design.contract"
+        "design.contract",
+        "design.backflow",
+        "design.converge"
       ]
     },
     {
@@ -258,7 +265,8 @@
         "design.detail.execute",
         "design.converge",
         "design.intake",
-        "design.contract"
+        "design.contract",
+        "design.backflow"
       ]
     },
     {
@@ -303,10 +311,10 @@
       "consumers": [
         "design.memory",
         "design.detail.execute",
-        "design.direction",
         "design.backflow",
         "design.intake",
-        "design.contract"
+        "design.contract",
+        "design.converge"
       ]
     },
     {
@@ -350,8 +358,8 @@
         "design.detail.freeze",
         "design.detail.workload",
         "design.intake",
-        "design.contract",
-        "design.direction"
+        "design.backflow",
+        "design.converge"
       ]
     },
     {
@@ -489,7 +497,8 @@
         "design.detail.workload",
         "design.detail.execute",
         "design.detail.integrate",
-        "design.backflow"
+        "design.backflow",
+        "design.detail.events"
       ]
     },
     {
@@ -526,7 +535,6 @@
       ],
       "consumers": [
         "design.contract",
-        "design.intake",
         "design.direction",
         "design.dgate",
         "design.compute",
@@ -537,7 +545,8 @@
         "design.detail.workload",
         "design.detail.events",
         "design.detail.execute",
-        "design.converge"
+        "design.converge",
+        "design.detail.integrate"
       ]
     },
     {
@@ -576,10 +585,6 @@
       "consumers": [
         "design.direction",
         "design.dgate",
-        "design.compute",
-        "design.memory",
-        "design.comm",
-        "design.physical",
         "design.converge",
         "design.verify"
       ]

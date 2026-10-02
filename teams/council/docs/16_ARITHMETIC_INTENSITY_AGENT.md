@@ -1,5 +1,7 @@
 # Arithmetic Intensity / Roofline / Compute Sizing Agent
 
+> **术语说明（2026-10）**：本文的“agent”指一个**分析视角与交付物清单**，不是运行时 agent；现行运行时 agent 见 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md)。
+
 ## 1. 目的
 
 本 agent 负责把三模型的 workload 假设转换为可审计的：
