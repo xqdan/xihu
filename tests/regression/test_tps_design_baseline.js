@@ -48,6 +48,29 @@ for (const n of t.software.noEffectAtPublishedPoint)
 assert(t.software.gainAllNeutral, 'GAIN must be neutral');
 assert(t.hardware.sharedPortScalingCost.dieAreaMm2 > 0, 'shared-port scaling cost must stay visible');
 
+// 3b. One sustained-bandwidth assumption feeds two models: the detailed model reads A.TECH.mcUtil, the planning
+// model reads spec.bandwidthTiers.sustainedEfficiency. Both must stay the same number.
+const A = require('../../integration/detailed/k3_architecture_search.js');
+assert.strictEqual(A.TECH.mcUtil, spec.bandwidthTiers.sustainedEfficiency, 'A.TECH.mcUtil and bandwidthTiers.sustainedEfficiency are one assumption');
+
+// 3c. Joint switch-back: a mechanism group costs more than any of its members alone, and every
+// sweep of an unmeasured parameter moves TPS in the stated direction.
+const J = t.software.jointAblation;
+assert.deepStrictEqual(Object.keys(J).sort(), ['kernelMapping', 'scheduler', 'schedulerAndKernelMapping']);
+const singleTps = key => t.software.mechanisms.find(m => m.key === key).ablation.tpsPerUser;
+for (const [name, g] of Object.entries(J)) {
+  assert(g.ablation.feasible);
+  for (const key of g.keys) assert(g.ablation.tpsPerUser < singleTps(key) - 1e-6, `${name}: joint switch-back must cost more than ${key} alone`);
+}
+assert(J.schedulerAndKernelMapping.ablation.tpsPerUser < Math.min(J.scheduler.ablation.tpsPerUser, J.kernelMapping.ablation.tpsPerUser));
+for (const [key, sw] of Object.entries(t.sensitivity.assumptions)) {
+  const worse = Object.entries(sw.replays).filter(([v]) => (key === 'launchScale' ? Number(v) > sw.published : Number(v) < sw.published));
+  for (const [v, r] of worse) assert(r.feasible && r.tpsPerUser <= t.point.tpsPerUser + 1e-6, `${key}=${v} must not beat the published point`);
+  if (sw.breakEven && sw.breakEven.valueAtBudget !== null) assert(sw.breakEven.valueAtBudget < sw.published, `${key}: break-even must lie below the published value`);
+}
+const mcB = t.sensitivity.assumptions.mcUtil.breakEven.valueAtBudget;
+assert(mcB > 0.5 && mcB < A.TECH.mcUtil, 'the sustained-bandwidth break-even is the thinnest unmeasured margin and must stay visible');
+
 // 4. The document quotes the spec, not hand-copied numbers.
 const doc = fs.readFileSync('docs/architecture/21_TPS_DESIGN_BASELINE.md', 'utf8');
 const f2 = v => v.toFixed(2);
@@ -61,6 +84,10 @@ const must = [
   ['repo-510', t.software.countBasis.ablation.tpsPerUser],
   ...Object.entries(t.sensitivity.mcGBs).filter(([, r]) => r.feasible).map(([g, r]) => ['MC' + g, r.tpsPerUser]),
   ['depth 1', t.sensitivity.depth[1].tpsPerUser],
+  ...Object.entries(J).map(([k, g]) => ['joint ' + k, g.ablation.tpsPerUser]),
+  ...Object.entries(t.sensitivity.assumptions).flatMap(([k, sw]) => [
+    ...Object.entries(sw.replays).filter(([, r]) => r.feasible).map(([v, r]) => [`${k}=${v}`, r.tpsPerUser]),
+    ...(sw.breakEven && sw.breakEven.valueAtBudget !== null ? [[k + ' break-even', sw.breakEven.valueAtBudget]] : [])]),
   ...Object.entries(t.sensitivity.kvTile16384).filter(([, r]) => r.feasible).map(([k, r]) => ['kv16k ' + k, r.tpsPerUser]),
   ['die area', t.hardware.dieAreaMm2], ['die power', t.hardware.diePowerW], ['card power', t.hardware.perCard.powerW],
   ['port area', t.hardware.sharedPortScalingCost.dieAreaMm2], ['port power', t.hardware.sharedPortScalingCost.diePowerW],

@@ -3,7 +3,7 @@
 Run ID: `stage-b-20260925-planning`
 Manifest hash: `dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f`
 Run mode: `PLANNING_QUANTIFICATION`
-Source commit: `cc7fccbb3181a580c441982bb223562c31b2de53`
+Source commit: `cac1a483af853b982e631aab1a7872e29f8b8d9b`
 
 ## Gate result
 
@@ -26,6 +26,7 @@ Source commit: `cc7fccbb3181a580c441982bb223562c31b2de53`
 - Selected candidate slots meet target: **yes** (required by the selection rule, not a performance result)
 - `P1-compact-MC640-TP32`: every model reaches the target while tau <= 1.408 us (tau-conditional)
 - Studied candidate slots meet target: **yes**
+- Corroboration: 1 fitted point, 1 held out against the K3 detailed simulator (max |residual| 6.0%), **16 uncorroborated** (extrapolated from the K3 factors)
 - Status: `PERFORMANCE_MISS_OUTSIDE_SELECTED_CANDIDATES_NOT_VALIDATED`
 - Feedback: Slots below target need byte reduction, more TP ranks or an implementable bandwidth route before architecture freeze.
 

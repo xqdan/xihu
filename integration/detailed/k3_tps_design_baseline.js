@@ -25,6 +25,27 @@ function withOpt(patch, x, fn = O.evaluate) {
   try { return fn(x); } finally { Object.assign(O.OPT, saved); }
 }
 
+// Evaluate with a temporary A.TECH patch; TECH is always restored.
+function withTech(patch, fn) {
+  const saved = {...A.TECH};
+  Object.assign(A.TECH, patch);
+  try { return fn(); } finally { Object.assign(A.TECH, saved); }
+}
+
+// Expert prediction accuracy is built into the plan as a constant (0.8); the simulator
+// reads plan.c.prediction when it adopts or discards a predicted tile, and nothing
+// else depends on it (job sizes do not), so overriding it on the plan is the replay of
+// "the predictor is right p of the time". mappedPlan is always restored.
+function withPrediction(prediction, fn) {
+  const orig = A.mappedPlan;
+  A.mappedPlan = (...args) => {
+    const r = orig(...args);
+    if (r.plan) r.plan.c.prediction = prediction;
+    return r;
+  };
+  try { return fn(); } finally { A.mappedPlan = orig; }
+}
+
 const SHARED_PORT_UNSCALED = {localWriteRatio: 1, tmaDedicatedPort: false, sharedReadScale: 1, sharedReadPerWrite: 0};
 // Mechanisms the published point relies on. `off` is the value the mechanism
 // falls back to (a `patch` of several OPT keys for composite mechanisms); each
@@ -46,6 +67,46 @@ const MECHANISMS = [
 const NO_EFFECT = [
   {key: 'tilePartialReady', patch: {tilePartialReady: false}, note: 'acts on duration only through GAIN, which is 1'}
 ];
+
+// Parameters the published TPS rests on that nothing in the repository measures.
+// `lowerIsWorse` fixes the direction of the break-even search; `floor` is where the
+// search stops (a value this low is no longer a plausible silicon figure, so a goal
+// that still holds there is reported as holding down to the floor).
+const ASSUMPTION_SWEEPS = [
+  {key: 'mcUtil', where: 'A.TECH.mcUtil', baseline: () => A.TECH.mcUtil, values: [0.6, 0.65, 0.75], floor: 0.4, lowerIsWorse: true,
+    run: (v, x) => withTech({mcUtil: v}, () => O.evaluate(x)), note: 'sustained fraction of the MC payload bandwidth (detailed model); the planning model reads the same number from spec.bandwidthTiers.sustainedEfficiency'},
+  {key: 'matrixUtil', where: 'A.TECH.matrixUtil', baseline: () => A.TECH.matrixUtil, values: [0.55, 0.6, 0.7], floor: 0.3, lowerIsWorse: true,
+    run: (v, x) => withTech({matrixUtil: v}, () => O.evaluate(x)), note: 'achieved fraction of the tensor-engine peak'},
+  {key: 'vectorUtil', where: 'A.TECH.vectorUtil', baseline: () => A.TECH.vectorUtil, values: [0.25, 0.3, 0.45], floor: 0.1, lowerIsWorse: true,
+    run: (v, x) => withTech({vectorUtil: v}, () => O.evaluate(x)), note: 'achieved fraction of the vector-lane peak'},
+  {key: 'prediction', where: 'plan.c.prediction (simulator input, 0.8)', baseline: () => 0.8, values: [0.6, 0.7, 0.9], floor: 0.3, lowerIsWorse: true,
+    run: (v, x) => withPrediction(v, () => O.evaluate(x)), note: 'expert prefetch hit rate; ASSUMPTION (B-003)'},
+  {key: 'launchScale', where: 'OPT.launchScale', baseline: () => O.OPT.launchScale, values: [0.7, 1], floor: null, lowerIsWorse: false,
+    run: (v, x) => withOpt({launchScale: v}, x), note: 'launch cost saved by batching; ASSUMPTION (B-003)'}
+];
+
+// Smallest value (for lowerIsWorse) at which the raw budget still holds, by bisection.
+// null: the budget holds all the way down to the floor.
+function breakEven(sweep, x, budgetUs) {
+  const meets = v => { const r = sweep.run(v, x); return r.feasible !== false && r.rawUs <= budgetUs; };
+  let hi = sweep.baseline(), lo = sweep.floor;
+  if (!meets(hi)) return {valueAtBudget: null, note: 'the published value does not meet the budget'};
+  if (meets(lo)) return {valueAtBudget: null, floor: lo, note: 'the budget holds down to the floor'};
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2;
+    if (meets(mid)) hi = mid; else lo = mid;
+  }
+  return {valueAtBudget: hi};
+}
+
+// Mechanism groups ablated together. A single switch-back hides that the budget needs
+// several mechanisms at once, so the groups are replayed jointly too. kvCache is left
+// out (its switch-back is infeasible on its own) and so is the port scaling (hardware).
+const MECHANISM_GROUPS = {
+  scheduler: ['tmaLane', 'kvPrefetch', 'dmaPreempt', 'commOverlap'],
+  kernelMapping: ['softmaxFusion', 'epilogueFusion', 'pvMerge', 'launchBatching']
+};
+const groupPatch = keys => Object.assign({}, ...keys.map(k => ({[k]: MECHANISMS.find(m => m.key === k).off})));
 
 const category = o => o.unit === 'COMM' ? 'collective'
   : /^QK|softmax|^PV|RoPE|KV append|MLA Q|Q \/ new-KV/.test(o.name) ? 'mlaAttention'
@@ -109,12 +170,21 @@ function build(x, budgetUs) {
         const on = d.patch ? Object.fromEntries(Object.keys(d.patch).map(k => [k, O.OPT[k]])) : O.OPT[d.key];
         return {key: d.key, on, off: d.patch || d.off, layer: d.layer, evidence: d.evidence, role: d.role, ablation: pick(withOpt(off, x))};
       }),
+      jointAblation: Object.fromEntries([
+        ...Object.entries(MECHANISM_GROUPS),
+        ['schedulerAndKernelMapping', [...MECHANISM_GROUPS.scheduler, ...MECHANISM_GROUPS.kernelMapping]]
+      ].map(([name, keys]) => [name, {keys, ablation: pick(withOpt(groupPatch(keys), x))}])),
       noEffectAtPublishedPoint: NO_EFFECT.map(n => ({key: n.key, note: n.note, ablation: pick(withOpt(n.patch, x))})),
       countBasis: {on: O.OPT.countBasis, off: 'repo-510', ablation: pick(withOpt({countBasis: 'repo-510'}, x)), note: 'counting basis, not an optimization (ADR-0004)'}
     },
     sensitivity: {
       tauBreakEvenUs: O.OPT.tauUs + (budgetUs - r.rawUs) / collectiveTotal,
       tauHeadroomUsPerCollective: (budgetUs - r.rawUs) / collectiveTotal,
+      assumptions: Object.fromEntries(ASSUMPTION_SWEEPS.map(sw => [sw.key, {
+        where: sw.where, published: sw.baseline(), note: sw.note,
+        replays: Object.fromEntries(sw.values.map(v => [String(v), pick(sw.run(v, x))])),
+        ...(sw.lowerIsWorse ? {breakEven: breakEven(sw, x, budgetUs)} : {})
+      }])),
       depth: Object.fromEntries([1, 2, 3, 4].map(d => [d, pick(O.evaluate({...x, depth: d}))])),
       mcGBs: Object.fromEntries([320, 400, 480, 560, 640].map(g => [g, pick(O.evaluate({...x, mcGBs: g}))])),
       kvTile16384: {fp8: pick(O.evaluate({...x, kvTile: 16384})), bf16: pick(withOpt({kvCache: 'bf16'}, {...x, kvTile: 16384}))}

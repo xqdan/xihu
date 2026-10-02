@@ -60,7 +60,56 @@
         "detailedTpsPerUser": 586.4584543522183,
         "planningTpsPerUser": 551.2062217673515,
         "planningOverDetailed": 0.9398896335737795,
-        "note": "Not fitted: same factors replayed against the detailed model with mcGBs = 320."
+        "holdout": [
+          {
+            "mcGBsPerCube": 320,
+            "role": "HELD_OUT",
+            "detailedTpsPerUser": 586.4584543522183,
+            "planningTpsPerUser": 551.2062217673515,
+            "planningOverDetailed": 0.9398896335737795,
+            "residualPct": -6.011036642622047,
+            "bound": "memory"
+          },
+          {
+            "mcGBsPerCube": 400,
+            "role": "HELD_OUT",
+            "detailedTpsPerUser": 721.0067983677667,
+            "planningTpsPerUser": 689.0077772091894,
+            "planningOverDetailed": 0.9556189744243501,
+            "residualPct": -4.438102557564994,
+            "bound": "memory"
+          },
+          {
+            "mcGBsPerCube": 480,
+            "role": "HELD_OUT",
+            "detailedTpsPerUser": 853.4396084689857,
+            "planningTpsPerUser": 826.8093326510274,
+            "planningOverDetailed": 0.9687965316424306,
+            "residualPct": -3.1203468357569375,
+            "bound": "memory"
+          },
+          {
+            "mcGBsPerCube": 560,
+            "role": "HELD_OUT",
+            "detailedTpsPerUser": 977.0049871116377,
+            "planningTpsPerUser": 964.6108880928651,
+            "planningOverDetailed": 0.9873141906312948,
+            "residualPct": -1.2685809368705225,
+            "bound": "memory"
+          },
+          {
+            "mcGBsPerCube": 640,
+            "role": "FITTED",
+            "detailedTpsPerUser": 1101.771070241925,
+            "planningTpsPerUser": 1102.412443534703,
+            "planningOverDetailed": 1.000582129364349,
+            "residualPct": 0.058212936434909324,
+            "bound": "memory"
+          }
+        ],
+        "heldOutMaxAbsResidualPct": 6.011036642622047,
+        "degreesOfFreedom": 0,
+        "note": "Five factors are fitted on one detailed point (K3, P1, MC640, TP32), so the fit has no degrees of freedom; the held-out rows are the only evidence of how the factors move with bandwidth. Only K3 TP32 can be held out: the detailed simulator maps K3 at TP32 only. GLM-5.2, DeepSeek-V4-Pro and TP8/TP16 slots have no detailed counterpart."
       }
     },
     "dtypePolicy": {
@@ -4918,15 +4967,15 @@
     "status": "PLANNING_COVERAGE_ONLY"
   },
   "provenance": {
-    "sourceCommit": "cc7fccbb3181a580c441982bb223562c31b2de53",
+    "sourceCommit": "cac1a483af853b982e631aab1a7872e29f8b8d9b",
     "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
     "inputHashes": {
-      "directionalScorecard": "293db6e1100f65ec50ad756328ea21d24e335328e0000935482565052be2163f",
+      "directionalScorecard": "c9457c8997587baf4b073a3efd92ce3d46fc34c0ef3162477551c2de4f3deec2",
       "modelProfiles": "2fcd288d537fad43c417db08d239b74519c01a05da50e9a04ea6bb626f673a73",
-      "operatorWorkload": "350f5d9b62d15138a4f70b8d69cabd2df1caa7c8935e1f8797b4b51a8dab209b",
+      "operatorWorkload": "b2d45d54b4fd044b83d81ec1ca9610b12fbbc25fcd20a7d7e53779766643a832",
       "resourceProfiles": "2bd037745db3422bc5033097384fdd5967d390e0dde4968fd1f99771f9d149b3",
       "tokenTime": "cb4e0f8b95bf5747560eb6f8f99813a1d10768c4872e9a38529b78a8017f76db",
-      "runner": "64687d7f836a5d3dbc713642a0dcd3928ccca86c5694ebcc8dcad5b8b9d09772",
+      "runner": "d61d5b38c08aa0fb25612a728248f52d607110a1cfd90b3363bcbb4b53c08063",
       "gateValidator": "b9311c50cc6cef9e5788d168796367518765a13dc113baf74efe73c3bf72aed0",
       "manifest": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
       "candidateRegister": "ef417a0c2584b2867e81baa04bfbaf092723b0980c275c525a71c7cff782b2cf"
@@ -4995,6 +5044,13 @@
       }
     ],
     "coverageStatus": "COMPLETE",
+    "corroboration": {
+      "fittedPoint": 1,
+      "detailedHoldout": 1,
+      "uncorroborated": 16,
+      "heldOutMaxAbsResidualPct": 6.011036642622047,
+      "note": "Stage A and Stage B are the same formula on the same calibration, so their TPS difference is 0 by construction; corroboration is the comparison with the K3 detailed simulator, where one exists."
+    },
     "status": "PERFORMANCE_MISS_OUTSIDE_SELECTED_CANDIDATES_NOT_VALIDATED",
     "feedback": "Slots below target need byte reduction, more TP ranks or an implementable bandwidth route before architecture freeze."
   },

@@ -309,7 +309,56 @@
       "detailedTpsPerUser": 586.4584543522183,
       "planningTpsPerUser": 551.2062217673515,
       "planningOverDetailed": 0.9398896335737795,
-      "note": "Not fitted: same factors replayed against the detailed model with mcGBs = 320."
+      "holdout": [
+        {
+          "mcGBsPerCube": 320,
+          "role": "HELD_OUT",
+          "detailedTpsPerUser": 586.4584543522183,
+          "planningTpsPerUser": 551.2062217673515,
+          "planningOverDetailed": 0.9398896335737795,
+          "residualPct": -6.011036642622047,
+          "bound": "memory"
+        },
+        {
+          "mcGBsPerCube": 400,
+          "role": "HELD_OUT",
+          "detailedTpsPerUser": 721.0067983677667,
+          "planningTpsPerUser": 689.0077772091894,
+          "planningOverDetailed": 0.9556189744243501,
+          "residualPct": -4.438102557564994,
+          "bound": "memory"
+        },
+        {
+          "mcGBsPerCube": 480,
+          "role": "HELD_OUT",
+          "detailedTpsPerUser": 853.4396084689857,
+          "planningTpsPerUser": 826.8093326510274,
+          "planningOverDetailed": 0.9687965316424306,
+          "residualPct": -3.1203468357569375,
+          "bound": "memory"
+        },
+        {
+          "mcGBsPerCube": 560,
+          "role": "HELD_OUT",
+          "detailedTpsPerUser": 977.0049871116377,
+          "planningTpsPerUser": 964.6108880928651,
+          "planningOverDetailed": 0.9873141906312948,
+          "residualPct": -1.2685809368705225,
+          "bound": "memory"
+        },
+        {
+          "mcGBsPerCube": 640,
+          "role": "FITTED",
+          "detailedTpsPerUser": 1101.771070241925,
+          "planningTpsPerUser": 1102.412443534703,
+          "planningOverDetailed": 1.000582129364349,
+          "residualPct": 0.058212936434909324,
+          "bound": "memory"
+        }
+      ],
+      "heldOutMaxAbsResidualPct": 6.011036642622047,
+      "degreesOfFreedom": 0,
+      "note": "Five factors are fitted on one detailed point (K3, P1, MC640, TP32), so the fit has no degrees of freedom; the held-out rows are the only evidence of how the factors move with bandwidth. Only K3 TP32 can be held out: the detailed simulator maps K3 at TP32 only. GLM-5.2, DeepSeek-V4-Pro and TP8/TP16 slots have no detailed counterpart."
     }
   },
   "limitations": [

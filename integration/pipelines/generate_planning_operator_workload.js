@@ -103,15 +103,32 @@ const glm = deriveGlm(glmManifest.shape);
 // ----------------------------------------------------------- calibration
 const k3Model = {rows: k3Rows, collectivesPerToken: best.collectiveCount, layers: spec.layers};
 const calibration = TT.calibrate(k3Model, CALIBRATION_SLOT, best, TT.detailedBreakdown(detailedPlan.ops));
-// Out-of-fit check: the same factors at MC320 against a fresh detailed replay.
-const mc320 = O.evaluate({...best.x, mcGBs: 320});
+// Out-of-fit check: the same factors against a fresh detailed replay at other MC
+// bandwidths. 640 GB/s per cube is the fitted point (residual only reflects max()),
+// the others are held out: nothing was fitted on them. The planning model reaches a
+// bandwidth the profiles do not name through the `bandwidth` scale of laneTimes.
+const MC_FITTED_GBS = best.x.mcGBs;
+const holdout = [320, 400, 480, 560, MC_FITTED_GBS].map(gbs => {
+  const detailed = gbs === MC_FITTED_GBS ? best : O.evaluate({...best.x, mcGBs: gbs});
+  const planning = TT.slotTime(k3Model, CALIBRATION_SLOT, calibration, {...TT.NOMINAL, bandwidth: gbs / MC_FITTED_GBS});
+  return {
+    mcGBsPerCube: gbs, role: gbs === MC_FITTED_GBS ? 'FITTED' : 'HELD_OUT',
+    detailedTpsPerUser: detailed.tps, planningTpsPerUser: planning.tpsPerUser,
+    planningOverDetailed: planning.tpsPerUser / detailed.tps, residualPct: (planning.tpsPerUser / detailed.tps - 1) * 100,
+    bound: planning.bound
+  };
+});
 const planningMc320 = TT.slotTime(k3Model, {...CALIBRATION_SLOT, mcProfile: 'MC320'}, calibration);
+const heldOut = holdout.filter(h => h.role === 'HELD_OUT');
 calibration.validation = {
   slot: {...CALIBRATION_SLOT, mcProfile: 'MC320'},
-  detailedTpsPerUser: mc320.tps,
+  detailedTpsPerUser: holdout[0].detailedTpsPerUser,
   planningTpsPerUser: planningMc320.tpsPerUser,
-  planningOverDetailed: planningMc320.tpsPerUser / mc320.tps,
-  note: 'Not fitted: same factors replayed against the detailed model with mcGBs = 320.'
+  planningOverDetailed: planningMc320.tpsPerUser / holdout[0].detailedTpsPerUser,
+  holdout,
+  heldOutMaxAbsResidualPct: Math.max(...heldOut.map(h => Math.abs(h.residualPct))),
+  degreesOfFreedom: 0,
+  note: 'Five factors are fitted on one detailed point (K3, P1, MC640, TP32), so the fit has no degrees of freedom; the held-out rows are the only evidence of how the factors move with bandwidth. Only K3 TP32 can be held out: the detailed simulator maps K3 at TP32 only. GLM-5.2, DeepSeek-V4-Pro and TP8/TP16 slots have no detailed counterpart.'
 };
 
 const out = {
