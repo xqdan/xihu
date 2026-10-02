@@ -764,6 +764,7 @@
               "rawLatencyUs": 772.9406895017808
             }
           },
+          "lowerIsWorse": true,
           "breakEven": {
             "valueAtBudget": 0.6284493765729164
           }
@@ -789,6 +790,7 @@
               "rawLatencyUs": 775.736920471
             }
           },
+          "lowerIsWorse": true,
           "breakEven": {
             "valueAtBudget": 0.4432002184307748
           }
@@ -814,6 +816,7 @@
               "rawLatencyUs": 775.8063225194389
             }
           },
+          "lowerIsWorse": true,
           "breakEven": {
             "valueAtBudget": 0.14092509057181812
           }
@@ -839,10 +842,69 @@
               "rawLatencyUs": 766.5712244427855
             }
           },
+          "lowerIsWorse": true,
           "breakEven": {
             "valueAtBudget": null,
             "floor": 0.3,
-            "note": "the budget holds down to the floor"
+            "note": "the budget holds all the way to 0.3"
+          }
+        },
+        "unpackParamsPerLaneCycle": {
+          "where": "A.TECH.unpackParamsPerLaneCycle",
+          "published": 2,
+          "note": "weight parameters unpacked (MXFP4/FP8 to the MAC format) per vector lane per cycle; limits the L-core kernels (not MAC-bound); ASSUMPTION, no RTL or microbenchmark",
+          "replays": {
+            "1": {
+              "feasible": true,
+              "tpsPerUser": 1033.3625438884596,
+              "rawLatencyUs": 827.106478511099
+            },
+            "1.5": {
+              "feasible": true,
+              "tpsPerUser": 1080.390330125357,
+              "rawLatencyUs": 791.1037621020583
+            },
+            "0.8": {
+              "feasible": true,
+              "tpsPerUser": 994.8666977675616,
+              "rawLatencyUs": 859.1109307596354
+            },
+            "0.5": {
+              "feasible": true,
+              "tpsPerUser": 811.2338783213331,
+              "rawLatencyUs": 1053.5813130357262
+            }
+          },
+          "lowerIsWorse": true,
+          "breakEven": {
+            "valueAtBudget": 0.8225037943573625
+          }
+        },
+        "layoutImbalance": {
+          "where": "A.TECH.layoutImbalance",
+          "published": 1.15,
+          "note": "slowest-bank factor on every kernel time AND on the local-SRAM tile capacity check (H local 81% used): too large makes the point infeasible, not just slower; ASSUMPTION",
+          "replays": {
+            "1.3": {
+              "feasible": true,
+              "tpsPerUser": 1064.9156162177096,
+              "rawLatencyUs": 802.5996066585252
+            },
+            "1.4": {
+              "feasible": true,
+              "tpsPerUser": 1040.39684392693,
+              "rawLatencyUs": 821.5142709149576
+            },
+            "1.8": {
+              "feasible": false,
+              "reasons": [
+                "H local tile"
+              ]
+            }
+          },
+          "lowerIsWorse": false,
+          "breakEven": {
+            "valueAtBudget": 1.424549918166758
           }
         },
         "launchScale": {
@@ -860,6 +922,40 @@
               "tpsPerUser": 1096.1865258535381,
               "rawLatencyUs": 779.7038501593948
             }
+          },
+          "lowerIsWorse": false
+        }
+      },
+      "jointPessimistic": {
+        "compute": {
+          "values": {
+            "matrixUtil": 0.5,
+            "vectorUtil": 0.25,
+            "unpackParamsPerLaneCycle": 1,
+            "layoutImbalance": 1.3,
+            "kvTile": 16384
+          },
+          "replay": {
+            "feasible": true,
+            "tpsPerUser": 921.6304666655911,
+            "rawLatencyUs": 927.379123861992
+          }
+        },
+        "allUnmeasured": {
+          "values": {
+            "matrixUtil": 0.5,
+            "vectorUtil": 0.25,
+            "unpackParamsPerLaneCycle": 1,
+            "layoutImbalance": 1.3,
+            "kvTile": 16384,
+            "mcUtil": 0.65,
+            "prediction": 0.7,
+            "launchScale": 0.7
+          },
+          "replay": {
+            "feasible": true,
+            "tpsPerUser": 906.5072465060036,
+            "rawLatencyUs": 942.8505486251446
           }
         }
       },

@@ -247,7 +247,7 @@ cube 数会改变 die 侧带宽（每 die 的 cube 数 × 单 cube 带宽）和 
 | `route` | `mcX` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
 | `route` | `moreCubes` | `infeasible: routeContradiction:moreCubes-below-the-grid-max` | 640 / 16 / 16 / moreCubes / 0 | 896 | 256 | 398.72 | 1101.77 |
 | `route` | `dualDataPlane` | `infeasible: routeNotScored:dualDataPlane` | 640 / 16 / 16 / dualDataPlane / 0 | 896 | 256 | 398.72 | 1101.77 |
-| `route` | `fewerBytesPerToken` | `infeasible: routeNotScored:fewerBytesPerToken` | 640 / 16 / 16 / fewerBytesPerToken / 0 | 896 | 256 | 398.72 | 1101.77 |
+| `route` | `fewerBytesPerToken` | `infeasible: conditional:fewerBytesPerToken` | 640 / 16 / 16 / fewerBytesPerToken / 0 | 896 | 256 | 398.72 | 1111.68 |
 | `route` | `nearMemoryCompute` | `infeasible: routeNotScored:nearMemoryCompute` | 640 / 16 / 16 / nearMemoryCompute / 0 | 896 | 256 | 398.72 | 1101.77 |
 | `eccOverhead` | `0` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
 | `eccOverhead` | `0.0625` | `capacity margin` | 640 / 16 / 16 / mcX / 0.0625 | 896 | 240 | 398.72 | 1101.77 |
@@ -257,10 +257,21 @@ cube 数会改变 die 侧带宽（每 die 的 cube 数 × 单 cube 带宽）和 
 | 路线 | 需要先建模才能打分 |
 | --- | --- |
 | `dualDataPlane` | a second 320 GB/s data plane per cube (doubled PHY, bumps and controllers)；the model carries one bandwidth number per cube |
-| `fewerBytesPerToken` | a lower per-token byte demand (FP8 dense, compression, more SRAM reuse)；belongs to the software/compute domain and changes the replay input, not the cube |
 | `nearMemoryCompute` | compute inside the cube；architectureRoute keeps it out of the baseline, and the cube area would no longer be the planning 100 mm2 |
 
-挡住它们的原因和 `moreCubes` 不同：`moreCubes` 被算过（32 颗 → 封装不够），这三条**没被算过**。把两者都标成"落选"会让"每条排除都可追溯"变成一句无法验证的话。
+挡住它们的原因和 `moreCubes` 不同：`moreCubes` 被算过（32 颗 → 封装不够），这两条**没被算过**。把两者都标成"落选"会让"每条排除都可追溯"变成一句无法验证的话。
+
+**有条件的路线 `fewerBytesPerToken`**（`conditional:*`）：这条路线**被算了**，但不能当基线，因为它依赖一个还没关闭的决定（稠密投影 FP8 的精度签核，B-001 / O-012）。
+搜索用"稠密投影 FP8、路由专家/KV/激活不变"重放 K3，每个带宽档位在软件旋钮网格上重调（depth {1,2,4} × weightTileMiB {4,8} × windowFraction {.5,.75,1} × kvTile {16384,32768}；硬件钉在发布点），
+只豁免"与发布点的偏差"这一条容差（这条路线本来就要改变发布点），其余限制（`belowProgramGoal`、封装面积、卡功耗、容量等）照常。结果：
+
+| 备选 | MC 档位 | 风险档 | TPS/usr | MC 功耗 W | 与基线相比 |
+| --- | ---: | --- | ---: | ---: | --- |
+| 基线（BF16 稠密） | 640 | `STRETCH_AGGRESSIVE` | 1101.77 | 398.72 | — |
+| `fewerBytesPerToken`（FP8 稠密，重调） | 400 | `GRID` | 1080.78 | 291.20 | TPS −1.9%，MC 功耗 −107.52 W，档位从 640 降到 400 |
+
+含义：如果 FP8 稠密签核通过，MC 档位可以从"超出栅格上限的 640"降到栅格内的 400 并仍满足 1000 TPS/usr，同时省下约 108 W 卡功耗；这是把"精度决定未关闭"的代价写成数字，**不改变本文的基线选择**。
+限制：(1) 细化重放把 FP8 施加给所有稠密矩阵，含路由器和 LM head（约占每 rank 字节的 1%），规划口径下这两项仍是 BF16，所以这个数字略偏乐观；(2) 压缩和更多 SRAM 复用没有被建模；(3) 已发布的软件旋钮是为 BF16 调的，沿用它们 FP8 曲线随 MC 档位非单调（深预取会冲掉共享窗口），所以这里必须重调，直接复用发布旋钮会低估这条路线。
 
 ## 6. MC 控制器功能
 

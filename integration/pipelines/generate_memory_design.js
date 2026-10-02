@@ -43,6 +43,9 @@ console.log(JSON.stringify({
   cubesSweep: an.cubesSweep.map(r => `${r.cubesPerCard} cubes (${r.capacityGBPerCard} GB): placed ${f(r.packageAreaMm2, 1)} mm2, `
     + `reserve ${f(r.areaReserveMm2, 1)} mm2${r.feasible ? '' : ` -- ${r.violations.join(', ')}`}`),
   routes: an.routes.map(r => `${r.route}: ${r.scored ? (r.feasible ? 'scorable, feasible' : `scorable, ${r.violations.join(', ')}`) : 'HELD OUT (not scored)'}`
-    + `${r.scored ? ` -- die ${r.dieGBs} GB/s over ${r.cubes} cubes, capacity ${r.capacityGBPerCard} GB, TPS ${f(r.tpsPerUser, 2)}` : ''}`),
+    + `${r.conditional ? ' [CONDITIONAL, cannot win]' : ''}${r.scored ? ` -- die ${r.dieGBs} GB/s over ${r.cubes} cubes, capacity ${r.capacityGBPerCard} GB, TPS ${f(r.tpsPerUser, 2)}` : ''}`),
+  conditionalAlternative: an.conditionalAlternative && `${an.conditionalAlternative.route}: mcGBs ${an.conditionalAlternative.mcGBs} (${an.conditionalAlternative.classification}), `
+    + `TPS/usr ${f(an.conditionalAlternative.tpsPerUser, 2)}, MC power ${f(an.conditionalAlternative.mcPowerW, 2)} W `
+    + `(winner ${f(an.conditionalAlternative.versusWinner.winnerTpsPerUser, 2)} at ${an.conditionalAlternative.versusWinner.winnerMcGBs}); conditioned on ${an.conditionalAlternative.conditionedOn}`,
   heldOutRoutes: Object.entries(an.heldOutRoutes).map(([k, v]) => `${k}: ${v.needsModelling}`)
 }, null, 2));

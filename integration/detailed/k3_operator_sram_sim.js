@@ -53,7 +53,13 @@ const DEFAULT={tp:32,batch:8,context:1048576,depth:2,prediction:.8,union:'worst'
  // Vector ops per attention score in the online softmax (max, sub, exp, sum,
  // rescale with an exp SFU). HW-02's expUnit option sets it (18 for a
  // polynomial exp on the ALU lanes; teams/hardware/inputs/matrix_vector_design_space.json).
- softmaxOpsPerScore:8};
+ softmaxOpsPerScore:8,
+ // Independent sequences in the step. `batch` is the number of TOKENS processed together (activations,
+ // routing, collectives, expert union all scale with it); `seqs` is how many distinct sequences those
+ // tokens belong to, and KV / linear-state traffic and storage scale with it. Default seqs = batch:
+ // B independent sequences (the historical meaning). seqs < batch is a speculative-verify step, where
+ // several tokens of one sequence share one KV read.
+ seqs:undefined};
 function build(input={}){
  const c={...DEFAULT,...input},m=E.deriveModel(E.MODEL_PRESETS.kimiK3),s=m.spec;
  if(c.tp!==32||!Number.isInteger(c.batch)||c.batch<1||!Number.isInteger(c.depth)||c.depth<0||c.depth>4||c.prediction<0||c.prediction>1||c.context%c.tp||!['worst','expected'].includes(c.union))throw Error('Invalid input / only TP32 mapped');
@@ -64,7 +70,9 @@ function build(input={}){
  if(!['layer','window'].includes(c.kvPrefetch))throw Error('Invalid kvPrefetch '+c.kvPrefetch);
  if(typeof c.dmaPreempt!=='boolean')throw Error('Invalid dmaPreempt');
  if(!['bf16','fp8'].includes(c.kvCache))throw Error('Invalid kvCache '+c.kvCache);
- const B=c.batch,H=s.hidden,I=s.moe.latent,F=s.moe.expertHidden,K=s.moe.activeExperts,TP=c.tp;
+ const B=c.batch,SQ=c.seqs===undefined?B:c.seqs;
+ if(!Number.isInteger(SQ)||SQ<1||SQ>B)throw Error('Invalid seqs '+c.seqs);
+ const H=s.hidden,I=s.moe.latent,F=s.moe.expertHidden,K=s.moe.activeExperts,TP=c.tp;
  const qDim=s.attention.kvLatent+s.attention.ropeDim,vDim=s.attention.kvLatent;
  const kvFp8=c.kvCache==='fp8',kvBytes=kvFp8?s.attention.kvLatent+s.attention.kvLatent/128*4+s.attention.ropeDim*2:qDim*2;
  const nctx=c.context/TP,localHeads=s.attention.heads/TP;
@@ -72,7 +80,7 @@ function build(input={}){
  const Q=B*s.attention.heads*qDim*2,O=B*s.attention.heads*(vDim+2)*4;
  const residual=2*B*H*2,route=B*s.moe.totalExperts*4+B*K*16;
  const hidden=3*B*K*(F/TP)*2,dispatch=B*K*I*2,out=B*K*I*4;
- const state=B*localHeads*128*128*2,comm=Math.max(2*B*H*4,2*O);
+ const state=SQ*localHeads*128*128*2,comm=Math.max(2*B*H*4,2*O);
  const scratch={base:residual+MiB,
   soft:residual+Q+O+2*B*Math.min(c.headTile,s.attention.heads)*Math.min(c.kvTile,nctx)*4+MiB,
   linear:residual+Q/TP+2*state+MiB,
@@ -149,7 +157,7 @@ function build(input={}){
    const kvout=job(B*kvBytes,'write','KV append');
    op('KV append source',{read:B*qDim*2,write:B*kvBytes,outputs:[kvout],arena:'soft'});
    for(let pos=0;pos<nctx;pos+=c.kvTile){
-    const len=Math.min(c.kvTile,nctx-pos),kid=job(B*len*kvBytes,'kv','KV context tile',kvFp8?{dequant:B*len*vDim}:{});
+    const len=Math.min(c.kvTile,nctx-pos),kid=job(SQ*len*kvBytes,'kv','KV context tile',kvFp8?{dequant:SQ*len*vDim}:{});
     for(let h=0;h<s.attention.heads;h+=c.headTile){
      const nh=Math.min(c.headTile,s.attention.heads-h),score=B*nh*len*4;
      const info=`context ${pos}..${pos+len-1}; heads ${h}..${h+nh-1}`;
@@ -214,7 +222,7 @@ function build(input={}){
  let minTransfer=0;
  for(const o of ops){const bytes=o.inputs.reduce((a,id)=>a+jobs[id].bytes,0)+o.outputs.reduce((a,id)=>a+jobs[id].bytes,0);minTransfer=Math.max(minTransfer,bytes);}
  const weightStore=(m.bytes.routedTotal+m.bytes.attn+m.bytes.wdown+m.bytes.wup+m.bytes.shared+m.bytes.router+m.bytes.lmHead)/TP;
- const stateStore=(m.softmaxLayers*c.context*kvBytes+m.kdaStateStore)*B/TP;
+ const stateStore=(m.softmaxLayers*c.context*kvBytes+m.kdaStateStore)*SQ/TP;
  return {c,model:m,ops,jobs,layers,layerJobs,expertJobs,scratch,scratchReserve,U,minCapacity:scratchReserve+minTransfer,kvBytesPerToken:kvBytes,
   backingBytes:weightStore+stateStore,weightStore,stateStore};
 }

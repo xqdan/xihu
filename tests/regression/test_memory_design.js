@@ -14,6 +14,7 @@ const fs = require('fs');
 const S = require('../../integration/detailed/memory_search.js');
 const A = require('../../integration/detailed/k3_architecture_search.js');
 const O = require('../../integration/detailed/k3_rdma_final_tuning_model.js');
+const E = require('../../teams/model/src/design_engine.js');
 
 const stored = JSON.parse(fs.readFileSync('out/detailed/memory_design.json', 'utf8'));
 const storedCand = JSON.parse(fs.readFileSync('out/detailed/memory_candidates.json', 'utf8'));
@@ -21,12 +22,14 @@ const space = JSON.parse(fs.readFileSync(S.SPACE_FILE, 'utf8'));
 
 // 1. The artifact is a fresh build; TECH/OPT/mappedPlan are left untouched.
 const techBefore = JSON.stringify(A.TECH), optBefore = JSON.stringify(O.OPT), mappedPlan = A.mappedPlan;
+const denseBefore = E.MODEL_PRESETS.kimiK3.dtype.dense;
 const result = S.search();
 const fresh = JSON.parse(JSON.stringify(S.build(result)));
 const alt = S.alternatives(result), an = S.analysis(result);
 assert.strictEqual(JSON.stringify(A.TECH), techBefore, 'search must restore A.TECH');
 assert.strictEqual(JSON.stringify(O.OPT), optBefore, 'search must not change O.OPT');
 assert.strictEqual(A.mappedPlan, mappedPlan, 'search must restore A.mappedPlan');
+assert.strictEqual(E.MODEL_PRESETS.kimiK3.dtype.dense, denseBefore, 'the FP8 replay must restore the model preset');
 const close = (a, b, path) => {
   if (typeof a === 'number' && typeof b === 'number') return assert(Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(b)), `${path}: ${a} vs ${b}`);
   if (a && typeof a === 'object') {
@@ -195,6 +198,15 @@ const doc = (() => {
 })();
 const f1 = (v, n = 1) => (v === null || v === undefined ? '—' : v.toFixed(n));
 const f2 = (v, n = 2) => (v === null || v === undefined ? '—' : v.toFixed(n));
+// The conditional route is scored, held to every limit but the published-point tolerance, and cannot win.
+const CA = an.conditionalAlternative;
+assert(CA && CA.route === 'fewerBytesPerToken', 'fewerBytesPerToken must be scored as a conditional route with a reported alternative');
+assert(S.CONDITIONAL_ROUTES.fewerBytesPerToken && !('fewerBytesPerToken' in S.HELD_OUT_ROUTES), 'fewerBytesPerToken is conditional, not held out');
+assert(CA.tpsPerUser >= result.req.minTpsPerUser, `the conditional alternative must meet the program goal, got ${CA.tpsPerUser}`);
+assert(result.best.pick.route !== 'fewerBytesPerToken' && result.best.tpsPerUser === stored.evaluation.k3System.tpsPerUser, 'a conditional route must not become the baseline winner');
+assert(CA.mcGBs < result.best.mcGBs && CA.versusWinner.mcPowerSavedW > 0, 'the alternative is only interesting if it needs a lower MC tier');
+assert(CA.tunedSoftwareKnobs && CA.limitation && CA.conditionedOn.includes('B-001'), 'the alternative must state its tuned knobs, limitation and the decision it waits on');
+assert.deepStrictEqual(JSON.parse(JSON.stringify(S.build(result).conditionalAlternative)), JSON.parse(JSON.stringify(stored.conditionalAlternative)), 'out/detailed/memory_design.json conditionalAlternative must be regenerated');
 const must = [
   ['candidates', `${stored.designSpace.candidates} 个组合、${stored.designSpace.feasible} 个可行`],
   ...Object.entries(stored.design).map(([d, v]) => [`design ${d}`, `| \`${d}\` | \`${v.option}\` |`]),
@@ -210,7 +222,9 @@ const must = [
   ...Object.entries(alt).flatMap(([d, opts]) => Object.entries(opts).map(([n, v]) => [`alt ${d}.${n}`,
     `| \`${d}\` | \`${n}\` | ${v.chosen ? '**选中**' : `\`${v.lostOn}\``} | ${Object.values(v.pick).join(' / ')} | `
     + `${v.dieGBs} | ${v.capacityGBPerCard} | ${f2(v.mcPowerW)} | ${f2(v.tpsPerUser)} |`])),
-  ...Object.entries(an.heldOutRoutes).map(([r, v]) => [`held out ${r}`, `| \`${r}\` | ${v.needsModelling.replace(/: /, '；')}`])
+  ...Object.entries(an.heldOutRoutes).map(([r, v]) => [`held out ${r}`, `| \`${r}\` | ${v.needsModelling.replace(/: /, '；')}`]),
+  ['conditional route', `| \`fewerBytesPerToken\`（FP8 稠密，重调） | ${CA.mcGBs} | \`${CA.classification}\` | ${f2(CA.tpsPerUser)} | ${f2(CA.mcPowerW)} |`],
+  ['conditional baseline', `| 基线（BF16 稠密） | ${CA.versusWinner.winnerMcGBs} | \`${CA.versusWinner.riskClassWinner}\` | ${f2(CA.versusWinner.winnerTpsPerUser)} | ${f2(ev.mcPowerW)} |`]
 ];
 const missing = must.filter(([, v]) => !doc(v));
 assert.deepStrictEqual(missing, [], `04_MEMORY_SUBSYSTEM_MC.md section 5.1 is stale; rerun npm run memory:search and update:\n${missing.map(([k, v]) => `${k}: ${v}`).join('\n')}`);

@@ -14,6 +14,8 @@
     "aicore:search": "node integration/pipelines/generate_matrix_vector_design.js",
     "commcore:search": "node integration/pipelines/generate_comm_core_design.js",
     "memory:search": "node integration/pipelines/generate_memory_design.js",
+    "area:explore": "node integration/pipelines/generate_die_area_reallocation.js",
+    "mtp:explore": "node integration/pipelines/generate_mtp_exploration.js",
     "physical:search": "node integration/pipelines/generate_physical_design.js",
     "workflow:brief": "node integration/pipelines/search_brief.js brief",
     "workflow:verify-landed": "node integration/pipelines/search_brief.js verify",

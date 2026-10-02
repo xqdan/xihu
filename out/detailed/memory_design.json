@@ -4,7 +4,7 @@
   "document": "teams/hardware/docs/04_MEMORY_SUBSYSTEM_MC.md",
   "designSpace": {
     "file": "teams/hardware/inputs/memory_design_space.json",
-    "sha256": "e115c175ea48ae0d07d0d2ce3385dfb3d2da008485e88bb22b333068fab0c178",
+    "sha256": "e707deb90b88854cf55f72594c77e37ac8b3d66c5b0f2527cc8d7893e65323f0",
     "dimensions": [
       "mcGBs",
       "cubesPerCard",
@@ -154,6 +154,42 @@
     "packageAreaMm2": 4460.521432822018,
     "areaReserveMm2": 787.4785671779819,
     "dieAreaMm2": 357.56517910275227
+  },
+  "conditionalAlternative": {
+    "route": "fewerBytesPerToken",
+    "pick": {
+      "mcGBs": "400",
+      "cubesPerCard": "16",
+      "capacityGBPerCube": "16",
+      "route": "fewerBytesPerToken",
+      "eccOverhead": "0"
+    },
+    "conditionedOn": "FP8 accuracy sign-off for the dense (attention, shared-expert, latent) projections: B-001 / O-012, PRECISION_POLICY.md section 2.3",
+    "meaning": "K3 dense projections stored as FP8 (the GLM-5.2 / DeepSeek-V4-Pro dense policy); routed experts, KV and activations unchanged",
+    "limitation": "the detailed replay applies FP8 to every dense matrix including the router and LM head (about 1% of the rank bytes); the planning comparison model keeps those two in BF16",
+    "tunedSoftwareKnobs": {
+      "depth": 2,
+      "weightTileMiB": 8,
+      "windowFraction": 0.5,
+      "kvTile": 16384
+    },
+    "mcGBs": 400,
+    "classification": "GRID",
+    "cubes": 16,
+    "tpsPerUser": 1080.7813203642243,
+    "dieGBs": 560,
+    "mcPowerW": 291.20000000000005,
+    "cardPowerW": 2615.4393600000003,
+    "versusWinner": {
+      "winnerMcGBs": 640,
+      "winnerTpsPerUser": 1101.771070241925,
+      "mcGBsRatio": 0.625,
+      "mcPowerSavedW": 107.51999999999998,
+      "tpsDeltaPct": -1.9050917604046202,
+      "riskClassWinner": "STRETCH_AGGRESSIVE",
+      "riskClassAlternative": "GRID"
+    },
+    "status": "NOT the baseline: reported so that the cost of the open precision decision is a number; it cannot win until the condition closes"
   },
   "regenerate": "node integration/pipelines/generate_memory_design.js (npm run memory:search); enforced by tests/regression/test_memory_design.js"
 }

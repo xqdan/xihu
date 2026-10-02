@@ -64,9 +64,33 @@ for (const [name, g] of Object.entries(J)) {
 }
 assert(J.schedulerAndKernelMapping.ablation.tpsPerUser < Math.min(J.scheduler.ablation.tpsPerUser, J.kernelMapping.ablation.tpsPerUser));
 for (const [key, sw] of Object.entries(t.sensitivity.assumptions)) {
-  const worse = Object.entries(sw.replays).filter(([v]) => (key === 'launchScale' ? Number(v) > sw.published : Number(v) < sw.published));
-  for (const [v, r] of worse) assert(r.feasible && r.tpsPerUser <= t.point.tpsPerUser + 1e-6, `${key}=${v} must not beat the published point`);
-  if (sw.breakEven && sw.breakEven.valueAtBudget !== null) assert(sw.breakEven.valueAtBudget < sw.published, `${key}: break-even must lie below the published value`);
+  const worse = Object.entries(sw.replays).filter(([v]) => (sw.lowerIsWorse ? Number(v) < sw.published : Number(v) > sw.published));
+  // A too-pessimistic value may make the point infeasible (layoutImbalance 1.8 fails the H local tile check); that is worse, not better.
+  for (const [v, r] of worse) assert(!r.feasible || r.tpsPerUser <= t.point.tpsPerUser + 1e-6, `${key}=${v} must not beat the published point`);
+  if (sw.breakEven && sw.breakEven.valueAtBudget !== null) {
+    assert(sw.lowerIsWorse ? sw.breakEven.valueAtBudget < sw.published : sw.breakEven.valueAtBudget > sw.published, `${key}: break-even must lie on the pessimistic side of the published value`);
+  }
+}
+// Each unmeasured parameter alone leaves room, together they do not: the joint pessimistic replays are below
+// the goal while every one-at-a-time replay of the same parameters at those values stays above it.
+const doc0 = fs.readFileSync('docs/architecture/21_TPS_DESIGN_BASELINE.md', 'utf8');
+const JP = t.sensitivity.jointPessimistic;
+assert.deepStrictEqual(Object.keys(JP).sort(), ['allUnmeasured', 'compute']);
+for (const [name, j] of Object.entries(JP)) {
+  assert(j.replay.feasible, `${name}: joint pessimistic point must replay`);
+  assert(j.replay.tpsPerUser < t.point.tpsPerUser, `${name}: pessimistic parameters cannot beat the published point`);
+  if (j.replay.tpsPerUser < spec.goal.target) assert(doc0.includes('联合悲观点'), `${name}: a joint pessimistic point below the goal must be stated in doc 21`);
+}
+assert(JP.allUnmeasured.replay.tpsPerUser <= JP.compute.replay.tpsPerUser + 1e-9, 'adding more pessimistic parameters cannot help');
+{
+  const sw = t.sensitivity.assumptions;
+  const alone = {matrixUtil: 0.5, vectorUtil: 0.25, unpackParamsPerLaneCycle: 1, layoutImbalance: 1.3};
+  for (const [k, v] of Object.entries(alone)) {
+    const r = T.replayJoint({[k]: v}, best.x);
+    assert(r.feasible && r.rawUs !== undefined, `${k}=${v} alone must replay`);
+    if (k === 'unpackParamsPerLaneCycle' || k === 'layoutImbalance') assert(1e6 / (r.rawUs * 1.17) >= spec.goal.target, `${k}=${v} alone stays above the goal`);
+  }
+  assert(sw.unpackParamsPerLaneCycle && sw.layoutImbalance, 'unpack rate and bank imbalance are listed unmeasured parameters');
 }
 const mcB = t.sensitivity.assumptions.mcUtil.breakEven.valueAtBudget;
 assert(mcB > 0.5 && mcB < A.TECH.mcUtil, 'the sustained-bandwidth break-even is the thinnest unmeasured margin and must stay visible');
@@ -89,6 +113,7 @@ const must = [
     ...Object.entries(sw.replays).filter(([, r]) => r.feasible).map(([v, r]) => [`${k}=${v}`, r.tpsPerUser]),
     ...(sw.breakEven && sw.breakEven.valueAtBudget !== null ? [[k + ' break-even', sw.breakEven.valueAtBudget]] : [])]),
   ...Object.entries(t.sensitivity.kvTile16384).filter(([, r]) => r.feasible).map(([k, r]) => ['kv16k ' + k, r.tpsPerUser]),
+  ...Object.entries(JP).map(([k, j]) => ['joint pessimistic ' + k, j.replay.tpsPerUser]),
   ['die area', t.hardware.dieAreaMm2], ['die power', t.hardware.diePowerW], ['card power', t.hardware.perCard.powerW],
   ['port area', t.hardware.sharedPortScalingCost.dieAreaMm2], ['port power', t.hardware.sharedPortScalingCost.diePowerW],
   ['L TF', t.hardware.perDie.lTensorTflops], ['H TF', t.hardware.perDie.hTensorTflops], ['vector', t.hardware.perDie.vectorTops],
