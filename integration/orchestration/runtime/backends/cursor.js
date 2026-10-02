@@ -23,11 +23,7 @@
 // errors are ordinary errors and get retried.
 
 const {BackendFatalError} = require('../errors');
-
-function withSchema(prompt, schema) {
-  if (!schema) return prompt;
-  return `${prompt}\n\n你的整个回复必须是一个 JSON 文档（不要 markdown 围栏，不要任何说明文字），并且符合下面的 JSON Schema：\n${JSON.stringify(schema)}`;
-}
+const {withSchema} = require('../schema');
 
 async function loadSdk() {
   try {

@@ -452,7 +452,7 @@ const attribution = await agent(
   + `   归不了因就写进 unexplained——那是允许的结果，它会让本格以 DELTA_UNEXPLAINED 收场，`
   + `   而一条假归因会让一个真缺口永远消失。\n`
   + `3. 逐条标注 directionLevel：这个 delta 是细节问题，还是动摇了方向级假设。\n`
-  + `4. 两套卡功耗口径（memory 域不计共享端口项、physical 域计它，相差 45.5141376 W）`
+  + `4. 两套卡功耗口径（memory 域不计共享端口项、physical 域计它，相差 21.915648 W）`
   + `   若出现在同一次比较里，按方向级问题对待。\n`
   + `本格裁决（roster 里你的三个取值，各自对应一种结局）：\n`
   + `  ARCH_FREEZE：delta 全部归因、18 位与单一硬件规格对齐，本次细化结论到此冻结。\n`

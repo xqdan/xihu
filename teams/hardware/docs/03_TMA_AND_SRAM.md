@@ -125,13 +125,13 @@ pie title "Shared SRAM bank class 初始份额（建议）"
 
 | 参数 | 值 | 含义 |
 | --- | ---: | --- |
-| `localWriteRatio` | 1.70 | local 写与读的比 |
+| `localWriteRatio` | 1（原 1.70，ADR-0023） | local 写与读的比 |
 | `tmaDedicatedPort` | ×1.55 | TMA 独立端口的写侧放大 |
 | `sharedReadScale` | 1.18 | shared 读放大 |
 | `sharedReadPerWrite` | 0.18 | 每次写附带的读 |
 
-代价：每 Die 16.15 mm²（SF4）、5.69 W，每卡 45.51 W；全部关掉 TPS 只从 1101.77 降到 1101.71。
-这是下一轮可回收的面积与功耗，是否回收走 ADR-0005 变更流程。
+代价：每 Die 7.78 mm²（SF4）、2.74 W，每卡 21.92 W；全部关掉 TPS 只从 1101.77 降到 1101.71。
+`localWriteRatio` 从 1.70 降到 1 已由 ADR-0023 回收（每 Die 8.37 mm²、2.95 W，TPS 不变）；其余三项是否继续回收走 ADR-0005 变更流程。
 
 ## 4. TMA
 

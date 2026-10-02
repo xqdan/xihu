@@ -125,14 +125,14 @@
     "reduceLanes": 4096,
     "bf16DenseTflops": 278.528,
     "vectorTops": 12.288,
-    "estimatedAreaMm2": 373.7139860943489,
-    "estimatedPowerW": 286.2191872000001,
-    "estimatedCardPowerW": 2768.473497600001,
+    "estimatedAreaMm2": 365.3410392708195,
+    "estimatedPowerW": 283.2693760000001,
+    "estimatedCardPowerW": 2744.875008000001,
     "sharedPortScalingCost": {
-      "extraTBsPerDie": 7.585689599999999,
-      "areaMm2PerDie": 16.148806991596636,
-      "powerWPerDie": 5.6892672,
-      "cardPowerW": 45.5141376
+      "extraTBsPerDie": 3.6526080000000007,
+      "areaMm2PerDie": 7.775860168067228,
+      "powerWPerDie": 2.7394560000000006,
+      "cardPowerW": 21.915648000000004
     },
     "physicalBasis": {
       "process": "SF4",
@@ -417,9 +417,9 @@
       },
       "perCard": {
         "rdmaGBs": 800,
-        "powerW": 2768.473497600001,
+        "powerW": 2744.875008000001,
         "mcPowerW": 398.72,
-        "packageAreaMm2": 4589.711888754791,
+        "packageAreaMm2": 4522.728314166556,
         "shorelineMm": 24.21333333333333,
         "shorelineBudgetMm": 52.94630302642081
       },
@@ -435,7 +435,7 @@
         "ucie": 22.336,
         "rdma": 10.6,
         "misc": 15.327731092436974,
-        "sharedPorts": 16.148806991596636
+        "sharedPorts": 7.775860168067228
       },
       "powerW": {
         "matrix": 133.69344,
@@ -447,10 +447,10 @@
         "ucie": 31.45728,
         "rdma": 6.720000000000001,
         "control": 23.6,
-        "sharedPorts": 5.6892672
+        "sharedPorts": 2.7394560000000006
       },
-      "dieAreaMm2": 373.7139860943489,
-      "diePowerW": 286.2191872000001,
+      "dieAreaMm2": 365.3410392708195,
+      "diePowerW": 283.2693760000001,
       "limits": {
         "dieAreaMm2": 400,
         "diePowerW": 300,
@@ -458,9 +458,9 @@
         "packageAreaMm2": 5248
       },
       "sharedPortScalingCost": {
-        "dieAreaMm2": 16.148806991596643,
-        "diePowerW": 5.6892672000000175,
-        "cardPowerW": 45.51413760000014
+        "dieAreaMm2": 7.775860168067254,
+        "diePowerW": 2.7394560000000183,
+        "cardPowerW": 21.915648000000147
       },
       "basis": {
         "process": "SF4",
@@ -512,7 +512,7 @@
         "attentionFusion": true,
         "wupRouterFusion": true,
         "outputDirectConsumer": true,
-        "localWriteRatio": 1.7,
+        "localWriteRatio": 1,
         "tmaDedicatedPort": true,
         "tmaPortWriteScale": 1.55,
         "sharedReadScale": 1.18,
@@ -651,7 +651,7 @@
         {
           "key": "sharedPortScaling",
           "on": {
-            "localWriteRatio": 1.7,
+            "localWriteRatio": 1,
             "tmaDedicatedPort": true,
             "sharedReadScale": 1.18,
             "sharedReadPerWrite": 0.18

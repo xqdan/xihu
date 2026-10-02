@@ -142,6 +142,16 @@ const POLICY_SCHEMA = {
         properties: { name: { type: 'string' }, why: { type: 'string' } },
       },
     },
+    evaluationAxes: {
+      type: 'array',
+      description: '评估轴：每个候选都要逐项评估、但不是自由度的轴（例如逐模型、逐 kernel）。不进 dims，不参与“搜索未覆盖”的比对',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['name', 'why'],
+        properties: { name: { type: 'string' }, why: { type: 'string' } },
+      },
+    },
     excluded: {
       type: 'array',
       items: {
@@ -187,6 +197,7 @@ ${BRIEF_JSON}
 
 把设计空间收窄到可跑的范围：
 - dims：本次要搜的维度，逐个说明为什么它在这次 brief 的约束下值得搜。
+  只放真正可枚举、可取舍的自由度。“每个候选都要逐模型 / 逐 kernel 评估”这类评估轴不是自由度，写进 evaluationAxes，不要写进 dims。
 - excluded：本次不搜的维度或取值，逐个说明被哪条硬约束排除（引用 brief 里 hardConstraints 的 id）。
   排除必须引用约束，不得写"影响不大"这类不可复核的理由。
   仓库里没有热模型（无 theta-JA、无冷板曲线、无环境温度），所以散热只能作为"适用哪个上限"
@@ -205,8 +216,8 @@ ${BRIEF_JSON}
   本域至少要有这几条的口径：
   * reserveFraction 是**被留出**的份额，不是可用份额。发布点 0.1254 = 658.29 / 5248，
     可用预算 = 窗口 x (1 - reserveFraction)。把它当成可用份额，每一个面积数字都会反过来。
-  * die 面积与 die 功耗要含确定性脚本计的那笔共享端口放大（面积 357.565 + 16.149 = 373.714 mm²，
-    功耗 280.530 + 5.689 = 286.219 W）；端口面积随工艺 logic 系数缩放，端口功耗不随工艺缩放。
+  * die 面积与 die 功耗要含确定性脚本计的那笔共享端口放大（面积 357.565 + 7.776 = 365.341 mm²，
+    功耗 280.530 + 2.739 = 283.269 W）；端口面积随工艺 logic 系数缩放，端口功耗不随工艺缩放。
   * edgeBudget 按端口放大**之前**的面积算（4 x sqrt(357.565) x 0.70 = 52.946 mm），
     与发布点一致；shoreline 用放大后的量比。两者口径不同，不得混用。
   * die 与卡的功耗上限分开核算，peak / average / P95 不得互相替代，预算值不得冒充实测值。
@@ -257,14 +268,14 @@ phase('Deterministic search')
 // 核对"转写 = 原文"。现在取回、指纹核对（设计空间哈希 + 重跑搜索）都在脚本里完成，
 // workflow 只消费结果；落盘之后由 `search_brief.js verify` 再核对 winner 是否为产物里的一行。
 //
-// coversAllDims 是机械比对：策略点名的维度，在产物的设计空间维度名里找不到（忽略大小写与符号、
+// uncoveredDims 是机械比对：策略点名的维度，在产物的设计空间维度名里找不到（忽略大小写与符号、
 // 允许子串）即记为未覆盖。它只用来在日志与 runRecord 里提示，不拦截流程。
 const dimNorm = (s) => String(s).toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')
 const designDims = (SEARCH_BRIEF.dimensions || []).map(dimNorm)
 const search = {
   ...SEARCH_BRIEF,
   candidates: SEARCH_BRIEF.candidates || [],
-  coversAllDims: policy.dims.map((d) => d.name).filter((name) => {
+  uncoveredDims: policy.dims.map((d) => d.name).filter((name) => {
     const n = dimNorm(name)
     return n !== '' && !designDims.some((x) => x.includes(n) || n.includes(x))
   }),
@@ -283,16 +294,23 @@ if (!search || !search.ok) {
 }
 
 // 覆盖缺口不静默：策略要求搜的维度脚本没搜，等于这批候选回答的不是同一个问题。
-if (search.coversAllDims && search.coversAllDims.length) {
-  log(`搜索未覆盖策略要求的维度：${search.coversAllDims.join(', ')}；结论只对已覆盖维度成立`)
+if (search.uncoveredDims && search.uncoveredDims.length) {
+  log(`搜索未覆盖策略要求的维度：${search.uncoveredDims.join(', ')}；结论只对已覆盖维度成立`)
 }
-if (!search.candidates.length) {
+// 可行 0 个不等于候选表是空的：搜索产物会列出全部候选（含不可行的），
+// 所以必须看 feasibleCandidates，而不是只看表有没有行。
+if (!search.candidates.length || search.feasibleCandidates === 0) {
   log('可行候选为 0；交回上游，不在本域硬凑一个 winner')
   return {
     stage: STAGE,
     runId: RUN_ID,
     verdict: 'BLOCKED_CONFIG',
-    reason: '确定性搜索没有可行候选',
+    reason: `确定性搜索没有可行候选（可行 ${search.feasibleCandidates} / 共 ${search.totalCandidates}）；不在本域选一个最不坏的当 winner`,
+    infeasibleByCause: search.infeasibleByCause || null,
+    nextActions: [
+      '按 infeasibleByCause 逐项查是哪条限值把候选全部否掉；若是前提（例如 keep-out、口径）而不是设计本身，交给该前提的责任人，不要放宽限值取得 winner',
+      '前提或设计空间改动后，重跑本域搜索并重新生成候选产物',
+    ],
     searchNode: search,
     policy,
     files: [],
@@ -303,7 +321,7 @@ if (search.candidates.length > MAX_CANDIDATES) {
 }
 
 const candidateBrief = {
-  designSpaceSha256: search.designSpaceSha256,
+  candidateSetSha256: search.candidateSetSha256, designSpaceFileSha256: search.designSpaceFileSha256,
   totalCandidates: search.totalCandidates,
   feasibleCandidates: search.feasibleCandidates,
   // 口径随候选集一起下发。缺了它，下游无法判断某个字段能不能直接与规格限额比对，
@@ -607,7 +625,7 @@ physical-expert 声明的守恒关系与口径约束（本 stage 的检点清单
 ${JSON.stringify(policy.invariants, null, 2)}
 
 确定性搜索的元信息（候选来源指纹与计数）：
-${JSON.stringify({ designSpaceSha256: candidateBrief.designSpaceSha256, totalCandidates: candidateBrief.totalCandidates, feasibleCandidates: candidateBrief.feasibleCandidates }, null, 2)}
+${JSON.stringify({ candidateSetSha256: candidateBrief.candidateSetSha256, designSpaceFileSha256: candidateBrief.designSpaceFileSha256, totalCandidates: candidateBrief.totalCandidates, feasibleCandidates: candidateBrief.feasibleCandidates }, null, 2)}
 
 任务：逐条检点。只检点，不设计、不提改进建议。
 - 每条守恒关系给出明确结论：守恒 / 不守恒 / 输入不足。
@@ -689,7 +707,7 @@ const ledgerPatch = {
 const runRecord = {
   stage: STAGE,
   runId: RUN_ID,
-  designSpaceSha256: candidateBrief.designSpaceSha256,
+  candidateSetSha256: candidateBrief.candidateSetSha256, designSpaceFileSha256: candidateBrief.designSpaceFileSha256,
   searchProvenance: SEARCH_BRIEF.provenance,
   totalCandidates: candidateBrief.totalCandidates,
   feasibleCandidates: candidateBrief.feasibleCandidates,
@@ -704,8 +722,8 @@ const runRecord = {
   // reserveFraction 是被留出的份额还是可用份额。
   // 未标注口径时后续与规格的比对无意义，所以它必须随 runRecord 落盘。
   fieldCaliber: search.fieldCaliber || { areaIncludesSharedPortCost: 'UNVERIFIED', powerScope: 'UNVERIFIED', reserveFractionIsKeepOut: 'UNVERIFIED', note: '产物未提供口径标注' },
-  policy: { dims: policy.dims, excluded: policy.excluded, ranking: policy.ranking },
-  uncoveredDims: search.coversAllDims || [],
+  policy: { dims: policy.dims, evaluationAxes: policy.evaluationAxes || [], excluded: policy.excluded, ranking: policy.ranking },
+  uncoveredDims: search.uncoveredDims || [],
   threadReadings: liveThreads,
   constraints,
   merge: merged,

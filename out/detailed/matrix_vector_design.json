@@ -4,18 +4,19 @@
   "document": "teams/hardware/docs/02_AI_CORE.md#25-matrixvector-配比hw-02-决策",
   "designSpace": {
     "file": "teams/hardware/inputs/matrix_vector_design_space.json",
-    "sha256": "6fbf9ed3d8b4233c41a0d2c1ccc08bc490a9cbd882f561cd89aab02cbeab8777",
+    "sha256": "caf143d1c2d4ed126e56fd37d5f259b68a13a15b6b33982d236eb063f2919ac7",
     "dimensions": [
       "vectorLanes",
       "lowPrecisionInput",
       "expUnit"
     ],
     "candidates": 52,
-    "feasible": 6,
+    "feasible": 3,
     "constraints": [
       "every H-core kernel of the required models hides its vector work (kernel bound >= core MACs:lanes)",
       "K3 detailed replay at the published point with only vectorLanes (and, for native input, the unpack) changed keeps TPS/usr within tpsTolerance of the published point",
-      "the die stays within its area and power limits (O.evaluate feasibility)"
+      "the die, with the shared-port charge and the option overheads, stays within its area and power limits (O.evaluate feasibility, then the die-area limit on the figure that includes both)",
+      "8 dies at that area plus the memory cubes fit the placement window less the observed keep-out (requirements.packageFit)"
     ],
     "objective": [
       "feasible first",
@@ -33,7 +34,12 @@
     "hiddenCoreClasses": [
       "H"
     ],
-    "tpsTolerance": 0.001
+    "tpsTolerance": 0.001,
+    "packageFit": {
+      "keepOutFraction": 0.1254,
+      "keepOutReason": "the observed keep-out of the published point, 658.29 / 5248 (teams/hardware/inputs/physical_design_space.json, reserveFraction option 0.1254: recorded as observed, not chosen). A tighter reserve is an unverified ASSUMPTION there and is deliberately not used here to admit a candidate",
+      "reason": "8 compute dies at the candidate's die area (shared-port charge included) plus the memory cubes must fit the placement window less the keep-out. The published point leaves 67.17 mm2 (09_PACKAGE_POWER_RAS.md; it left 0.189 mm2 before the shared-port reclaim of ADR-0023), so an option may add at most that room divided by the 8 dies to the die area"
+    }
   },
   "assumptions": {
     "matrixUtil": 0.65,
@@ -265,14 +271,17 @@
       "tpsPerUser": 1101.7656334895737,
       "rawLatencyUs": 775.7555951294273
     },
-    "areaMm2": 363.59817406073546,
+    "areaMm2": 371.3740342288027,
     "area": {
       "die": 361.9795656573741,
+      "sharedPorts": 7.775860168067228,
       "matrixOverhead": 0,
       "vectorOverhead": 1.6186084033613444
     },
-    "diePowerW": 283.5251200000001,
-    "dieAreaLimitMm2": 400
+    "diePowerW": 286.2645760000001,
+    "dieAreaLimitMm2": 400,
+    "packagePlacedMm2": 4570.992273830421,
+    "packageReserveMm2": 18.90852616957909
   },
   "regenerate": "node integration/pipelines/generate_matrix_vector_design.js (npm run aicore:search); enforced by tests/regression/test_matrix_vector_design.js"
 }

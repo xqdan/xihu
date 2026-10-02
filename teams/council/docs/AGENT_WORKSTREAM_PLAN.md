@@ -16,7 +16,7 @@
 - 端到端目标 `1000 TPS/usr`；
 - 架构冻结门槛 `>=1050 TPS/usr`；
 - 7-reticle package：8 Compute Die + 16 MC；
-- 唯一硬件规格 P1（ADR-0021）：8 L + 4 H、40 MiB/Die、373.71 mm²（SF4）、1.0 GHz；当前发布点 1101.77 TPS/usr（MC640，`MODEL` 等级），权威数值见 [`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md)。
+- 唯一硬件规格 P1（ADR-0021）：8 L + 4 H、40 MiB/Die、365.34 mm²（SF4）、1.0 GHz；当前发布点 1101.77 TPS/usr（MC640，`MODEL` 等级），权威数值见 [`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md)。
 
 ## 1.1 多模型扩展
 

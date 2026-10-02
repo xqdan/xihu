@@ -15,15 +15,18 @@
  *   after    if anything in the tree changed, nothing is landed (exit 3); a C-group
  *            winner is checked against the candidate artifact before anything is
  *            written (exit 5 on mismatch); then the returned files go through
- *            land.js's path and content gates (exit 4 on rejection).
+ *            land.js's path and content gates (exit 4 on rejection). A run that
+ *            returned no files (a backflow, a blocked input) lands an outcome record
+ *            instead, so the stop is on disk and not only in the terminal.
  *
  * Landing is opt-in: without --land the run is a dry run that applies every gate and
  * writes nothing.
  *
  * Usage:
- *   node integration/pipelines/run_workflow.js <workflow> --backend mock|claude|cursor
+ *   node integration/pipelines/run_workflow.js <workflow> --backend mock|claude|cursor|exchange
  *        [--args file.json] [--brief file.json] [--run-id id] [--max N]
- *        [--model name] [--concurrency N] [--timeout ms] [--land]
+ *        [--model name] [--concurrency N] [--timeout ms] [--exchange-dir dir]
+ *        [--result-file file.json] [--land]
  *   <workflow>: compute | memory | comm | physical | intake | detail.events | ... (see --list)
  *
  * Exit codes: 0 ran (the workflow's own verdict is in the summary), 1 usage or
@@ -39,6 +42,8 @@ const {snapshot, changedBetween} = require('../orchestration/runtime/guard');
 const {createMockBackend} = require('../orchestration/runtime/backends/mock');
 const {createClaudeBackend} = require('../orchestration/runtime/backends/claude');
 const {createCursorBackend} = require('../orchestration/runtime/backends/cursor');
+const {createExchangeBackend} = require('../orchestration/runtime/backends/exchange');
+const {buildOutcomeFile} = require('../orchestration/runtime/outcome');
 const {DOMAINS, DEFAULT_MAX, buildSearchBrief, verifyLandedWinner} = require('./search_brief');
 
 const root = path.resolve(__dirname, '../..');
@@ -75,8 +80,14 @@ function makeBackend(name, flags) {
       return createClaudeBackend({cwd: root, model: flags.model, timeoutMs});
     case 'cursor':
       return createCursorBackend({cwd: root, model: flags.model});
+    case 'exchange':
+      return createExchangeBackend({
+        dir: path.resolve(root, flags['exchange-dir'] || 'scratch/wf_exchange'),
+        timeoutMs,
+        onRequest: ({request}) => console.error(`  waiting for an answer: ${path.relative(root, request)} -> ${path.relative(root, request).replace('.request.json', '.answer.txt')}`),
+      });
     default:
-      throw new Error(`unknown backend "${name}" (mock | claude | cursor)`);
+      throw new Error(`unknown backend "${name}" (mock | claude | cursor | exchange)`);
   }
 }
 
@@ -102,6 +113,17 @@ function parseLanded(files, suffix) {
   return file ? JSON.parse(file.content) : null;
 }
 
+// Who stopped the run and on what, for the summary: the workflow's own `constraints`
+// (lateral experts) when it has them. The full result is available through --result-file.
+function findingsOf(result) {
+  if (!result || !Array.isArray(result.constraints)) return undefined;
+  return result.constraints.map((c) => ({
+    from: c.from,
+    verdict: c.verdict,
+    rulesOut: (c.constraints || []).map((item) => item.rulesOut),
+  }));
+}
+
 async function main(argv, deps = {}) {
   const {flags, positional} = parseFlags(argv);
   if (flags.list) {
@@ -110,7 +132,7 @@ async function main(argv, deps = {}) {
   }
   const [workflow] = positional;
   if (flags.help || !workflow || !flags.backend) {
-    console.error('usage: run_workflow.js <workflow> --backend mock|claude|cursor [--args f] [--brief f] [--run-id id] [--max N] [--model m] [--concurrency N] [--timeout ms] [--land]   (--list shows workflows)');
+    console.error('usage: run_workflow.js <workflow> --backend mock|claude|cursor|exchange [--args f] [--brief f] [--run-id id] [--max N] [--model m] [--concurrency N] [--timeout ms] [--exchange-dir d] [--result-file f] [--land]   (--list shows workflows)');
     return 1;
   }
 
@@ -147,12 +169,14 @@ async function main(argv, deps = {}) {
   }
   const modified = changedBetween(before, snapshot(root));
   const {result} = run;
+  if (flags['result-file']) fs.writeFileSync(path.resolve(root, flags['result-file']), `${JSON.stringify(result, null, 2)}\n`);
   const summary = {
     workflow,
     backend: backend.name,
     verdict: result && result.verdict,
     reason: result && result.reason,
     nextActions: result && result.nextActions,
+    findings: findingsOf(result),
     agentCalls: run.calls.length,
     failedCalls: run.calls.filter((c) => !c.ok).length,
     retries: run.failures.length,
@@ -166,7 +190,14 @@ async function main(argv, deps = {}) {
     return 3;
   }
 
-  const files = (result && result.files) || [];
+  let files = (result && result.files) || [];
+  const outcome = buildOutcomeFile(workflow, result, {
+    runId: result && result.runId,
+    backend: backend.name,
+    agentCalls: run.calls.length,
+    phases: run.phases,
+  });
+  if (outcome) files = [outcome];
 
   // The C-group winner is checked against the candidate artifact BEFORE anything is
   // written: a winner that is not a verbatim artifact row must never reach out/.

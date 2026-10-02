@@ -57,9 +57,10 @@ margin is (78.95 µs of raw against the 854.70 µs budget).
 
 ## Consequences
 
-- The shared-SRAM port scaling currently costs 16.15 mm² (SF4) and 5.69 W per die
+- The shared-SRAM port scaling cost 16.15 mm² (SF4) and 5.69 W per die
   (45.51 W per card) for 0.06 TPS. That is now visible and can be reclaimed by a
-  later decision.
+  later decision. (ADR-0023, 2026-10-02, reclaimed the `localWriteRatio` part: the
+  charge is now 7.78 mm² and 2.74 W per die, 21.92 W per card.)
 - The published point needs the denser matrix and the liquid-cooled limits
   together: the power returns UCIe to 128 lanes (MC no longer capped by the
   UCIe port) and buys H compute; either alone adds under 10 TPS.

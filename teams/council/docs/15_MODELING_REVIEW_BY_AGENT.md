@@ -56,7 +56,7 @@ Review 范围：`k3-architecture-repo` 当前 baseline；目标是 K3、GLM-5.2�
 
 - 7-reticle placement window、die/MC 面积仍是规划守恒，不是坐标级 floorplan；缺少 shoreline、bump、RDL、clock/power/thermal keep-out。
 - 384 expert home、index cache home、MC home 尚无物理映射，无法约束远端通信。
-- Compute Die（373.71 mm²，上限 400 mm²）的 SRAM、PHY、NoC、DFT、spare 面积密度缺乏工艺证据（B-006）。
+- Compute Die（365.34 mm²，上限 400 mm²）的 SRAM、PHY、NoC、DFT、spare 面积密度缺乏工艺证据（B-006）。
 
 ### A3 Compute Die / AI Core
 

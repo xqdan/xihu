@@ -149,4 +149,11 @@ function extractJson(text) {
   throw new Error(`reply is not valid JSON: ${lastError.message}`);
 }
 
-module.exports = {validate, extractJson};
+// The prompt suffix for backends that cannot take a schema as a parameter: the reply
+// is asked to be one bare JSON document, and the runtime validates it.
+function withSchema(prompt, schema) {
+  if (!schema) return prompt;
+  return `${prompt}\n\n你的整个回复必须是一个 JSON 文档（不要 markdown 围栏，不要任何说明文字），并且符合下面的 JSON Schema：\n${JSON.stringify(schema)}`;
+}
+
+module.exports = {withSchema, validate, extractJson};

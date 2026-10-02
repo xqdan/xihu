@@ -34,7 +34,7 @@ export const meta = {
 //   2. 面积守恒在容差 0 下成立（placed + keep-out = 总面积）；
 //   3. peak 与 sustained 分离，且**卡功耗口径没有被混用**
 //      （memory 域的卡功耗口径是 8×die + MC + 固定 80 W，**刻意不计**共享端口项；
-//       physical 域的口径计它——两者相差恰好 45.5141376 W。
+//       physical 域的口径计它——两者相差恰好 21.915648 W。
 //       把两个口径的数放在一起比，是这一格最容易犯且最难发现的错）。
 //
 // 第三条不是洁癖：memory 域的搜索就因为这个差项而"2800 W 更宽松"。
@@ -290,7 +290,7 @@ const declarations = (await parallel(DECLARANTS.map((d) => () => agent(
       + `   **keep-out 是留空的那部分**——留空比例 0.1254 = 658.29 / 5248，读反了所有面积都会反。\n`
       + `3. 功耗项必须写明是 ${POWER_CALIBERS.join(' 还是 ')} 口径。`
       + `   memory 域的口径是 8×die + MC + 固定 80 W，**刻意不计**共享端口项；`
-      + `   physical 域计它——两者相差 45.5141376 W。混用口径的功耗裕量不是裕量。\n`
+      + `   physical 域计它——两者相差 21.915648 W。混用口径的功耗裕量不是裕量。\n`
       + `4. peak 与 sustained 不得合并成一个数；写清每个数是哪一个。\n`
       + `5. 面积与功耗都要与 ADR-0021 的单一硬件规格对齐；出现第二份规格如实写出。\n`)
   + `申报完成后给出本域裁决：\n`
@@ -449,7 +449,7 @@ if (executeGaps.length) {
 // 两套口径同时出现不是问题（各自标注清楚即可），但**同一个被比较的限值**
 // 只能属于一套口径。这里只登记事实，判断交给检点者。
 const caliberMixNote = mixedCalibers.length > 1
-  ? `本格同时出现 ${mixedCalibers.join(' 与 ')} 两套卡功耗口径（相差 45.5141376 W）；任何与功耗限值的比较必须同口径`
+  ? `本格同时出现 ${mixedCalibers.join(' 与 ')} 两套卡功耗口径（相差 21.915648 W）；任何与功耗限值的比较必须同口径`
   : null
 
 phase('Invariant check')
@@ -467,7 +467,7 @@ const check = await agent(
   + `  (a) Q6 每个事件可追溯（${SW_TRACE_FIELDS.join('、')}），Q7 每项有出处；\n`
   + `  (b) 面积守恒在容差 ${AREA_TOLERANCE_MM2} 下成立；\n`
   + `  (c) **卡功耗口径没有被混用**：同一个被比较的限值只能属于一套口径。`
-  + `      两套口径相差 45.5141376 W（memory 域是 8×die + MC + 固定 80 W，不计共享端口项；`
+  + `      两套口径相差 21.915648 W（memory 域是 8×die + MC + 固定 80 W，不计共享端口项；`
   + `      physical 域计它）。拿 memory 域的裕量去说 physical 域够用，是这一格最隐蔽的违规。\n`
   + `另外核两条：exposed 与 hidden 是否真的分开（有没有被合成一个总数）；`
   + `全流里有没有无出处的加速比或热降频系数——这一条要主动去找。\n`

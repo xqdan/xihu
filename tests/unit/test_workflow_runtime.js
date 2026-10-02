@@ -11,7 +11,10 @@
 //   * landing is all-or-nothing and refuses paths outside the workflow's own area,
 //     `explore` writing anywhere but scratch/, and gate literals in content;
 //   * the guard sees a file an agent wrote;
-//   * Claude "403 Model disabled" is fatal, 429 is retried; Cursor needs a key.
+//   * Claude "403 Model disabled" is fatal, 429 is retried; Cursor needs a key;
+//   * the exchange backend answers through files, never from a stale run, and gives up
+//     on a call nobody answers (fatal);
+//   * a run that returned no files still leaves a landable outcome record.
 
 const assert = require('assert');
 const fs = require('fs');
@@ -20,7 +23,7 @@ const path = require('path');
 const {EventEmitter} = require('events');
 
 const rt = path.resolve(__dirname, '../../integration/orchestration/runtime');
-const {validate, extractJson} = require(`${rt}/schema`);
+const {validate, extractJson, withSchema: withSchemaFromSchema} = require(`${rt}/schema`);
 const {createRuntime, listWorkflows, compileWorkflow} = require(`${rt}/core`);
 const {BackendFatalError} = require(`${rt}/errors`);
 const {landFiles, LANDING_POLICY} = require(`${rt}/land`);
@@ -28,6 +31,8 @@ const {snapshot, changedBetween} = require(`${rt}/guard`);
 const {createClaudeBackend, interpret, parseCliOutput} = require(`${rt}/backends/claude`);
 const {createCursorBackend, withSchema} = require(`${rt}/backends/cursor`);
 const {createMockBackend} = require(`${rt}/backends/mock`);
+const {createExchangeBackend} = require(`${rt}/backends/exchange`);
+const {buildOutcomeFile, outcomePath, compact} = require(`${rt}/outcome`);
 
 const root = path.resolve(__dirname, '../..');
 
@@ -198,7 +203,53 @@ assert.throws(() => compileWorkflow(root, 'nope'), /no such workflow/);
   assert.deepStrictEqual(await createRuntime({backend: mock}).globals.agent('p', {schema, label: 'custom'}), {verdict: 'INVARIANT_VIOLATED', items: []});
   assert.deepStrictEqual(await createRuntime({backend: mock}).globals.agent('p', {schema, label: 'other'}), {verdict: 'INVARIANT_OK', items: []});
 
-  console.log(`PASS workflow runtime: schema, retry/abort policy, concurrency cap, landing gates for ${Object.keys(LANDING_POLICY).length} workflows, read-only guard, claude and cursor backends via fakes`);
+  // ---- exchange backend ---------------------------------------------------
+  const exchangeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wf-exchange-'));
+  try {
+    assert.strictEqual(withSchemaFromSchema, withSchema, 'one withSchema, shared by the cursor and exchange backends');
+    // A leftover answer in another run directory must never be read by this run.
+    const stale = createExchangeBackend({dir: exchangeDir, runId: 'old', pollMs: 5, timeoutMs: 150});
+    fs.writeFileSync(path.join(stale.dir, '001.answer.txt'), '"stale"');
+    const seenRequests = [];
+    const fresh = createExchangeBackend({dir: exchangeDir, runId: 'new', pollMs: 5, timeoutMs: 2000, onRequest: (r) => seenRequests.push(r)});
+    const pending = fresh.complete({prompt: 'who?', schema, label: 'probe', effort: 'high', attempt: 1});
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    const requestFile = path.join(fresh.dir, '001.request.json');
+    const request = JSON.parse(fs.readFileSync(requestFile, 'utf8'));
+    assert.strictEqual(request.label, 'probe');
+    assert(request.prompt.startsWith('who?') && request.prompt.includes(JSON.stringify(schema)), 'the request carries the prompt and the schema');
+    fs.writeFileSync(path.join(fresh.dir, '001.answer.txt'), '');
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    fs.writeFileSync(path.join(fresh.dir, '001.answer.txt'), JSON.stringify(good));
+    assert.deepStrictEqual(extractJson(await pending), good, 'an empty answer file is not an answer; the real one is');
+    assert.strictEqual(seenRequests.length, 1);
+
+    const silent = createExchangeBackend({dir: exchangeDir, runId: 'silent', pollMs: 5, timeoutMs: 60});
+    await assert.rejects(silent.complete({prompt: 'p'}), (e) => e.fatal === true && /no answer/.test(e.message), 'a call nobody answers is fatal');
+    assert.throws(() => createExchangeBackend({}), (e) => e.fatal === true);
+  } finally {
+    fs.rmSync(exchangeDir, {recursive: true, force: true});
+  }
+
+  // ---- outcome record -----------------------------------------------------
+  assert.strictEqual(outcomePath('design.compute'), 'out/compute/compute_outcome.json');
+  assert.strictEqual(outcomePath('detail.events'), 'out/detailed/detail_events_outcome.json');
+  assert.strictEqual(outcomePath('explore'), 'scratch/explore_outcome.json');
+  assert.strictEqual(outcomePath('intake'), null, 'intake can only land one exact file');
+  assert.strictEqual(buildOutcomeFile('compute', {verdict: 'X', files: [{path: 'out/compute/a.json', content: '{}'}]}), null, 'a run with files needs no outcome record');
+  assert.strictEqual(buildOutcomeFile('intake', {verdict: 'X', files: []}), null);
+  const rows = Array.from({length: 5}, (_, i) => ({optionId: `o${i}`, values: '{"big":true}'}));
+  assert.deepStrictEqual(compact({candidates: rows, short: rows.slice(0, 2)}), {candidates: {count: 5, optionIds: ['o0', 'o1', 'o2', 'o3', 'o4']}, short: rows.slice(0, 2)});
+  const outcome = buildOutcomeFile('compute', {stage: 'compute', runId: 'r1', verdict: 'PPA_DIRECTION_BACKFLOW', reason: 'why', files: [], searchNode: {candidates: rows}}, {backend: 'mock', agentCalls: 3});
+  const recorded = JSON.parse(outcome.content);
+  assert.strictEqual(recorded.kind, 'WORKFLOW_OUTCOME_NO_FILES');
+  assert.strictEqual(recorded.backend, 'mock');
+  assert.strictEqual(recorded.result.verdict, 'PPA_DIRECTION_BACKFLOW');
+  assert.strictEqual(recorded.result.files, undefined);
+  assert.strictEqual(recorded.result.searchNode.candidates.count, 5, 'candidate rows are replaced by their ids');
+  assert.deepStrictEqual(landFiles({root, workflow: 'compute', files: [outcome], dryRun: true}).rejected, [], 'the record passes the same landing gates');
+
+  console.log(`PASS workflow runtime: schema, retry/abort policy, concurrency cap, landing gates for ${Object.keys(LANDING_POLICY).length} workflows, read-only guard, claude, cursor and exchange backends, outcome records`);
 })().catch((error) => {
   console.error(error);
   process.exit(1);

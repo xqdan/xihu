@@ -17,9 +17,16 @@
  *     lanes, the unpack (native input) and the softmax op count changed.
  *
  * A candidate is feasible if every required H-core kernel hides, the K3 replay
- * keeps the published TPS/usr within the tolerance and the die (with the option
- * area overheads) stays within its limits. Feasible candidates are ranked by die
- * area including the overheads, then die power.
+ * keeps the published TPS/usr within the tolerance, the die stays within its
+ * limits and the package fits. The die figures INCLUDE the shared-SRAM port charge
+ * (O.chargeSharedPortCost, taken from the replay's own physical result) and the
+ * option area overheads; P.resize(A.physical(x)) alone leaves the port charge out,
+ * which is how a candidate used to pass a 400 mm2 check it could not pass in the
+ * package. The package fit is 8 dies at that area plus the memory cubes against
+ * the placement window less the observed keep-out (requirements.packageFit).
+ * Feasible candidates are ranked by die area including the overheads, then die power.
+ * When nothing is feasible the artifacts say so (no winner) instead of electing the
+ * least-bad candidate.
  *
  * build() writes only the winner (out/detailed/matrix_vector_design.json);
  * candidates() writes the whole scored candidate set with a fingerprint over it
@@ -149,9 +156,14 @@ function replay(ctx, lanes, native, softmaxOps) {
   const x = {...ctx.x, vectorLanes: lanes};
   return (ctx.replays[key] = withModel({tech: native ? NATIVE_TECH : {}, softmaxOpsPerScore: softmaxOps}, () => {
     const p = P.resize(A.physical(x)), r = O.evaluate(x);
-    const base = {dieAreaMm2: p.dieArea, diePowerW: p.diePower, matrixAreaMm2: p.area.matrix, vectorAreaMm2: p.area.vector};
+    const base = {dieAreaMm2: p.dieArea, portAreaMm2: 0, diePowerW: p.diePower, portPowerW: 0, matrixAreaMm2: p.area.matrix, vectorAreaMm2: p.area.vector};
     if (!r.feasible) return {...base, feasible: false, reasons: r.reasons || [r.reason]};
-    return {...base, feasible: true, tpsPerUser: r.tps, rawLatencyUs: r.rawUs};
+    // The replay's own physical result already carries the shared-port charge; take it
+    // from there rather than re-deriving it. dieAreaMm2 stays the area before the charge
+    // so that the charge is reported as a term of its own.
+    const port = (r.p && r.p.sharedPortCost) || {areaMm2PerDie: 0, powerWPerDie: 0};
+    return {...base, portAreaMm2: port.areaMm2PerDie, portPowerW: port.powerWPerDie,
+      diePowerW: p.diePower + port.powerWPerDie, feasible: true, tpsPerUser: r.tps, rawLatencyUs: r.rawUs};
   }));
 }
 
@@ -159,7 +171,11 @@ function context() {
   const space = read(SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
   const x = spec.tpsDesign.hardware.x, tp = read('out/rdma/k3_rdma_final_tuning_results.json').tp;
-  const ctx = {space, x, tp, point: spec.tpsDesign.point, hw: hardware(x), shapes: shapes(), replays: {}, bounds: {},
+  // The package the dies must fit: window, memory cubes and the observed keep-out all
+  // come from the repository's own files, not from this module.
+  const pkg = {dies: A.LIMITS.dies, windowMm2: spec.package.placementWindowMm2, cubes: spec.card.memoryCubes,
+    cubeAreaMm2: spec.package.memoryCubeAreaMm2Planning, keepOutFraction: space.requirements.packageFit.keepOutFraction};
+  const ctx = {space, x, tp, pkg, point: spec.tpsDesign.point, hw: hardware(x), shapes: shapes(), replays: {}, bounds: {},
     sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(root, SPACE_FILE))).digest('hex')};
   ctx.kernels = (native, softmaxOps) => ctx.bounds[`${native}|${softmaxOps}`] || (ctx.bounds[`${native}|${softmaxOps}`] = kernelBounds(ctx, native, softmaxOps));
   return ctx;
@@ -177,22 +193,35 @@ function evaluate(ctx, pick, req = ctx.space.requirements) {
   const required = kernels.filter(k => k.required);
   const binding = required.reduce((a, k) => (k.minLanesPerCore > a.minLanesPerCore ? k : a));
   const sys = replay(ctx, lanes, native, softmaxOps);
-  const area = {die: sys.dieAreaMm2, matrixOverhead: o.lowPrecisionInput.matrixAreaOverhead * sys.matrixAreaMm2,
+  const area = {die: sys.dieAreaMm2, sharedPorts: sys.portAreaMm2, matrixOverhead: o.lowPrecisionInput.matrixAreaOverhead * sys.matrixAreaMm2,
     vectorOverhead: o.expUnit.vectorAreaOverhead * sys.vectorAreaMm2};
-  const areaMm2 = area.die + area.matrixOverhead + area.vectorOverhead;
+  const areaMm2 = area.die + area.sharedPorts + area.matrixOverhead + area.vectorOverhead;
+  // Package fit: the dies at this area plus the memory cubes, against the window less the keep-out.
+  const pk = ctx.pkg, usableMm2 = pk.windowMm2 * (1 - pk.keepOutFraction);
+  const packagePlacedMm2 = pk.dies * areaMm2 + pk.cubes * pk.cubeAreaMm2;
+  const packageReserveMm2 = usableMm2 - packagePlacedMm2;
   const violations = [];
   if (required.some(k => !k.hidden)) violations.push('hKernelExposed');
   if (!sys.feasible) violations.push('systemInfeasible');
   else if (sys.tpsPerUser < ctx.point.tpsPerUser * (1 - req.tpsTolerance)) violations.push('k3Tps');
   if (areaMm2 > P.BASIS.limits.dieArea) violations.push('dieArea');
+  if (packageReserveMm2 < -EPS) violations.push('packageArea');
   return {pick, feasible: !violations.length, violations, lanes, ratio: r, kernels,
     binding: {model: binding.model, kernel: binding.kernel, maxCoreRatio: binding.maxCoreRatio, minLanesPerCore: binding.minLanesPerCore},
-    system: sys, areaMm2, area, diePowerW: sys.diePowerW};
+    system: sys, areaMm2, area, diePowerW: sys.diePowerW, packagePlacedMm2, packageReserveMm2};
 }
 
-// Ranking: feasible, least area (with overheads), least power, name.
+// Ranking: feasible, least area (with overheads), least power, name. Among candidates
+// that are not feasible the area keys mean nothing (a candidate that fails a limit has
+// not earned an ordering by price), so those are ordered by how few limits they break,
+// a replay that cannot run counting as worse than a measured miss:
+// the head of an all-infeasible set is then the closest attempt, not whichever
+// combination happens to be small.
 function better(a, b) {
   if (a.feasible !== b.feasible) return a.feasible;
+  if (!a.feasible && a.violations.length !== b.violations.length) return a.violations.length < b.violations.length;
+  // A candidate the replay cannot even run has no measured TPS or power to be close with.
+  if (!a.feasible && a.violations.includes('systemInfeasible') !== b.violations.includes('systemInfeasible')) return !a.violations.includes('systemInfeasible');
   if (Math.abs(a.areaMm2 - b.areaMm2) > EPS) return a.areaMm2 < b.areaMm2;
   if (Math.abs(a.diePowerW - b.diePowerW) > EPS) return a.diePowerW < b.diePowerW;
   return JSON.stringify(a.pick) < JSON.stringify(b.pick);
@@ -227,14 +256,18 @@ function search(ctx = context(), req = ctx.space.requirements) {
 }
 
 const summary = e => ({pick: e.pick, feasible: e.feasible, violations: e.violations, lanes: e.lanes, dieRatio: e.ratio.die, hCoreRatio: e.ratio.hCore,
-  binding: e.binding, tpsPerUser: e.system.feasible ? e.system.tpsPerUser : null, areaMm2: e.areaMm2, diePowerW: e.diePowerW});
+  binding: e.binding, tpsPerUser: e.system.feasible ? e.system.tpsPerUser : null, areaMm2: e.areaMm2, diePowerW: e.diePowerW,
+  packageReserveMm2: e.packageReserveMm2});
 
 // Best candidate of every option of every dimension.
 function alternatives(result = search()) {
   const {best, perOption} = result, out = {};
   for (const [d, opts] of Object.entries(perOption)) {
     out[d] = {};
-    for (const [n, e] of Object.entries(opts)) out[d][n] = {chosen: n === best.pick[d], lostOn: n === best.pick[d] ? null : lostOn(e, best), ...summary(e)};
+    for (const [n, e] of Object.entries(opts)) {
+      const chosen = best.feasible && n === best.pick[d];
+      out[d][n] = {chosen, lostOn: chosen ? null : lostOn(e, best), ...summary(e)};
+    }
   }
   return out;
 }
@@ -255,24 +288,46 @@ function candidates(result = search()) {
     pick: e.pick,
     feasible: e.feasible,
     violations: e.violations,
-    chosen: e === best,
-    lostOn: e === best ? null : lostOn(e, best),
+    chosen: e === best && best.feasible,
+    lostOn: e === best && best.feasible ? null : lostOn(e, best),
     lanes: e.lanes,
     ratio: e.ratio,
     binding: e.binding,
     areaMm2: e.areaMm2,
     area: e.area,
     diePowerW: e.diePowerW,
+    packagePlacedMm2: e.packagePlacedMm2,
+    packageReserveMm2: e.packageReserveMm2,
     tpsPerUser: e.system.feasible ? e.system.tpsPerUser : null,
     rawLatencyUs: e.system.feasible ? e.system.rawLatencyUs : null,
   }));
+  // How often each limit was broken, over every candidate (one candidate can break several).
+  const infeasibleByCause = {};
+  for (const e of all) for (const v of e.violations) infeasibleByCause[v] = (infeasibleByCause[v] || 0) + 1;
   return {
     status: 'MODEL (search over the HW-02 design space; the candidate set behind out/detailed/matrix_vector_design.json, not FROZEN)',
     designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(ctx.space.dimensions)},
-    requirements: {models: req.models, hiddenCoreClasses: req.hiddenCoreClasses, tpsTolerance: req.tpsTolerance},
+    requirements: {models: req.models, hiddenCoreClasses: req.hiddenCoreClasses, tpsTolerance: req.tpsTolerance, packageFit: req.packageFit},
+    // The caliber of areaMm2 and diePowerW, stated by the producer. A consumer that has to
+    // reverse-engineer it (357.565 + 7.776 = 365.341) will, sooner or later, compare a
+    // figure with the package window on the wrong basis.
+    fieldCaliber: {
+      areaIncludesPortCost: 'yes',
+      powerScope: 'die, shared-port power included',
+      note: 'areaMm2 = P.resize(A.physical(x)) die area + the shared-SRAM port charge of the replay (O.chargeSharedPortCost, '
+        + 'MODEL O-007; published point +7.776 mm2 and +2.739 W per die) + the option overheads; area.sharedPorts is that charge on its own. '
+        + 'diePowerW carries the port power. packagePlacedMm2 = dies x areaMm2 + memory cubes; packageReserveMm2 is what is left of '
+        + 'window x (1 - keepOutFraction) after it, and a negative value is the packageArea violation. keepOutFraction is the OBSERVED '
+        + '0.1254 of the published point (requirements.packageFit), not a verified floor.',
+    },
     ranking: 'feasible first, then die area including the option overheads, then die power, then pick',
     totalCandidates: counts.candidates,
     feasibleCandidates: counts.feasible,
+    infeasibleByCause,
+    // The head of the ranked list is the winner only if it is feasible; when nothing is
+    // feasible it is the closest attempt and the set has no winner.
+    winner: best.feasible ? entries[0].optionId : null,
+    closest: best.feasible ? null : entries[0].optionId,
     // The fingerprint is over the scored set, not over the file: recomputing it
     // from a fresh search must reproduce this value. It is what makes
     // "these are the candidates that were searched" checkable rather than asserted.
@@ -312,7 +367,8 @@ function analysis(result = search()) {
       row[`${c.premise}/${c.exp}`] = s.feasible ? s.tpsPerUser : null;
     }
     const base = replay(ctx, lanes, false, combos[0].softmaxOps);
-    row.dieAreaMm2 = base.dieAreaMm2;
+    // The die as the package sees it: the shared-port charge included (365.341 at the published point).
+    row.dieAreaMm2 = base.dieAreaMm2 + base.portAreaMm2;
     if (!base.feasible) row.reasons = base.reasons;
     return row;
   });
@@ -327,7 +383,11 @@ function analysis(result = search()) {
   // the best vector-unpack candidate on area (the matrix area does not depend
   // on the lanes, so the native ranking does not change with the overhead).
   const nat = perOption.lowPrecisionInput.nativeTensor, vec = perOption.lowPrecisionInput.vectorUnpack;
-  const breakEven = (vec.areaMm2 - (nat.areaMm2 - nat.area.matrixOverhead)) / nat.system.matrixAreaMm2;
+  // A break-even only decides between two premises that can both be built: when either
+  // best candidate is infeasible the areas are not comparable and the answer is null.
+  const breakEven = nat.feasible && vec.feasible
+    ? (vec.areaMm2 - (nat.areaMm2 - nat.area.matrixOverhead)) / nat.system.matrixAreaMm2
+    : null;
   const k3 = search(ctx, {...ctx.space.requirements, models: ['Kimi K3']});
   return {sweep, kernels, unpackAttribution: unpackAttribution(ctx.x),
     nativeBreakEvenMatrixOverhead: breakEven,
@@ -337,31 +397,60 @@ function analysis(result = search()) {
 
 function build(result = search()) {
   const {ctx, req, best, counts} = result, {space, x, point} = ctx, D = space.dimensions;
+  const head = {
+    owner: space.owner,
+    document: space.document,
+    designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(D), candidates: counts.candidates, feasible: counts.feasible,
+      constraints: space.constraints, objective: space.objective},
+    requirements: {models: req.models, hiddenCoreClasses: req.hiddenCoreClasses, tpsTolerance: req.tpsTolerance, packageFit: req.packageFit},
+  };
+  const hardware = {publishedX: {...x}, lMacsPerCore: ctx.hw.lMacsPerCore, hMacsPerCore: ctx.hw.hMacsPerCore, publishedLanesPerCore: x.vectorLanes,
+    publishedRatio: ratios(ctx.hw, x.vectorLanes)};
+  const ruled = Object.fromEntries(Object.entries(space.ruled).map(([k, v]) => [k, {chosen: v.chosen, reason: v.reason}]));
+  const regenerate = 'node integration/pipelines/generate_matrix_vector_design.js (npm run aicore:search); enforced by tests/regression/test_matrix_vector_design.js';
+
+  // No feasible candidate: say so. Writing the least-bad candidate under the name of a
+  // design would be a winner nobody can build; the closest attempt is reported as such.
+  if (!best.feasible) {
+    return {
+      status: 'MODEL (search over the HW-02 design space: NO FEASIBLE CANDIDATE under the stated limits; not FROZEN, does not change the published point)',
+      ...head,
+      designSpace: {...head.designSpace, note: 'nothing is feasible, so there is no design; the closest attempt is below and the scored set is out/detailed/matrix_vector_candidates.json'},
+      hardware,
+      design: null,
+      closest: {...summary(best), area: best.area, packagePlacedMm2: best.packagePlacedMm2, ratio: best.ratio,
+        kernels: best.kernels.map(k => ({model: k.model, kernel: k.kernel, core: k.core, maxCoreRatio: k.maxCoreRatio, minLanesPerCore: k.minLanesPerCore,
+          coreRatio: k.coreRatio, hidden: k.hidden, required: k.required}))},
+      ruled,
+      nextActions: [
+        'packageArea: the observed keep-out (requirements.packageFit) leaves no room for a die larger than the published point; either the shared-port charge is recovered, the keep-out premise is replaced by a verified one (physical domain), or the option overheads are paid for elsewhere',
+        'do not widen the limit or drop the check to obtain a winner',
+      ],
+      regenerate,
+    };
+  }
+
   const design = Object.fromEntries(Object.entries(best.pick).map(([d, n]) => [d, {option: n, ...D[d].options[n]}]));
   const V = D.expUnit.options[best.pick.expUnit];
   return {
     status: 'MODEL (search over the HW-02 design space: analytical kernel bounds + K3 detailed replay; not FROZEN, does not change the published point)',
-    owner: space.owner,
-    document: space.document,
-    designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(D), candidates: counts.candidates, feasible: counts.feasible,
-      constraints: space.constraints, objective: space.objective,
-      note: 'only the winning design is written here; the alternatives stay in the design space and in the document, section 2.5'},
-    requirements: {models: req.models, hiddenCoreClasses: req.hiddenCoreClasses, tpsTolerance: req.tpsTolerance},
+    ...head,
+    designSpace: {...head.designSpace, note: 'only the winning design is written here; the alternatives stay in the design space and in the document, section 2.5'},
     assumptions: {matrixUtil: A.TECH.matrixUtil, vectorUtil: A.TECH.vectorUtil, unpackParamsPerLaneCycle: A.TECH.unpackParamsPerLaneCycle,
       vectorOps: {...space.vectorOps, softmaxOpsPerScore: V.softmaxOpsPerScore}, tp: ctx.tp, context: W.CONTEXT},
-    hardware: {publishedX: {...x}, lMacsPerCore: ctx.hw.lMacsPerCore, hMacsPerCore: ctx.hw.hMacsPerCore, publishedLanesPerCore: x.vectorLanes,
-      publishedRatio: ratios(ctx.hw, x.vectorLanes)},
+    hardware,
     design,
     ratio: best.ratio,
-    ruled: Object.fromEntries(Object.entries(space.ruled).map(([k, v]) => [k, {chosen: v.chosen, reason: v.reason}])),
+    ruled,
     kernels: best.kernels.map(k => ({model: k.model, kernel: k.kernel, core: k.core, maxCoreRatio: k.maxCoreRatio, minLanesPerCore: k.minLanesPerCore,
       coreRatio: k.coreRatio, hidden: k.hidden, required: k.required, basis: k.basis})),
     binding: best.binding,
     evaluation: {
       k3System: {publishedTpsPerUser: point.tpsPerUser, tpsPerUser: best.system.tpsPerUser, rawLatencyUs: best.system.rawLatencyUs},
-      areaMm2: best.areaMm2, area: best.area, diePowerW: best.diePowerW, dieAreaLimitMm2: P.BASIS.limits.dieArea
+      areaMm2: best.areaMm2, area: best.area, diePowerW: best.diePowerW, dieAreaLimitMm2: P.BASIS.limits.dieArea,
+      packagePlacedMm2: best.packagePlacedMm2, packageReserveMm2: best.packageReserveMm2
     },
-    regenerate: 'node integration/pipelines/generate_matrix_vector_design.js (npm run aicore:search); enforced by tests/regression/test_matrix_vector_design.js'
+    regenerate
   };
 }
 

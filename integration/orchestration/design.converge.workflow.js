@@ -512,7 +512,7 @@ const check = await agent(
   + `单位一致、证据等级齐全。收敛格还要专门核这四条跨格不变量：\n`
   + `  (a) D 组五格是否真的到齐（${REQUIRED_STAGES.join('、')}）；\n`
   + `  (b) 跨格口径一致：尤其是卡功耗口径——memory 域是 8×die + MC + 固定 80 W、**不计**共享端口项，`
-  + `      physical 域计它，两者相差 45.5141376 W。同一次比较里混用即违规；\n`
+  + `      physical 域计它，两者相差 21.915648 W。同一次比较里混用即违规；\n`
   + `  (c) 跨格 manifest hash 一致：B2 的事件流与 B1 的算子账本必须来自同一份 manifest；\n`
   + `  (d) architect 的裁决与它的材料自洽——判 ARCH_FREEZE 却留着 openItems、`
   + `      或判 D_GATE_PROPOSAL 却证据不完备，这两件事不能同时成立。\n`

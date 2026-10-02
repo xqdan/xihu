@@ -158,7 +158,7 @@ console.log('matrixUtil=0.55', f(withTech({matrixUtil: 0.55}, () => O.evaluate(x
 console.log('sharedMiB=12   ', f(O.evaluate({...x, sharedMiB: 12})));                   // 1022.73
 for (const s of [16, 24]) { const r = O.evaluate({...x, sharedMiB: s}), p = r.p;
   console.log(`sharedMiB=${s}`, r.tps.toFixed(2), 'TPS/usr, die', p.dieArea.toFixed(2), 'mm²,', p.diePower.toFixed(2), 'W'); }
-// sharedMiB=16 1101.77 TPS/usr, die 373.71 mm², 286.22 W
+// sharedMiB=16 1101.77 TPS/usr, die 365.34 mm², 283.27 W
 // sharedMiB=24 1101.77 TPS/usr, die 381.64 mm², 286.94 W
 ```
 
