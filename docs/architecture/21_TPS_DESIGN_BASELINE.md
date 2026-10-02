@@ -378,6 +378,26 @@ Stage A/B 的 18 个槽位用规划 token time，它的 5 个因子在**一个**
 - 通信占 raw 的 58%，完全由 τ 决定。τ 升到约 1.35 µs 才跌破 1000。
 - 按次数算的解析天花板（393 次约 1134.46）见 `tauBasis.ceilingTpsByCount`。
 
+### 6.3 GLM-5.2 与 DeepSeek-V4-Pro：未测量假设的敏感度
+
+这两个模型没有详细模拟器，TPS/usr 是 K3 因子的外推（§6.2）。`out/detailed/stage_b_planning_run_20260925.md` 的 “Assumption sensitivity” 表对每个槽位每次只改一个输入
+（`TT.assumptionSensitivity`，`tests/regression/test_planning_assumption_sensitivity.js` 独立重放并固定结论）。TP32，P1：
+
+| 模型 | MC | 名义 | 每层 +1 次集合通信 | 每层 −1 次 | 10% 注意力权重复制 | 全部复制 | 命中率 0.5 | `kMemory` 1.3 |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| GLM-5.2 | MC320 | 1793 | 1793 | 1793 | 981 | 193 | 1574 | 1542 |
+| GLM-5.2 | MC640 | 2417 | 1928 | 3238 | 1961 | 386 | 2417 | 2417 |
+| DeepSeek-V4-Pro | MC320 | 1855 | 1855 | 1855 | 1028 | 205 | 1691 | 1595 |
+| DeepSeek-V4-Pro | MC640 | 2299 | 1934 | 2834 | 2056 | 410 | 2299 | 2299 |
+
+- MC640 由“集合通信次数 × τ”决定（GLM 255 × 1.15 µs = 293 µs，占串行路径 354 µs）；单次消息约 24 KB，远低于 τ 对应的数据量，字节不进入结果。内存侧因子（命中率、`kMemory`）在 MC640 不起作用。
+- MC320 由内存路径决定：集合通信次数不起作用，`kMemory` 和命中率起作用。这两个因子只在 K3 上拟合或取值。
+- **注意力权重怎么切分是开放的**：行里把它们按 1/TP 计，而 manifest 声明 context 分片。context 分片的稀疏注意力要求每个 rank 拿到全部 head 的 q，
+  要么复制一部分权重，要么每层多一次 q all-gather；两种代价当前都不在账上（K3 的 Q/new-KV all-gather 在详细模型里是未计入 393 次的本地算子，GLM/DeepSeek 没有对应项）。
+  复制 10% 就让 GLM 在 MC320 掉到 1000 以下，全部复制则两个模型在两个 MC 上都不达标。这一项需要模型/软件负责人给出切分方案后重算（ARCH 级决定），本文不替它选。
+- 没有建模、因此没有数字的项：专家切片在 L 核上的填充（TP-only 下每 rank 专家宽度 GLM 64、DeepSeek 约 120）；专家未命中取数在关键路径上的暴露（K3 详细模型里这部分是 22.35 µs 的 DMA wait，规划模型取 `max()` 时丢掉了）。
+  两者都需要对应的 tile / 时序模型才能给出结论。
+
 ## 7. 证据等级与未闭合项
 
 | 设计要素 | 等级 | 冻结前需要的证据 |
@@ -386,7 +406,7 @@ Stage A/B 的 18 个槽位用规划 token time，它的 5 个因子在**一个**
 | K3 结构、dtype、FP8 KV | `MODEL` | B-001：模型清单、权重 manifest、FP8 KV 精度评估 |
 | MC 640 GB/s | `BLOCKER` | B-002：供应商规格（或放弃 MC640 另选架构） |
 | MC 持续效率 0.7、矩阵/向量利用率、预测命中率 | `ASSUMPTION` | B-003、B-006：第 6.1 节；MC 持续效率的盈亏点只有 0.63 |
-| GLM-5.2、DeepSeek-V4-Pro、K3 TP8/TP16 的规划 TPS | `ASSUMPTION` | 第 6.2 节：没有详细模型，是 K3 因子的外推 |
+| GLM-5.2、DeepSeek-V4-Pro、K3 TP8/TP16 的规划 TPS | `ASSUMPTION` | 第 6.2 节：没有详细模型，是 K3 因子的外推；第 6.3 节：注意力权重切分与每层集合通信次数未定 |
 | launchScale、预测命中率 0.8 | `ASSUMPTION` | B-003：runtime trace、专家预测实测 |
 | 卡内拓扑、scale-out、UCIe 128 lane | `BLOCKER` | B-004、B-005：统一拓扑与 PHY 方案 |
 | 频率 1.0 GHz（固定）、面积、功耗系数 | `MODEL` | B-006：synthesis/floorplan/IP 回标 |

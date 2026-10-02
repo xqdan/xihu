@@ -179,6 +179,72 @@
             "bound": "memory"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 137.80155544183788,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 137.80155544183788,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 104.00193550715244,
+            "deltaPct": -24.527749216119187,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 32.42463565277508,
+            "deltaPct": -76.4700510463682,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 131.40162169293168,
+            "deltaPct": -4.64431169037669,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 127.45533953685211,
+            "deltaPct": -7.5080545149235345,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 154.0310956159803,
+            "deltaPct": 11.777472411037081,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 118.48545816613867,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": false
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 137.80155544183788,
@@ -225,6 +291,72 @@
             "bound": "memory"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 448.26271403544513,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 448.26271403544513,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 377.63085773181655,
+            "deltaPct": -15.75679932595142,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 156.1676494743124,
+            "deltaPct": -65.1615794522754,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 393.5830230934606,
+            "deltaPct": -12.198134984222865,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 363.9835530153396,
+            "deltaPct": -18.801287365926523,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 501.0567315099356,
+            "deltaPct": 11.77747241103706,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 385.42825500764275,
+            "deltaPct": -14.01732891458689,
+            "bound": "memory",
+            "meetsTarget": false
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 448.26271403544513,
@@ -269,6 +401,72 @@
             "tauUs": 2,
             "tpsPerUser": 463.84519823480133,
             "bound": "memory"
+          }
+        ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 463.84519823480133,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 463.84519823480133,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 392.5426244996074,
+            "deltaPct": -15.372062491223659,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 164.69267551370027,
+            "deltaPct": -64.49404324105305,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 422.86255137466327,
+            "deltaPct": -8.835414706479805,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 399.3403034418611,
+            "deltaPct": -13.90655654912858,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 518.4744384868252,
+            "deltaPct": 11.77747241103706,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 398.8264911437117,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": false
           }
         ],
         "shapeVariants": [
@@ -322,6 +520,72 @@
             "bound": "memory"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 275.60311088367575,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 275.60311088367575,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 162.46277231403047,
+            "deltaPct": -41.051909104683006,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 34.60577832979409,
+            "deltaPct": -87.44361839065009,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 262.80324338586337,
+            "deltaPct": -4.64431169037669,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 254.91067907370422,
+            "deltaPct": -7.5080545149235345,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 308.0621912319606,
+            "deltaPct": 11.777472411037081,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 236.97091633227734,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": false
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 275.60311088367575,
@@ -368,6 +632,72 @@
             "bound": "memory"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 896.5254280708903,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 896.5254280708903,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 640.0101546287103,
+            "deltaPct": -28.612158161998803,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 179.01910065425653,
+            "deltaPct": -80.03189925806532,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 787.1660461869212,
+            "deltaPct": -12.198134984222865,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 727.9671060306792,
+            "deltaPct": -18.801287365926523,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 1002.1134630198712,
+            "deltaPct": 11.77747241103706,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 770.8565100152855,
+            "deltaPct": -14.01732891458689,
+            "bound": "memory",
+            "meetsTarget": false
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 896.5254280708903,
@@ -412,6 +742,72 @@
             "tauUs": 2,
             "tpsPerUser": 927.6903964696027,
             "bound": "memory"
+          }
+        ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 927.6903964696027,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 927.6903964696027,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 667.7707982504186,
+            "deltaPct": -28.01792486031204,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 189.62070881415326,
+            "deltaPct": -79.55991465086095,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 845.7251027493265,
+            "deltaPct": -8.835414706479805,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 798.6806068837222,
+            "deltaPct": -13.90655654912858,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 1036.9488769736504,
+            "deltaPct": 11.77747241103706,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 797.6529822874234,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": false
           }
         ],
         "shapeVariants": [
@@ -465,6 +861,72 @@
             "bound": "memory"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 551.2062217673515,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 551.2062217673515,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 225.9743204766117,
+            "deltaPct": -59.00367021401492,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 35.810220550081006,
+            "deltaPct": -93.50329892226878,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 525.6064867717267,
+            "deltaPct": -4.64431169037669,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 509.82135814740843,
+            "deltaPct": -7.5080545149235345,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 616.1243824639212,
+            "deltaPct": 11.777472411037081,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 473.9418326645547,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": false
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 551.2062217673515,
@@ -511,6 +973,72 @@
             "bound": "collective"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 1793.0508561417805,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 1793.0508561417805,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 980.7109141864689,
+            "deltaPct": -45.304902489117026,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 193.1506187697237,
+            "deltaPct": -89.2278226181862,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 1574.3320923738424,
+            "deltaPct": -12.198134984222865,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 1455.9342120613585,
+            "deltaPct": -18.801287365926523,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 2004.2269260397425,
+            "deltaPct": 11.77747241103706,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 1541.713020030571,
+            "deltaPct": -14.01732891458689,
+            "bound": "memory",
+            "meetsTarget": true
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 1793.0508561417805,
@@ -555,6 +1083,72 @@
             "tauUs": 2,
             "tpsPerUser": 1475.863581444128,
             "bound": "collective"
+          }
+        ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 1855.3807929392053,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 1855.3807929392053,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 1028.2430682430256,
+            "deltaPct": -44.58048330800427,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 205.1462720657286,
+            "deltaPct": -88.94317151247719,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 1691.450205498653,
+            "deltaPct": -8.835414706479805,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 1597.3612137674445,
+            "deltaPct": -13.90655654912858,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 2073.8977539473008,
+            "deltaPct": 11.77747241103706,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 1595.3059645748467,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": true
           }
         ],
         "shapeVariants": [
@@ -608,6 +1202,72 @@
             "bound": "memory"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 275.60311088367575,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 275.60311088367575,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 208.00387101430488,
+            "deltaPct": -24.527749216119187,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 64.84927130555016,
+            "deltaPct": -76.4700510463682,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 262.80324338586337,
+            "deltaPct": -4.64431169037669,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 254.91067907370422,
+            "deltaPct": -7.5080545149235345,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 308.0621912319606,
+            "deltaPct": 11.777472411037081,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 236.97091633227734,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": false
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 275.60311088367575,
@@ -654,6 +1314,72 @@
             "bound": "memory"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 896.5254280708903,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 896.5254280708903,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 755.2617154636331,
+            "deltaPct": -15.75679932595142,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 312.3352989486248,
+            "deltaPct": -65.1615794522754,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 787.1660461869212,
+            "deltaPct": -12.198134984222865,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 727.9671060306792,
+            "deltaPct": -18.801287365926523,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 1002.1134630198712,
+            "deltaPct": 11.77747241103706,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 770.8565100152855,
+            "deltaPct": -14.01732891458689,
+            "bound": "memory",
+            "meetsTarget": false
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 896.5254280708903,
@@ -698,6 +1424,72 @@
             "tauUs": 2,
             "tpsPerUser": 927.6903964696027,
             "bound": "memory"
+          }
+        ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 927.6903964696027,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 927.6903964696027,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 785.0852489992149,
+            "deltaPct": -15.372062491223659,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 329.38535102740053,
+            "deltaPct": -64.49404324105305,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 845.7251027493265,
+            "deltaPct": -8.835414706479805,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 798.6806068837222,
+            "deltaPct": -13.90655654912858,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 1036.9488769736504,
+            "deltaPct": 11.77747241103706,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 797.6529822874234,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": false
           }
         ],
         "shapeVariants": [
@@ -751,6 +1543,72 @@
             "bound": "memory"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 551.2062217673515,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 551.2062217673515,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 324.92554462806095,
+            "deltaPct": -41.051909104683006,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 69.21155665958818,
+            "deltaPct": -87.44361839065009,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 525.6064867717267,
+            "deltaPct": -4.64431169037669,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 509.82135814740843,
+            "deltaPct": -7.5080545149235345,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 616.1243824639212,
+            "deltaPct": 11.777472411037081,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 473.9418326645547,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": false
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 551.2062217673515,
@@ -797,6 +1655,72 @@
             "bound": "collective"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 1778.9241990870328,
+            "deltaPct": -0.7878559052778344,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 1793.0508561417805,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 1280.0203092574206,
+            "deltaPct": -28.612158161998803,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 358.03820130851307,
+            "deltaPct": -80.03189925806532,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 1574.3320923738424,
+            "deltaPct": -12.198134984222865,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 1455.9342120613585,
+            "deltaPct": -18.801287365926523,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 2004.2269260397425,
+            "deltaPct": 11.77747241103706,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 1541.713020030571,
+            "deltaPct": -14.01732891458689,
+            "bound": "memory",
+            "meetsTarget": true
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 1793.0508561417805,
@@ -841,6 +1765,72 @@
             "tauUs": 2,
             "tpsPerUser": 1310.8512635159755,
             "bound": "collective"
+          }
+        ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 1660.3557779028777,
+            "deltaPct": -10.511320144010893,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 1855.3807929392053,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 1335.5415965008372,
+            "deltaPct": -28.01792486031204,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 379.2414176283065,
+            "deltaPct": -79.55991465086095,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 1691.450205498653,
+            "deltaPct": -8.835414706479805,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 1597.3612137674445,
+            "deltaPct": -13.90655654912858,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 1922.318881196102,
+            "deltaPct": 3.6077816754185754,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 1595.3059645748467,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": true
           }
         ],
         "shapeVariants": [
@@ -894,6 +1884,72 @@
             "bound": "collective"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 993.4354199716511,
+            "deltaPct": -9.885322340306246,
+            "bound": "collective",
+            "meetsTarget": false
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 1102.412443534703,
+            "deltaPct": 0,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 451.9486409532234,
+            "deltaPct": -59.00367021401492,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 71.62044110016201,
+            "deltaPct": -93.50329892226878,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 1051.2129735434535,
+            "deltaPct": -4.64431169037669,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 1019.6427162948169,
+            "deltaPct": -7.5080545149235345,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 1134.460246052218,
+            "deltaPct": 2.9070610283352005,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 947.8836653291094,
+            "deltaPct": -14.01732891458688,
+            "bound": "memory",
+            "meetsTarget": false
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 1102.412443534703,
@@ -940,6 +1996,72 @@
             "bound": "collective"
           }
         ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 1927.8126790610868,
+            "deltaPct": -20.2322012854782,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 3238.08404099533,
+            "deltaPct": 33.98336820184187,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 1961.4218283729379,
+            "deltaPct": -18.841543424165796,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 386.3012375394474,
+            "deltaPct": -84.0158747299945,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 2416.7805933324908,
+            "deltaPct": 0,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 2416.7805933324908,
+            "deltaPct": 0,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 2416.7805933324908,
+            "deltaPct": 0,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 2416.7805933324908,
+            "deltaPct": 0,
+            "bound": "collective",
+            "meetsTarget": true
+          }
+        ],
         "shapeVariants": [],
         "tpsPerUserShapeRange": {
           "min": 2416.7805933324908,
@@ -984,6 +2106,72 @@
             "tauUs": 2,
             "tpsPerUser": 1475.863581444128,
             "bound": "collective"
+          }
+        ],
+        "assumptionSensitivity": [
+          {
+            "id": "collectivesPerLayerPlus1",
+            "label": "+1 collective / layer",
+            "tpsPerUser": 1934.2849921026552,
+            "deltaPct": -15.87574078693218,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "collectivesPerLayerMinus1",
+            "label": "-1 collective / layer",
+            "tpsPerUser": 2834.178729016809,
+            "deltaPct": 23.26166362734188,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated10pct",
+            "label": "10% of attention weights replicated per rank",
+            "tpsPerUser": 2056.4861364860512,
+            "deltaPct": -10.561073719662318,
+            "bound": "memory",
+            "meetsTarget": true
+          },
+          {
+            "id": "attentionReplicated100pct",
+            "label": "attention weights fully replicated per rank",
+            "tpsPerUser": 410.2925441314572,
+            "deltaPct": -82.15590956005722,
+            "bound": "memory",
+            "meetsTarget": false
+          },
+          {
+            "id": "expertPrediction0.5",
+            "label": "expert prediction accuracy 0.5",
+            "tpsPerUser": 2299.318900631917,
+            "deltaPct": 0,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "expertPrediction0.3",
+            "label": "expert prediction accuracy 0.3",
+            "tpsPerUser": 2299.318900631917,
+            "deltaPct": 0,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.0",
+            "label": "kMemory = 1.0",
+            "tpsPerUser": 2299.318900631917,
+            "deltaPct": 0,
+            "bound": "collective",
+            "meetsTarget": true
+          },
+          {
+            "id": "kMemory1.3",
+            "label": "kMemory = 1.3",
+            "tpsPerUser": 2299.318900631917,
+            "deltaPct": 0,
+            "bound": "collective",
+            "meetsTarget": true
           }
         ],
         "shapeVariants": [
@@ -4967,15 +6155,15 @@
     "status": "PLANNING_COVERAGE_ONLY"
   },
   "provenance": {
-    "sourceCommit": "cac1a483af853b982e631aab1a7872e29f8b8d9b",
+    "sourceCommit": "ffc817230dee4f531a0bfb7a8bf5b05ba5018494",
     "manifestHash": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
     "inputHashes": {
-      "directionalScorecard": "c9457c8997587baf4b073a3efd92ce3d46fc34c0ef3162477551c2de4f3deec2",
+      "directionalScorecard": "f6fc2d5fe2d7b120155303ad59027faa088dda82be7ae4dce8314868eb35b260",
       "modelProfiles": "2fcd288d537fad43c417db08d239b74519c01a05da50e9a04ea6bb626f673a73",
-      "operatorWorkload": "b2d45d54b4fd044b83d81ec1ca9610b12fbbc25fcd20a7d7e53779766643a832",
+      "operatorWorkload": "7c07028f2e88f3806733e77f7d5c90a8ec0b934350a5f8674f298045c895c8a0",
       "resourceProfiles": "2bd037745db3422bc5033097384fdd5967d390e0dde4968fd1f99771f9d149b3",
-      "tokenTime": "cb4e0f8b95bf5747560eb6f8f99813a1d10768c4872e9a38529b78a8017f76db",
-      "runner": "d61d5b38c08aa0fb25612a728248f52d607110a1cfd90b3363bcbb4b53c08063",
+      "tokenTime": "4109e8879ceaf9be0f8bd426a736d8c0891ea240610f06017d8d26373e7bbd46",
+      "runner": "a5387a69fd9862e165b161790716d90ff508bd13695e27f35aafb580fd254eaf",
       "gateValidator": "b9311c50cc6cef9e5788d168796367518765a13dc113baf74efe73c3bf72aed0",
       "manifest": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
       "candidateRegister": "ef417a0c2584b2867e81baa04bfbaf092723b0980c275c525a71c7cff782b2cf"

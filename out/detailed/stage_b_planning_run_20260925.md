@@ -3,7 +3,7 @@
 Run ID: `stage-b-20260925-planning`
 Manifest hash: `dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f`
 Run mode: `PLANNING_QUANTIFICATION`
-Source commit: `cac1a483af853b982e631aab1a7872e29f8b8d9b`
+Source commit: `ffc817230dee4f531a0bfb7a8bf5b05ba5018494`
 
 ## Gate result
 
@@ -75,6 +75,17 @@ Source commit: `cac1a483af853b982e631aab1a7872e29f8b8d9b`
 | K3 | 32 | MC640 | 775.3 | 245.8 / 27.8 / 27.9 | 451.9 (393 x 1.15) | memory | 1102.41 | 1102.4 / 959.3 / 786.0 | - |
 | GLM-5.2 | 32 | MC640 | 238.3 | 29.1 / 23.3 / 8.0 | 293.3 (255 x 1.15) | collective | 2416.78 | 2416.8 / 1929.8 / 1498.4 | - |
 | DeepSeek-V4-Pro | 32 | MC640 | 230.3 | 64.9 / 18.2 / 8.0 | 280.6 (244 x 1.15) | collective | 2299.32 | 2299.3 / 1869.8 / 1475.9 | 2299.3 - 2318.4 |
+
+## Assumption sensitivity (TP32, one input changed per column; not a prediction)
+
+| Model | MC | Profile | TPS/usr | +1 collective / layer | -1 collective / layer | 10% of attention weights replicated per rank | attention weights fully replicated per rank | expert prediction accuracy 0.5 | expert prediction accuracy 0.3 | kMemory = 1.0 | kMemory = 1.3 |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| K3 | MC320 | P1 | 551 | 551 (miss) | 551 (miss) | 226 (miss) | 36 (miss) | 526 (miss) | 510 (miss) | 616 (miss) | 474 (miss) |
+| GLM-5.2 | MC320 | P1 | 1793 | 1793 | 1793 | 981 (miss) | 193 (miss) | 1574 | 1456 | 2004 | 1542 |
+| DeepSeek-V4-Pro | MC320 | P1 | 1855 | 1855 | 1855 | 1028 | 205 (miss) | 1691 | 1597 | 2074 | 1595 |
+| K3 | MC640 | P1 | 1102 | 993 (miss) | 1102 | 452 (miss) | 72 (miss) | 1051 | 1020 | 1134 | 948 (miss) |
+| GLM-5.2 | MC640 | P1 | 2417 | 1928 | 3238 | 1961 | 386 (miss) | 2417 | 2417 | 2417 | 2417 |
+| DeepSeek-V4-Pro | MC640 | P1 | 2299 | 1934 | 2834 | 2056 | 410 (miss) | 2299 | 2299 | 2299 | 2299 |
 
 ## Agent outputs
 

@@ -59,6 +59,9 @@ function deriveDeepSeek(shape, solveFrom = 'active') {
       indexerParamsPerLayer: indexerParams,
       denseFfnParamsPerLayer: denseFfnParams,
       moeLayers,
+      // Attention and indexer projection weights (global bytes). Sharding of these over TP is a
+      // deployment decision the planning rows assume (1/TP); the sensitivity cases replicate part of them.
+      attentionWeightBytes: r.layers * (attnParams + indexerParams) * bpp.dense,
       expertHidden,
       expertHiddenBasis: solveFrom === 'active'
         ? `solved from reportedActiveParams = ${r.activeParamsB}B (embedding included)`
@@ -122,6 +125,7 @@ function deriveGlm(shape) {
       denseFfnParamsPerLayer: denseFfnParams,
       expertParams,
       moeLayers,
+      attentionWeightBytes: (c.layers * attnParams + fullLayers * indexerParams) * bpp.fp8,
       fullIndexerLayers: fullLayers,
       sharedIndexerLayers: sharedLayers,
       totalParams,
