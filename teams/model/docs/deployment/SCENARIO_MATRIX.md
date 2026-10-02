@@ -62,7 +62,7 @@ token 时间公式与系数见 [`OPERATOR_LEDGER.md`](OPERATOR_LEDGER.md) 第 4 
 | `minTpsPerUserAtMaxTau` | τ = 2.0 µs 下的最差值 |
 | `minTpsPerUserLowerShape` | DeepSeek 取较差形状解法时的最差值 |
 | `maxTauUsForTarget` | 三个模型都达到 1000 TPS/usr 时 τ 的最大允许值；`null` 表示任何 τ 都达不到 |
-| `meetsArchitectureGate` | 最差模型是否 ≥ 1050（架构门） |
+| `planningTpsMeetsArchitectureGate` | 最差模型的规划 TPS 是否 ≥ 1050。只比较规划 TPS，不等于架构闸门通过；闸门状态见 `selectionBasis.architectureGate.baselineStatus` |
 | `geomeanTpsPerUser` | 三个模型的几何平均（参考，不参与选择） |
 
 ## 4. 选择政策

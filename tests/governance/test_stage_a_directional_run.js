@@ -94,6 +94,15 @@ if (score.dGate.decision !== 'PASS') {
   assert(fs.existsSync(path.join(root, sweep.decisionRecord)), `missing decision record ${sweep.decisionRecord}`);
 }
 
+// Every Stage A artifact carries the same provenance (commit, manifest hash, seed, run id).
+const sweepFile = read('out/direction/sensitivity_sweep.json');
+for (const [name, doc] of [['scorecard', score], ['register', register], ['sweep', sweepFile]]) {
+  const p = doc.provenance;
+  assert(p && p.sourceCommit && p.manifestHash && Number.isFinite(p.seed) && p.runId && p.toolVersion && p.units, `${name} lacks provenance`);
+  assert.deepStrictEqual(p, score.provenance, `${name} provenance differs from the scorecard`);
+}
+assert.strictEqual(score.provenance.runId, score.runId);
+assert.strictEqual(sweepFile.sampleCount, score.sensitivitySweep.sampleCount);
 // D-Gate is recomputed by the validator, and the register state is derived from it.
 const {evaluateDirectionGate} = require('../../integration/governance/evaluate_gates');
 const recomputed = evaluateDirectionGate(env, score, register);
@@ -121,9 +130,13 @@ for (const r of ranking) {
   assert.strictEqual(s.maxTauUsForTarget, expected);
   assert.strictEqual(r.maxTauUsForTarget, expected);
   assert.strictEqual(r.tauConditional, expected !== null && expected < tauTop);
-  assert.strictEqual(r.meetsArchitectureGate, r.minTpsPerUser >= score.architectureGateTpsPerUser);
+  assert.strictEqual(r.planningTpsMeetsArchitectureGate, r.minTpsPerUser >= score.architectureGateTpsPerUser);
   if (r.formallyEligible) assert(expected !== null && expected >= 1.15 - 1e-9, `${r.candidateId} eligible but misses at the tau point estimate`);
 }
+// The planning-TPS comparison is not the architecture gate: the register carries the baseline's own status.
+assert.strictEqual(register.selectionBasis.architectureGate.scope, 'PLANNING_TPS_ONLY');
+assert.strictEqual(register.selectionBasis.architectureGate.baselineStatus, JSON.parse(fs.readFileSync(path.join(root, 'teams/hardware/inputs/k3_mc_baseline.json'), 'utf8')).acceptance.architectureGateStatus);
+assert(/^not-met/.test(register.selectionBasis.architectureGate.baselineStatus) || ranking.every(r => !r.planningTpsMeetsArchitectureGate), 'a planning-TPS pass must not read as the gate passing while the baseline says not-met');
 assert.deepStrictEqual(register.selectionBasis.tauConditionalCandidates, score.selectedCandidateIds.filter(id => ranking.find(r => r.candidateId === id).tauConditional));
 assert(register.selectionBasis.policy.includes('not the') && register.selectionBasis.policy.includes('risk annotation'), 'policy must name the target floor and the tau rule');
 const bestMc320 = ranking.find(r => r.candidateId.includes('MC320'));

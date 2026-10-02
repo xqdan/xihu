@@ -2,7 +2,7 @@
 
 Run ID: `stage-a-20260925-token-time`
 Manifest hash: `d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0`
-Source commit: `7d19edfab840e2505aa0ad8259b69ad825778181`
+Source commit: `12975983c99f16efbec9a7f42c38fbb93ba0afb7`
 
 ## Planning token time (integration/planning/token_time.js)
 
@@ -87,7 +87,7 @@ Source commit: `7d19edfab840e2505aa0ad8259b69ad825778181`
 
 Policy: rank by worst comparable-model planning TPS; formally eligible only if every comparable model reaches the 1000 TPS/usr target (not the 1050 architecture gate) at the tau point estimate 1.15 us; at most three eligible candidates; the tau range is a risk annotation, not a selection criterion: each candidate records the largest tau at which every model still reaches the target and is tau-conditional below 2 us; the best MC320 candidate is a non-formal reference.
 
-| Candidate | worst model | min TPS | min TPS at tau 2 | max tau for target (us) | >= 1050 gate | formally eligible |
+| Candidate | worst model | min TPS | min TPS at tau 2 | max tau for target (us) | planning TPS >= 1050 (not the gate: see baselineStatus) | formally eligible |
 |---|---|---:|---:|---:|---|---|
 | P1-compact-MC640-TP32 | K3 | 1102.41 | 785.97 | 1.408 | yes | yes (tau-conditional) |
 | P1-compact-MC320-TP32 | K3 | 551.21 | 551.21 | misses at any tau | no | no |

@@ -1,5 +1,13 @@
 {
   "schemaVersion": "candidate-register-v0.4",
+  "provenance": {
+    "sourceCommit": "12975983c99f16efbec9a7f42c38fbb93ba0afb7",
+    "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+    "seed": 20260925,
+    "runId": "stage-a-20260925-token-time",
+    "toolVersion": "node-formal-stage-a-v0.5",
+    "units": "tokens/s/user (planning token time)"
+  },
   "updatedAt": "2026-09-25T00:00:00.000Z",
   "sourceDirectionalRunId": "stage-a-20260925-token-time",
   "decisionState": "D_GATE_PASSED",
@@ -10,6 +18,11 @@
   "selectionBasis": {
     "targetTpsPerUser": 1000,
     "architectureGateTpsPerUser": 1050,
+    "architectureGate": {
+      "scope": "PLANNING_TPS_ONLY",
+      "baselineStatus": "not-met (engineering model; gate requires the selected manufacturable MC route in the detailed tile model)",
+      "baselineSource": "teams/hardware/inputs/k3_mc_baseline.json#acceptance.architectureGateStatus"
+    },
     "policy": "rank by worst comparable-model planning TPS; formally eligible only if every comparable model reaches the 1000 TPS/usr target (not the 1050 architecture gate) at the tau point estimate 1.15 us; at most three eligible candidates; the tau range is a risk annotation, not a selection criterion: each candidate records the largest tau at which every model still reaches the target and is tau-conditional below 2 us; the best MC320 candidate is a non-formal reference",
     "eligibilityFloorTpsPerUser": 1000,
     "blockedModels": [],
@@ -19,7 +32,7 @@
         "minTpsPerUser": 1102.412443534703,
         "worstModel": "K3",
         "formallyEligible": true,
-        "meetsArchitectureGate": true,
+        "planningTpsMeetsArchitectureGate": true,
         "minTpsPerUserAtMaxTau": 785.9689091279434,
         "maxTauUsForTarget": 1.4077663415307384,
         "tauConditional": true
@@ -29,7 +42,7 @@
         "minTpsPerUser": 551.2062217673515,
         "worstModel": "K3",
         "formallyEligible": false,
-        "meetsArchitectureGate": false,
+        "planningTpsMeetsArchitectureGate": false,
         "minTpsPerUserAtMaxTau": 551.2062217673515,
         "maxTauUsForTarget": null,
         "tauConditional": false
@@ -39,7 +52,7 @@
         "minTpsPerUser": 551.2062217673515,
         "worstModel": "K3",
         "formallyEligible": false,
-        "meetsArchitectureGate": false,
+        "planningTpsMeetsArchitectureGate": false,
         "minTpsPerUserAtMaxTau": 551.2062217673515,
         "maxTauUsForTarget": null,
         "tauConditional": false
@@ -49,7 +62,7 @@
         "minTpsPerUser": 275.60311088367575,
         "worstModel": "K3",
         "formallyEligible": false,
-        "meetsArchitectureGate": false,
+        "planningTpsMeetsArchitectureGate": false,
         "minTpsPerUserAtMaxTau": 275.60311088367575,
         "maxTauUsForTarget": null,
         "tauConditional": false
@@ -59,7 +72,7 @@
         "minTpsPerUser": 275.60311088367575,
         "worstModel": "K3",
         "formallyEligible": false,
-        "meetsArchitectureGate": false,
+        "planningTpsMeetsArchitectureGate": false,
         "minTpsPerUserAtMaxTau": 275.60311088367575,
         "maxTauUsForTarget": null,
         "tauConditional": false
@@ -69,7 +82,7 @@
         "minTpsPerUser": 137.80155544183788,
         "worstModel": "K3",
         "formallyEligible": false,
-        "meetsArchitectureGate": false,
+        "planningTpsMeetsArchitectureGate": false,
         "minTpsPerUserAtMaxTau": 137.80155544183788,
         "maxTauUsForTarget": null,
         "tauConditional": false

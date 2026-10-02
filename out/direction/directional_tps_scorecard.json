@@ -31,13 +31,21 @@
   "inputHashes": {
     "manifest": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
     "operatorWorkload": "636b0b759278d22b9c09f17263d949e82f9e9b44028924e7fcda23699a8142b2",
-    "runner": "19b46722189bdf807f98a673ee8df8cdcd9b688b7492285bb981741b17fca765",
+    "runner": "f2964ccda38f71ed4be6cc255170c1df153e268c9e749065eacc429b5f023ece",
     "resourceProfiles": "2bd037745db3422bc5033097384fdd5967d390e0dde4968fd1f99771f9d149b3",
     "tokenTime": "4109e8879ceaf9be0f8bd426a736d8c0891ea240610f06017d8d26373e7bbd46",
     "envelope": "a5f1b78d6d10e7401914e400daac2e8943103f0dadac258407243b0f1d19ef42",
-    "gateValidator": "b9311c50cc6cef9e5788d168796367518765a13dc113baf74efe73c3bf72aed0",
+    "gateValidator": "f8071b61c3af9805466422b1977374f4608b9eb6342c21bd3042fc144d89d12a",
     "modelProfiles": "2fcd288d537fad43c417db08d239b74519c01a05da50e9a04ea6bb626f673a73",
     "mcSpec": "1e064afb5e1306d9a96a77781bb4c3bf32d4a45854f416ec25d49045bf21a0cd"
+  },
+  "provenance": {
+    "sourceCommit": "12975983c99f16efbec9a7f42c38fbb93ba0afb7",
+    "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+    "seed": 20260925,
+    "runId": "stage-a-20260925-token-time",
+    "toolVersion": "node-formal-stage-a-v0.5",
+    "units": "tokens/s/user (planning token time)"
   },
   "resourceProfiles": {
     "P1": {
@@ -1807,7 +1815,7 @@
       "minTpsPerUserAtMaxTau": 137.80155544183788,
       "minTpsPerUserLowerShape": 137.80155544183788,
       "maxTauUsForTarget": null,
-      "meetsArchitectureGate": false,
+      "planningTpsMeetsArchitectureGate": false,
       "geomeanTpsPerUser": 305.99894819831223,
       "worstModel": "K3",
       "meetsTargetModels": [],
@@ -1848,7 +1856,7 @@
       "minTpsPerUserAtMaxTau": 275.60311088367575,
       "minTpsPerUserLowerShape": 275.60311088367575,
       "maxTauUsForTarget": null,
-      "meetsArchitectureGate": false,
+      "planningTpsMeetsArchitectureGate": false,
       "geomeanTpsPerUser": 611.9978963966245,
       "worstModel": "K3",
       "meetsTargetModels": [],
@@ -1889,7 +1897,7 @@
       "minTpsPerUserAtMaxTau": 551.2062217673515,
       "minTpsPerUserLowerShape": 551.2062217673515,
       "maxTauUsForTarget": null,
-      "meetsArchitectureGate": false,
+      "planningTpsMeetsArchitectureGate": false,
       "geomeanTpsPerUser": 1223.9957927932492,
       "worstModel": "K3",
       "meetsTargetModels": [
@@ -1923,7 +1931,7 @@
       "minTpsPerUserAtMaxTau": 275.60311088367575,
       "minTpsPerUserLowerShape": 275.60311088367575,
       "maxTauUsForTarget": null,
-      "meetsArchitectureGate": false,
+      "planningTpsMeetsArchitectureGate": false,
       "geomeanTpsPerUser": 611.9978963966245,
       "worstModel": "K3",
       "meetsTargetModels": [],
@@ -1964,7 +1972,7 @@
       "minTpsPerUserAtMaxTau": 551.2062217673515,
       "minTpsPerUserLowerShape": 551.2062217673515,
       "maxTauUsForTarget": null,
-      "meetsArchitectureGate": false,
+      "planningTpsMeetsArchitectureGate": false,
       "geomeanTpsPerUser": 1176.3403075957701,
       "worstModel": "K3",
       "meetsTargetModels": [
@@ -1998,7 +2006,7 @@
       "minTpsPerUserAtMaxTau": 785.9689091279434,
       "minTpsPerUserLowerShape": 1102.412443534703,
       "maxTauUsForTarget": 1.4077663415307384,
-      "meetsArchitectureGate": true,
+      "planningTpsMeetsArchitectureGate": true,
       "geomeanTpsPerUser": 1601.8776743142284,
       "worstModel": "K3",
       "meetsTargetModels": [

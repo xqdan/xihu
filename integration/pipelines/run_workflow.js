@@ -37,7 +37,7 @@
 const fs = require('fs');
 const path = require('path');
 const {runWorkflow, listWorkflows} = require('../orchestration/runtime/core');
-const {landFiles} = require('../orchestration/runtime/land');
+const {landFiles, scriptGateDecisions, recheckGateDecision} = require('../orchestration/runtime/land');
 const {snapshot, changedBetween} = require('../orchestration/runtime/guard');
 const {createMockBackend} = require('../orchestration/runtime/backends/mock');
 const {createClaudeBackend} = require('../orchestration/runtime/backends/claude');
@@ -213,7 +213,15 @@ async function main(argv, deps = {}) {
     }
   }
 
-  const landing = landFiles({root, workflow, files, dryRun: !flags.land});
+  // The gate decision is the script's: a reported value that differs from gate_status.json lands nothing.
+  const scriptDecisions = scriptGateDecisions(root, workflow);
+  const gateMismatch = recheckGateDecision(workflow, result, scriptDecisions);
+  if (gateMismatch) {
+    summary.error = gateMismatch;
+    console.log(JSON.stringify(summary, null, 2));
+    return 6;
+  }
+  const landing = landFiles({root, workflow, files, dryRun: !flags.land, scriptDecisions});
   summary.landing = {dryRun: !flags.land, landed: landing.landed, rejected: landing.rejected};
   console.log(JSON.stringify(summary, null, 2));
   return landing.rejected.length ? 4 : 0;
