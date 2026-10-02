@@ -3,7 +3,7 @@
 用一个可执行的数学模型把芯片架构与模型性能连起来：硬件 spec、软件优化策略和模型参数都是输入，端到端 TPS/usr 是算出来的结果。
 
 > 当前目标：K3、GLM-5.2、DeepSeek-V4-Pro 的 Decode 推理，B=1、Context=1M、TP32、PP=1，目标 `1000 TPS/usr`，
-> 架构冻结门槛 `1050 TPS/usr`。当前数字是 `MODEL` 等级，不是产品承诺。
+> 架构冻结门槛 `1050 TPS/usr`。当前数字是 `MODEL` 或 `PLANNING_ESTIMATE` 等级（见下表），不是产品承诺。
 
 ## 为什么这样做
 
@@ -137,8 +137,8 @@ flowchart LR
 | 项目 | 值 | 等级 |
 |---|---|---|
 | 硬件规格 | P1：8 L + 4 H Core/Die、40 MiB SRAM、1.0 GHz、365.34 mm²；8 Die + 16 MC/卡（ADR-0021） | `MODEL` |
-| K3 发布点 | 1101.77 TPS/usr（MC640/TP32）；MC320 下 586.46 | `MODEL` |
-| 三模型规划（TP32/MC640） | K3 1102.4、DeepSeek-V4-Pro 1934.2、GLM-5.2 1927.7 | `PLANNING_ESTIMATE` |
+| K3 发布点 | 1101.77 TPS/usr（MC640/TP32，**Stretch**，ADR-0017）；MC320 下 586.46。集合通信按 reference-393 计数；按 repo-510 计数同一点为 941.74（ADR-0004） | `MODEL` |
+| 三模型规划（TP32/MC640） | K3 1102.4、DeepSeek-V4-Pro 1934.2、GLM-5.2 1927.7。GLM/DeepSeek 计入 q all-gather（ADR-0024），口径比 K3 的 reference-393 保守；二者没有详细模型旁证 | `PLANNING_ESTIMATE` |
 | D-Gate / Q-Gate | PASS（仅限规划比较）/ 阻塞（无事件时序回放） | — |
 
 主要阻塞项：MC 带宽档位未选定（B-002）、τ 无物理推导（B-008）、卡内与 TP32 拓扑未签核（B-004、B-005）、

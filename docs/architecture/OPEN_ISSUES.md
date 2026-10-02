@@ -10,8 +10,13 @@
 | B-004 | 卡内 topology 口径冲突 | 带宽、hop、封装无法签核 | 统一拓扑与 packet 模型 |
 | B-005 | TP32 scale-out 物理拓扑未定义 | 800 GB/s 和低时延不可实现性未知 | PHY/拓扑/布线/功耗方案 |
 | B-006 | 1.0 GHz（固定）、面积、功耗（见 `00_CURRENT_STATE.md` 第 2 节）均未回标；面积按三星 SF4 级 4 nm 由公开节点数据缩放（逻辑 ×1.277 按 CPP×MMP，SRAM ×1.248 按 HD bitcell，PHY ×1；SF4/SF4X 节距未公开，取 SF4E），矩阵密度取 3.2 TF/mm²（N4 口径 @1 GHz，原 1.6），均为 `ASSUMPTION`（`integration/detailed/k3_physical_basis.js`） | PPA 可能不收敛；发布点 Die 365.3 mm²，逻辑系数若按 CPP×MMP 偏乐观、矩阵密度若只有 2.5 TF/mm² 以下，面积可能超 400 mm² | synthesis/floorplan/IP macro；三星 SF4 PDK 的 SRAM compiler 与 MAC 阵列宏 |
-| B-007 | reference-393 口径：2026-09-25 决定接受。合并后的 `Wup + Shared output all-reduce` 已移到 shared 专家计算之后（此前排在之前，shared 部分和未被归约）；`Q / new-KV all-gather` 按参考页作本地算子 | 已接受；若供应商结构说明否定 shared 与 Wup 输出同宽相加，须回退 `repo-510` | 供应商 shared 专家结构说明或权重 manifest 的输出张量宽度（确认性，不阻塞） |
 | B-008 | τ 口径：2026-09-25 决定发布点每次集合通信下限取 spec 的 1.15 μs（`OPT.tauUs`）；1.15 μs 本身尚无物理推导 | 通信 451.95 μs（393 × 1.15，五类协议时间均低于 τ），占 raw 预算的 53%；393 次的天花板约 1134.46 TPS（含 shared 专家重叠和 TMA 掩盖，假设 DMA 等待为 0）；发布点 1101.77 离预算余 78.95 μs，τ 可到约 1.35 μs（每次余 0.201 μs）仍达标；规划链路每个槽位给出 τ = 1.15 / 1.5 / 2.0 μs 三列（ADR-0008），TP32/MC640 的 K3 在 1.5 μs 下为 959、2.0 μs 下为 786，GLM-5.2 与 DeepSeek-V4-Pro 在 2.0 μs 下仍有约 1480–1500；正式候选是 τ 条件候选（规划模型下 K3 须 τ ≤ 1.41 μs，详细模型为约 1.35 μs），入选只看点估计 | 由 B-004/B-005 给出 τ 的物理推导并回标（ADR-0004）；控制路径一项由 Comm Core 周期模型给出（O-018） |
+
+## 已接受 / 已关闭（保留编号，不再是阻塞项）
+
+| ID | 问题 | 影响 | 关闭证据 |
+| --- | --- | --- | --- |
+| B-007 | reference-393 口径：2026-09-25 决定接受。合并后的 `Wup + Shared output all-reduce` 已移到 shared 专家计算之后（此前排在之前，shared 部分和未被归约）；`Q / new-KV all-gather` 按参考页作本地算子 | 已接受；若供应商结构说明否定 shared 与 Wup 输出同宽相加，须回退 `repo-510` | 供应商 shared 专家结构说明或权重 manifest 的输出张量宽度（确认性，不阻塞） |
 | B-009 | 2026-09-25 关闭：GLM-5.2 形状改取公开 HF `config.json`（ADR-0007），含 MTP 总参数 753.3B 对公布 753B；剩余部署布局（FP8 KV 656 B、索引键 132 B、每层集合通信 full 4 / shared 3）为 `ASSUMPTION`，无 EP 已由 ADR-0020 定为部署决定，并入 O-016 | 已关闭；6 个观测槽位有规划 TPS，D-Gate 的 `threeModelComparable` 成立 | 部署布局的确认性证据（不阻塞） |
 
 ## P1 关键问题
@@ -36,6 +41,7 @@
 | O-015 | 卡功耗上限是否包含 optics/VRM/host I/O；2026-09-25 起按液冷（冷板）取 Die 300 W、卡 2800 W（原风冷 2400 W），冷板、VRM 与供电方案尚未建模 | Package/Power |
 | O-017 | GLM-5.2 / DeepSeek-V4-Pro 的 router 字节按 TP 切分计入，但每层集合通信次数里没有 router 输出的 gather：若 router 复制到每个 rank，每 token 字节 GLM 约 +0.24 GB（+17%）、DS 约 +0.32 GB（+23%）；若保持切分，每个 MoE 层多 1 次集合通信（K3 的 Wdown+Router AG 口径）。另：稀疏注意力 top-2048 在 TP32 上按 context 切分，平均每 rank 64 个 token、最坏 2048 个，负载不均未计入（`teams/software/docs/MULTI_MODEL_LOWERING.md` 第 5 节） | Workload/Software |
 | O-018 | Comm Core 微架构与控制路径回标：设计空间（`teams/hardware/inputs/comm_core_design_space.json`）里的 cycle 数、面积和 Control NoC 跳数都是 ASSUMPTION，需由 RTL 或周期模型给出；当前搜索选出的方案控制路径 0.042 µs/次，raw 预算内上限 0.670 µs/次，最慢的 LSE merge 加控制路径 1.02 µs，仍低于 spec τ；回标后改设计空间并重新搜索（`descriptorExpand`、`sharedSram` 只差 2–8 ns 余量，可能翻转），并入 τ 的物理推导（B-008）；内存语义的全局地址位宽、NIC 是否支持"收齐后原子加"（否则 spec τ 余量只剩 0.026 µs）待定（ADR-0022，`out/detailed/comm_core_design.json`） | Comm Core |
+| O-019 | GLM-5.2 / DeepSeek-V4-Pro 规划数字的未建模项与待签核假设：每层 5 次集合通信含 q all-gather（ADR-0024，`PROPOSED`），口径比 K3 的 reference-393 保守；L 核上 TP-only 专家切片的 tile 填充、专家未命中取数在关键路径上的暴露未建模（21 号文档 §6.3）；18 个槽位里 16 个没有详细模型旁证 | Model/Software/Workload |
 
 ## P2 风险项
 

@@ -77,7 +77,18 @@ if (BRIEF.stage !== STAGE) {
 const LANDED_MARK = '/out/'
 const NOT_EVIDENCE_DIRS = ['/scratch/', '/probes/', '/.probe-tmp/']
 
-const notLanded = ARTIFACTS.filter((p) => !String(p).includes(LANDED_MARK))
+// 落盘判据按路径段判，不按子串判：'scratch/x/out/y.json' 含 '/out/' 却不在仓库的 out/ 下。
+// 先去掉仓库根前缀，剩下的相对路径必须以 out/ 开头且不含 .. 段。
+const repoRelative = (p) => {
+  const s = String(p).replace(/\\/g, '/').replace(/^\.\//, '')
+  const root = String(REPO).replace(/\\/g, '/').replace(/\/+$/, '').replace(/^\.$/, '')
+  return root && s.startsWith(`${root}/`) ? s.slice(root.length + 1) : s
+}
+const isLanded = (p) => {
+  const r = repoRelative(p)
+  return r.startsWith(LANDED_MARK.slice(1)) && !r.split('/').includes('..')
+}
+const notLanded = ARTIFACTS.filter((p) => !isLanded(p))
 const notEvidence = ARTIFACTS.filter((p) => NOT_EVIDENCE_DIRS.some((d) => String(p).includes(d)))
 const duplicated = ARTIFACTS.filter((p, i) => ARTIFACTS.indexOf(p) !== i)
 

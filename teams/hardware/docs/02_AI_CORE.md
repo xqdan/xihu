@@ -165,6 +165,9 @@ expUnit 通过模拟器的 `softmaxOpsPerScore`（`k3_operator_sram_sim.js`，�
 
 #### 2.5.2 结论
 
+> **这是 HW-02 搜索的推荐，不是基线。** 当前基线（`k3_mc_baseline.json`、ADR-0021）仍是每 Core 512 lane、Die 365.34 mm²、封装余量 67.17 mm²；
+> 下表的 704 lane、371.37 mm²、余量 18.91 mm² 属于搜索胜出方案。要把它写进基线，需要改 `OPT`、重跑 `search:final` 和 `baseline:sync`（ADR-0005 第 5 条）并另立 ADR。
+
 | 维度 | 选项 |
 | --- | --- |
 | `vectorLanes` | 704 |

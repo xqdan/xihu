@@ -1,9 +1,9 @@
 # Stage B Planning Quantification Run
 
 Run ID: `stage-b-20260925-planning`
-Manifest hash: `fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652`
+Manifest hash: `d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0`
 Run mode: `PLANNING_QUANTIFICATION`
-Source commit: `913bf4704e14c3f248f3056c7cff68b6b59862f9`
+Source commit: `7d19edfab840e2505aa0ad8259b69ad825778181`
 
 ## Gate result
 
