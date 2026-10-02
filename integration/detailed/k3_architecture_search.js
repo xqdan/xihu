@@ -75,7 +75,7 @@ function physical(x){
 //   the FP8 latent in-kernel on the H-core vector lanes (same rate as weight
 //   unpack), overlapped with the BF16 matrix work. That vector time is taken out
 //   of the budget the fused online softmax may hide under QK.
-const SIM_KEYS=['countBasis','commOverlap','tmaLane','kvPrefetch','dmaPreempt','kvCache','softmaxOpsPerScore'];
+const SIM_KEYS=['seqs','union','countBasis','commOverlap','tmaLane','kvPrefetch','dmaPreempt','kvCache','softmaxOpsPerScore'];
 const EPILOGUE_OPS=/^(Attention RMSNorm|MoE RMSNorm|SiLU x up|Shared SiLU x up|Expert weighted sum|Dispatch local pack|RoPE|KV append source)$/;
 function mappedPlan(x,batch,p=physical(x),basis){
  const b0=typeof basis==='string'?{countBasis:basis}:(basis||{});
@@ -94,9 +94,10 @@ function mappedPlan(x,batch,p=physical(x),basis){
  // KV persists across all head tiles of this context tile. Reserve the
  // FULL batch share, not an unmodelled smaller batch tile: otherwise
  // claiming one shared->local KV read would hide actual reload traffic.
- const tokensPerCore=Math.ceil(B*x.kvTile/NH),ht=x.headTile;
+ const SQ=extra.seqs===undefined?B:extra.seqs;
+ const tokensPerCore=Math.ceil(SQ*x.kvTile/NH),scoreTokensPerCore=Math.ceil(B*x.kvTile/NH),ht=x.headTile;
  // Two KV slabs, FP32 double score, output accumulator and Q/work/control.
- const hLocalBytes=(2*tokensPerCore*plan.kvBytesPerToken+2*ht*tokensPerCore*4+ht*512*4+ht*576*2+65536)*TECH.layoutImbalance;
+ const hLocalBytes=(2*tokensPerCore*plan.kvBytesPerToken+2*ht*scoreTokensPerCore*4+ht*512*4+ht*576*2+65536)*TECH.layoutImbalance;
  let lLocalBytes=0;
  for(const o of plan.ops)if(o.unit==='L'){
   const w=o.inputs.reduce((a,id)=>a+plan.jobs[id].bytes,0),activation=Math.max(0,o.read-w);

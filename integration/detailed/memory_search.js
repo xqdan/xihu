@@ -52,6 +52,7 @@ const path = require('path');
 const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const P = require('./k3_physical_basis.js');
+const E = require('../../teams/model/src/design_engine.js');
 
 const root = path.resolve(__dirname, '../..');
 const SPACE_FILE = 'teams/hardware/inputs/memory_design_space.json';
@@ -67,9 +68,27 @@ const RISK = {REFERENCE: 0, GRID: 1, DEFAULT_SEARCH_CAP: 2, AGGRESSIVE: 3, STRET
 // describe. Each one names what would have to be modelled to score it.
 const HELD_OUT_ROUTES = {
   dualDataPlane: 'a second 320 GB/s data plane per cube (doubled PHY, bumps and controllers): the model carries one bandwidth number per cube',
-  fewerBytesPerToken: 'a lower per-token byte demand (FP8 dense, compression, more SRAM reuse): belongs to the software/compute domain and changes the replay input, not the cube',
   nearMemoryCompute: 'compute inside the cube: architectureRoute keeps it out of the baseline, and the cube area would no longer be the planning 100 mm2',
 };
+
+// Routes that ARE scored but cannot be the baseline winner yet, because the thing they rely on is
+// an open decision rather than a model gap. `variant` names the replay input they change.
+// A conditional candidate is held to every limit except the published-point tolerance (it moves the
+// point by design); it is reported next to the winner as the alternative if the condition closes.
+const CONDITIONAL_ROUTES = {
+  fewerBytesPerToken: {
+    variant: 'fp8Dense',
+    conditionedOn: 'FP8 accuracy sign-off for the dense (attention, shared-expert, latent) projections: B-001 / O-012, PRECISION_POLICY.md section 2.3',
+    meaning: 'K3 dense projections stored as FP8 (the GLM-5.2 / DeepSeek-V4-Pro dense policy); routed experts, KV and activations unchanged',
+    limitation: 'the detailed replay applies FP8 to every dense matrix including the router and LM head (about 1% of the rank bytes); the planning comparison model keeps those two in BF16'
+  }
+};
+// Software knobs re-tuned per (variant, tier). The published knobs were searched for BF16: with FP8 dense
+// they leave TPS non-monotonic in the MC tier (a deeper prefetch thrashes the shared window), so replaying
+// them unchanged would understate the route. Hardware stays at the published point.
+const RETUNE = {depth: [1, 2, 4], weightTileMiB: [4, 8], windowFraction: [0.5, 0.75, 1], kvTile: [16384, 32768]};
+const DENSE_BYTES = {fp8Dense: 1};
+const variantReplays = new Map();
 
 // Fingerprint of a candidate set. Stable across runs and across machines: fields
 // sorted, numbers rounded to reported precision, digest over JSON with an explicit
@@ -114,6 +133,30 @@ function replay(ctx, mcGBs) {
     : {...base, feasible: false, reasons: [...p.reasons, ...(r.reasons || [])]});
 }
 
+// The K3 replay with a changed byte demand, best over the RETUNE software grid. The model preset is
+// patched in place for the duration of the call and always restored.
+function replayVariant(ctx, mcGBs, variant) {
+  const key = `${variant}|${mcGBs}`;
+  if (variantReplays.has(key)) return variantReplays.get(key);
+  const base = replay(ctx, mcGBs);
+  if (!base.feasible) { variantReplays.set(key, base); return base; }
+  const preset = E.MODEL_PRESETS.kimiK3, saved = preset.dtype.dense;
+  let top = null;
+  preset.dtype.dense = DENSE_BYTES[variant];
+  try {
+    for (const depth of RETUNE.depth) for (const weightTileMiB of RETUNE.weightTileMiB)
+      for (const windowFraction of RETUNE.windowFraction) for (const kvTile of RETUNE.kvTile) {
+        const r = O.evaluate({...ctx.x, mcGBs, depth, weightTileMiB, windowFraction, kvTile});
+        if (r.feasible && (!top || r.tps > top.tps)) top = {tps: r.tps, rawUs: r.rawUs, dmaTBs: r.dmaTBs, readBytes: r.readBytes, tuned: {depth, weightTileMiB, windowFraction, kvTile}};
+      }
+  } finally { preset.dtype.dense = saved; }
+  const out = top
+    ? {...base, feasible: true, tpsPerUser: top.tps, rawLatencyUs: top.rawUs, dmaTBs: top.dmaTBs, readBytesPerRank: top.readBytes, tuned: top.tuned, variant}
+    : {...base, feasible: false, reasons: [...base.reasons, `no feasible software tuning for ${variant}`]};
+  variantReplays.set(key, out);
+  return out;
+}
+
 function context() {
   const space = read(SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
@@ -154,7 +197,9 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   // bandwidth (it caps per cube at the port) and the candidate is not scored.
   const cubesPerDie = cubes / ctx.dies;
   const cubeScale = cubesPerDie / ctx.cubesPerComputeDie;
-  const perf = cubeScale <= 1 ? replay(ctx, tier.gbs * cubeScale) : null;
+  const conditional = CONDITIONAL_ROUTES[route];
+  const perf = cubeScale > 1 ? null
+    : conditional ? replayVariant(ctx, tier.gbs * cubeScale, conditional.variant) : replay(ctx, tier.gbs * cubeScale);
   if (cubeScale > 1) violations.push('cubesAboveReplayModel');
   const specCubes = ctx.cubesPerComputeDie * ctx.dies;
   const mcPowerW = sys.mcPowerW * cubes / specCubes;
@@ -180,7 +225,9 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   if (!perf) { /* cubesAboveReplayModel already recorded: no TPS/usr is claimed */ }
   else if (!perf.feasible) violations.push('systemInfeasible');
   else {
-    if (perf.tpsPerUser < ctx.point.tpsPerUser * (1 - req.tpsTolerance)) violations.push('k3Tps');
+    // A conditional route moves the published point on purpose (fewer bytes, same hardware tier): it is
+    // held to the program goal below, not to the published value.
+    if (!conditional && perf.tpsPerUser < ctx.point.tpsPerUser * (1 - req.tpsTolerance)) violations.push('k3Tps');
     if (perf.tpsPerUser < req.minTpsPerUser - EPS) violations.push('belowProgramGoal');
   }
 
@@ -208,6 +255,7 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   if (route === 'mcX' && tier.classification === 'REFERENCE') violations.push('routeContradiction:mcX-at-reference-tier');
   if (route === 'moreCubes' && cubes < 32) violations.push('routeContradiction:moreCubes-below-the-grid-max');
   if (route in HELD_OUT_ROUTES) violations.push(`routeNotScored:${route}`);
+  if (conditional) violations.push(`conditional:${route}`);
 
   const capacityMarginGB = capacityGBPerCard - ctx.capacityFloorGB;
   return {pick, feasible: !violations.length, violations, tier, cubes, capacityGBPerCube: cap, route,
@@ -215,7 +263,8 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
     mcGBs: tier.gbs, risk: RISK[tier.classification], classification: tier.classification,
     mcPowerW, cardPowerW, packageAreaMm2, dieAreaMm2: sys.dieAreaMm2,
     areaReserveMm2: ctx.spec.package.placementWindowMm2 - packageAreaMm2,
-    tpsPerUser: perf && perf.feasible ? perf.tpsPerUser : null, rawLatencyUs: perf && perf.feasible ? perf.rawLatencyUs : null};
+    tpsPerUser: perf && perf.feasible ? perf.tpsPerUser : null, rawLatencyUs: perf && perf.feasible ? perf.rawLatencyUs : null,
+    ...(conditional ? {conditionalOn: conditional.conditionedOn, tuned: perf && perf.feasible ? perf.tuned : null} : {})};
 }
 
 // Violations of the form routeNotScored:<route> are exclusions, not design faults.
@@ -243,6 +292,10 @@ function better(a, b) {
   return JSON.stringify(a.pick) < JSON.stringify(b.pick);
 }
 
+// A conditional candidate that would be feasible if its condition closed (every other limit holds).
+const wouldBeFeasible = e => e.violations.length > 0 && e.violations.every(v => v.startsWith('conditional:'));
+const betterAlt = (a, b) => better({...a, feasible: wouldBeFeasible(a)}, {...b, feasible: wouldBeFeasible(b)});
+
 function lostOn(a, w) {
   if (!a.feasible) return `infeasible: ${a.violations.join(', ')}`;
   if (a.risk !== w.risk) return 'manufacturing risk class';
@@ -253,7 +306,7 @@ function lostOn(a, w) {
 
 function search(ctx = context(), req = ctx.space.requirements) {
   const D = ctx.space.dimensions, dims = Object.keys(D);
-  let best = null, candidates = 0, feasible = 0;
+  let best = null, conditionalBest = null, candidates = 0, feasible = 0;
   const all = [];
   const perOption = Object.fromEntries(dims.map(d => [d, {}]));
   const walk = (i, pick) => {
@@ -263,13 +316,14 @@ function search(ctx = context(), req = ctx.space.requirements) {
       if (e.feasible) feasible++;
       all.push(e);
       if (!best || better(e, best)) best = e;
+      if (wouldBeFeasible(e) && (!conditionalBest || betterAlt(e, conditionalBest))) conditionalBest = e;
       for (const d of dims) { const cur = perOption[d][pick[d]]; if (!cur || better(e, cur)) perOption[d][pick[d]] = e; }
       return;
     }
     for (const n of Object.keys(D[dims[i]].options)) { pick[dims[i]] = n; walk(i + 1, pick); }
   };
   walk(0, {});
-  return {ctx, req, best, perOption, all, counts: {candidates, feasible}};
+  return {ctx, req, best, conditionalBest, perOption, all, counts: {candidates, feasible}};
 }
 
 const summary = e => ({pick: e.pick, feasible: e.feasible, violations: e.violations, classification: e.classification,
@@ -292,6 +346,22 @@ function alternatives(result = search()) {
     }
   }
   return out;
+}
+
+// The best candidate of the conditional routes, next to the winner it would replace if its condition closed.
+function conditionalSummary(result) {
+  const {best, conditionalBest: c} = result;
+  if (!c) return null;
+  const route = CONDITIONAL_ROUTES[c.route];
+  return {
+    route: c.route, pick: c.pick, conditionedOn: route.conditionedOn, meaning: route.meaning, limitation: route.limitation,
+    tunedSoftwareKnobs: c.tuned, mcGBs: c.mcGBs, classification: c.classification, cubes: c.cubes,
+    tpsPerUser: c.tpsPerUser, dieGBs: c.dieGBs, mcPowerW: c.mcPowerW, cardPowerW: c.cardPowerW,
+    versusWinner: {winnerMcGBs: best.mcGBs, winnerTpsPerUser: best.tpsPerUser, mcGBsRatio: c.mcGBs / best.mcGBs,
+      mcPowerSavedW: best.mcPowerW - c.mcPowerW, tpsDeltaPct: (c.tpsPerUser / best.tpsPerUser - 1) * 100,
+      riskClassWinner: best.classification, riskClassAlternative: c.classification},
+    status: 'NOT the baseline: reported so that the cost of the open precision decision is a number; it cannot win until the condition closes'
+  };
 }
 
 // The whole scored candidate set, with a fingerprint over it. Written next to the
@@ -324,6 +394,7 @@ function candidates(result = search()) {
     areaReserveMm2: e.areaReserveMm2,
     tpsPerUser: e.tpsPerUser,
     rawLatencyUs: e.rawLatencyUs,
+    ...(e.conditionalOn ? {conditionalOn: e.conditionalOn, tuned: e.tuned} : {}),
   }));
   return {
     status: 'MODEL (search over the HW-04 design space; the candidate set behind out/detailed/memory_design.json, not FROZEN)',
@@ -334,6 +405,7 @@ function candidates(result = search()) {
     totalCandidates: counts.candidates,
     feasibleCandidates: counts.feasible,
     candidateSetSha256: fingerprint(entries),
+    conditionalAlternative: conditionalSummary(result),
     candidates: entries,
     regenerate: 'node integration/pipelines/generate_memory_design.js (npm run memory:search); enforced by tests/regression/test_memory_design.js',
   };
@@ -364,13 +436,15 @@ function analysis(result = search()) {
   const routeRows = [];
   for (const r of Object.keys(D.route.options)) {
     let best = null;
+    const cmp = r in CONDITIONAL_ROUTES ? betterAlt : better;
     for (const g of Object.keys(D.mcGBs.options)) for (const c of Object.keys(D.cubesPerCard.options)) {
       const e = evaluate(ctx, {...base, route: r, mcGBs: g, cubesPerCard: c}, req);
-      if (!best || better(e, best)) best = e;
+      if (!best || cmp(e, best)) best = e;
     }
-    routeRows.push({route: r, scored: !(r in HELD_OUT_ROUTES), ...summary(best)});
+    routeRows.push({route: r, scored: !(r in HELD_OUT_ROUTES), conditional: r in CONDITIONAL_ROUTES, ...summary(best)});
   }
-  return {sweep: rows, cubesSweep: cubeRows, routes: routeRows, heldOutRoutes: routesHeldOut(),
+  return {sweep: rows, cubesSweep: cubeRows, routes: routeRows, heldOutRoutes: routesHeldOut(), conditionalRoutes: CONDITIONAL_ROUTES,
+    conditionalAlternative: conditionalSummary(result),
     capacityFloorGB: ctx.capacityFloorGB, cubesFloor: Math.ceil(ctx.capacityFloorGB / ctx.space.dimensions.capacityGBPerCube.options['16'].capacityGB),
     publishedDieGBs: ctx.cubesPerComputeDie * Math.min(ctx.x.mcGBs * A.TECH.mcUtil, A.physical(ctx.x).uciePortGB)};
 }
@@ -408,8 +482,9 @@ function build(result = search()) {
       mcPowerW: best.mcPowerW, cardPowerW: best.cardPowerW, packageAreaMm2: best.packageAreaMm2, areaReserveMm2: best.areaReserveMm2,
       dieAreaMm2: best.dieAreaMm2
     },
+    conditionalAlternative: conditionalSummary(result),
     regenerate: 'node integration/pipelines/generate_memory_design.js (npm run memory:search); enforced by tests/regression/test_memory_design.js'
   };
 }
 
-module.exports = {SPACE_FILE, context, evaluate, search, candidates, alternatives, analysis, build, replay, capacityFloor, RISK, HELD_OUT_ROUTES};
+module.exports = {SPACE_FILE, context, evaluate, search, candidates, alternatives, analysis, build, replay, replayVariant, capacityFloor, RISK, HELD_OUT_ROUTES, CONDITIONAL_ROUTES};

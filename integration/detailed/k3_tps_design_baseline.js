@@ -81,22 +81,28 @@ const ASSUMPTION_SWEEPS = [
     run: (v, x) => withTech({vectorUtil: v}, () => O.evaluate(x)), note: 'achieved fraction of the vector-lane peak'},
   {key: 'prediction', where: 'plan.c.prediction (simulator input, 0.8)', baseline: () => 0.8, values: [0.6, 0.7, 0.9], floor: 0.3, lowerIsWorse: true,
     run: (v, x) => withPrediction(v, () => O.evaluate(x)), note: 'expert prefetch hit rate; ASSUMPTION (B-003)'},
+  {key: 'unpackParamsPerLaneCycle', where: 'A.TECH.unpackParamsPerLaneCycle', baseline: () => A.TECH.unpackParamsPerLaneCycle, values: [1.5, 1, 0.8, 0.5], floor: 0.2, lowerIsWorse: true,
+    run: (v, x) => withTech({unpackParamsPerLaneCycle: v}, () => O.evaluate(x)), note: 'weight parameters unpacked (MXFP4/FP8 to the MAC format) per vector lane per cycle; limits the L-core kernels (not MAC-bound); ASSUMPTION, no RTL or microbenchmark'},
+  {key: 'layoutImbalance', where: 'A.TECH.layoutImbalance', baseline: () => A.TECH.layoutImbalance, values: [1.3, 1.4, 1.8], ceiling: 2.5, lowerIsWorse: false,
+    run: (v, x) => withTech({layoutImbalance: v}, () => O.evaluate(x)), note: 'slowest-bank factor on every kernel time AND on the local-SRAM tile capacity check (H local 81% used): too large makes the point infeasible, not just slower; ASSUMPTION'},
   {key: 'launchScale', where: 'OPT.launchScale', baseline: () => O.OPT.launchScale, values: [0.7, 1], floor: null, lowerIsWorse: false,
     run: (v, x) => withOpt({launchScale: v}, x), note: 'launch cost saved by batching; ASSUMPTION (B-003)'}
 ];
 
-// Smallest value (for lowerIsWorse) at which the raw budget still holds, by bisection.
-// null: the budget holds all the way down to the floor.
+// Break-even of an unmeasured parameter by bisection: the worst value at which the raw budget still
+// holds. For lowerIsWorse sweeps that is the smallest value; for the others the largest, searched up
+// to `ceiling`. null: the budget holds all the way to the floor/ceiling.
 function breakEven(sweep, x, budgetUs) {
   const meets = v => { const r = sweep.run(v, x); return r.feasible !== false && r.rawUs <= budgetUs; };
-  let hi = sweep.baseline(), lo = sweep.floor;
-  if (!meets(hi)) return {valueAtBudget: null, note: 'the published value does not meet the budget'};
-  if (meets(lo)) return {valueAtBudget: null, floor: lo, note: 'the budget holds down to the floor'};
+  const limit = sweep.lowerIsWorse ? sweep.floor : sweep.ceiling;
+  let good = sweep.baseline(), bad = limit;
+  if (!meets(good)) return {valueAtBudget: null, note: 'the published value does not meet the budget'};
+  if (meets(bad)) return {valueAtBudget: null, [sweep.lowerIsWorse ? 'floor' : 'ceiling']: limit, note: `the budget holds all the way to ${limit}`};
   for (let i = 0; i < 40; i++) {
-    const mid = (lo + hi) / 2;
-    if (meets(mid)) hi = mid; else lo = mid;
+    const mid = (good + bad) / 2;
+    if (meets(mid)) good = mid; else bad = mid;
   }
-  return {valueAtBudget: hi};
+  return {valueAtBudget: good};
 }
 
 // Mechanism groups ablated together. A single switch-back hides that the budget needs
@@ -114,6 +120,23 @@ const category = o => o.unit === 'COMM' ? 'collective'
   : /Attention output projection|Attention RMSNorm|Attention residual/.test(o.name) ? 'attentionCommon'
   : /Expert|Routed|Router|Dispatch|Wup|Wdown|SiLU|Shared|MoE|Top-k/.test(o.name) ? 'moe'
   : 'headAndSampling';
+
+// Unmeasured parameters taken at a pessimistic value TOGETHER. One-at-a-time sweeps show each margin
+// alone; the budget has to hold when several of them are wrong at once. `compute` is the die side
+// (utilisation, unpack rate, bank imbalance, KV tile); `allUnmeasured` adds the memory/software side
+// (sustained MC efficiency, expert prediction, launch batching). The values are the pessimistic ends
+// of the sweeps above, not forecasts.
+const JOINT_PESSIMISTIC = {
+  compute: {matrixUtil: 0.5, vectorUtil: 0.25, unpackParamsPerLaneCycle: 1, layoutImbalance: 1.3, kvTile: 16384},
+  allUnmeasured: {matrixUtil: 0.5, vectorUtil: 0.25, unpackParamsPerLaneCycle: 1, layoutImbalance: 1.3, kvTile: 16384,
+    mcUtil: 0.65, prediction: 0.7, launchScale: 0.7}
+};
+function replayJoint(values, x) {
+  const {kvTile, prediction, launchScale, ...tech} = values;
+  const xx = kvTile === undefined ? x : {...x, kvTile};
+  const run = () => withTech(tech, () => withOpt(launchScale === undefined ? {} : {launchScale}, xx, y => O.evaluate(y)));
+  return prediction === undefined ? run() : withPrediction(prediction, run);
+}
 
 function build(x, budgetUs) {
   const r = O.evaluate(x);
@@ -183,8 +206,10 @@ function build(x, budgetUs) {
       assumptions: Object.fromEntries(ASSUMPTION_SWEEPS.map(sw => [sw.key, {
         where: sw.where, published: sw.baseline(), note: sw.note,
         replays: Object.fromEntries(sw.values.map(v => [String(v), pick(sw.run(v, x))])),
-        ...(sw.lowerIsWorse ? {breakEven: breakEven(sw, x, budgetUs)} : {})
+        lowerIsWorse: sw.lowerIsWorse,
+        ...(sw.lowerIsWorse || sw.ceiling ? {breakEven: breakEven(sw, x, budgetUs)} : {})
       }])),
+      jointPessimistic: Object.fromEntries(Object.entries(JOINT_PESSIMISTIC).map(([name, values]) => [name, {values, replay: pick(replayJoint(values, x))}])),
       depth: Object.fromEntries([1, 2, 3, 4].map(d => [d, pick(O.evaluate({...x, depth: d}))])),
       mcGBs: Object.fromEntries([320, 400, 480, 560, 640].map(g => [g, pick(O.evaluate({...x, mcGBs: g}))])),
       kvTile16384: {fp8: pick(O.evaluate({...x, kvTile: 16384})), bf16: pick(withOpt({kvCache: 'bf16'}, {...x, kvTile: 16384}))}
@@ -193,4 +218,4 @@ function build(x, budgetUs) {
   };
 }
 
-module.exports = {build, MECHANISMS, NO_EFFECT, SHARED_PORT_UNSCALED};
+module.exports = {build, MECHANISMS, NO_EFFECT, SHARED_PORT_UNSCALED, JOINT_PESSIMISTIC, replayJoint};

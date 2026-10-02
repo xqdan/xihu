@@ -145,9 +145,12 @@ function chargeSharedPortCost(p,x,extraCardTBs){
     sharedPortCost:{extraTBsPerDie:perDie,areaMm2PerDie:area,powerWPerDie:power,cardPowerW:D*power},feasible:!reasons.length,reasons};
 }
 
-function mapped(x){
+// `step` = {tokens, seqs}: tokens per step and the distinct sequences they belong to. The default
+// (one token, one sequence) is the published Batch=1 decode and is what every baseline uses.
+function mapped(x,step={}){
+  const {tokens=1,seqs=tokens,union}=step;
   const c=OPT,p0=P.resize(A.physical(x));if(!p0.feasible)return {feasible:false,reasons:p0.reasons};
-  const m=A.mappedPlan(x,1,p0,{countBasis:c.countBasis,commOverlap:c.commOverlap,tmaLane:c.tmaLane,kvPrefetch:c.kvPrefetch,dmaPreempt:c.dmaPreempt,pvMerge:c.pvMerge,softmaxFusion:c.softmaxFusion,epilogueFusion:c.epilogueFusion,kvCache:c.kvCache});if(!m.feasible)return m;
+  const m=A.mappedPlan(x,tokens,p0,{seqs,union,countBasis:c.countBasis,commOverlap:c.commOverlap,tmaLane:c.tmaLane,kvPrefetch:c.kvPrefetch,dmaPreempt:c.dmaPreempt,pvMerge:c.pvMerge,softmaxFusion:c.softmaxFusion,epilogueFusion:c.epilogueFusion,kvCache:c.kvCache});if(!m.feasible)return m;
   let reserve=0,wire=0,req=0,ph=0;const protocol={};
   for(const o of m.plan.ops)if(o.unit==='COMM'){
     const q=collective(o.name,o.mapping.payload,p0,x,c);reserve=Math.max(reserve,q.workspace);
@@ -158,7 +161,7 @@ function mapped(x){
   }
   m.plan.scratchReserve+=reserve;m.plan.minCapacity+=reserve;m.plan.rdmaReserve=reserve;
   const pc=m.plan.c;
-  pc.batch=1;pc.depth=x.depth;
+  pc.batch=tokens;pc.depth=x.depth;
   // Shared-SRAM port scaling (card-level TB/s in plan.c)
   const baseRead=pc.sramReadTBs,baseWrite=pc.sramWriteTBs;
   pc.sramWriteTBs*=c.localWriteRatio;
@@ -202,8 +205,8 @@ function mapped(x){
     rdmaReserveMiB:reserve/MiB,wireBytes:wire,requests:req,phases:ph,protocol:Object.values(protocol)};
 }
 
-function evaluate(x,{detail=false}={}){
-  const m=mapped(x);if(!m.feasible)return m;
+function evaluate(x,{detail=false,tokens=1,seqs=tokens,union}={}){
+  const m=mapped(x,{tokens,seqs,union});if(!m.feasible)return m;
   const r=simulate(m.plan,m.window);if(!r.feasible)return r;
   const {layerStats,events,occupancy,...stats}=r;
   // Overlap and hidden TMA are known only after scheduling; book them so services + wait = raw.
