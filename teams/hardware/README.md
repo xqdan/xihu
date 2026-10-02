@@ -19,7 +19,7 @@
 
 | Path | Content |
 |---|---|
-| `docs/` | 硬件单元设计：02 AI Core、03 TMA/SRAM、04 MC、05 NoC、06 多 Die/Scale-out、07 Collective/RDMA、08 片上调度器与 PMU、09 封装/功耗/RAS（编号沿用原 docs/architecture/ 序号）、10 Comm Core |
+| `docs/` | 硬件单元设计：02 AI Core、03 TMA/SRAM、04 MC、05 NoC、06 多 Die/Scale-out、07 Collective/RDMA、08 片上调度器与 PMU、09 封装/功耗/RAS（编号沿用原 docs/architecture/ 序号）、10 Comm Core；后端与物理层：11 布局/面积、12 时钟复位电源域、13 DFT、14 时序签核、15 RTL 验证、PROCESS_AND_LIBRARY 工艺与库、PACKAGE_SUBSTRATE 封装与基板、POWER_BUDGET 卡功耗逐项分配 |
 | `inputs/k3_mc_baseline.json` | 唯一硬件规格（P1，ADR-0021），含 `package` 面积约束。**混合文件**：规格字段手工维护；`computeDieCandidate`、`modelResults`、`collectiveCount`、`tauBasis`、`sramAccounting`、`acceptance.reason`、`tpsDesign` 由 `integration/pipelines/sync_baseline_spec.js` 从 Final Tuning 结果重写（`npm run baseline:sync`），不要手改这些字段 |
 | `src/resource_profiles.js` | P1 × MC320/MC640 资源 profile，从上面的 spec 推导 |
 | `src/k3_compute_node.js` | Compute Node 模型 |
