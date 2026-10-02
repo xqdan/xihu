@@ -21,15 +21,11 @@ const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
 const {buildSearchBrief, verifyLandedWinner, DOMAINS} = require('../../integration/pipelines/search_brief.js');
+const {compileWorkflow} = require('../../integration/orchestration/runtime/core.js');
 
 const root = path.resolve(__dirname, '../..');
-const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
-
-function load(domain) {
-  const source = fs.readFileSync(path.join(root, `integration/orchestration/design.${domain}.workflow.js`), 'utf8')
-    .replace(/^export const meta/m, 'const meta');
-  return new AsyncFunction('args', 'agent', 'parallel', 'phase', 'log', source);
-}
+// The same loader the driver uses, so this test and a real run compile a script identically.
+const load = (domain) => compileWorkflow(root, domain);
 
 function fromSchema(schema, key) {
   if (schema.enum) return schema.enum[0];

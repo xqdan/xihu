@@ -167,7 +167,10 @@ D 组是同一条链上的前后依赖，不得并行：每一格消费上一格
 | 想让外人复核结论 | `verify`，再 `audit` |
 | 只是想自己问一下 | `explore` |
 
-## 5. 现状
+## 5. 在哪里运行、现状
 
-这 19 个 workflow 目前只经过结构测试（`tests/structure/test_s*_workflow_structure.js`）和 C 组的 mock runtime 行为测试，
-**尚未在真实 Workflow runtime 上端到端运行**。产出路径以脚本里的 `path:` 为准；本文与脚本冲突时以脚本为准。
+在 Claude Code 里原生运行；在 Cursor 或终端里用 `npm run workflow:run -- <workflow> --backend claude|cursor|mock`（默认 dry run，加 `--land` 才落盘），
+详见 [`README.md`](README.md) 的“在哪里运行”。
+
+这 19 个 workflow 目前经过结构测试、C 组的 mock runtime 行为测试，以及运行时与驱动器的单元/回归测试（后端用假 CLI、假 SDK）；
+**尚未用真实模型端到端运行过**。产出路径以脚本里的 `path:` 为准；本文与脚本冲突时以脚本为准。

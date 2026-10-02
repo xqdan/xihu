@@ -4,8 +4,8 @@
 
 | Group | Checks |
 |---|---|
-| `unit/` | Unit-level invariants: directional units, operator/SRAM simulator physics, LSE merge semantics, mailbox lifecycle. |
-| `regression/` | Search reproducibility (stored `inputHash` against the current sources), design and TPS baselines, K3 manifest consistency, multi-model profiles and TP matrix, TPS observation matrix, detailed sizing conservation, behavior of the C-group workflows under a mock runtime. |
+| `unit/` | Unit-level invariants: directional units, operator/SRAM simulator physics, LSE merge semantics, mailbox lifecycle, the workflow host runtime (schema validation, retry/abort policy, landing gates, read-only guard, Claude/Cursor backends via fakes). |
+| `regression/` | Search reproducibility (stored `inputHash` against the current sources), design and TPS baselines, K3 manifest consistency, multi-model profiles and TP matrix, TPS observation matrix, detailed sizing conservation, behavior of the C-group workflows under a mock runtime, and the workflow driver (`run_workflow.js`) end to end in dry-run mode. |
 | `governance/` | Gates, candidate selection, cross-team contracts and their hashes, integration freshness, dashboard, Stage A/B runs, agent organization documents, agent strategy boundary and roster `consumers` reconciliation, byte-for-byte regeneration of `out/` (`test_regeneration_reproducible.js`). |
 | `structure/` | Repository layout: required directories, local `require` targets and links resolve, and team directories do not depend on other teams, `integration/` or `out/`; structural checks of the `design.*.workflow.js` scripts (S3–S7 skeletons). |
 
