@@ -13,3 +13,13 @@ V&V 可以阻止 Gate，但不能修改被测团队的输入来制造通过结�
 测试代码在根目录 [`tests/`](../../tests/README.md)（unit / regression / governance / structure 四组）；Gate 由 `integration/governance/evaluate_gates.js` 计算，结果在 `out/governance/gate_status.json`。
 
 证据等级、测试分组与守恒检查、D-Gate / Q-Gate 判定流程和待补验证项见 [`docs/VV_PLAN.md`](docs/VV_PLAN.md)。
+
+V&V 文档（`docs/`）：
+
+| 文档 | 负责范围 |
+| --- | --- |
+| [`VV_PLAN.md`](docs/VV_PLAN.md) | 证据等级、测试分组与守恒、D-Gate / Q-Gate 判定 |
+| [`VV_MEASUREMENT_PLAN.md`](docs/VV_MEASUREMENT_PLAN.md) | 14 类未测量参数：怎么测、测到什么算完、验收线 |
+| [`VV_PERFORMANCE_SIGNOFF.md`](docs/VV_PERFORMANCE_SIGNOFF.md) | 性能签核对象、流程、失败处置与冻结含义 |
+| [`VV_PRECISION_SIGNOFF.md`](docs/VV_PRECISION_SIGNOFF.md) | 精度分层签核路径与失败时的 TPS 代价 |
+| [`VV_BRINGUP_AND_POST_SILICON.md`](docs/VV_BRINGUP_AND_POST_SILICON.md) | S0–S6 bring-up 阶段、回标量清单与失败分类 |

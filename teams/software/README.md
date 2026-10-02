@@ -26,11 +26,15 @@ flowchart TB
     PP["PRECISION_POLICY<br/>dtype 与取整点"]
     ML["MULTI_MODEL_LOWERING<br/>GLM / DS"]
     CR["COMPILER_RUNTIME_AND_FIRMWARE<br/>runtime、persistent decode、KV 分页"]
+    TC["TUNING_CONTRACT<br/>参数所有权与回标"]
+    MC2["MTP_SCHEDULING_CONTRACT<br/>推测验证（探索）"]
   end
   KS --- CS
   KS --- PP
   KS --- ML
   CS --- CR
+  CR --- TC
+  KS --- MC2
 ```
 
 | 文档 | Owner | 内容 | Evidence class |
@@ -40,6 +44,8 @@ flowchart TB
 | [`PRECISION_POLICY.md`](docs/PRECISION_POLICY.md) | SW-03 + MODEL-06 | 三个模型的 dtype 表、FP8 KV / MXFP4 格式、取整点、集合通信精度、确定性、精度验收 | `MODEL`（精度未评估） |
 | [`MULTI_MODEL_LOWERING.md`](docs/MULTI_MODEL_LOWERING.md) | SW-03 | GLM-5.2 / DeepSeek-V4-Pro 到 kernel 族的映射、新增 indexer / top-k / 稀疏 gather kernel、负载均衡与 router 切分缺口 | `PLANNING_ESTIMATE` |
 | [`COMPILER_RUNTIME_AND_FIRMWARE.md`](docs/COMPILER_RUNTIME_AND_FIRMWARE.md) | SW-01 / SW-02 / SW-06 | 软件层级、runtime 调度、launch 账、persistent decode 状态机、KV 分页与多请求（提案） | `BASELINE` / 提案 |
+| [`TUNING_CONTRACT.md`](docs/TUNING_CONTRACT.md) | SW-01（HW 共签） | `hardware.x` 每个参数的所有权、物理边界、回标路径；条件路线（FP8 稠密）旋钮重调的记录规则 | `BASELINE`；回标路径 `OPEN` |
+| [`MTP_SCHEDULING_CONTRACT.md`](docs/MTP_SCHEDULING_CONTRACT.md) | SW-06（HW 共签） | MTP/推测验证场景定义、`seqs`/`tokens` 语义分离、六条调度条款、升级为基线的判据 | 探索（非基线） |
 
 ## Directory
 

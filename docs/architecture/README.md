@@ -62,6 +62,10 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 
 | 文档 | 负责范围 |
 | --- | --- |
+| [PRODUCT_REQUIREMENTS.md](PRODUCT_REQUIREMENTS.md) | 产品需求 FR-01–FR-08 / NFR-01–NFR-08 与验收判据 AC-1 / AC-2；为什么不把发布点当判据 |
+| [DESIGN_TARGETS_AND_MARGINS.md](DESIGN_TARGETS_AND_MARGINS.md) | 把 21 号文档的回顾性敏感度转成下达到各单元的设计指标线 |
+| [DESIGN_EVIDENCE_MATRIX.md](DESIGN_EVIDENCE_MATRIX.md) | 设计决策 → 模型产物 → 证据等级 → 测量计划的追溯链 |
+| [TEAM_INTERFACE_MATRIX.md](TEAM_INTERFACE_MATRIX.md) | 五团队之间的接口逐条、载体与未闭合缺口 |
 | [00_CURRENT_STATE.md](00_CURRENT_STATE.md) | 已确定事项、冲突、证据等级和当前性能 |
 | [01_SYSTEM_ARCHITECTURE.md](01_SYSTEM_ARCHITECTURE.md) | 系统边界、卡/Die/MC 分层和端到端数据流 |
 | [10_TILE_SIMULATION.md](10_TILE_SIMULATION.md) | 算子/tile 模型、资源竞争、校准和签核标准 |
@@ -88,6 +92,14 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | [08_ON_DIE_SCHEDULER_AND_PMU.md](../../teams/hardware/docs/08_ON_DIE_SCHEDULER_AND_PMU.md) | Die Dispatcher、Core Tile Scheduler、硬件侧低开销要求和 PMU |
 | [09_PACKAGE_POWER_RAS.md](../../teams/hardware/docs/09_PACKAGE_POWER_RAS.md) | 封装、I/O 岸线、功耗、时钟、散热和 RAS |
 | [10_COMM_CORE.md](../../teams/hardware/docs/10_COMM_CORE.md) | Comm Core：集合通信触发、WQE 模板下发、接收计数、内存语义，以及设计空间搜索与各备选方案的落选原因 |
+| [11 布局与面积](../../teams/hardware/docs/HARDWARE_11_FLOORPLAN_AREA.md) | Compute Die 面积预算、互斥约束、floorplan 阶段与 B-006 回标；Die 面积再分配（探索） |
+| [12 时钟/复位/电源域](../../teams/hardware/docs/HARDWARE_12_CLOCK_RESET_POWER.md) | 频率域划分、时钟生成、复位顺序 R-1..R-5、CDC 清单与电源域 |
+| [13 DFT](../../teams/hardware/docs/HARDWARE_13_DFT.md) | 可测性事项清单、与热/复位/面积的冲突、可测性验收判据（全 `OPEN`） |
+| [14 时序签核](../../teams/hardware/docs/HARDWARE_14_TIMING_SIGNOFF.md) | 1.0 GHz 承诺的路径分解、签核条件与判据、与时序-功耗联合签核 |
+| [15 RTL 验证](../../teams/hardware/docs/HARDWARE_15_RTL_VERIFICATION.md) | RTL 出现后必须满足什么：验证层次、必覆盖类别、RTL↔模型逐 kernel 比对 |
+| [工艺与库](../../teams/hardware/docs/HARDWARE_PROCESS_AND_LIBRARY.md) | 当前缩放口径及其影响面、工艺选择判据、换工艺的连锁反应 |
+| [封装与基板](../../teams/hardware/docs/HARDWARE_PACKAGE_SUBSTRATE.md) | 封装形态、互连岸线、基板电气待定项（层数、PDN、通道、散热、翘曲） |
+| [卡功耗预算](../../teams/hardware/docs/HARDWARE_POWER_BUDGET.md) | 55.125 W 余量的逐项分配、超预算的处置顺序、再分配方案的功耗代价 |
 
 #### 软件设计（`teams/software/docs/`，Software）
 
@@ -98,6 +110,8 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | [PRECISION_POLICY.md](../../teams/software/docs/PRECISION_POLICY.md) | 三个模型的 dtype、取整点、集合通信精度、确定性与精度验收 |
 | [MULTI_MODEL_LOWERING.md](../../teams/software/docs/MULTI_MODEL_LOWERING.md) | GLM-5.2 / DeepSeek-V4-Pro 到 kernel 族的映射与新增 kernel |
 | [COMPILER_RUNTIME_AND_FIRMWARE.md](../../teams/software/docs/COMPILER_RUNTIME_AND_FIRMWARE.md) | 编译器、runtime 调度、launch 账、persistent decode、KV 分页（提案） |
+| [TUNING_CONTRACT.md](../../teams/software/docs/TUNING_CONTRACT.md) | 调优参数的所有权、物理边界与回标路径；条件路线的旋钮重调规则 |
+| [MTP_SCHEDULING_CONTRACT.md](../../teams/software/docs/MTP_SCHEDULING_CONTRACT.md) | MTP/推测解码的调度契约与升级为基线的判据（探索，非基线） |
 
 #### 模型部署方案（`teams/model/docs/deployment/`，Model）
 
@@ -123,6 +137,10 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | 文档 | 负责范围 |
 | --- | --- |
 | [VV_PLAN.md](../../teams/vv/docs/VV_PLAN.md) | 证据等级、测试分组与守恒检查、D-Gate / Q-Gate 判定和待补验证项 |
+| [VV_MEASUREMENT_PLAN.md](../../teams/vv/docs/VV_MEASUREMENT_PLAN.md) | 14 类未测量参数：测量方法、完成定义、验收线（取自设计指标） |
+| [VV_PERFORMANCE_SIGNOFF.md](../../teams/vv/docs/VV_PERFORMANCE_SIGNOFF.md) | 性能签核对象、流程、失败处置、冻结含义与判据变更规则 |
+| [VV_PRECISION_SIGNOFF.md](../../teams/vv/docs/VV_PRECISION_SIGNOFF.md) | 精度分层签核路径，以及每层失败时解锁/封锁哪些 TPS 结论 |
+| [VV_BRINGUP_AND_POST_SILICON.md](../../teams/vv/docs/VV_BRINGUP_AND_POST_SILICON.md) | S0–S6 bring-up、回标量清单、逐 kernel 比对与失败分类 |
 
 ## 4. 设计文档完成定义
 
