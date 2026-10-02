@@ -90,6 +90,9 @@ module.exports = {
   P1_ENGINE,
   coreProfiles,
   mcProfiles,
+  // Nominal planning derate used by integration/planning/token_time.js only. NOT the detailed model's
+  // matrixUtil (0.65): kFlop is fitted as a ratio against this value on the K3 point, so token time is
+  // invariant to it (pinned in test_planning_assumption_sensitivity.js). Change both together or neither.
   utilization: 0.6,
   dutyCycle: 0.85,
   networkBandwidth: spec.card.networkPayloadLimitGBs * 1e9,

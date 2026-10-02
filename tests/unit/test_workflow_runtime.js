@@ -26,7 +26,7 @@ const rt = path.resolve(__dirname, '../../integration/orchestration/runtime');
 const {validate, extractJson, withSchema: withSchemaFromSchema} = require(`${rt}/schema`);
 const {createRuntime, listWorkflows, compileWorkflow} = require(`${rt}/core`);
 const {BackendFatalError} = require(`${rt}/errors`);
-const {landFiles, LANDING_POLICY} = require(`${rt}/land`);
+const {landFiles, LANDING_POLICY, scriptGateDecisions, recheckGateDecision} = require(`${rt}/land`);
 const {snapshot, changedBetween} = require(`${rt}/guard`);
 const {createClaudeBackend, interpret, parseCliOutput} = require(`${rt}/backends/claude`);
 const {createCursorBackend, withSchema} = require(`${rt}/backends/cursor`);
@@ -111,6 +111,23 @@ assert.throws(() => compileWorkflow(root, 'nope'), /no such workflow/);
   assert.strictEqual(reject('dgate', [{path: 'out/governance/e.json', content: '不得写 PASS 字面量'}]), '', 'a prohibition may name the literal');
   assert.strictEqual(reject('dgate', [{path: 'out/governance/e.json', content: 'PASSTHROUGH and BYPASS'}]), '', 'a substring is not the literal');
   assert(/no landing policy/.test(reject('mystery', [{path: 'out/x.json', content: '{}'}])));
+  // The script's own decision may be carried; anything else may not.
+  fs.mkdirSync(path.join(tmp, 'out/governance'), {recursive: true});
+  fs.writeFileSync(path.join(tmp, 'out/governance/gate_status.json'), JSON.stringify({directionGate: {decision: 'PASS'}, quantificationGate: {decision: 'BLOCKED_BY_X'}}));
+  const decisions = scriptGateDecisions(tmp, 'dgate');
+  assert.deepStrictEqual(decisions, ['PASS'], 'dgate reports on the direction gate only');
+  assert.deepStrictEqual(scriptGateDecisions(tmp, 'design.verify'), ['PASS', 'BLOCKED_BY_X']);
+  assert.deepStrictEqual(scriptGateDecisions(tmp, 'compute'), []);
+  const evidence = (value) => [{path: 'out/governance/e.json', content: `{\n  "gateDecision": "${value}",\n  "x": 1\n}\n`}];
+  assert.strictEqual(landFiles({root: tmp, workflow: 'dgate', files: evidence('PASS'), dryRun: true, scriptDecisions: decisions}).rejected.length, 0, 'the script value lands');
+  assert.strictEqual(landFiles({root: tmp, workflow: 'dgate', files: evidence('PASS'), dryRun: true}).rejected.length, 1, 'without the script value the literal is refused');
+  assert.strictEqual(landFiles({root: tmp, workflow: 'dgate', files: [{path: 'out/governance/e.json', content: '{"gateDecision": "PASS", "note": "PASS"}'}], dryRun: true, scriptDecisions: decisions}).rejected.length, 1, 'only the exact gateDecision line is exempt');
+  assert.strictEqual(landFiles({root: tmp, workflow: 'dgate', files: [{path: 'out/governance/e.json', content: '{\n  "summary": "PASS"\n}'}], dryRun: true, scriptDecisions: decisions}).rejected.length, 1, 'other keys stay refused');
+  assert.strictEqual(recheckGateDecision('dgate', {gateDecision: 'PASS'}, decisions), null);
+  assert.strictEqual(recheckGateDecision('dgate', {gateDecision: 'UNVERIFIED'}, decisions), null);
+  assert(/does not match/.test(recheckGateDecision('dgate', {gateDecision: 'D_GATE_PASSED'}, decisions)), 'an invented decision is refused');
+  assert(/does not match/.test(recheckGateDecision('dgate', {gateDecision: 'BLOCKED_BY_X'}, decisions)), 'the quantification decision is not the direction gate');
+  assert.strictEqual(recheckGateDecision('compute', {gateDecision: 'PASS'}, []), null, 'other workflows are not rechecked');
   const atomic = landFiles({root: tmp, workflow: 'verify', files: [
     {path: 'out/verification/verify_report.json', content: '{}'},
     {path: 'out/direction/oops.json', content: '{}'},

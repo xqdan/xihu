@@ -53,7 +53,13 @@ function evaluateDirectionGate(env, score, register) {
   // one model missing badly cannot be averaged away by the others.
   const selectionMeetsTarget = selectionResolvable &&
     selected.every(id => summaries.find(item => item.candidateId === id).minTpsPerUser >= score.targetTpsPerUser);
-  const sensitivitySweep = Boolean(score.sensitivitySweep && score.sensitivitySweep.complete);
+  // `complete` is a flag the runner writes; the sweep must also carry evidence that it ran:
+  // named dimensions, samples, at least one feasible sample and the nominal sample.
+  const sweepSummary = score.sensitivitySweep || {};
+  const sensitivitySweep = Boolean(sweepSummary.complete) &&
+    Array.isArray(sweepSummary.dimensions) && sweepSummary.dimensions.length > 0 &&
+    sweepSummary.sampleCount > 0 && sweepSummary.feasibleCount > 0 &&
+    Array.isArray(sweepSummary.selectedSensitivity) && sweepSummary.selectedSensitivity.length > 0;
   // A BLOCKED_CONFIG row has no bottleneck by construction; every other row must be classified.
   const bottleneckClassification = (score.candidates || []).length > 0 &&
     score.candidates.every(item => item.status === 'BLOCKED_CONFIG' || Boolean(item.bottleneck));
@@ -146,6 +152,7 @@ function evaluateQuantificationGate(detail, matrix, register, directionGate) {
     detail.provenance &&
     detail.provenance.sourceCommit &&
     detail.provenance.manifestHash &&
+    Number.isFinite(detail.provenance.seed) &&
     detail.provenance.inputHashes &&
     Object.keys(detail.provenance.inputHashes).length >= 3
   );

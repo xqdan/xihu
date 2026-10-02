@@ -13,7 +13,7 @@
       "eccOverhead"
     ],
     "candidates": 400,
-    "feasible": 8,
+    "feasible": 4,
     "constraints": [
       "the per-die deliverable bandwidth must not exceed the per-die UCIe port bandwidth (the link is the limit, not the cube): a candidate whose cube count x tier implies more than the port can carry is infeasible, not merely expensive",
       "capacity: cubesPerCard x capacityGBPerCube >= the K3 per-rank backing floor, accounting for ECC overhead",

@@ -6,6 +6,11 @@
  * document's section 5 routes the design commits to, and the ECC overhead charged
  * to raw capacity. search() enumerates the product and scores every candidate on
  *
+ * Port topology (confirmed by the project owner, 2026-10-02): each memory cube has
+ * its own UCIe port, so the port limit applies per cube and there is no shared-port
+ * term to charge. The per-cube cap min(tier x mcUtil, port) below is therefore the
+ * model, not a simplification.
+ *
  *  1. the per-die deliverable bandwidth -- min(mcGBs x TECH.mcUtil, the UCIe port
  *     bandwidth) x cubesPerComputeDie. The link is the limit, not the cube: a
  *     candidate whose cube count x tier implies more than the port can carry is
@@ -139,14 +144,32 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   const sys = replay(ctx, tier.gbs);
   const violations = [];
 
+  // The detailed replay is built for the spec's cubes per compute die (2); it has no
+  // cube-count input. A different cube count changes the per-die bandwidth by
+  // cubesPerDie / specCubesPerDie, so the replay is fed that share of the tier (the
+  // HBM-style bandwidth the die actually has) and the cube-proportional MC power is
+  // scaled the same way. Without this a card with half the cubes replays the full
+  // 16-cube bandwidth and reports the same TPS/usr, so cube count would win or lose
+  // on capacity margin alone. Above the spec count the replay cannot carry the extra
+  // bandwidth (it caps per cube at the port) and the candidate is not scored.
+  const cubesPerDie = cubes / ctx.dies;
+  const cubeScale = cubesPerDie / ctx.cubesPerComputeDie;
+  const perf = cubeScale <= 1 ? replay(ctx, tier.gbs * cubeScale) : null;
+  if (cubeScale > 1) violations.push('cubesAboveReplayModel');
+  const specCubes = ctx.cubesPerComputeDie * ctx.dies;
+  const mcPowerW = sys.mcPowerW * cubes / specCubes;
+  const cardPowerW = sys.cardPowerW - sys.mcPowerW + mcPowerW;
+
   // 1. Capacity floor, after the ECC overhead is charged to raw capacity.
   const capacityGBPerCard = cubes * cap * (1 - ecc);
   if (capacityGBPerCard < ctx.capacityFloorGB - EPS) violations.push('capacityFloor');
 
   // 2. The link is the limit: per-die deliverable bytes are capped by the UCIe
   // port, so a cube count x tier that outruns the port is infeasible.
-  const dieGBs = ctx.cubesPerComputeDie * Math.min(tier.gbs * A.TECH.mcUtil, sys.uciePortGBs);
+  const dieGBs = cubesPerDie * Math.min(tier.gbs * A.TECH.mcUtil, sys.uciePortGBs);
   const portCapped = tier.gbs * A.TECH.mcUtil > sys.uciePortGBs + EPS;
+  // The header states a tier the port cannot carry is infeasible, not merely expensive.
+  if (portCapped) violations.push('portCapped');
 
   // 3. The K3 replay must keep the published point, and it must clear the
   // program goal. The tolerance check above only says a candidate did not move
@@ -154,10 +177,11 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   // requirements block states minTpsPerUser for exactly that reason -- a tier
   // below 1000 TPS/usr does not close the bandwidth blocker even if it is the
   // cheapest in its class. Both are checked; neither implies the other.
-  if (!sys.feasible) violations.push('systemInfeasible');
+  if (!perf) { /* cubesAboveReplayModel already recorded: no TPS/usr is claimed */ }
+  else if (!perf.feasible) violations.push('systemInfeasible');
   else {
-    if (sys.tpsPerUser < ctx.point.tpsPerUser * (1 - req.tpsTolerance)) violations.push('k3Tps');
-    if (sys.tpsPerUser < req.minTpsPerUser - EPS) violations.push('belowProgramGoal');
+    if (perf.tpsPerUser < ctx.point.tpsPerUser * (1 - req.tpsTolerance)) violations.push('k3Tps');
+    if (perf.tpsPerUser < req.minTpsPerUser - EPS) violations.push('belowProgramGoal');
   }
 
   // 4. Package window, die area and card power, with the cube count and the tier
@@ -167,7 +191,7 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   const packageAreaMm2 = ctx.dies * sys.dieAreaMm2 + cubes * ctx.cubeAreaMm2Planning;
   if (packageAreaMm2 > ctx.spec.package.placementWindowMm2 + EPS) violations.push('packageArea');
   if (sys.dieAreaMm2 > req.dieAreaLimitMm2 + EPS) violations.push('dieArea');
-  if (sys.cardPowerW > req.cardPowerLimitW + EPS) violations.push('cardPower');
+  if (cardPowerW > req.cardPowerLimitW + EPS) violations.push('cardPower');
 
   // 5. Route consistency. The route is not a preference to be ranked: it is a
   // claim about how the gap is closed. A claim the search did not model must not
@@ -189,9 +213,9 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   return {pick, feasible: !violations.length, violations, tier, cubes, capacityGBPerCube: cap, route,
     capacityGBPerCard, capacityMarginGB, eccOverhead: ecc, dieGBs, portCapped, uciePortGBs: sys.uciePortGBs,
     mcGBs: tier.gbs, risk: RISK[tier.classification], classification: tier.classification,
-    mcPowerW: sys.mcPowerW, cardPowerW: sys.cardPowerW, packageAreaMm2, dieAreaMm2: sys.dieAreaMm2,
+    mcPowerW, cardPowerW, packageAreaMm2, dieAreaMm2: sys.dieAreaMm2,
     areaReserveMm2: ctx.spec.package.placementWindowMm2 - packageAreaMm2,
-    tpsPerUser: sys.feasible ? sys.tpsPerUser : null, rawLatencyUs: sys.feasible ? sys.rawLatencyUs : null};
+    tpsPerUser: perf && perf.feasible ? perf.tpsPerUser : null, rawLatencyUs: perf && perf.feasible ? perf.rawLatencyUs : null};
 }
 
 // Violations of the form routeNotScored:<route> are exclusions, not design faults.

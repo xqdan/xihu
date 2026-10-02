@@ -26,10 +26,10 @@
 
 1. **只有一份硬件规格。**
    - 硬件规格为 P1，权威值在 `teams/hardware/inputs/k3_mc_baseline.json`：
-     - `computeDieCandidate`：8 L + 4 H/Die、40 MiB 数据 SRAM、1.0 GHz、373.71 mm²；
+     - `computeDieCandidate`：8 L + 4 H/Die、40 MiB 数据 SRAM、1.0 GHz、365.34 mm²（决策时为 373.71 mm²，ADR-0023 回收端口放大后更新）；
      - `package`：7-reticle placement window 5,248 mm²；
      - `card`：8 Die + 16 MC。
-   - 封装面积 = 8 × Die 面积 + 16 × 100 mm²（MC 规划值），必须在 placement window 内，当前为 4,589.71 mm²。
+   - 封装面积 = 8 × Die 面积 + 16 × 100 mm²（MC 规划值），必须在 placement window 内，当前为 4,522.73 mm²（决策时为 4,589.71 mm²，ADR-0023 修订）。
    - P0 规格（`k3_7r_package_baseline.json`）与硬件 12 号文档删除。
 2. **规划矩阵收敛为 18 行。**
    - 维度：3 模型 × TP8/16/32 × MC320/640，共 6 个候选槽位。

@@ -37,7 +37,7 @@
 const fs = require('fs');
 const path = require('path');
 const {runWorkflow, listWorkflows} = require('../orchestration/runtime/core');
-const {landFiles} = require('../orchestration/runtime/land');
+const {landFiles, scriptGateDecisions, recheckGateDecision} = require('../orchestration/runtime/land');
 const {snapshot, changedBetween} = require('../orchestration/runtime/guard');
 const {createMockBackend} = require('../orchestration/runtime/backends/mock');
 const {createClaudeBackend} = require('../orchestration/runtime/backends/claude');
@@ -124,6 +124,15 @@ function findingsOf(result) {
   }));
 }
 
+// A winner without its run record (or the reverse) is half a result.
+function halfWinnerResult(workflow, files) {
+  const winner = parseLanded(files, `${workflow}_winner.json`);
+  const record = parseLanded(files, `${workflow}_run_record.json`);
+  if (winner && !record) return `${workflow} returned a winner without its run_record`;
+  if (record && !winner) return `${workflow} returned a run_record without a winner`;
+  return null;
+}
+
 async function main(argv, deps = {}) {
   const {flags, positional} = parseFlags(argv);
   if (flags.list) {
@@ -204,6 +213,13 @@ async function main(argv, deps = {}) {
   if (Object.hasOwn(DOMAINS, workflow) && files.length) {
     const winner = parseLanded(files, `${workflow}_winner.json`);
     const record = parseLanded(files, `${workflow}_run_record.json`);
+    // A winner without its run record (or the reverse) is half a result: refuse it.
+    const half = halfWinnerResult(workflow, files);
+    if (half) {
+      summary.error = `${half}; nothing was landed`;
+      console.log(JSON.stringify(summary, null, 2));
+      return 5;
+    }
     if (winner && record) {
       summary.verifyLanded = verifyLandedWinner(workflow, winner, record);
       if (!summary.verifyLanded.ok) {
@@ -213,13 +229,21 @@ async function main(argv, deps = {}) {
     }
   }
 
-  const landing = landFiles({root, workflow, files, dryRun: !flags.land});
+  // The gate decision is the script's: a reported value that differs from gate_status.json lands nothing.
+  const scriptDecisions = scriptGateDecisions(root, workflow);
+  const gateMismatch = recheckGateDecision(workflow, result, scriptDecisions);
+  if (gateMismatch) {
+    summary.error = gateMismatch;
+    console.log(JSON.stringify(summary, null, 2));
+    return 6;
+  }
+  const landing = landFiles({root, workflow, files, dryRun: !flags.land, scriptDecisions});
   summary.landing = {dryRun: !flags.land, landed: landing.landed, rejected: landing.rejected};
   console.log(JSON.stringify(summary, null, 2));
   return landing.rejected.length ? 4 : 0;
 }
 
-module.exports = {main, parseFlags};
+module.exports = {main, parseFlags, halfWinnerResult};
 
 if (require.main === module) {
   main(process.argv.slice(2)).then((code) => { process.exitCode = code; });

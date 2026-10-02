@@ -176,7 +176,7 @@ UCIe 端口 819.2 GB/s 封顶，所以"cube 数 × 档位"超出端口是**不�
 **约束**：容量下限 49.198 GB/rank（由回放读出，`r.backingGB`，不是手写的）；
 K3 回放在发布点 TPS/usr 不低于 99.9%；封装面积（8 Die + N cube）+ 预留 ≤ 5248 mm²；
 卡功耗 ≤ 2800 W；路线必须与自身档位/cube 数自洽（见下）。
-搜索共 400 个组合、8 个可行，设计空间 sha256 前缀见下。
+搜索共 400 个组合、4 个可行，设计空间 sha256 前缀见下。
 
 **目标**：可行优先，然后制造风险档位最低，然后卡级 MC 功耗最低，然后容量余量最大。
 
@@ -215,12 +215,17 @@ K3 回放在发布点 TPS/usr 不低于 99.9%；封装面积（8 Die + N cube）
 
 | cube 数 | 卡级容量 GB | 已占用 mm² | 预留 mm² | 结果 |
 | ---: | ---: | ---: | ---: | --- |
-| 8 | 128 | 3660.5 | 1587.5 | 可行（容量余量小） |
+| 8 | 128 | 3660.5 | 1587.5 | `k3Tps, belowProgramGoal`（每 die 1 颗，die 侧 448 GB/s，586.46 TPS/usr） |
 | 16 | 256 | 4460.5 | 787.5 | **选中** |
-| 24 | 384 | 5260.5 | −12.5 | `packageArea` |
-| 32 | 512 | 6060.5 | −812.5 | `packageArea` |
+| 24 | 384 | 5260.5 | −12.5 | `cubesAboveReplayModel, packageArea, cardPower` |
+| 32 | 512 | 6060.5 | −812.5 | `cubesAboveReplayModel, packageArea, cardPower` |
 
-第 5 节路线 2（"增加 MC 数量到 32 颗/卡"）在这里量化：32 颗超出封装窗口 812.5 mm²，且 32 颗在 320 档仍只有 586.46 TPS/usr。"封装不支持"不是定性判断。
+第 5 节路线 2（"增加 MC 数量到 32 颗/卡"）在这里量化：32 颗超出封装窗口 812.5 mm²，MC 功耗也使卡功耗超限。"封装不支持"不是定性判断。
+
+cube 数会改变 die 侧带宽（每 die 的 cube 数 × 单 cube 带宽）和 MC 功耗，两者按 cube 数 / 规格 cube 数线性缩放后再进细化重放。
+重放模型只描述每 die 至多 2 颗 cube，所以 24、32 颗不给 TPS/usr（`cubesAboveReplayModel`）：那是"未建模"，不是"达标"。
+此前的版本没有这一缩放，8 颗卡会按 16 颗的带宽重放并报出同样的 1101.77，16 颗之所以被选中只是容量余量的排序结果；这一点已更正。
+端口拓扑已确认：**每个 cube 一个 UCIe 端口**（项目 owner，2026-10-02）。端口限速因此按 cube 计，不存在共享端口的额外成本；"每 cube 限速到端口带宽"就是模型本身（`memory_search.js` 头注释同）。
 
 #### 5.1.4 各备选的落选原因
 
@@ -233,10 +238,10 @@ K3 回放在发布点 TPS/usr 不低于 99.9%；封装面积（8 Die + N cube）
 | `mcGBs` | `480` | `infeasible: k3Tps, belowProgramGoal` | 480 / 16 / 16 / mcX / 0 | 672 | 256 | 327.04 | 853.44 |
 | `mcGBs` | `560` | `infeasible: k3Tps, belowProgramGoal` | 560 / 16 / 16 / mcX / 0 | 784 | 256 | 362.88 | 977.00 |
 | `mcGBs` | `640` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
-| `cubesPerCard` | `8` | `capacity margin` | 640 / 8 / 16 / mcX / 0 | 896 | 128 | 398.72 | 1101.77 |
+| `cubesPerCard` | `8` | `infeasible: k3Tps, belowProgramGoal` | 640 / 8 / 16 / mcX / 0 | 448 | 128 | 199.36 | 586.46 |
 | `cubesPerCard` | `16` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
-| `cubesPerCard` | `24` | `infeasible: packageArea` | 640 / 24 / 16 / mcX / 0 | 896 | 384 | 398.72 | 1101.77 |
-| `cubesPerCard` | `32` | `infeasible: packageArea` | 640 / 32 / 16 / mcX / 0 | 896 | 512 | 398.72 | 1101.77 |
+| `cubesPerCard` | `24` | `infeasible: cubesAboveReplayModel, packageArea, cardPower` | 640 / 24 / 16 / mcX / 0 | 1344 | 384 | 598.08 | — |
+| `cubesPerCard` | `32` | `infeasible: cubesAboveReplayModel, packageArea, cardPower` | 640 / 32 / 16 / mcX / 0 | 1792 | 512 | 797.44 | — |
 | `capacityGBPerCube` | `8` | `capacity margin` | 640 / 16 / 8 / mcX / 0 | 896 | 128 | 398.72 | 1101.77 |
 | `capacityGBPerCube` | `16` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
 | `route` | `mcX` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |

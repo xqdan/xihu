@@ -59,6 +59,7 @@ const manifest = read(manifestPath);
 const manifestHash = hashFile(manifestPath);
 const profile = read('teams/model/inputs/model_profiles.json');
 const workload = read('out/workload/planning_operator_workload.json');
+const baselineSpec = read('teams/hardware/inputs/k3_mc_baseline.json');
 const sourceInputs = {
   manifest: manifestHash,
   operatorWorkload: hashFile('out/workload/planning_operator_workload.json'),
@@ -196,7 +197,7 @@ const candidateSummaries = candidateIds.map(candidateId => {
     minTpsPerUserLowerShape: Math.min(...comparable.map(row => row.tpsPerUserShapeRange.min)),
     // Largest tau at which every comparable model still reaches the target (null: misses at any tau).
     maxTauUsForTarget: comparable.some(row => row.maxTauUsForTarget === null) ? null : Math.min(...comparable.map(row => row.maxTauUsForTarget)),
-    meetsArchitectureGate: worst.tpsPerUser >= architectureGate,
+    planningTpsMeetsArchitectureGate: worst.tpsPerUser >= architectureGate,
     geomeanTpsPerUser: Math.exp(comparable.reduce((sum, row) => sum + Math.log(row.tpsPerUser), 0) / comparable.length),
     worstModel: worst.modelId,
     meetsTargetModels: comparable.filter(row => row.tpsPerUser >= target).map(row => row.modelId),
@@ -232,6 +233,12 @@ function selectCandidates(summaries) {
 }
 const selection = selectCandidates(candidateSummaries);
 const selected = selection.formal;
+
+const provenance = {
+  sourceCommit, manifestHash, seed: IDS.seed, runId,
+  toolVersion: 'node-formal-stage-a-v0.5',
+  units: 'tokens/s/user (planning token time)'
+};
 
 const sweepSummary = {
   complete: true,
@@ -280,6 +287,7 @@ const direction = {
   confidence: 'E1',
   manifestHash,
   inputHashes: sourceInputs,
+  provenance,
   resourceProfiles: Object.fromEntries(Object.entries(coreProfiles).map(([key, value]) => [key, {id: value.id, lCoresPerDie: value.lCoresPerDie, hCoresPerDie: value.hCoresPerDie, ghz: value.ghz, engine: value.engine, peakByCore: value.peakByCore, source: value.source}])),
   mcProfiles: Object.fromEntries(Object.entries(mcProfiles).map(([key, value]) => [key, {rawPayloadTBs: value.rawPayloadTBs, sustainedAssumption: value.sustainedAssumption, effectiveBytesPerSecond: value.effectiveBytesPerSecond, classification: value.classification}])),
   dtypePolicy: workload.dtypePolicy,
@@ -299,6 +307,7 @@ const dGate = evaluateDirectionGate(env, direction, provisionalRegister);
 direction.dGate = dGate;
 const register = {
   schemaVersion: 'candidate-register-v0.4',
+  provenance,
   updatedAt: `${IDS.RUN_DATE}T00:00:00.000Z`,
   sourceDirectionalRunId: runId,
   decisionState: dGate.expectedRegisterState,
@@ -307,10 +316,18 @@ const register = {
   selectionBasis: {
     targetTpsPerUser: target,
     architectureGateTpsPerUser: architectureGate,
+    // planningTpsMeetsArchitectureGate below compares planning TPS only. The architecture gate itself also
+    // needs a manufacturable MC route and a reproduction in the detailed tile model; the baseline's
+    // acceptance block is authoritative for that.
+    architectureGate: {
+      scope: 'PLANNING_TPS_ONLY',
+      baselineStatus: baselineSpec.acceptance.architectureGateStatus,
+      baselineSource: 'teams/hardware/inputs/k3_mc_baseline.json#acceptance.architectureGateStatus'
+    },
     policy: SELECTION_POLICY,
     eligibilityFloorTpsPerUser: target,
     blockedModels: dGate.blockedModels,
-    ranking: candidateSummaries.slice().sort(byBound).map(item => ({candidateId: item.candidateId, minTpsPerUser: item.minTpsPerUser, worstModel: item.worstModel, formallyEligible: item.minTpsPerUser >= target, meetsArchitectureGate: item.meetsArchitectureGate, minTpsPerUserAtMaxTau: item.minTpsPerUserAtMaxTau, maxTauUsForTarget: item.maxTauUsForTarget, tauConditional: tauConditional(item)})),
+    ranking: candidateSummaries.slice().sort(byBound).map(item => ({candidateId: item.candidateId, minTpsPerUser: item.minTpsPerUser, worstModel: item.worstModel, formallyEligible: item.minTpsPerUser >= target, planningTpsMeetsArchitectureGate: item.planningTpsMeetsArchitectureGate, minTpsPerUserAtMaxTau: item.minTpsPerUserAtMaxTau, maxTauUsForTarget: item.maxTauUsForTarget, tauConditional: tauConditional(item)})),
     referenceCandidates: selection.reference,
     tauConditionalCandidates: selected.filter(id => tauConditional(candidateSummaries.find(item => item.candidateId === id))),
     selected: selected.map(candidateId => candidates.filter(item => item.candidateId === candidateId))
@@ -346,6 +363,7 @@ write('out/governance/formal_manifest_binding.json', {
 });
 write('out/direction/sensitivity_sweep.json', {
   schemaVersion: 'directional-sensitivity-sweep-v0.1',
+  provenance,
   runId,
   manifestHash,
   dimensions: axes,
@@ -416,9 +434,9 @@ const report = [
   '',
   `Policy: ${SELECTION_POLICY}.`,
   '',
-  `| Candidate | worst model | min TPS | min TPS at tau ${TAU_TOP_US} | max tau for target (us) | >= ${architectureGate} gate | formally eligible |`,
+  `| Candidate | worst model | min TPS | min TPS at tau ${TAU_TOP_US} | max tau for target (us) | planning TPS >= ${architectureGate} (not the gate: see baselineStatus) | formally eligible |`,
   '|---|---|---:|---:|---:|---|---|',
-  ...register.selectionBasis.ranking.map(item => `| ${item.candidateId} | ${item.worstModel} | ${item.minTpsPerUser.toFixed(2)} | ${item.minTpsPerUserAtMaxTau.toFixed(2)} | ${item.maxTauUsForTarget === null ? 'misses at any tau' : item.maxTauUsForTarget.toFixed(3)} | ${item.meetsArchitectureGate ? 'yes' : 'no'} | ${item.formallyEligible ? (item.tauConditional ? 'yes (tau-conditional)' : 'yes') : 'no'} |`),
+  ...register.selectionBasis.ranking.map(item => `| ${item.candidateId} | ${item.worstModel} | ${item.minTpsPerUser.toFixed(2)} | ${item.minTpsPerUserAtMaxTau.toFixed(2)} | ${item.maxTauUsForTarget === null ? 'misses at any tau' : item.maxTauUsForTarget.toFixed(3)} | ${item.planningTpsMeetsArchitectureGate ? 'yes' : 'no'} | ${item.formallyEligible ? (item.tauConditional ? 'yes (tau-conditional)' : 'yes') : 'no'} |`),
   '',
   '## Selected candidates',
   '',

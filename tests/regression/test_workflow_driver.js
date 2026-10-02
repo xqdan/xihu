@@ -18,7 +18,7 @@ const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const {main} = require('../../integration/pipelines/run_workflow.js');
+const {main, halfWinnerResult} = require('../../integration/pipelines/run_workflow.js');
 const {createMockBackend, fromSchema} = require('../../integration/orchestration/runtime/backends/mock.js');
 const {buildSearchBrief} = require('../../integration/pipelines/search_brief.js');
 
@@ -104,6 +104,13 @@ async function run(argv, deps) {
   } finally {
     fs.rmSync(resultFile, {force: true});
   }
+
+  // A winner without its run record (or the reverse) is half a result.
+  const file = (name) => ({path: `out/compute/${name}`, content: '{"a":1}'});
+  assert.strictEqual(halfWinnerResult('compute', [file('compute_winner.json'), file('compute_run_record.json')]), null);
+  assert(/winner without its run_record/.test(halfWinnerResult('compute', [file('compute_winner.json')])));
+  assert(/run_record without a winner/.test(halfWinnerResult('compute', [file('compute_run_record.json')])));
+  assert.strictEqual(halfWinnerResult('compute', [file('compute_outcome.json')]), null, 'an outcome record alone is a legitimate stop');
 
   // An agent that writes to the working tree stops the run.
   const probe = path.join(root, 'tests/regression/__driver_write_probe.txt');

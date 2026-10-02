@@ -189,7 +189,7 @@ ${BRIEF_JSON}
           },
         },
       },
-      verdict: { type: 'string', enum: ['LOCAL_DETAIL_FIX', 'DIRECTION_BACKFLOW', 'BLOCKED_CONFIG'] },
+      verdict: { type: 'string', enum: ['LOCAL_DETAIL_FIX', 'DIRECTION_BACKFLOW', 'PPA_DIRECTION_BACKFLOW', 'BLOCKED_CONFIG'] },
       blockedFields: { type: 'array', items: { type: 'string' } },
     },
   } },

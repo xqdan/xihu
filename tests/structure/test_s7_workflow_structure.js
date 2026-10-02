@@ -600,7 +600,7 @@ for (const id of ['V-SCHEMA', 'V-CONSERVATION', 'V-PROVENANCE', 'V-PROFILE', 'V-
 }
 assert(/await parallel\(VERIFY_CHECKS\.map/.test(src.verify),
   'design.verify 的 7 类检查必须并行：一个实例看到另一个的结论，7 类就退化成一个检查加六次附和');
-assert(/checks\.length < VERIFY_CHECKS\.length/.test(src.verify),
+assert(/VERIFY_CHECKS\.every\(\(c\) => reportedChecks\.filter\(\(r\) => r\.checkId === c\.id\)\.length === 1\)/.test(src.verify),
   'design.verify 必须在检查不完整时拒绝落盘：漏掉的那一类读起来会像"那一类也没问题"');
 assert(/照抄/.test(src.verify),
   'design.verify 的 gate-keeper 必须照抄门控结论原文，不得改写、不得推断');

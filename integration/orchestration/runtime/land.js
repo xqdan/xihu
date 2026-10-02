@@ -13,6 +13,10 @@
 //     absolute path pointing elsewhere);
 //   * content must not emit a gate literal (PASS, D_GATE_PASSED, ...) as a
 //     conclusion: gate decisions come from evaluate_gates.js only;
+//   * the one exception is the script's own decision: a line `"gateDecision": "<value>"`
+//     may carry a literal only when <value> equals what gate_status.json (written by
+//     evaluate_gates.js) says. The host passes those values in (`scriptDecisions`); an
+//     agent that copied or invented a different value is rejected, never trusted;
 //   * all-or-nothing: one rejected file lands nothing, so a half-written run record
 //     can never sit next to a missing winner.
 
@@ -50,7 +54,30 @@ function allowedBy(relative, prefixes) {
   return prefixes.some((p) => (p.endsWith('/') ? relative.startsWith(p) : relative === p));
 }
 
-function checkFile(root, workflow, file) {
+const GATE_STATUS = 'out/governance/gate_status.json';
+const GATE_KEYS = {dgate: ['directionGate'], verify: ['directionGate', 'quantificationGate']};
+
+// The decisions the validator wrote, restricted to the gates this workflow may report on.
+function scriptGateDecisions(root, workflow) {
+  const keys = GATE_KEYS[workflow.replace(/^design\./, '')];
+  if (!keys) return [];
+  let status;
+  try { status = JSON.parse(fs.readFileSync(path.join(root, GATE_STATUS), 'utf8')); } catch { return []; }
+  return keys.map((k) => status[k] && status[k].decision).filter((d) => typeof d === 'string');
+}
+
+// Deterministic recheck of what the agents handed back: a reported gateDecision must be
+// 'UNVERIFIED' (could not copy it) or exactly one of the script's decisions.
+function recheckGateDecision(workflow, result, scriptDecisions) {
+  if (!GATE_KEYS[workflow.replace(/^design\./, '')] || !result || result.gateDecision === undefined) return null;
+  if (result.gateDecision === 'UNVERIFIED') return null;
+  if (scriptDecisions.includes(result.gateDecision)) return null;
+  return `reported gateDecision "${result.gateDecision}" does not match ${GATE_STATUS} (${scriptDecisions.join(' | ') || 'unreadable'})`;
+}
+
+const escapeRe = (v) => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+function checkFile(root, workflow, file, scriptDecisions = []) {
   const prefixes = LANDING_POLICY[workflow.replace(/^design\./, '')];
   if (!prefixes) return `no landing policy for workflow "${workflow}"`;
   if (!file || typeof file.path !== 'string' || typeof file.content !== 'string') return 'file needs a string path and string content';
@@ -59,18 +86,21 @@ function checkFile(root, workflow, file) {
   if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) return `path escapes the repository: ${file.path}`;
   if (!allowedBy(relative, prefixes)) return `path ${relative} is outside what ${workflow} may land (${prefixes.join(', ')})`;
   const pattern = gateLiteralPattern();
-  const offending = file.content.split('\n').find((line) => pattern.test(line) && !PROHIBITION.test(line));
+  const sanctioned = scriptDecisions.length
+    ? new RegExp(`^\\s*"gateDecision"\\s*:\\s*"(${scriptDecisions.map(escapeRe).join('|')})",?\\s*$`)
+    : null;
+  const offending = file.content.split('\n').find((line) => pattern.test(line) && !PROHIBITION.test(line) && !(sanctioned && sanctioned.test(line)));
   if (offending !== undefined) return `content emits a gate literal: ${offending.trim().slice(0, 120)}`;
   return null;
 }
 
 // Returns {landed, rejected}. With `dryRun` nothing is written but the verdict is the
 // same, so a dry run tells you exactly what a real run would have done.
-function landFiles({root, workflow, files, dryRun = false}) {
+function landFiles({root, workflow, files, dryRun = false, scriptDecisions = []}) {
   const list = Array.isArray(files) ? files : [];
   const rejected = [];
   for (const file of list) {
-    const reason = checkFile(root, workflow, file);
+    const reason = checkFile(root, workflow, file, scriptDecisions);
     if (reason) rejected.push({path: file && file.path, reason});
   }
   if (rejected.length) return {landed: [], rejected};
@@ -85,4 +115,4 @@ function landFiles({root, workflow, files, dryRun = false}) {
   return {landed, rejected: []};
 }
 
-module.exports = {LANDING_POLICY, landFiles};
+module.exports = {LANDING_POLICY, landFiles, scriptGateDecisions, recheckGateDecision};

@@ -1,11 +1,11 @@
 {
   "schemaVersion": "detailed-architecture-run-v0.5",
-  "runId": "stage-b-20260925-planning",
+  "runId": "stage-b-20261002-planning",
   "stage": "quantification",
   "runMode": "PLANNING_QUANTIFICATION",
   "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
   "agentId": "Q1-Q9-orchestrator",
-  "sourceDirectionalRunId": "stage-a-20260925-token-time",
+  "sourceDirectionalRunId": "stage-a-20261002-token-time",
   "selectedCandidates": [
     "P1-compact-MC640-TP32"
   ],
@@ -25,7 +25,7 @@
     "GLM-5.2": "UNVERIFIED_PLANNING_MANIFEST",
     "DeepSeek-V4-Pro": "UNVERIFIED_PLANNING_MANIFEST"
   },
-  "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+  "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
   "tokenTime": {
     "source": "integration/planning/token_time.js",
     "formula": "memory lane = kMemory x (memoryUs + expertReread x expertMemoryUs); serial lane = kFlop x computeUs + fixedPerLayerUs x layers + kTmaExposedUsPerGB x memory GB per rank + collectivesPerToken x max(tau, bytes/network); raw = max(memory lane, serial lane); e2e = raw x margin; TPS/usr = 1e6 / e2e",
@@ -2190,7 +2190,7 @@
   },
   "operatorLedger": [
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2203,7 +2203,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -2233,7 +2233,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2246,7 +2246,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -2276,7 +2276,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2289,7 +2289,7 @@
       "operatorId": "attention",
       "operatorClass": "attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -2319,7 +2319,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2332,7 +2332,7 @@
       "operatorId": "kda_state",
       "operatorClass": "kda_state",
       "coreClass": "V",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -2362,7 +2362,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2375,7 +2375,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -2405,7 +2405,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2418,7 +2418,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -2448,7 +2448,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2461,7 +2461,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -2491,7 +2491,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2504,7 +2504,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -2534,7 +2534,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2547,7 +2547,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -2577,7 +2577,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2590,7 +2590,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -2620,7 +2620,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2633,7 +2633,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -2663,7 +2663,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2676,7 +2676,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -2706,7 +2706,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2719,7 +2719,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -2749,7 +2749,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2762,7 +2762,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -2792,7 +2792,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP8",
@@ -2805,7 +2805,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -2835,7 +2835,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -2848,7 +2848,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -2878,7 +2878,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -2891,7 +2891,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -2921,7 +2921,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -2934,7 +2934,7 @@
       "operatorId": "attention",
       "operatorClass": "attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -2964,7 +2964,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -2977,7 +2977,7 @@
       "operatorId": "kda_state",
       "operatorClass": "kda_state",
       "coreClass": "V",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -3007,7 +3007,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3020,7 +3020,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -3050,7 +3050,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3063,7 +3063,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -3093,7 +3093,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3106,7 +3106,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -3136,7 +3136,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3149,7 +3149,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -3179,7 +3179,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3192,7 +3192,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -3222,7 +3222,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3235,7 +3235,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -3265,7 +3265,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3278,7 +3278,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -3308,7 +3308,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3321,7 +3321,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -3351,7 +3351,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3364,7 +3364,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -3394,7 +3394,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3407,7 +3407,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -3437,7 +3437,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP16",
@@ -3450,7 +3450,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -3480,7 +3480,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3493,7 +3493,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -3523,7 +3523,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3536,7 +3536,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -3566,7 +3566,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3579,7 +3579,7 @@
       "operatorId": "attention",
       "operatorClass": "attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -3609,7 +3609,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3622,7 +3622,7 @@
       "operatorId": "kda_state",
       "operatorClass": "kda_state",
       "coreClass": "V",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -3652,7 +3652,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3665,7 +3665,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -3695,7 +3695,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3708,7 +3708,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -3738,7 +3738,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3751,7 +3751,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -3781,7 +3781,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3794,7 +3794,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -3824,7 +3824,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3837,7 +3837,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -3867,7 +3867,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3880,7 +3880,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -3910,7 +3910,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3923,7 +3923,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -3953,7 +3953,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -3966,7 +3966,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -3996,7 +3996,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -4009,7 +4009,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -4039,7 +4039,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -4052,7 +4052,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -4082,7 +4082,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC320-TP32",
@@ -4095,7 +4095,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -4125,7 +4125,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4138,7 +4138,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -4168,7 +4168,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4181,7 +4181,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -4211,7 +4211,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4224,7 +4224,7 @@
       "operatorId": "attention",
       "operatorClass": "attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -4254,7 +4254,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4267,7 +4267,7 @@
       "operatorId": "kda_state",
       "operatorClass": "kda_state",
       "coreClass": "V",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -4297,7 +4297,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4310,7 +4310,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -4340,7 +4340,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4353,7 +4353,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -4383,7 +4383,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4396,7 +4396,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -4426,7 +4426,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4439,7 +4439,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -4469,7 +4469,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4482,7 +4482,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -4512,7 +4512,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4525,7 +4525,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -4555,7 +4555,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4568,7 +4568,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -4598,7 +4598,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4611,7 +4611,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -4641,7 +4641,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4654,7 +4654,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -4684,7 +4684,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4697,7 +4697,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -4727,7 +4727,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP8",
@@ -4740,7 +4740,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -4770,7 +4770,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -4783,7 +4783,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -4813,7 +4813,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -4826,7 +4826,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -4856,7 +4856,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -4869,7 +4869,7 @@
       "operatorId": "attention",
       "operatorClass": "attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -4899,7 +4899,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -4912,7 +4912,7 @@
       "operatorId": "kda_state",
       "operatorClass": "kda_state",
       "coreClass": "V",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -4942,7 +4942,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -4955,7 +4955,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -4985,7 +4985,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -4998,7 +4998,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -5028,7 +5028,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -5041,7 +5041,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -5071,7 +5071,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -5084,7 +5084,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -5114,7 +5114,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -5127,7 +5127,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -5157,7 +5157,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -5170,7 +5170,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -5200,7 +5200,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -5213,7 +5213,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -5243,7 +5243,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -5256,7 +5256,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -5286,7 +5286,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -5299,7 +5299,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -5329,7 +5329,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -5342,7 +5342,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -5372,7 +5372,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP16",
@@ -5385,7 +5385,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -5415,7 +5415,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5428,7 +5428,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -5458,7 +5458,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5471,7 +5471,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -5501,7 +5501,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5514,7 +5514,7 @@
       "operatorId": "attention",
       "operatorClass": "attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -5544,7 +5544,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5557,7 +5557,7 @@
       "operatorId": "kda_state",
       "operatorClass": "kda_state",
       "coreClass": "V",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -5587,7 +5587,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5600,7 +5600,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
@@ -5630,7 +5630,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5643,7 +5643,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -5673,7 +5673,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5686,7 +5686,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -5716,7 +5716,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5729,7 +5729,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -5759,7 +5759,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5772,7 +5772,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -5802,7 +5802,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5815,7 +5815,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_FROM_CONFIG",
@@ -5845,7 +5845,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5858,7 +5858,7 @@
       "operatorId": "dense_projection",
       "operatorClass": "dense_projection",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -5888,7 +5888,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5901,7 +5901,7 @@
       "operatorId": "routed_moe",
       "operatorClass": "routed_moe",
       "coreClass": "L",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -5931,7 +5931,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5944,7 +5944,7 @@
       "operatorId": "indexer",
       "operatorClass": "indexer",
       "coreClass": "INDEXER",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -5974,7 +5974,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -5987,7 +5987,7 @@
       "operatorId": "sparse_attention",
       "operatorClass": "sparse_attention",
       "coreClass": "H",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -6017,7 +6017,7 @@
       "status": "MODEL_REPLAY_ESTIMATE"
     },
     {
-      "runId": "stage-b-20260925-planning",
+      "runId": "stage-b-20261002-planning",
       "stage": "quantification",
       "agentId": "Q2",
       "candidateId": "P1-compact-MC640-TP32",
@@ -6030,7 +6030,7 @@
       "operatorId": "collective_reduce",
       "operatorClass": "collective_reduce",
       "coreClass": "REDUCE",
-      "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
       "source": "teams/model/inputs/formal_model_manifests.json",
       "workloadSource": "out/workload/planning_operator_workload.json",
       "workloadStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
@@ -6155,20 +6155,20 @@
     "status": "PLANNING_COVERAGE_ONLY"
   },
   "provenance": {
-    "sourceCommit": "913bf4704e14c3f248f3056c7cff68b6b59862f9",
-    "manifestHash": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+    "sourceCommit": "53109efe105ca8c19645c0209288ec5e66c7cd9f",
+    "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
     "inputHashes": {
-      "directionalScorecard": "f9a49bbeb0b5da761c795a900c3c9cda24f085356481381884ffb608855c7c51",
+      "directionalScorecard": "159bc9420f4f3161177f53048e6c4f8ea3cb1742b34727da4e8361d2702362e3",
       "modelProfiles": "2fcd288d537fad43c417db08d239b74519c01a05da50e9a04ea6bb626f673a73",
-      "operatorWorkload": "fcabf88e377c1c9fbb12a0aadb57dcc14b016d726394f251c8408634901fdaeb",
-      "resourceProfiles": "2bd037745db3422bc5033097384fdd5967d390e0dde4968fd1f99771f9d149b3",
+      "operatorWorkload": "7f686da25a4ea874dc3baf7c2ad4b87039f435f9d6329ef465667b08ebb161ef",
+      "resourceProfiles": "4082c03570d863b6a4f5e76d5a161a1de2fbbb911b80b385fab0f1be860b9cae",
       "tokenTime": "4109e8879ceaf9be0f8bd426a736d8c0891ea240610f06017d8d26373e7bbd46",
       "runner": "a5387a69fd9862e165b161790716d90ff508bd13695e27f35aafb580fd254eaf",
-      "gateValidator": "b9311c50cc6cef9e5788d168796367518765a13dc113baf74efe73c3bf72aed0",
-      "manifest": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
-      "candidateRegister": "55cf6e3144684f7f94a6daed086cffa583609d12f4e545cf9299a95bf46e7cb1"
+      "gateValidator": "f8071b61c3af9805466422b1977374f4608b9eb6342c21bd3042fc144d89d12a",
+      "manifest": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "candidateRegister": "ffa9456c54156750b3de454de002d0d4991780f9e2a035d719b6d3380a3d457f"
     },
-    "seed": 20260925,
+    "seed": 20261002,
     "toolVersion": "node-formal-stage-b-v0.5",
     "eventArtifact": "out/detailed/formal_event_replay.json"
   },

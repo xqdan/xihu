@@ -172,7 +172,8 @@
         {
           "operatorId": "collective_reduce",
           "class": "collective_reduce",
-          "countPerLayer": 4,
+          "countPerLayer": 5,
+          "countPerLayerSharedIndexer": 4,
           "coreClass": "REDUCE",
           "bytesClass": "collective"
         }
@@ -359,7 +360,7 @@
         {
           "operatorId": "collective_reduce",
           "class": "collective_reduce",
-          "countPerLayer": 4,
+          "countPerLayer": 5,
           "coreClass": "REDUCE",
           "bytesClass": "collective"
         }

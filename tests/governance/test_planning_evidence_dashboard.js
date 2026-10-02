@@ -21,6 +21,12 @@ assert.strictEqual(withBelow.selectionMeetsTarget,false);
 assert.notStrictEqual(withBelow.decision,'PASS');
 assert.notStrictEqual(evaluateDirectionGate({...env,packageEnvelope:{...env.packageEnvelope,areaConservation:false}},score,register).decision,'PASS');
 assert.notStrictEqual(evaluateDirectionGate(env,{...score,sensitivitySweep:{complete:false}},register).decision,'PASS');
+// `complete: true` alone is not evidence: the sweep must name dimensions and carry feasible samples.
+const sweep = score.sensitivitySweep;
+for (const broken of [{...sweep, sampleCount: 0}, {...sweep, feasibleCount: 0}, {...sweep, dimensions: []}, {...sweep, selectedSensitivity: []}, {complete: true}]) {
+  assert.notStrictEqual(evaluateDirectionGate(env,{...score,sensitivitySweep:broken},register).decision,'PASS');
+}
+assert.strictEqual(evaluateDirectionGate(env,score,register).sensitivitySweep, true);
 // A register that claims PASS while the artifacts do not support it is flagged.
 assert.strictEqual(evaluateDirectionGate(env,{...score,sensitivitySweep:{complete:false}},{...register,decisionState:'D_GATE_PASSED'}).registerConsistent,false);
 const duplicate = clone(matrix);
@@ -30,6 +36,10 @@ const fake = clone(detail);
 fake.runMode = 'FORMAL_QUANTIFICATION';
 for (const agent of Object.values(fake.agentRuns)) agent.status = 'COMPLETE';
 assert.notStrictEqual(evaluateQuantificationGate(fake,matrix,register,{decision:'PASS'}).decision,'PASS');
+// Provenance needs the seed as well as commit, manifest hash and input hashes.
+const noSeed = clone(detail); delete noSeed.provenance.seed;
+assert.strictEqual(evaluateQuantificationGate(noSeed,matrix,register,{decision:'PASS'}).provenanceComplete,false);
+assert.strictEqual(evaluateQuantificationGate(detail,matrix,register,{decision:'PASS'}).provenanceComplete,true);
 // A second physical profile, or a resource not sourced from the spec file, breaks the single-spec check.
 const secondProfile = clone(detail);
 secondProfile.sizing.availableResources.P2 = clone(secondProfile.sizing.availableResources.P1);
