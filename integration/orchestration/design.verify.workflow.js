@@ -267,7 +267,7 @@ phase('Independent checks')
 // 7 个独立实例并行。它们互不可见是刻意的：
 // 一个实例看到另一个的结论，就会把"别人查过"当成"这一类没问题"，
 // 于是 7 类检查退化成一个检查加六次附和。
-const checks = (await parallel(VERIFY_CHECKS.map((c) => () => agent(
+const reportedChecks = (await parallel(VERIFY_CHECKS.map((c) => () => agent(
   `${head('verifier')}\n\n`
   + `brief：\n${BRIEF_JSON}\n\n`
   + `已落盘产物（只读，这是你可以读的全部内容）：\n${ARTIFACT_LIST}\n\n`
@@ -288,8 +288,9 @@ const checks = (await parallel(VERIFY_CHECKS.map((c) => () => agent(
   {label: `verify:${c.id}`, phase: 'Independent checks', effort: 'high', schema: CHECK_SCHEMA})
 ))).filter(Boolean)
 
-if (checks.length < VERIFY_CHECKS.length) {
-  const absent = VERIFY_CHECKS.filter((c) => !checks.some((r) => r.checkId === c.id)).map((c) => c.id)
+// 每个 id 恰好一份结果：重复的 id 不能顶替缺失的那一类。
+if (!VERIFY_CHECKS.every((c) => reportedChecks.filter((r) => r.checkId === c.id).length === 1)) {
+  const absent = VERIFY_CHECKS.filter((c) => reportedChecks.filter((r) => r.checkId === c.id).length !== 1).map((c) => c.id)
   return {
     stage: STAGE, runId: RUN_ID, verdict: 'BLOCKED_CONFIG',
     reason: `独立检查不完整，缺：${absent.join(', ')}；本次验证不成立，不落盘`,
@@ -298,6 +299,18 @@ if (checks.length < VERIFY_CHECKS.length) {
     files: [],
   }
 }
+
+// 脚本侧复核。agent 自报的 verdict 不直接采信，由它自己的逐项结果决定：
+// VERIFIED 只在 checks[] 非空、每项都是 passed、且 gaps 为空时成立。
+// 空数组、含 failed/unverifiable 项、或带着 gaps 却自报 VERIFIED，一律按 VERIFY_FAILED 处理；
+// 自报与复核不一致时保留原值在 reportedVerdict 里，让这个矛盾被落盘而不是被吞掉。
+const checks = reportedChecks.map((c) => {
+  const items = Array.isArray(c.checks) ? c.checks : []
+  const consistent = items.length > 0 && items.every((x) => x.result === 'passed') && (c.gaps || []).length === 0
+  // 只会降级，不会升级：自报失败的检查不会因为逐项都 passed 而被改判通过。
+  const verdict = consistent && c.verdict === 'VERIFIED' ? 'VERIFIED' : 'VERIFY_FAILED'
+  return verdict === c.verdict ? c : {...c, verdict, reportedVerdict: c.verdict}
+})
 
 // 脚本侧汇总。这里不重算任何检查结论——只做"有没有失败项"的计数与归集。
 const failedChecks = checks.filter((c) => c.verdict !== 'VERIFIED')
@@ -444,7 +457,7 @@ return {
   ledgerPatch,
   runRecord,
   nextActions: ok ? [] : [
-    ...failedChecks.map((c) => `处理 ${c.checkId}（${c.name}）的未通过项：${(c.checks || []).filter((x) => x.result !== 'passed').map((x) => x.item).join('、') || '见该检查的 gaps'}`),
+    ...failedChecks.map((c) => `处理 ${c.checkId}（${c.name}）的未通过项：${(c.checks || []).filter((x) => x.result !== 'passed').map((x) => x.item).join('、') || (c.reportedVerdict ? '自报 VERIFIED 与逐项结果不符（空 checks 或带 gaps）' : '见该检查的 gaps')}`),
     ...gaps.map((g) => `补齐未覆盖项：${g.what}（${g.why}）`),
     ...routeContradictions,
   ],

@@ -89,6 +89,21 @@ for (const r of heldOut) {
   assert(v.violations.some(x => x === `routeNotScored:${r}`), `route ${r} must be excluded by violation, got ${JSON.stringify(v.violations)}`);
   assert(an.heldOutRoutes[r] && an.heldOutRoutes[r].scored === false && an.heldOutRoutes[r].needsModelling, `route ${r} must report what it would need to be scored`);
 }
+// Cube count moves the bandwidth and the MC power, not just the capacity: half the cubes
+// is half the die-side bandwidth and half the MC power, and the replay sees that.
+{
+  const spec = result.ctx.cubesPerComputeDie * result.ctx.dies;
+  const win = result.best, half = alt.cubesPerCard['8'];
+  assert.strictEqual(win.cubes, spec, 'the winner carries the spec cube count');
+  close(half.dieGBs, win.dieGBs / 2, 'half the cubes is half the die-side bandwidth');
+  close(half.mcPowerW, win.mcPowerW / 2, 'half the cubes is half the MC power');
+  assert(half.tpsPerUser < win.tpsPerUser * 0.8, 'the replay sees the lower bandwidth');
+  assert(!half.feasible && half.violations.includes('belowProgramGoal'), 'a half-cube card does not close the program goal');
+  for (const c of ['24', '32']) {
+    assert(alt.cubesPerCard[c].violations.includes('cubesAboveReplayModel'), `${c} cubes exceed what the replay models`);
+    assert.strictEqual(alt.cubesPerCard[c].tpsPerUser, null, `${c} cubes: no TPS/usr is claimed beyond the replay model`);
+  }
+}
 // The two routes the dimensions can price are scored, and consistency is a
 // constraint rather than a preference: a route that contradicts its own tier or
 // cube count is infeasible.
