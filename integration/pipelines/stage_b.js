@@ -162,6 +162,8 @@ for (const physicalProfile of RES.PHYSICAL_PROFILES) {
           serialComputeUs: t.serialComputeUs, serialLaneUs: t.serialLaneUs,
           rawUs: t.rawUs, e2eUs: t.e2eUs, tpsPerUser: t.tpsPerUser, bound: t.bound,
           tauSensitivity: TT.tauSensitivity(planningModels[model.modelId], slot, calibration),
+          assumptionSensitivity: TT.assumptionSensitivity(planningModels[model.modelId], slot, calibration, workload.attentionWeightBytes[model.modelId])
+            .map(c => ({...c, meetsTarget: c.tpsPerUser >= targetTps})),
           shapeVariants: variants,
           tpsPerUserShapeRange: {min: Math.min(...shapeTps), max: Math.max(...shapeTps)},
           boundingOperatorId: TT.boundingOperator(planningModels[model.modelId], slot, t)
@@ -547,6 +549,12 @@ const report = [
   '| Model | TP | MC | memory lane | FLOP / fixed / TMA | collectives | bound | TPS/usr | tau 1.15 / 1.5 / 2.0 | shape range |',
   '|---|---:|---|---:|---:|---:|---|---:|---|---|',
   ...slotTimes.map(item => `| ${item.modelId} | ${item.tp} | ${item.mcProfile} | ${item.memoryLaneUs.toFixed(1)} | ${item.flopUs.toFixed(1)} / ${item.fixedUs.toFixed(1)} / ${item.tmaExposedUs.toFixed(1)} | ${item.commUs.toFixed(1)} (${item.collectivesPerToken} x ${item.perCollectiveUs.toFixed(2)}) | ${item.bound} | ${item.tpsPerUser.toFixed(2)} | ${item.tauSensitivity.map(x => x.tpsPerUser.toFixed(1)).join(' / ')} | ${item.shapeVariants.length ? `${item.tpsPerUserShapeRange.min.toFixed(1)} - ${item.tpsPerUserShapeRange.max.toFixed(1)}` : '-'} |`),
+  '',
+  '## Assumption sensitivity (TP32, one input changed per column; not a prediction)',
+  '',
+  `| Model | MC | Profile | TPS/usr | ${TT.ASSUMPTION_CASES.map(c => c.label).join(' | ')} |`,
+  `|---|---|---|---:|${TT.ASSUMPTION_CASES.map(() => '---:').join('|')}|`,
+  ...slotTimes.filter(item => item.tp === 32).map(item => `| ${item.modelId} | ${item.mcProfile} | ${item.physicalProfile} | ${item.tpsPerUser.toFixed(0)} | ${item.assumptionSensitivity.map(c => `${c.tpsPerUser.toFixed(0)}${c.meetsTarget ? '' : ' (miss)'}`).join(' | ')} |`),
   '',
   '## Agent outputs',
   '',

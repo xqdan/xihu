@@ -63,10 +63,11 @@ flowchart LR
 
 | 层类型 | 次数/层 | 组成 |
 |---|---|---|
-| full indexer 层（21） | 4 | indexer top-k 合并、稀疏注意力 LSE 合并、attention 输出 all-reduce、FFN/MoE 输出 all-reduce |
-| shared indexer 层（57） | 3 | 去掉 indexer top-k 合并 |
+| full indexer 层（21） | 5 | q all-gather、indexer top-k 合并、稀疏注意力 LSE 合并、attention 输出 all-reduce、FFN/MoE 输出 all-reduce |
+| shared indexer 层（57） | 4 | 去掉 indexer top-k 合并 |
 
-合计 21 × 4 + 57 × 3 = 255 次/token；消息为一个 BF16 hidden 向量（每 rank 2 × hidden × 2 B）的 ring all-reduce。
+合计 21 × 5 + 57 × 4 = 333 次/token（ADR-0024 前为 255）。q all-gather 是 context 分片注意力的需要：每个 rank 要拿到全部 head 的 q（indexer 的 q 在同一条消息里）；
+消息按一个 BF16 hidden 向量（每 rank 2 × hidden × 2 B）计，实际 q 约 74 KB 但仍低于 τ 对应的数据量，所以次数而不是字节决定时间。
 
 ## 6. MTP
 

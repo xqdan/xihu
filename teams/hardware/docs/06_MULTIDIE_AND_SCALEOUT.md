@@ -118,7 +118,7 @@ sequenceDiagram
 每 token 集合通信计入 393 × 1.15 = 451.95 µs，其中协议模型给出的是 memoryTransport 192.37 + cardLocal 74.71 + tpReduce 1.88，
 其余 183.00 µs 是 τ 下限补足（B-008）。协议参数见 [07](07_COLLECTIVE_RDMA.md) 第 3 节。
 
-GLM-5.2、DeepSeek-V4-Pro 在同一口径下为每 token 255 次、244 次（[`teams/model/docs/deployment/`](../../model/docs/deployment/README.md)），
+GLM-5.2、DeepSeek-V4-Pro 在同一口径下为每 token 333 次、305 次（含 ADR-0024 的 q all-gather）（[`teams/model/docs/deployment/`](../../model/docs/deployment/README.md)），
 多一类 indexer top-k 合并（[07](07_COLLECTIVE_RDMA.md) 第 2.2 节）。
 
 > `repo-510` 计数口径只作对照（切回得 941.74 TPS/usr，是口径差而非优化，ADR-0004）；

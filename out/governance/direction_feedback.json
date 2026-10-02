@@ -6,9 +6,9 @@
   "targetTpsPerUser": 1000,
   "sourceHashes": {
     "out/governance/gate_status.json": "7ee6c00edfd296b2e448ce458ec65d7eacca5b3ec91932fa652f49d35b1192a1",
-    "out/detailed/detailed_architecture_run.json": "c550d9a51a9a6f80a666b8ded6b89865108f7b2a559b4f5226db476d899c5c1f",
-    "out/workload/tps_observation_matrix.json": "b8a7b5e5997eeb59c707c449df1b3383c05430440f3a3255eb52471591fd8335",
-    "out/direction/sensitivity_sweep.json": "476cde0c4baa939642a373039365d5a3022512b7762d75a21ef0a5a5de855fdd",
+    "out/detailed/detailed_architecture_run.json": "755009262abf0332180260978aedf7b2c8a26786017573193d15989f01233365",
+    "out/workload/tps_observation_matrix.json": "00b713fe642a25d48199feabb1ea3ce5b80d24bb682f74613dfc75e5a6ce43e0",
+    "out/direction/sensitivity_sweep.json": "98d0cb92e6676f32fe270f4a4ebd4b65abf6d11d7f82691748f614dd0ae5adcb",
     "out/contracts/model_workload_contract.json": "dfa0ba7c28ad26f001b1df2e257b7ddb7bf179c9ad0a3593423c2d3f8275b305",
     "out/contracts/hardware_resource_contract.json": "a85327173c3a258a19132d52840e7cff5a2f48dcaf18a61a14fd454307ea4a31",
     "out/contracts/software_execution_contract.json": "94ce29bb1f79607bd77bed8c81ef4ce32c24cf2da4922ab555b08d90a957e60a",
@@ -60,16 +60,16 @@
     {
       "modelId": "GLM-5.2",
       "status": "PLANNING_ESTIMATE",
-      "bestPlanningEstimate": 2416.7805933324908,
-      "gapFactor": 0.4137735973049599,
+      "bestPlanningEstimate": 1927.7168428715738,
+      "gapFactor": 0.5187483855307171,
       "caseId": "GLM-5.2-TP32-DECODE-1M-MC640",
       "note": "K3-calibrated planning token time on the matrix slots; gap is not a hardware sizing recommendation."
     },
     {
       "modelId": "DeepSeek-V4-Pro",
       "status": "PLANNING_ESTIMATE",
-      "bestPlanningEstimate": 2299.318900631917,
-      "gapFactor": 0.4349113990778626,
+      "bestPlanningEstimate": 1934.196963330403,
+      "gapFactor": 0.5170104280787139,
       "caseId": "DeepSeek-V4-Pro-TP32-DECODE-1M-MC640",
       "note": "K3-calibrated planning token time on the matrix slots; gap is not a hardware sizing recommendation."
     }

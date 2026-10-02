@@ -187,6 +187,13 @@ const out = {
     'GLM-5.2': glm.layers,
     'DeepSeek-V4-Pro': ds.layers
   },
+  // Global attention (and indexer) projection weight bytes. The rows divide them by TP; the
+  // assumption sensitivity of token_time.js replicates a share of them (HW/SW-owned sharding is open).
+  attentionWeightBytes: {
+    K3: b.attn,
+    'GLM-5.2': glm.derivation.attentionWeightBytes,
+    'DeepSeek-V4-Pro': ds.derivation.attentionWeightBytes
+  },
   // Weight dtype per model. The policies differ; the scorecard shows them next to TPS/usr.
   dtypePolicy: {
     K3: {

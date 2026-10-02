@@ -11,9 +11,9 @@
     "designEngine": "4e42c1a71d7bf0b8a6340fc67ccb0df5cc49511dd347d31143846204b79673a5",
     "finalTuningModel": "21755eb6204fdefea6590117b9abee2b39d2fb4ac2967f6d0f7c80022c97b3f4",
     "finalTuningResults": "bb9c69b67045d305da4ee36dc1974bf15f78f656b87bdbecdff54cabf84d69f0",
-    "formalModelManifests": "dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f",
-    "workloadDerivation": "7c27118e32d66fe189ccfcf91e7e7ca72ab97406dbdf235e927a2c025312463c",
-    "tokenTime": "cb4e0f8b95bf5747560eb6f8f99813a1d10768c4872e9a38529b78a8017f76db",
+    "formalModelManifests": "fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652",
+    "workloadDerivation": "131855c2efb14257b5fb925cdcd23c2f4650555a2e74b3d683151443e9b56aff",
+    "tokenTime": "4109e8879ceaf9be0f8bd426a736d8c0891ea240610f06017d8d26373e7bbd46",
     "resourceProfiles": "2bd037745db3422bc5033097384fdd5967d390e0dde4968fd1f99771f9d149b3"
   },
   "provenance": {
@@ -59,6 +59,7 @@
         "denseFfnParamsPerLayer": 226492416,
         "expertParams": 37748736,
         "moeLayers": 75,
+        "attentionWeightBytes": 13068337152,
         "fullIndexerLayers": 21,
         "sharedIndexerLayers": 57,
         "totalParams": 743375831040,
@@ -94,6 +95,7 @@
         "indexerParamsPerLayer": 13959168,
         "denseFfnParamsPerLayer": 396361728,
         "moeLayers": 58,
+        "attentionWeightBytes": 12264931328,
         "expertHidden": 3840.8457072484166,
         "expertHiddenBasis": "solved from reportedActiveParams = 49B (embedding included)",
         "activeParams": 49000000000,
@@ -108,13 +110,18 @@
   },
   "collectivesPerToken": {
     "K3": 393,
-    "GLM-5.2": 255,
-    "DeepSeek-V4-Pro": 244
+    "GLM-5.2": 333,
+    "DeepSeek-V4-Pro": 305
   },
   "layers": {
     "K3": 93,
     "GLM-5.2": 78,
     "DeepSeek-V4-Pro": 61
+  },
+  "attentionWeightBytes": {
+    "K3": 73864553472,
+    "GLM-5.2": 13068337152,
+    "DeepSeek-V4-Pro": 12264931328
   },
   "dtypePolicy": {
     "K3": {
@@ -177,18 +184,19 @@
           [
             "collective_reduce",
             "REDUCE",
-            111935488,
-            223870976,
+            139919360,
+            279838720,
             "collective"
           ]
         ],
-        "collectivesPerToken": 244,
+        "collectivesPerToken": 305,
         "layers": 61,
         "derivation": {
           "attentionParamsPerLayer": 187105280,
           "indexerParamsPerLayer": 13959168,
           "denseFfnParamsPerLayer": 396361728,
           "moeLayers": 58,
+          "attentionWeightBytes": 12264931328,
           "expertHidden": 3299.8432345979145,
           "expertHiddenBasis": "solved from reportedTotalParams = 1600B (embedding and LM head included, MTP excluded)",
           "activeParams": 44276710828.218185,
@@ -441,8 +449,8 @@
       [
         "collective_reduce",
         "REDUCE",
-        100270080,
-        200540160,
+        130940928,
+        261881856,
         "collective"
       ]
     ],
@@ -478,8 +486,8 @@
       [
         "collective_reduce",
         "REDUCE",
-        111935488,
-        223870976,
+        139919360,
+        279838720,
         "collective"
       ]
     ]

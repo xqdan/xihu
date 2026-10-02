@@ -120,6 +120,50 @@ function rereadSensitivity(model, slot, calibration) {
   });
 }
 
+// Unmeasured planning assumptions that move GLM-5.2 / DeepSeek-V4-Pro (and K3) without any
+// detailed-model counterpart. Each case changes ONE input of the slot formula; none is a
+// prediction. bound tells which lane takes over.
+//   collectives +-1 per layer: per-layer collective count is an ASSUMPTION; +1 is the Q all-gather a
+//     context-sharded attention needs (K3 keeps it as an uncharged local op, GLM/DeepSeek have none).
+//   attention replicated: share of the attention/indexer weights held in full on every rank.
+//   expert prediction: K3 detailed input (0.8) applied to 256/384-expert models.
+//   kMemory: DMA efficiency fitted on K3 only.
+const ASSUMPTION_CASES = [
+  {id: 'collectivesPerLayerPlus1', label: '+1 collective / layer'},
+  {id: 'collectivesPerLayerMinus1', label: '-1 collective / layer'},
+  {id: 'attentionReplicated10pct', label: '10% of attention weights replicated per rank'},
+  {id: 'attentionReplicated100pct', label: 'attention weights fully replicated per rank'},
+  {id: 'expertPrediction0.5', label: 'expert prediction accuracy 0.5'},
+  {id: 'expertPrediction0.3', label: 'expert prediction accuracy 0.3'},
+  {id: 'kMemory1.0', label: 'kMemory = 1.0'},
+  {id: 'kMemory1.3', label: 'kMemory = 1.3'}
+];
+
+function withAttentionReplicated(model, slot, attentionWeightBytes, share) {
+  // Per-rank bytes B/tp become B/tp + share x A x (1 - 1/tp); rows hold global bytes (divided by tp).
+  const extra = share * attentionWeightBytes * (slot.tp - 1);
+  return {...model, rows: model.rows.map(r => r[0] === 'dense_projection' ? [r[0], r[1], r[2], r[3] + extra, r[4]] : r)};
+}
+
+function assumptionSensitivity(model, slot, calibration, attentionWeightBytes) {
+  const nominal = slotTime(model, slot, calibration);
+  const run = (id, m, c) => {
+    const t = slotTime(m, slot, c);
+    return {id, label: ASSUMPTION_CASES.find(x => x.id === id).label, tpsPerUser: t.tpsPerUser, deltaPct: (t.tpsPerUser / nominal.tpsPerUser - 1) * 100, bound: t.bound};
+  };
+  const n = model.collectivesPerToken;
+  return [
+    run('collectivesPerLayerPlus1', {...model, collectivesPerToken: n + model.layers}, calibration),
+    run('collectivesPerLayerMinus1', {...model, collectivesPerToken: n - model.layers}, calibration),
+    run('attentionReplicated10pct', withAttentionReplicated(model, slot, attentionWeightBytes, 0.1), calibration),
+    run('attentionReplicated100pct', withAttentionReplicated(model, slot, attentionWeightBytes, 1), calibration),
+    run('expertPrediction0.5', model, {...calibration, expertReread: 0.5}),
+    run('expertPrediction0.3', model, {...calibration, expertReread: 0.7}),
+    run('kMemory1.0', model, {...calibration, kMemory: 1.0}),
+    run('kMemory1.3', model, {...calibration, kMemory: 1.3})
+  ];
+}
+
 // Largest tau (us) at which the slot still reaches targetTps (nominal variation).
 // null: the slot misses at any tau (memory lane, serial compute or collective bandwidth
 // alone exceeds the budget). Every TP slot has collectives, so tau is always defined.
@@ -215,4 +259,4 @@ function boundingOperator(model, {physicalProfile}, result) {
   return rows.reduce((a, b) => b[3] > a[3] ? b : a)[0];
 }
 
-module.exports = {TAU_US, MARGIN, NOMINAL, TAU_SENSITIVITY_US, laneTimes, slotTime, tauSensitivity, PREDICTION_SENSITIVITY, rereadSensitivity, maxTauForTarget, detailedBreakdown, calibrate, planningModel, boundingOperator};
+module.exports = {TAU_US, MARGIN, NOMINAL, TAU_SENSITIVITY_US, laneTimes, slotTime, tauSensitivity, PREDICTION_SENSITIVITY, rereadSensitivity, ASSUMPTION_CASES, assumptionSensitivity, maxTauForTarget, detailedBreakdown, calibrate, planningModel, boundingOperator};

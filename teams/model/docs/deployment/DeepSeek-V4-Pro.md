@@ -60,8 +60,8 @@ xychart-beta
 
 ## 5. 集合通信（ASSUMPTION）
 
-每层 4 次：indexer top-k 合并、稀疏注意力 LSE 合并、attention 输出 all-reduce、FFN/MoE 输出 all-reduce（shared 与 routed 合并）。
-合计 61 × 4 = 244 次/token，按 K3 reference 口径计数，不含采样。消息为一个 BF16 hidden 向量的 ring all-reduce。
+每层 5 次：q all-gather（ADR-0024，context 分片注意力需要全部 head 的 q，indexer 的 q 在同一条消息里）、indexer top-k 合并、稀疏注意力 LSE 合并、attention 输出 all-reduce、FFN/MoE 输出 all-reduce（shared 与 routed 合并）。
+合计 61 × 5 = 305 次/token（ADR-0024 前为 244），按 K3 reference 口径计数，不含采样。消息为一个 BF16 hidden 向量的 ring all-reduce。
 
 ## 6. 形状歧义与 TPS 区间
 
