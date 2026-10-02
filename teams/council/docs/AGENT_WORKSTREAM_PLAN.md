@@ -3,6 +3,8 @@
 版本：2026-09-21（2026-09-26 按 ADR-0021 修订为单一硬件规格）
 状态：`BASELINE / READY FOR PARALLEL EXECUTION`
 
+> **术语说明（2026-10）**：本文的 `A0–A13` 是**工作包编号**，不是运行时 agent。现行设计流程中真正被调起的是 `inputs/agent_roster.json` 下的 12 个无状态策略，由 `integration/orchestration/` 的 workflow 注入上下文，见 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md)。本文的指标、单位和退出条件仍然有效。
+
 > 配套量化验收矩阵：[`AGENT_METRICS_MATRIX.md`](AGENT_METRICS_MATRIX.md)。每个 Agent 的指标、单位和退出条件以该矩阵为准。
 
 ## 1. 目标

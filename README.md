@@ -43,59 +43,57 @@ TPS/usr = 1e6 / (raw × 1.17) = 1101.77
 每一项都能追溯到具体的硬件参数或软件开关。例如集合通信的单次成本 τ 从 1.15 µs 升到约 1.35 µs，
 TPS/usr 就跌破 1000，所以 τ 的物理推导被列为阻塞项（B-008）。
 
-## 多 agent 协作：每个 agent 只装自己那一块
+## 多 agent 协作：策略无状态，上下文由 workflow 注入
 
 这套东西的规模，单个人或单个 agent 的上下文是装不下的：硬件有 Core、SRAM、NoC、MC、封装，软件有编译器、
 kernel、融合、调度，模型有结构、dtype、路由和场景，全塞进一个上下文只会得到似是而非的结论。
 
-所以仓库的组织方式，就是**给每个 agent 切出一个上下文足够小的角色**：
+所以仓库把"谁负责什么"和"设计流程怎么跑"分成两层，每一层都只让参与者看到自己那一块：
 
-- 一个 agent 只负责一个团队目录里的一块，只读它的任务卡和自己的目录；
-- 跨团队只通过 `contract.json`、`out/` 里的生成物、ADR 和测试交互，不通过聊天传数字；
+- **目录层（谁负责什么）**：`teams/<team>/` 是硬件、软件、模型、架构委员会、V&V 各自的工作边界，
+  跨团队只通过 `contract.json`、`out/` 里的生成物、ADR 和测试交互，不通过聊天传数字；
+- **流程层（设计怎么跑）**：设计流程由 `integration/orchestration/` 下的 19 个 `design.*.workflow.js` 承载，
+  workflow 调起 `teams/council/strategies/` 下的 12 个**无状态策略**（6 个领域专家 + 6 个固定职能）。
+  策略只含判断规则、禁止项和裁决枚举，不含路径、输出契约或流程；上下文（brief、候选、输出契约、落盘位置）
+  全部由 workflow 在运行时注入，决定性数字和 Gate 结论只由脚本计算；
 - 需要什么，按字段路径去取（例如 `k3_mc_baseline.json#computeDieCandidate`），而不是把大段上下文搬过来。
 
-上下文边界不是靠自觉，是靠仓库结构强制的：
+上下文边界不是靠自觉，是靠仓库结构和测试强制的：
 
 ```mermaid
 flowchart TB
-  CARD["任务卡<br/>职责 / 允许改的路径 / 输入版本 / 验收"]
-  subgraph AGENT["一个 agent 的上下文"]
-    CARD --> D["teams/&lt;team&gt;/ 下的一个模块<br/>+ 自己的 contract.json"]
+  S["策略（无状态）<br/>判断规则 / 禁止项 / 裁决枚举"]
+  subgraph WF["一个 workflow（运行时）"]
+    B["brief + 候选 + 输出契约<br/>由 workflow 注入"] --> A["策略实例<br/>只返回结构化裁决"]
+    K["确定性内核<br/>搜索 / 守恒 / Gate 脚本"] --> A
   end
-  D -->|"只写"| OUT["约定的输出：<br/>设计文档 / 代码 / 生成物 / 测试"]
-  OUT --> HP["Handoff packet<br/>结论、假设、文件、验证、风险"]
-  HP --> CO["Council 集成<br/>跨团队一致性 + ADR + Gate"]
-  CO -.->|"新版本输入"| CARD
+  S --> A
+  A -->|"裁决枚举"| R["workflow 路由<br/>通过 / BLOCKED_CONFIG / 回流"]
+  R --> F["files[]：由主循环落盘到 out/"]
+  F --> CO["Council 集成<br/>跨团队一致性 + ADR + Gate"]
+  CO -.->|"新版本输入"| B
 ```
+
+流程方法论见 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md)，
+workflow 清单和运行方式见 [`integration/orchestration/README.md`](integration/orchestration/README.md)。
+`D1–D7`、`Q1–Q9`、`A0` 只是阶段名，不是 agent。
 
 | 机制 | 怎么缩小上下文 |
 |---|---|
 | **目录即边界** | `teams/<team>/` 不 require 其他团队、`integration/` 或 `out/`，由 `tests/structure/test_project_structure.js` 强制。一个 agent 不需要读别人的目录就能完成自己的活。 |
 | **contract 即接口** | 团队的对外承诺写在 `teams/<team>/contract.json`，由脚本合成到 `out/contracts/`。跨团队只读这几个文件，不读对方的全部设计。 |
-| **任务卡** | 每个任务从任务卡开始，写明 Agent ID、职责、允许与禁止修改的路径、输入版本（含 baseline commit 和 schema 版本）、要求的输出、验收标准和 handoff 格式。模板见 [`AGENT_WORKSTREAM_PLAN.md`](teams/council/docs/AGENT_WORKSTREAM_PLAN.md) 第 6 节和 [`DETAIL_AGENT_TASK_CARD.md`](teams/council/docs/detailed/DETAIL_AGENT_TASK_CARD.md)。 |
+| **策略 / 运行时分离** | 策略里不出现路径、schema 和流程，由 `tools/check_agent_strategy.js` 和结构测试强制；roster 的 `consumers` 与 workflow 的真实调用点对账，不一致则测试失败。 |
+| **任务卡 / Handoff** | 派给单个 agent 的开发任务用任务卡（职责、允许改的路径、输入版本、验收）下发，完成后交一页 handoff packet，模板见 [`DETAIL_AGENT_TASK_CARD.md`](teams/council/docs/detailed/DETAIL_AGENT_TASK_CARD.md)。 |
 | **只消费已发布版本** | agent 不读别人未提交的工作区，只读已版本化的 JSON / Markdown / 报告 / ADR，所以输入是可复现的、长度也是可控的。 |
-| **Handoff packet** | 交接用一页 packet（范围、结论、假设、文件、验证、风险、下一步），下游读 packet，不读上游的完整上下文。 |
+| **确定性内核** | 候选搜索、守恒、Gate 判定都是脚本；agent 只解释取舍。候选数值经 `search_brief.js` 注入、落盘后再核对，不让 agent 转写。 |
 | **数字只有单一来源** | 硬件规格在 `k3_mc_baseline.json`，发布点在 `out/rdma/k3_rdma_final_tuning_results.json`，软件开关在 `OPT`，经验因子在 `GAIN`。引用字段路径即可，不必把数字抄进上下文。 |
 | **Gate 由独立校验器算** | D-Gate / Q-Gate 由 `integration/governance/evaluate_gates.js` 从生成物计算，任何 runner 不得写 `PASS` 字面量。判断逻辑不在 agent 的上下文里。 |
 | **测试按组跑** | `npm test` 支持 `unit` / `regression` / `governance` / `structure` 分组，改哪一块就跑哪一组，反馈快且聚焦。 |
 | **文档即索引** | 顶层 `README`、各团队 `README`、`docs/architecture/README.md` 和 ADR 索引给出入口，agent 按索引找入口，不需要遍历仓库。 |
 
-先由架构 owner 搭出一个能跑通的整体，然后每个 agent 进入一个角色，从自己的位置理解并深化自己那一块：
+团队目录按角色划分，每个目录对应一个可独立审查的责任范围：
 
 | 角色 | 目录 | 只负责这一块 |
-|---|---|---|
-| 硬件 | [`teams/hardware/`](teams/hardware/README.md) | 唯一硬件规格 P1、单元设计文档（Core、SRAM、NoC、MC、集合通信/RDMA、PPA） |
-| 软件 | [`teams/software/`](teams/software/README.md) | 编译器、runtime、kernel、融合、集合通信调度、精度策略 |
-| 模型 | [`teams/model/`](teams/model/README.md) | 模型形状与 manifest、workload 推导、三个模型的部署方案 |
-| 架构委员会 | [`teams/council/`](teams/council/README.md) | ADR、跨团队集成、Gate 判定 |
-| 独立验证 | [`teams/vv/`](teams/vv/README.md) | 验证计划；测试放在 [`tests/`](tests/) |
-
-内容可以由 AI 生成，但要由对应角色的人审查，确保没有幻觉、设计是对的、能和落地对齐。
-为此仓库有几条硬规则：
-
-先由架构 owner 搭出一个能跑通的整体，然后每个人进入一个角色，从自己的位置理解并深化自己那一块：
-
-| 角色 | 目录 | 负责什么 |
 |---|---|---|
 | 硬件 | [`teams/hardware/`](teams/hardware/README.md) | 唯一硬件规格 P1、单元设计文档（Core、SRAM、NoC、MC、集合通信/RDMA、PPA） |
 | 软件 | [`teams/software/`](teams/software/README.md) | 编译器、runtime、kernel、融合、集合通信调度、精度策略 |

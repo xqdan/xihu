@@ -3,6 +3,8 @@
 版本：2026-09-21（2026-09-26 按 ADR-0021 修订为单一硬件规格）
 状态：`BASELINE / METRICS READY`
 
+> **术语说明（2026-10）**：本文的 `A0–A13` 是**工作包编号**，不是运行时 agent。现行设计流程中真正被调起的是 `inputs/agent_roster.json` 下的 12 个无状态策略，由 `integration/orchestration/` 的 workflow 注入上下文，见 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md)。本文的指标、单位和退出条件仍然有效。
+
 本文件把 `AGENT_WORKSTREAM_PLAN.md` 中的 A0–A13 进一步拆成可度量的模块指标、交付物和退出条件。所有性能数字必须同时标注证据等级、模型版本、输入 workload、单位和证据来源。
 
 ## 1. 统一口径

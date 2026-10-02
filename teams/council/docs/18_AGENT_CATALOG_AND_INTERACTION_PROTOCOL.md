@@ -5,7 +5,7 @@
 
 > **本文的交互协议仍然有效，但"agent 目录"这一层已经不存在了。**
 > 现行流程见 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md)：
-> agent 定义只是无状态策略集合（`teams/council/agent_roster.json` 下 12 个策略，
+> agent 定义只是无状态策略集合（`teams/council/inputs/agent_roster.json` 下 12 个策略，
 > 正文在 `teams/council/strategies/`），不持有路径、不持有输出契约、不产出决定性数字；
 > 所有上下文由 `integration/orchestration/` 下的 workflow 在运行时注入。
 > 读本文时请把"某个 Agent 的输出"读成"某个 stage 的落盘产物"，
