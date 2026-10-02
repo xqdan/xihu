@@ -71,7 +71,7 @@ flowchart TB
 |---|---|---|
 | 面积 | 各单元面积之和 = 封装包络 | D-Gate `areaConservation` |
 | 算子字节 / FLOP | 规划算子账 ↔ K3 详细模型（比值 0.996 / 1.001） | OPERATOR_LEDGER 第 3 节、regression |
-| 集合通信次数 | 393 = 各类计数之和；GLM 255、DS 244 | `COLLECTIVE_SCHEDULE.md`、`sync_baseline_spec.js` |
+| 集合通信次数 | 393 = 各类计数之和；GLM 333、DS 305 | `COLLECTIVE_SCHEDULE.md`、`sync_baseline_spec.js` |
 | 时间账 | doc 21 的发布点时间账与流水线产物一致 | `test_tps_design_baseline.js` |
 | 输入哈希 | 产物里的 `inputHash` = 当前 source 的哈希 | regression、`test_integration_freshness.js` |
 

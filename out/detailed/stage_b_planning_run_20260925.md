@@ -1,9 +1,9 @@
 # Stage B Planning Quantification Run
 
 Run ID: `stage-b-20260925-planning`
-Manifest hash: `dbbdcad65e2f895f0b28380c3422f6900ead9050398dbbdaabe8e7a0dfd3d18f`
+Manifest hash: `fbfe2e2782e0798d8bb58b09f0bcaca4836d4088d1b538cd0f6490ed1409e652`
 Run mode: `PLANNING_QUANTIFICATION`
-Source commit: `ffc817230dee4f531a0bfb7a8bf5b05ba5018494`
+Source commit: `913bf4704e14c3f248f3056c7cff68b6b59862f9`
 
 ## Gate result
 
@@ -43,49 +43,49 @@ Source commit: `ffc817230dee4f531a0bfb7a8bf5b05ba5018494`
 | GLM-5.2 | 8 | MC320 | P1 | 448.26 | routed_moe | memory_bandwidth |
 | GLM-5.2 | 8 | MC640 | P1 | 896.53 | routed_moe | memory_bandwidth |
 | GLM-5.2 | 16 | MC320 | P1 | 896.53 | routed_moe | memory_bandwidth |
-| GLM-5.2 | 16 | MC640 | P1 | 1793.05 | routed_moe | memory_bandwidth |
+| GLM-5.2 | 16 | MC640 | P1 | 1778.76 | collective_reduce | collective_latency |
 | GLM-5.2 | 32 | MC320 | P1 | 1793.05 | routed_moe | memory_bandwidth |
-| GLM-5.2 | 32 | MC640 | P1 | 2416.78 | collective_reduce | collective_latency |
+| GLM-5.2 | 32 | MC640 | P1 | 1927.72 | collective_reduce | collective_latency |
 | DeepSeek-V4-Pro | 8 | MC320 | P1 | 463.85 | dense_projection | memory_bandwidth |
 | DeepSeek-V4-Pro | 8 | MC640 | P1 | 927.69 | dense_projection | memory_bandwidth |
 | DeepSeek-V4-Pro | 16 | MC320 | P1 | 927.69 | dense_projection | memory_bandwidth |
-| DeepSeek-V4-Pro | 16 | MC640 | P1 | 1855.38 | dense_projection | memory_bandwidth |
+| DeepSeek-V4-Pro | 16 | MC640 | P1 | 1660.23 | collective_reduce | collective_latency |
 | DeepSeek-V4-Pro | 32 | MC320 | P1 | 1855.38 | dense_projection | memory_bandwidth |
-| DeepSeek-V4-Pro | 32 | MC640 | P1 | 2299.32 | collective_reduce | collective_latency |
+| DeepSeek-V4-Pro | 32 | MC640 | P1 | 1934.20 | collective_reduce | collective_latency |
 
 ## Planning slots (token-time lanes, us)
 
 | Model | TP | MC | memory lane | FLOP / fixed / TMA | collectives | bound | TPS/usr | tau 1.15 / 1.5 / 2.0 | shape range |
 |---|---:|---|---:|---:|---:|---|---:|---|---|
 | K3 | 8 | MC320 | 6202.4 | 983.2 / 27.8 / 111.5 | 451.9 (393 x 1.15) | memory | 137.80 | 137.8 / 137.8 / 137.8 | - |
-| GLM-5.2 | 8 | MC320 | 1906.7 | 116.3 / 23.3 / 32.1 | 293.3 (255 x 1.15) | memory | 448.26 | 448.3 / 448.3 / 448.3 | - |
-| DeepSeek-V4-Pro | 8 | MC320 | 1842.6 | 259.6 / 18.2 / 32.0 | 280.6 (244 x 1.15) | memory | 463.85 | 463.8 / 463.8 / 463.8 | 463.8 - 498.2 |
+| GLM-5.2 | 8 | MC320 | 1906.7 | 116.4 / 23.3 / 32.1 | 382.9 (333 x 1.15) | memory | 448.26 | 448.3 / 448.3 / 448.3 | - |
+| DeepSeek-V4-Pro | 8 | MC320 | 1842.6 | 259.7 / 18.2 / 32.0 | 350.8 (305 x 1.15) | memory | 463.85 | 463.8 / 463.8 / 463.8 | 463.8 - 498.2 |
 | K3 | 16 | MC320 | 3101.2 | 491.6 / 27.8 / 55.7 | 451.9 (393 x 1.15) | memory | 275.60 | 275.6 / 275.6 / 275.6 | - |
-| GLM-5.2 | 16 | MC320 | 953.3 | 58.1 / 23.3 / 16.1 | 293.3 (255 x 1.15) | memory | 896.53 | 896.5 / 896.5 / 896.5 | - |
-| DeepSeek-V4-Pro | 16 | MC320 | 921.3 | 129.8 / 18.2 / 16.0 | 280.6 (244 x 1.15) | memory | 927.69 | 927.7 / 927.7 / 927.7 | 927.7 - 996.3 |
+| GLM-5.2 | 16 | MC320 | 953.3 | 58.2 / 23.3 / 16.1 | 382.9 (333 x 1.15) | memory | 896.53 | 896.5 / 896.5 / 896.5 | - |
+| DeepSeek-V4-Pro | 16 | MC320 | 921.3 | 129.8 / 18.2 / 16.0 | 350.8 (305 x 1.15) | memory | 927.69 | 927.7 / 927.7 / 927.7 | 927.7 - 996.3 |
 | K3 | 32 | MC320 | 1550.6 | 245.8 / 27.8 / 27.9 | 451.9 (393 x 1.15) | memory | 551.21 | 551.2 / 551.2 / 551.2 | - |
-| GLM-5.2 | 32 | MC320 | 476.7 | 29.1 / 23.3 / 8.0 | 293.3 (255 x 1.15) | memory | 1793.05 | 1793.1 / 1793.1 / 1498.4 | - |
-| DeepSeek-V4-Pro | 32 | MC320 | 460.7 | 64.9 / 18.2 / 8.0 | 280.6 (244 x 1.15) | memory | 1855.38 | 1855.4 / 1855.4 / 1475.9 | 1855.4 - 1992.6 |
+| GLM-5.2 | 32 | MC320 | 476.7 | 29.1 / 23.3 / 8.0 | 382.9 (333 x 1.15) | memory | 1793.05 | 1793.1 / 1526.5 / 1176.6 | - |
+| DeepSeek-V4-Pro | 32 | MC320 | 460.7 | 64.9 / 18.2 / 8.0 | 350.8 (305 x 1.15) | memory | 1855.38 | 1855.4 / 1557.9 / 1219.0 | 1855.4 - 1947.7 |
 | K3 | 8 | MC640 | 3101.2 | 983.2 / 27.8 / 111.5 | 451.9 (393 x 1.15) | memory | 275.60 | 275.6 / 275.6 / 275.6 | - |
-| GLM-5.2 | 8 | MC640 | 953.3 | 116.3 / 23.3 / 32.1 | 293.3 (255 x 1.15) | memory | 896.53 | 896.5 / 896.5 / 896.5 | - |
-| DeepSeek-V4-Pro | 8 | MC640 | 921.3 | 259.6 / 18.2 / 32.0 | 280.6 (244 x 1.15) | memory | 927.69 | 927.7 / 927.7 / 927.7 | 927.7 - 996.3 |
+| GLM-5.2 | 8 | MC640 | 953.3 | 116.4 / 23.3 / 32.1 | 382.9 (333 x 1.15) | memory | 896.53 | 896.5 / 896.5 / 896.5 | - |
+| DeepSeek-V4-Pro | 8 | MC640 | 921.3 | 259.7 / 18.2 / 32.0 | 350.8 (305 x 1.15) | memory | 927.69 | 927.7 / 927.7 / 927.7 | 927.7 - 996.3 |
 | K3 | 16 | MC640 | 1550.6 | 491.6 / 27.8 / 55.7 | 451.9 (393 x 1.15) | memory | 551.21 | 551.2 / 551.2 / 551.2 | - |
-| GLM-5.2 | 16 | MC640 | 476.7 | 58.1 / 23.3 / 16.1 | 293.3 (255 x 1.15) | memory | 1793.05 | 1793.1 / 1780.6 / 1406.9 | - |
-| DeepSeek-V4-Pro | 16 | MC640 | 460.7 | 129.8 / 18.2 / 16.0 | 280.6 (244 x 1.15) | memory | 1855.38 | 1855.4 / 1612.6 / 1310.9 | 1855.4 - 1949.1 |
+| GLM-5.2 | 16 | MC640 | 476.7 | 58.2 / 23.3 / 16.1 | 382.9 (333 x 1.15) | collective | 1778.76 | 1778.8 / 1431.5 / 1119.4 | - |
+| DeepSeek-V4-Pro | 16 | MC640 | 460.7 | 129.8 / 18.2 / 16.0 | 350.8 (305 x 1.15) | collective | 1660.23 | 1660.2 / 1375.1 / 1104.2 | 1660.2 - 1680.2 |
 | K3 | 32 | MC640 | 775.3 | 245.8 / 27.8 / 27.9 | 451.9 (393 x 1.15) | memory | 1102.41 | 1102.4 / 959.3 / 786.0 | - |
-| GLM-5.2 | 32 | MC640 | 238.3 | 29.1 / 23.3 / 8.0 | 293.3 (255 x 1.15) | collective | 2416.78 | 2416.8 / 1929.8 / 1498.4 | - |
-| DeepSeek-V4-Pro | 32 | MC640 | 230.3 | 64.9 / 18.2 / 8.0 | 280.6 (244 x 1.15) | collective | 2299.32 | 2299.3 / 1869.8 / 1475.9 | 2299.3 - 2318.4 |
+| GLM-5.2 | 32 | MC640 | 238.3 | 29.1 / 23.3 / 8.0 | 382.9 (333 x 1.15) | collective | 1927.72 | 1927.7 / 1526.5 / 1176.6 | - |
+| DeepSeek-V4-Pro | 32 | MC640 | 230.3 | 64.9 / 18.2 / 8.0 | 350.8 (305 x 1.15) | collective | 1934.20 | 1934.2 / 1557.9 / 1219.0 | 1934.2 - 1947.7 |
 
 ## Assumption sensitivity (TP32, one input changed per column; not a prediction)
 
 | Model | MC | Profile | TPS/usr | +1 collective / layer | -1 collective / layer | 10% of attention weights replicated per rank | attention weights fully replicated per rank | expert prediction accuracy 0.5 | expert prediction accuracy 0.3 | kMemory = 1.0 | kMemory = 1.3 |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | K3 | MC320 | P1 | 551 | 551 (miss) | 551 (miss) | 226 (miss) | 36 (miss) | 526 (miss) | 510 (miss) | 616 (miss) | 474 (miss) |
-| GLM-5.2 | MC320 | P1 | 1793 | 1793 | 1793 | 981 (miss) | 193 (miss) | 1574 | 1456 | 2004 | 1542 |
-| DeepSeek-V4-Pro | MC320 | P1 | 1855 | 1855 | 1855 | 1028 | 205 (miss) | 1691 | 1597 | 2074 | 1595 |
+| GLM-5.2 | MC320 | P1 | 1793 | 1603 | 1793 | 981 (miss) | 193 (miss) | 1574 | 1456 | 1928 | 1542 |
+| DeepSeek-V4-Pro | MC320 | P1 | 1855 | 1669 | 1855 | 1028 | 205 (miss) | 1691 | 1597 | 1934 | 1595 |
 | K3 | MC640 | P1 | 1102 | 993 (miss) | 1102 | 452 (miss) | 72 (miss) | 1051 | 1020 | 1134 | 948 (miss) |
-| GLM-5.2 | MC640 | P1 | 2417 | 1928 | 3238 | 1961 | 386 (miss) | 2417 | 2417 | 2417 | 2417 |
-| DeepSeek-V4-Pro | MC640 | P1 | 2299 | 1934 | 2834 | 2056 | 410 (miss) | 2299 | 2299 | 2299 | 2299 |
+| GLM-5.2 | MC640 | P1 | 1928 | 1603 | 2417 | 1896 | 386 (miss) | 1928 | 1928 | 1928 | 1928 |
+| DeepSeek-V4-Pro | MC640 | P1 | 1934 | 1669 | 2299 | 1905 | 410 (miss) | 1934 | 1934 | 1934 | 1934 |
 
 ## Agent outputs
 

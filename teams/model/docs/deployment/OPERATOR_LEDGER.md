@@ -50,14 +50,14 @@ flowchart LR
     b2["routed_moe L（FP8）"]
     b3["indexer<br/>21 个 full 层"]
     b4["sparse_attention H<br/>top-2048"]
-    b5["collective_reduce<br/>255 次"]
+    b5["collective_reduce<br/>333 次"]
   end
   subgraph DS["DeepSeek-V4-Pro（61 层）"]
     c1["dense_projection L（FP8）"]
     c2["routed_moe L（FP4）"]
     c3["indexer<br/>每层"]
     c4["sparse_attention H"]
-    c5["collective_reduce<br/>244 次"]
+    c5["collective_reduce<br/>305 次"]
   end
 ```
 

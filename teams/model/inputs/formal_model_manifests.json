@@ -282,10 +282,10 @@
           },
           "collectivesPerLayer": {
             "value": {
-              "full": 4,
-              "shared": 3
+              "full": 5,
+              "shared": 4
             },
-            "basis": "ASSUMPTION: indexer top-k merge (full layers only), sparse-attention LSE merge, attention output all-reduce, FFN/MoE output all-reduce; same basis as DeepSeek-V4-Pro"
+            "basis": "ASSUMPTION (ADR-0024): q all-gather before the indexer and sparse attention (context-sharded attention needs the q of every head on every rank; indexer q rides in the same message; counted here, whereas the K3 reference-393 basis keeps its Q / new-KV all-gather as a local op, ADR-0004), indexer top-k merge (full layers only), sparse-attention LSE merge, attention output all-reduce, FFN/MoE output all-reduce; same basis as DeepSeek-V4-Pro"
           },
           "collectiveMessageBytes": {
             "value": "2 x hidden x 2 B per rank",
@@ -445,8 +445,8 @@
             "basis": "DEPLOYMENT_DECISION (2026-09-25): FFN/MoE of all three models is deployed TP-only, as for K3; the FFN/MoE output is one TP all-reduce per layer"
           },
           "collectivesPerLayer": {
-            "value": 4,
-            "basis": "ASSUMPTION: indexer top-k merge, sparse-attention LSE merge, attention output all-reduce, FFN/MoE output all-reduce (shared and routed folded); counted on the K3 reference basis, sampling excluded"
+            "value": 5,
+            "basis": "ASSUMPTION (ADR-0024): q all-gather before the indexer and sparse attention (context-sharded attention needs the q of every head on every rank; indexer q rides in the same message; counted here, whereas the K3 reference-393 basis keeps its Q / new-KV all-gather as a local op, ADR-0004), indexer top-k merge, sparse-attention LSE merge, attention output all-reduce, FFN/MoE output all-reduce (shared and routed folded); otherwise the K3 reference-393 convention, sampling excluded"
           },
           "collectiveMessageBytes": {
             "value": "2 x hidden x 2 B per rank",

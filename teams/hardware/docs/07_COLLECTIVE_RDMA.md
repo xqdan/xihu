@@ -91,8 +91,8 @@ flowchart LR
 | 模型 | hidden all-reduce 消息 | 其他消息 | 次数 / token |
 | --- | ---: | --- | ---: |
 | K3 | 7168 × 2 B = 14.3 KB | latent 3584 × 2 B = 7.2 KB；LSE workspace 1325568 B | 393 |
-| GLM-5.2 | 6144 × 2 B = 12.3 KB | top-k 16 KiB/rank（21 层） | 255 |
-| DeepSeek-V4-Pro | 7168 × 2 B = 14.3 KB | top-k 16 KiB/rank（61 层） | 244 |
+| GLM-5.2 | 6144 × 2 B = 12.3 KB | top-k 16 KiB/rank（21 层）；q all-gather（78 层，ADR-0024） | 333 |
+| DeepSeek-V4-Pro | 7168 × 2 B = 14.3 KB | top-k 16 KiB/rank（61 层）；q all-gather（61 层，ADR-0024） | 305 |
 
 所有消息都远小于一个 64 KiB stripe，时间由固定时延决定，按 τ 计费。
 

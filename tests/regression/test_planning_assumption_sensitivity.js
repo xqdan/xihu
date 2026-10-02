@@ -62,14 +62,21 @@ for (const id of ['GLM-5.2', 'DeepSeek-V4-Pro']) {
   assert(mc640.tpsPerUser >= TARGET && mc320.tpsPerUser >= TARGET, `${id} nominal meets the target`);
   // At MC640 the memory-side factors do not move the value; the collective count does.
   for (const idc of ['expertPrediction0.5', 'expertPrediction0.3', 'kMemory1.0', 'kMemory1.3']) assert(Math.abs(caseOf(mc640, idc).deltaPct) < 1e-9, `${id} MC640 ${idc}`);
-  assert(caseOf(mc640, 'collectivesPerLayerPlus1').deltaPct < -15, `${id} +1 collective/layer costs more than 15%`);
+  assert(caseOf(mc640, 'collectivesPerLayerPlus1').deltaPct < -10, `${id} +1 collective/layer costs more than 10%`);
   assert(caseOf(mc640, 'collectivesPerLayerPlus1').meetsTarget, `${id} still meets the target with +1 collective/layer at MC640`);
-  // At MC320 the collective count does not move the value; the memory-side factors do.
-  assert(Math.abs(caseOf(mc320, 'collectivesPerLayerPlus1').deltaPct) < 1e-9);
+  // At MC320 the memory lane binds: one collective fewer per layer (the count before ADR-0024) does not move the value; the memory-side factors do.
+  assert(Math.abs(caseOf(mc320, 'collectivesPerLayerMinus1').deltaPct) < 1e-9);
   assert(caseOf(mc320, 'kMemory1.3').deltaPct < -10);
   // Full replication of the attention weights fails the target everywhere: the sharding decision matters.
   assert(!caseOf(mc640, 'attentionReplicated100pct').meetsTarget && !caseOf(mc320, 'attentionReplicated100pct').meetsTarget, `${id} full replication`);
 }
+
+// ADR-0024: the per-layer collective count includes the q all-gather of the context-sharded attention.
+assert.deepStrictEqual(glmShape.assumptions.collectivesPerLayer.value, {full: 5, shared: 4});
+assert.strictEqual(dsShape.assumptions.collectivesPerLayer.value, 5);
+assert.strictEqual(workload.collectivesPerToken['GLM-5.2'], 21 * 5 + 57 * 4);
+assert.strictEqual(workload.collectivesPerToken['DeepSeek-V4-Pro'], 61 * 5);
+for (const shape of [glmShape, dsShape]) assert(/q all-gather/.test(shape.assumptions.collectivesPerLayer.basis) && /ADR-0024/.test(shape.assumptions.collectivesPerLayer.basis));
 
 // The assumption that carries these cases is declared in the manifests.
 for (const shape of [glmShape, dsShape]) assert(shape.assumptions.collectivesPerLayer, 'collectivesPerLayer must stay a declared ASSUMPTION');

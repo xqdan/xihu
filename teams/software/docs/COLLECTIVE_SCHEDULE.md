@@ -227,15 +227,15 @@ xychart-beta
 | 模型 | 每层组成 | 次数 / token |
 | --- | --- | ---: |
 | K3 | MoE 层 4 次（attention 输出、all-gather、latent merge、Wup+Shared）+ 24 次 LSE | 393 |
-| GLM-5.2 | full indexer 层 4 次（top-k 合并、LSE、attention 输出、FFN/MoE 输出）× 21；shared indexer 层 3 次 × 57 | 255 |
-| DeepSeek-V4-Pro | 每层 4 次 × 61 | 244 |
+| GLM-5.2 | full indexer 层 5 次（q all-gather、top-k 合并、LSE、attention 输出、FFN/MoE 输出）× 21；shared indexer 层 4 次 × 57 | 333 |
+| DeepSeek-V4-Pro | 每层 5 次（含 q all-gather）× 61 | 305 |
 
 ```mermaid
 xychart-beta
   title "每 token 集合通信次数与 τ 下限时间"
   x-axis ["K3", "GLM-5.2", "DeepSeek-V4-Pro"]
   y-axis "次数" 0 --> 420
-  bar [393, 255, 244]
+  bar [393, 333, 305]
 ```
 
 按 τ = 1.15 µs：K3 451.95 µs、GLM-5.2 293.25 µs、DeepSeek-V4-Pro 280.60 µs（推导值）。
