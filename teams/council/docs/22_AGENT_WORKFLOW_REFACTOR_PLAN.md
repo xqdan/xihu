@@ -203,6 +203,8 @@ C 组四域读取产物这一步同样**不由 agent 做**：agent 转写候选�
 
 ### 4.1 清单
 
+> 每个 workflow 的业务含义、产出与结局见 [`integration/orchestration/WORKFLOWS.md`](../../../integration/orchestration/WORKFLOWS.md)。
+
 | 组 | Workflow | 核心问题 | 并行体 | 串行收敛点 | 复用 |
 |---|---|---|---|---|---|
 | A | `design.contract` | 接口长什么样 | 5 个专家各申报接口 | 架构师定契约 | `generate_team_contracts.js` |

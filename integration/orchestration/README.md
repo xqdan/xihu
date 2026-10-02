@@ -18,6 +18,8 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 
 ## 19 个脚本
 
+每个 workflow 对应的业务环节、产出和结局，见 [`WORKFLOWS.md`](WORKFLOWS.md)；下面按组列出契约与分工。
+
 ### 通用前提
 
 每个脚本都遵守同一条契约，下面不再重复：
