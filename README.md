@@ -75,7 +75,7 @@ flowchart TB
 ```
 
 流程方法论见 [`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](teams/council/docs/22_AGENT_WORKFLOW_REFACTOR_PLAN.md)，
-workflow 清单和运行方式见 [`integration/orchestration/README.md`](integration/orchestration/README.md)。
+workflow 清单和运行方式见 [`integration/orchestration/README.md`](integration/orchestration/README.md)，每个 workflow 的业务含义见 [`WORKFLOWS.md`](integration/orchestration/WORKFLOWS.md)。
 `D1–D7`、`Q1–Q9`、`A0` 只是阶段名，不是 agent。
 
 | 机制 | 怎么缩小上下文 |
