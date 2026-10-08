@@ -11,8 +11,9 @@
 // The repository has no third-party dependencies, so this covers exactly the
 // keywords the 21 workflows use (type, properties, required, enum, items,
 // additionalProperties, pattern) plus the usual neighbours (const, min/max,
-// minItems/maxItems, oneOf/anyOf). A keyword it does not know is ignored, never
-// treated as a pass-through for the whole schema: unknown *types* are errors.
+// minItems/maxItems, minProperties/maxProperties, oneOf/anyOf). A keyword it does not
+// know is ignored, never treated as a pass-through for the whole schema: unknown
+// *types* are errors.
 
 const TYPES = ['object', 'array', 'string', 'number', 'integer', 'boolean', 'null'];
 
@@ -83,6 +84,13 @@ function validateAt(schema, value, at, errors) {
 
   if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
     const properties = schema.properties || {};
+    const names = Object.keys(value);
+    if (schema.minProperties !== undefined && names.length < schema.minProperties) {
+      errors.push(`${at}: fewer than ${schema.minProperties} propert${schema.minProperties === 1 ? 'y' : 'ies'}`);
+    }
+    if (schema.maxProperties !== undefined && names.length > schema.maxProperties) {
+      errors.push(`${at}: more than ${schema.maxProperties} properties`);
+    }
     for (const name of schema.required || []) {
       if (!Object.hasOwn(value, name)) errors.push(`${at}: missing required property "${name}"`);
     }

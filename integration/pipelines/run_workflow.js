@@ -12,7 +12,10 @@
  *   before   C-group workflows get `args.searchBrief` from search_brief.js (the
  *            candidate numbers reach the workflow without an agent transcribing them);
  *            attribution gets its sensitivity card and req.budget its budget frontier,
- *            each refused when built from other inputs;
+ *            each refused when built from other inputs; the L1 contract's consumers get
+ *            `args.brief` derived from the contract (make_brief.js) rather than from a
+ *            hand-typed file, and every stage gets `args.ledger` -- what the earlier
+ *            stages decided (design_ledger.js);
  *   during   a working-tree snapshot is taken; agents must be read-only;
  *   after    if anything in the tree changed, nothing is landed (exit 3); a C-group
  *            winner is checked against the candidate artifact before anything is
@@ -25,17 +28,21 @@
  *            land.js's path and content gates (exit 4 on rejection). A run that
  *            returned no files (a backflow, a blocked input) lands an outcome record
  *            instead, so the stop is on disk and not only in the terminal; its citation
- *            report goes into the record rather than stopping it.
+ *            report goes into the record rather than stopping it. Finally the workflow's
+ *            `ledgerPatch` is merged back into the ledger (exit 8 if that merge is refused),
+ *            so the next stage starts from what this one decided.
  *
  * Landing is opt-in: without --land the run is a dry run that applies every gate and
- * writes nothing.
+ * writes nothing -- the ledger included.
  *
  * Usage:
  *   node integration/pipelines/run_workflow.js <workflow> --backend mock|claude|cursor|exchange
- *        [--args file.json] [--brief file.json] [--run-id id] [--max N] [--dimension d]
+ *        [--args file.json] [--brief file.json] [--split S-CMP] [--run-id id] [--max N] [--dimension d]
  *        [--model name] [--concurrency N] [--timeout ms] [--exchange-dir dir]
  *        [--result-file file.json] [--land]
  *   <workflow>: compute | memory | comm | physical | intake | detail.events | ... (see --list)
+ *   direction, compute, memory, comm and physical derive their brief from the budget contract;
+ *   --brief overrides that, and every other stage still needs it.
  *   attribution reads out/attribution/<d>_card.json (d = sram | comm | joint) and refuses a stale card.
  *   req.budget reads out/requirements/budget_frontier.json and refuses a stale frontier.
  *
@@ -44,7 +51,8 @@
  * winner does not match the candidate artifact (req.budget: the contract does not match its
  * frontier split), 6 a reported gate decision differs from gate_status.json, 7 a cited
  * file:line does not exist or has no text, or (attribution, req.budget) a range number is
- * supported neither by the card / frontier nor by its cited lines.
+ * supported neither by the card / frontier nor by its cited lines, 8 the files landed but
+ * the ledger patch was refused.
  */
 
 const assert = require('assert');
@@ -61,14 +69,17 @@ const {createExchangeBackend} = require('../orchestration/runtime/backends/excha
 const {buildOutcomeFile} = require('../orchestration/runtime/outcome');
 const {DOMAINS, DEFAULT_MAX, buildSearchBrief, verifyLandedWinner} = require('./search_brief');
 const {checkCitations, checkRangeNumbers} = require('./check_citations');
+const MAKE_BRIEF = require('./make_brief');
+const LEDGER = require('./design_ledger');
 const ATTRIBUTION = require('../detailed/tps_attribution');
 const FRONTIER = require('../planning/requirement_frontier');
 
 const root = path.resolve(__dirname, '../..');
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest('hex');
 
-// Only compute has a committed brief; the others must be supplied.
-const DEFAULT_BRIEFS = {compute: 'teams/council/inputs/design_brief.m2.json'};
+// The L1 contract's consumers get their brief derived from the contract (make_brief.js), so
+// --brief is an override rather than the only way in. Every other stage still needs one.
+const DERIVED_BRIEFS = MAKE_BRIEF.coveredStages();
 
 function parseFlags(argv) {
   const flags = {};
@@ -114,10 +125,28 @@ function prepareArgs(workflow, flags) {
   const args = flags.args ? readJson(flags.args) : {};
   args.repo = args.repo || root;
   if (flags['run-id']) args.runId = flags['run-id'];
-  const briefFile = flags.brief || DEFAULT_BRIEFS[workflow];
-  if (briefFile) args.brief = readJson(briefFile);
+  // The brief: an explicit file wins, otherwise it is derived from the budget contract. A
+  // derived brief is never stored -- the contract is the single source for its numbers, so
+  // there is no second copy next to it to go stale.
+  if (flags.brief) {
+    args.brief = readJson(flags.brief);
+    args.briefOrigin = `--brief ${flags.brief}`;
+  } else if (DERIVED_BRIEFS.includes(workflow)) {
+    const built = MAKE_BRIEF.briefFor(workflow, {runId: args.runId, splitId: flags.split});
+    args.brief = built.brief;
+    args.briefOrigin = built.origin;
+    if (built.provenance) args.briefProvenance = built.provenance;
+  }
+  // The ledger is what the earlier stages decided. It is injected whole; the workflow reads
+  // what it needs (design.intake already looks for args.rejectedOptions) and returns a patch.
+  const ledger = LEDGER.loadLedger();
+  if (ledger.exists) {
+    args.ledger = ledger.ledger;
+    args.ledgerPath = ledger.path;
+    if (!args.rejectedOptions) args.rejectedOptions = ledger.ledger.rejectedOptions;
+  }
   if (Object.hasOwn(DOMAINS, workflow)) {
-    if (!args.brief) throw new Error(`design.${workflow} needs a brief: pass --brief <file> (only compute has a default)`);
+    if (!args.brief) throw new Error(`design.${workflow} needs a brief: pass --brief <file>, or build one from a budget contract (npm run budget:frontier)`);
     const max = flags.max ? Number(flags.max) : DEFAULT_MAX;
     const searchBrief = buildSearchBrief(workflow, {max});
     if (!searchBrief.ok) throw new Error(`search brief for ${workflow} is not usable: ${searchBrief.notes}`);
@@ -203,6 +232,18 @@ function halfWinnerResult(workflow, files) {
   return null;
 }
 
+// Whether this run's decisions enter the ledger, and the patch that does. Three things stop
+// it, and none of them is an error: a dry run decides nothing, a run whose files were rejected
+// did not happen (and must not leave a decision behind), and a workflow that returns no patch
+// is not in the ledger's chain at all (design.explore, design.learn).
+function ledgerUpdate({land, landing, result}) {
+  if (!land) return {write: false, why: 'dry run'};
+  if (landing && landing.rejected && landing.rejected.length) return {write: false, why: 'files were rejected'};
+  const patch = LEDGER.patchOf(result);
+  if (!patch) return {write: false, why: 'the workflow returns no ledger patch'};
+  return {write: true, patch};
+}
+
 async function main(argv, deps = {}) {
   const {flags, positional} = parseFlags(argv);
   if (flags.list) {
@@ -211,7 +252,7 @@ async function main(argv, deps = {}) {
   }
   const [workflow] = positional;
   if (flags.help || !workflow || !flags.backend) {
-    console.error('usage: run_workflow.js <workflow> --backend mock|claude|cursor|exchange [--args f] [--brief f] [--run-id id] [--max N] [--dimension sram|comm|joint] [--model m] [--concurrency N] [--timeout ms] [--exchange-dir d] [--result-file f] [--land]   (--list shows workflows)');
+    console.error('usage: run_workflow.js <workflow> --backend mock|claude|cursor|exchange [--args f] [--brief f] [--split S-CMP] [--run-id id] [--max N] [--dimension sram|comm|joint] [--model m] [--concurrency N] [--timeout ms] [--exchange-dir d] [--result-file f] [--land]   (--list shows workflows)');
     return 1;
   }
 
@@ -335,11 +376,25 @@ async function main(argv, deps = {}) {
   }
   const landing = landFiles({root, workflow, files, dryRun: !flags.land, scriptDecisions});
   summary.landing = {dryRun: !flags.land, landed: landing.landed, rejected: landing.rejected};
+  // The ledger is the loop's own record, not one of the workflow's files: it goes through
+  // neither the path policy (out/governance/ belongs to dgate and backflow) nor the content
+  // gate. It is written only when everything the workflow returned actually landed.
+  const ledger = ledgerUpdate({land: flags.land, landing, result});
+  if (ledger.write) {
+    try {
+      const written = LEDGER.writeLedger({patch: ledger.patch});
+      summary.ledger = {path: written.path, created: written.created, currentStage: written.ledger.currentStage};
+    } catch (error) {
+      summary.error = `the files landed but the ledger did not: ${error.message}`;
+      console.log(JSON.stringify(summary, null, 2));
+      return 8;
+    }
+  }
   console.log(JSON.stringify(summary, null, 2));
   return landing.rejected.length ? 4 : 0;
 }
 
-module.exports = {main, parseFlags, halfWinnerResult, verifyLandedBudget};
+module.exports = {main, parseFlags, halfWinnerResult, verifyLandedBudget, ledgerUpdate, DERIVED_BRIEFS};
 
 if (require.main === module) {
   main(process.argv.slice(2)).then((code) => { process.exitCode = code; });
