@@ -79,11 +79,13 @@ try {
   assert.deepStrictEqual(n.problems.map(p => p.number), ['320'], 'an MC tier label carries its bandwidth number');
   assert.deepStrictEqual(numberTokens('FP8 TP32 B-008 HW-03 a.md:254 :12 2026-09-26 §2.1 #4 8 16 0.85 512'), ['0.85', '512'], 'identifiers, line refs, dates and small integers are not claims');
 
-  // design.attribution.workflow.js repeats numberTokens in-script (it cannot require); the two must agree.
-  const wf = fs.readFileSync(path.join(__dirname, '../../integration/orchestration/design.attribution.workflow.js'), 'utf8');
-  const wfTokens = new Function(`${wf.slice(wf.indexOf('const CITE ='), wf.indexOf('const sameNumber'))}; return numberTokens`)();
-  for (const s of ['FP8 TP32 B-008 HW-03 a.md:254 :12 2026-09-26 §2.1 #4 8 16 0.85 512', 'MC320 656 B at 03_TMA_AND_SRAM.md:241/:248, 1.4245', 'x.json:46、:50 and 1000.15 / 1028.2'])
-    assert.deepStrictEqual(wfTokens(s), numberTokens(s), `workflow numberTokens differs on: ${s}`);
+  // design.attribution and design.req.budget repeat numberTokens in-script (they cannot require); all must agree.
+  for (const name of ['design.attribution.workflow.js', 'design.req.budget.workflow.js']) {
+    const wf = fs.readFileSync(path.join(__dirname, '../../integration/orchestration', name), 'utf8');
+    const wfTokens = new Function(`${wf.slice(wf.indexOf('const CITE ='), wf.indexOf('const sameNumber'))}; return numberTokens`)();
+    for (const s of ['FP8 TP32 B-008 HW-03 a.md:254 :12 2026-09-26 §2.1 #4 8 16 0.85 512', 'MC320 656 B at 03_TMA_AND_SRAM.md:241/:248, 1.4245', 'x.json:46、:50 and 1000.15 / 1028.2'])
+      assert.deepStrictEqual(wfTokens(s), numberTokens(s), `${name} numberTokens differs on: ${s}`);
+  }
 } finally {
   fs.rmSync(root, {recursive: true, force: true});
 }

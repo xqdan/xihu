@@ -18,9 +18,9 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 第二种由 [`runtime/`](runtime/)（注入 `args` / `agent` / `parallel` / `phase` / `log`）加
 [`../pipelines/run_workflow.js`](../pipelines/run_workflow.js)（主循环）实现。`runtime/` 不读写仓库文件，主循环做三件事：
 
-1. **前置**：C 组先跑 `search_brief.js`，把核验过的候选集作为 `args.searchBrief` 注入；
+1. **前置**：C 组先跑 `search_brief.js`，把核验过的候选集作为 `args.searchBrief` 注入；`attribution` 读灵敏度卡、`req.budget` 读预算前沿，各自核对输入指纹，过期即拒收（退出码 1）；
 2. **执行**：运行前后各取一次工作区快照（`runtime/guard.js`），agent 若改动了任何文件，本次不落盘（退出码 3）；
-3. **后置**：C 组 winner 先与候选产物逐字段核对（不一致退出码 5，不落盘）；返回值里每个 `文件:行号` 引用都由 `../pipelines/check_citations.js` 机械核对——文件不存在、越界或所引行没有文字（空行、表格边框、代码围栏）即不落盘（退出码 7；`attribution` 还要求专家 `plausibleRange` 里的卡外数字出现在其 `rangeEvidence` 所引的行上，不符同样退出码 7；行内容是否支持论断仍由 `invariant-checker` 判断）；再经 `runtime/land.js` 的路径与内容闸门落盘（拒绝退出码 4）。落盘是**可选的**：不加 `--land` 就是 dry run，闸门全跑、不写任何文件。
+3. **后置**：C 组 winner 先与候选产物逐字段核对（不一致退出码 5，不落盘；`req.budget` 的合同同样要与前沿里所选切分逐字段一致）；返回值里每个 `文件:行号` 引用都由 `../pipelines/check_citations.js` 机械核对——文件不存在、越界或所引行没有文字（空行、表格边框、代码围栏）即不落盘（退出码 7；`attribution` 与 `req.budget` 还要求专家 `plausibleRange` 里的卡外（前沿外）数字出现在其 `rangeEvidence` 所引的行上，不符同样退出码 7；行内容是否支持论断仍由 `invariant-checker` 判断）；再经 `runtime/land.js` 的路径与内容闸门落盘（拒绝退出码 4）。落盘是**可选的**：不加 `--land` 就是 dry run，闸门全跑、不写任何文件。
    一次运行若没有返回任何文件（旁证回退、输入不足），主循环改为落一份结果记录 `out/<域>/<workflow>_outcome.json`（按维度跑的 `attribution` 为 `attribution_<维度>_outcome.json`；`runtime/outcome.js`；候选明细折叠成 id 列表），让“谁在什么约束上停了这次运行”留在磁盘上而不只在终端里；这时引用核对的结果写进记录的 `citations`，不阻止落记录。`--result-file <path>` 另存完整返回值。
 
 在 Claude Code 里用 Workflow 工具原生跑时，上面的快照与闸门都不经过主循环：落盘前由主循环（会话）自己对返回值跑一次 `npm run workflow:citations -- <输出文件>`（接受 Workflow 输出，取其 `result`），有问题即不落盘。
@@ -45,7 +45,7 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 | `k3_external_references.workflow.js` | → `design.audit` 的一个可选阶段（传 `args.premises` 时启用），产物落 `references/external/` |
 | `k3_agent_learning.workflow.js` | → `design.learn`（仍是一次性脚本），产物落 `references/sota/`，并按领域登记了注入点 |
 
-## 20 个脚本
+## 21 个脚本
 
 每个 workflow 对应的业务环节、产出和结局，见 [`WORKFLOWS.md`](WORKFLOWS.md)；下面按组列出契约与分工。
 
@@ -108,6 +108,14 @@ D 组**不得并行化**：这五个环节是同一条链上的前后依赖，�
 | `design.attribution.workflow.js` | 某个维度（`sram` / `comm` / `joint`）的每个参数怎么影响 TPS/usr、哪些承重 | 行 owner 专家（compute / memory / comm）∥ `software-expert` · `integrator` · `invariant-checker` |
 
 灵敏度卡由 `integration/detailed/tps_attribution.js` 生成（`npm run attribution:cards`），`run_workflow.js attribution --dimension <d>` 读入并核对基线指纹后以 `args.card` 传入；agent 只按行名引用卡、给出物理可信区间与出处，不产生任何数。卡头的 `couplings` 是脚本算好的成对重放（各自单动、一起动、交互项 `interactionTps`），专家要问"两个参数一起动会怎样"时先查这里，不自己估联合效应。三个维度互相独立，可并行跑。设计见 `teams/council/docs/23_DESIGN_QUESTION_WORKFLOW_PROPOSAL.md` §4 L4。
+
+### L1-b · 需求预算
+
+| 脚本 | 回答 | 策略实例 |
+|---|---|---|
+| `design.req.budget.workflow.js` | 达到目标 TPS/usr，算力、带宽、τ 各给多少；选一份候选切分作为 L1 预算合同 | 条目 owner 专家（compute / memory / comm / physical）∥ · `architect` · `framing-critic` · `invariant-checker` |
+
+预算前沿由 `integration/planning/requirement_frontier.js` 生成（`npm run budget:frontier`，写 `out/requirements/budget_frontier.json`），`run_workflow.js req.budget` 读入、核对 `inputs.sourceArtifacts` 的指纹后以 `args.frontier` 传入。专家只判本域条目物理上是否可达，`architect` 只在没被否的切分里选 id；落盘的 `out/budget/L1_budget.json` 是那份切分的合同原样加 `selection` 记录，主循环落盘前逐字段核对（`verifyLandedBudget`，不符退出码 5）。设计见 `teams/council/docs/23_DESIGN_QUESTION_WORKFLOW_PROPOSAL.md` §4 L1-b。
 
 ### E 组 · 横切
 

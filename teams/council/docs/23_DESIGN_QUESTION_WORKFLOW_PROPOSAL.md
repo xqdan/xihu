@@ -86,11 +86,11 @@ flowchart TB
   "sourceArtifacts": [{"path": "out/requirements/budget_frontier.json", "sha256": "..."}],
   "target": {"tpsPerUser": 1000, "architectureGate": 1050, "rawBudgetUs": 854.70, "engineeringMargin": 1.17},
   "split": [
-    {"id": "B-MEM-BW",   "lane": "memory", "quantity": "sustainedBytesPerSecondPerRank", "min": null, "owner": "mc"},
-    {"id": "B-SERIAL-CMP","lane": "serial", "quantity": "serialComputeUs",              "max": null, "owner": "compute"},
-    {"id": "B-TAU",      "lane": "serial", "quantity": "tauUs",                         "max": null, "owner": "comm"},
-    {"id": "B-SRAM-CAP", "lane": "memory", "quantity": "sharedWindowMiBPerCard",        "min": null, "owner": "sram"},
-    {"id": "B-AREA",     "lane": "physical","quantity": "dieAreaMm2",                   "max": null, "owner": "physical"}
+    {"id": "B-MEM-BW",    "lane": "memory",  "quantity": "mcPayloadGBsPerCube", "min": null, "owner": "mc",       "ownerAgent": "memory-expert"},
+    {"id": "B-SERIAL-CMP","lane": "serial",  "quantity": "computeScale",        "min": null, "owner": "compute",  "ownerAgent": "compute-expert"},
+    {"id": "B-TAU",       "lane": "serial",  "quantity": "tauUs",               "max": null, "owner": "comm",     "ownerAgent": "comm-expert"},
+    {"id": "B-SRAM-CAP",  "lane": "memory",  "quantity": "sharedMiBPerDie",     "min": null, "owner": "sram",     "ownerAgent": "memory-expert"},
+    {"id": "B-AREA",      "lane": "physical","quantity": "dieAreaMm2",          "max": null, "owner": "physical", "ownerAgent": "physical-expert"}
   ],
   "coupling": [{"between": ["B-SRAM-CAP", "B-MEM-BW"], "via": "prefetch depth / DMA wait", "source": "..."}],
   "evidenceLevel": "MODEL"
@@ -133,6 +133,19 @@ flowchart TB
 - **策略实例**：`architect` 提出切法意图（只选切法，不填数）→ `compute-expert` ∥ `memory-expert` ∥ `comm-expert` ∥ `physical-expert` 各自判断本域预算是否**物理上**可达（例如 τ ≤ 1.2 µs 是否有通路级依据，B-008）→ `framing-critic`（预算是否把设计空间写窄了）→ `invariant-checker`。
 - **产出**：`out/requirements/budget_frontier.json`（内核）、`out/budget/L1_budget.json`（选定切法的合同）。
 - **回流**：所有切法都有专家判"不可达" → 回 L0（目标或场景不可实现，交人决策）。
+
+#### P2 实现状态（已实现，与上文的出入）
+
+实现在 `integration/planning/requirement_frontier.js`（内核）、`integration/pipelines/generate_budget_frontier.js`（`npm run budget:frontier`，写 `out/requirements/budget_frontier.json`）、`integration/orchestration/design.req.budget.workflow.js`，测试 `tests/regression/test_budget_frontier.js`（存盘前沿 = 重算；规划直线与 `token_time.maxTauForTarget` 一致；每份合同在自己的点上用两个模型复算守得住预算）与 `tests/regression/test_workflow_driver.js`。与上面设计稿不同的地方：
+
+1. **量的口径**（§3 的示例已按实现改）：带宽用 `mcPayloadGBsPerCube`（每颗 MC 的有效载荷带宽，规划与详细模型共用的旋钮），算力用 `computeScale`（相对 P1 引擎峰值 × `A.TECH` 达成率的倍数，1 = 发布点；合同另附各模型的 `serialComputeUsMax` 作参考），SRAM 用 `sharedMiBPerDie`。每条带 `ownerAgent`（审读它的专家），`owner` 仍是域名。
+2. **切法是内核枚举的，不由 `architect` 先提**：内核固定给 4 份候选切分——`S-TAU`（只放宽 τ）、`S-CMP`（只放宽算力）、`S-BW`（只放宽带宽）、`S-BAL`（三轴各让出单轴余量的同一比例）。单轴余量取规划（TP32 上每个未阻断模型）与详细（K3 TP32）中更紧的一个。当前前沿：τ 最多 1.355 µs（详细 K3 卡住，规划 1.408），算力最低 0.744（详细 K3），MC 载荷最低 580.5 GB/s/cube（规划 K3 卡住，介于 MC320 与 MC640 之间）。`S-BAL` 的比例约 0.533。
+3. **先审可达性，再选**：四个 owner 专家并行审**所有**切分里本域的条目（`reachable` / `unreachable` / `unknown`，附可信区间与出处）；有条目被判不可达的切分被否，记入 `ledgerPatch.rejectedOptions`（`rejectedBy` 为该专家）；`architect` 只在剩下的切分里选 id（schema 的 `enum` 就是剩下的那几份），不填数。这样 `architect` 不会选中一份专家已否的切分，被否切分也不靠 `architect` 转述。选中切分里判 `unknown` 的条目记为开放 blocker（`REACH-REQ-BUDGET-*`，owner 为该专家），`framing-critic` 的缺口记为 `FRAMING-REQ-BUDGET-*`。
+4. **落盘核对**：`out/budget/L1_budget.json` 是所选切分的合同原样加 `selection`（`chosenBy`、`reachable`、`ruledOut`、`openBlockers`、`frontierSha256`）；`run_workflow.js` 落盘前逐字段比对前沿里那份切分，并核对 `frontierSha256` 是读入的那份前沿（`verifyLandedBudget`，不符退出码 5）。专家 `plausibleRange` 里的前沿外数字要出现在其 `rangeEvidence` 所引的行上（与 `attribution` 共用 `check_citations.js`，退出码 7）；理由里的前沿外数字由 workflow 比对，修正一次仍不合规即 `INVARIANT_VIOLATED`。
+5. **`B-AREA` 的限值**：用详细模型实际执行的 `k3_physical_basis.BASIS.limits`（SF4、液冷：die 400 mm²、die 300 W、卡 2800 W），不是 `A.LIMITS` 的风冷功耗口径；合同同时给发布点与 SRAM 下限处的面积 / 功耗。
+6. **覆盖范围**：规划部分覆盖三个模型 × TP8/16/32，合同只在 TP32 上切（`scope.tp`）；`B-SRAM-CAP` 与所有详细界只有 K3（规划模型没有 SRAM 项），其他模型 `UNCORROBORATED`。软件开关全程保持发布点的 `OPT`，不重调。带宽搜索止于 MC640，需要超过 MC640 的切分不提供。
+7. **回流**：所有切分都被否（或内核一份都给不出）→ `DIRECTION_BACKFLOW`，`routeTo: design.intake`（L0，交人决定目标或场景），落结果记录 `out/budget/req_budget_outcome.json`；`physical-expert` 的 `PPA_DIRECTION_BACKFLOW` 或 `architect` 判方向回退 → `routeTo: design.direction`。
+8. **合同尚无下游消费者**：L2 / L3 仍按"保持已发布 TPS"判可行，`make_brief.js` 与 ledger 注入是 P3。任何 Gate 都不读前沿或合同。
 
 ### L2 `design.arch.direction` — 粗架构形态（合并 `direction` 与 `dgate`）
 
@@ -282,7 +295,7 @@ flowchart TB
 | 步骤 | 内容 | 新增代码 | 理由 |
 |---|---|---|---|
 | P1（已实现，见 §4 L4 的实现状态） | L4 `attribution` + `tps_attribution.js`，先做 `sram`、`comm`、`joint` 三个维度 | 内核约 70% 可复用 `k3_tps_design_baseline.js` / `die_area_reallocation.js` | 直接回答"SRAM、集合通信怎么影响 TPS/usr"；不依赖其他格 |
-| P2 | L1-b `req.budget` + `requirement_frontier.js` | 规划部分基本是 `maxTauForTarget` 的推广；详细部分是小网格重放 | 把"算力 / 带宽 / τ"的关系变成可下发的合同 |
+| P2（已实现，见 §4 L1-b 的实现状态） | L1-b `req.budget` + `requirement_frontier.js` | 规划部分基本是 `maxTauForTarget` 的推广；详细部分是小网格重放 | 把"算力 / 带宽 / τ"的关系变成可下发的合同 |
 | P3 | 预算合同 schema + `make_brief.js` + ledger 注入 | 中 | 接通层间链 |
 | P4 | L3 改可行条件；拆 `sram` / `mc`；补旁证专家 | `sram_design_space.json` + 搜索脚本 | 依赖 P2 的合同 |
 | P5 | L3 `coupling` | 中 | 依赖 P4 |

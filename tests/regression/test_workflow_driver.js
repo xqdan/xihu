@@ -17,7 +17,9 @@
 //     the report goes into the outcome record instead;
 //   * attribution: an expert range number found neither on the card nor on its cited line
 //     lands nothing (exit 7); a loose number in a reason gets one repair call, and one left
-//     after it is a mechanical violation.
+//     after it is a mechanical violation;
+//   * req.budget: an unreachable entry rules its split out, none left is a direction backflow,
+//     and a landed contract that is not its frontier split verbatim is refused (exit 5).
 
 const assert = require('assert');
 const fs = require('fs');
@@ -63,7 +65,7 @@ async function run(argv, deps) {
   assert.strictEqual((await run(['memory', '--backend', 'mock'])).code, 1, 'only compute has a default brief');
   const listed = await run(['--list']);
   assert.strictEqual(listed.code, 0);
-  assert.strictEqual(listed.text.split('\n').length, 20);
+  assert.strictEqual(listed.text.split('\n').length, 21);
 
   // The mock backend invents a winner; the artifact check must reject it before landing.
   const invented = await run(['compute', '--backend', 'mock'], {backend: createMockBackend({reply: (call) => withDims(call)})});
@@ -187,7 +189,60 @@ async function run(argv, deps) {
     fs.rmSync(resultFile, {force: true});
   }
 
-  console.log('PASS workflow driver: usage errors, invented winner stopped before landing, valid winner dry-run lands 2 files, working-tree write stops the run, a backflow leaves an outcome record, a blank file:line citation or an unsupported range number stops landing (exit 7), a loose number is repaired once and otherwise violates');
+  // req.budget: experts judge every split, the architect picks among the reachable ones, and the
+  // landed contract is the frontier split verbatim. An unreachable entry rules its split out; an
+  // edited contract or a frontier swapped under the run stops landing (exit 5).
+  const frontier = JSON.parse(fs.readFileSync(path.join(root, 'out/requirements/budget_frontier.json'), 'utf8'));
+  const budgetBackend = ({unreachable = [], pick, calls = []} = {}) => createMockBackend({reply: (call) => {
+    calls.push(call.label);
+    const base = fromSchema(call.schema, '');
+    const review = call.label.match(/^(review|repair):(.+-expert)$/);
+    if (review) {
+      const from = review[2];
+      const entries = frontier.splits.flatMap((s) => s.contract.split.filter((e) => e.ownerAgent === from).map((e) => ({
+        splitId: s.splitId, id: e.id, reachability: unreachable.includes(`${s.splitId}/${e.id}`) ? 'unreachable' : 'reachable',
+        plausibleRange: 'UNVERIFIED', rangeEvidence: 'integration/pipelines/run_workflow.js:1', reason: `splits[${s.splitId}].${e.id}`})));
+      return {...base, from, entries, note: ''};
+    }
+    if (call.label === 'architect') return {...base, splitId: pick || call.schema.properties.splitId.enum[0], reason: 'tradeoff by entry id', tradeoff: 'B-TAU'};
+    if (call.label === 'invariant-checker') return {...base, verdict: 'INVARIANT_OK', violations: []};
+    return undefined;
+  }});
+  const budgetCalls = [];
+  const landedBudget = await run(['req.budget', '--backend', 'mock', '--result-file', resultFile], {backend: budgetBackend({unreachable: ['S-TAU/B-TAU'], calls: budgetCalls})});
+  try {
+    assert.strictEqual(landedBudget.code, 0, landedBudget.text);
+    assert.strictEqual(landedBudget.summary.verdict, 'INVARIANT_OK');
+    assert.strictEqual(landedBudget.summary.verifyLanded.ok, true);
+    assert.deepStrictEqual(landedBudget.summary.landing.landed.map((f) => f.path).sort(), ['out/budget/L1_budget.json', 'out/budget/L1_run_record.json']);
+    assert(!fs.existsSync(path.join(root, 'out/budget')), 'a dry run must not create out/budget');
+    const full = JSON.parse(fs.readFileSync(resultFile, 'utf8'));
+    assert.strictEqual(full.splitId, 'S-CMP', 'the unreachable S-TAU is not offered to the architect');
+    assert.deepStrictEqual(full.ledgerPatch.rejectedOptions.map((r) => [r.optionId, r.rejectedBy]), [['S-TAU', 'comm-expert']]);
+    assert.deepStrictEqual(full.budget.selection.reachable, ['S-CMP', 'S-BW', 'S-BAL']);
+    assert(['review:compute-expert', 'review:memory-expert', 'review:comm-expert', 'review:physical-expert', 'architect', 'framing-critic', 'invariant-checker'].every((l) => budgetCalls.includes(l)));
+  } finally {
+    fs.rmSync(resultFile, {force: true});
+  }
+  // Every split ruled out is a direction backflow: no contract, an outcome record instead.
+  const allOut = await run(['req.budget', '--backend', 'mock'], {backend: budgetBackend({unreachable: frontier.splits.map((s) => `${s.splitId}/B-AREA`)})});
+  assert.strictEqual(allOut.code, 0, allOut.text);
+  assert.strictEqual(allOut.summary.verdict, 'DIRECTION_BACKFLOW');
+  assert.deepStrictEqual(allOut.summary.landing.landed.map((f) => f.path), ['out/budget/req_budget_outcome.json']);
+  // The landed contract must equal its frontier split and name the frontier that was read.
+  const {verifyLandedBudget} = require('../../integration/pipelines/run_workflow.js');
+  const split = frontier.splits[1];
+  const budgetFiles = (contract, sha = 'abc') => [
+    {path: 'out/budget/L1_budget.json', content: JSON.stringify({...contract, selection: {frontierSha256: sha}})},
+    {path: 'out/budget/L1_run_record.json', content: '{}'},
+  ];
+  assert.strictEqual(verifyLandedBudget(budgetFiles(split.contract), frontier, 'abc').ok, true);
+  const edited = verifyLandedBudget(budgetFiles({...split.contract, point: {...split.contract.point, tauUs: 9}}), frontier, 'abc');
+  assert(!edited.ok && /differs from/.test(edited.problems[0]), 'an edited budget is refused');
+  assert(!verifyLandedBudget(budgetFiles(split.contract, 'other'), frontier, 'abc').ok, 'a contract from another frontier is refused');
+  assert(!verifyLandedBudget(budgetFiles(split.contract).slice(0, 1), frontier, 'abc').ok, 'a contract without its run record is half a result');
+
+  console.log('PASS workflow driver: usage errors, invented winner stopped before landing, valid winner dry-run lands 2 files, working-tree write stops the run, a backflow leaves an outcome record, a blank file:line citation or an unsupported range number stops landing (exit 7), a loose number is repaired once and otherwise violates; req.budget lands a verbatim frontier split, rules out unreachable splits and backflows when none is left');
 })().catch((error) => {
   console.error(error);
   process.exit(1);

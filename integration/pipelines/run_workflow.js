@@ -11,13 +11,16 @@
  *
  *   before   C-group workflows get `args.searchBrief` from search_brief.js (the
  *            candidate numbers reach the workflow without an agent transcribing them);
+ *            attribution gets its sensitivity card and req.budget its budget frontier,
+ *            each refused when built from other inputs;
  *   during   a working-tree snapshot is taken; agents must be read-only;
  *   after    if anything in the tree changed, nothing is landed (exit 3); a C-group
  *            winner is checked against the candidate artifact before anything is
  *            written (exit 5 on mismatch); every `file:line` citation in the result
  *            must point at an existing line with text (exit 7 otherwise; check_citations.js),
- *            and for attribution every off-card number in an expert's plausibleRange must be
- *            on a line its rangeEvidence cites (exit 7 too);
+ *            and for attribution and req.budget every off-card (off-frontier) number in an
+ *            expert's plausibleRange must be on a line its rangeEvidence cites (exit 7 too);
+ *            a req.budget contract must be a verbatim frontier split (exit 5 otherwise);
  *            then the returned files go through
  *            land.js's path and content gates (exit 4 on rejection). A run that
  *            returned no files (a backflow, a blocked input) lands an outcome record
@@ -34,14 +37,17 @@
  *        [--result-file file.json] [--land]
  *   <workflow>: compute | memory | comm | physical | intake | detail.events | ... (see --list)
  *   attribution reads out/attribution/<d>_card.json (d = sram | comm | joint) and refuses a stale card.
+ *   req.budget reads out/requirements/budget_frontier.json and refuses a stale frontier.
  *
  * Exit codes: 0 ran (the workflow's own verdict is in the summary), 1 usage or
  * environment problem, 3 agents modified the tree, 4 a file was rejected, 5 the
- * winner does not match the candidate artifact, 6 a reported gate decision differs from
- * gate_status.json, 7 a cited file:line does not exist or has no text, or (attribution) a
- * range number is supported neither by the card nor by its cited lines.
+ * winner does not match the candidate artifact (req.budget: the contract does not match its
+ * frontier split), 6 a reported gate decision differs from gate_status.json, 7 a cited
+ * file:line does not exist or has no text, or (attribution, req.budget) a range number is
+ * supported neither by the card / frontier nor by its cited lines.
  */
 
+const assert = require('assert');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
@@ -56,6 +62,7 @@ const {buildOutcomeFile} = require('../orchestration/runtime/outcome');
 const {DOMAINS, DEFAULT_MAX, buildSearchBrief, verifyLandedWinner} = require('./search_brief');
 const {checkCitations, checkRangeNumbers} = require('./check_citations');
 const ATTRIBUTION = require('../detailed/tps_attribution');
+const FRONTIER = require('../planning/requirement_frontier');
 
 const root = path.resolve(__dirname, '../..');
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest('hex');
@@ -134,7 +141,41 @@ function prepareArgs(workflow, flags) {
     }
     Object.assign(args, {dimension, card, cardPath, cardSha256: sha256(text)});
   }
+  // design.req.budget reads the budget frontier (npm run budget:frontier) the same way: whole,
+  // and refused when any input it was built from has changed since.
+  if (workflow === 'req.budget') {
+    const frontierPath = FRONTIER.OUT_FILE;
+    if (!fs.existsSync(path.join(root, frontierPath))) throw new Error(`${frontierPath} is missing; run npm run budget:frontier`);
+    const text = fs.readFileSync(path.join(root, frontierPath), 'utf8');
+    const frontier = JSON.parse(text);
+    const stale = ((frontier.inputs && frontier.inputs.sourceArtifacts) || [{path: FRONTIER.BASELINE_FILE}])
+      .filter((a) => !fs.existsSync(path.join(root, a.path)) || sha256(fs.readFileSync(path.join(root, a.path))) !== a.sha256);
+    if (stale.length) {
+      throw new Error(`${frontierPath} is stale (built from another ${stale.map((a) => a.path).join(', ')}); run npm run budget:frontier`);
+    }
+    Object.assign(args, {frontier, frontierPath, frontierSha256: sha256(text)});
+  }
   return args;
+}
+
+// The landed L1 contract must be a verbatim frontier split plus its selection record, and it
+// comes with its run record: an agent that edited a budget, a frontier swapped under the run,
+// or half a result stops landing.
+function verifyLandedBudget(files, frontier, frontierSha256) {
+  const budget = parseLanded(files, 'L1_budget.json');
+  const record = parseLanded(files, 'L1_run_record.json');
+  if (!budget || !record) {
+    return {ok: false, problems: [budget ? 'L1_budget.json without its L1_run_record.json' : 'returned files without L1_budget.json']};
+  }
+  const {selection, ...contract} = budget;
+  const split = ((frontier && frontier.splits) || []).find((s) => s.splitId === contract.splitId);
+  const problems = [];
+  if (!split) problems.push(`split ${contract.splitId} is not in ${FRONTIER.OUT_FILE}`);
+  else {
+    try { assert.deepStrictEqual(contract, split.contract); } catch (_) { problems.push(`L1_budget.json differs from ${FRONTIER.OUT_FILE} split ${contract.splitId}`); }
+  }
+  if (!selection || selection.frontierSha256 !== frontierSha256) problems.push(`selection.frontierSha256 is not the frontier that was read (${frontierSha256})`);
+  return {ok: !problems.length, splitId: contract.splitId, problems};
 }
 
 function parseLanded(files, suffix) {
@@ -234,7 +275,8 @@ async function main(argv, deps = {}) {
   // evidence cites. A result with files does not land; a stop records the report alongside.
   const citations = checkCitations(root, result);
   summary.citations = {checked: citations.checked, problems: citations.problems, unresolved: citations.unresolved.length};
-  const rangeNumbers = workflow === 'attribution' ? checkRangeNumbers(root, result, {card: args.card}) : null;
+  const rangeCard = workflow === 'attribution' ? args.card : workflow === 'req.budget' ? args.frontier : null;
+  const rangeNumbers = rangeCard ? checkRangeNumbers(root, result, {card: rangeCard}) : null;
   if (rangeNumbers) summary.rangeNumbers = rangeNumbers;
   const outcome = buildOutcomeFile(workflow, result, {
     runId: result && result.runId,
@@ -248,9 +290,18 @@ async function main(argv, deps = {}) {
   else if (files.length && (!citations.ok || (rangeNumbers && !rangeNumbers.ok))) {
     summary.error = !citations.ok
       ? `${citations.problems.length} citation(s) point at a missing file, a line without text or past the end; nothing was landed`
-      : `${rangeNumbers.problems.length} plausibleRange number(s) are neither on the card nor on a line their rangeEvidence cites; nothing was landed`;
+      : `${rangeNumbers.problems.length} plausibleRange number(s) are neither on the ${workflow === 'req.budget' ? 'frontier' : 'card'} nor on a line their rangeEvidence cites; nothing was landed`;
     console.log(JSON.stringify(summary, null, 2));
     return 7;
+  }
+
+  // The L1 contract is checked against the frontier BEFORE anything is written.
+  if (workflow === 'req.budget' && files.length && !outcome) {
+    summary.verifyLanded = verifyLandedBudget(files, args.frontier, args.frontierSha256);
+    if (!summary.verifyLanded.ok) {
+      console.log(JSON.stringify(summary, null, 2));
+      return 5;
+    }
   }
 
   // The C-group winner is checked against the candidate artifact BEFORE anything is
@@ -288,7 +339,7 @@ async function main(argv, deps = {}) {
   return landing.rejected.length ? 4 : 0;
 }
 
-module.exports = {main, parseFlags, halfWinnerResult};
+module.exports = {main, parseFlags, halfWinnerResult, verifyLandedBudget};
 
 if (require.main === module) {
   main(process.argv.slice(2)).then((code) => { process.exitCode = code; });
