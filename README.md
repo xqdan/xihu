@@ -52,7 +52,7 @@ kernel、融合、调度，模型有结构、dtype、路由和场景，全塞进
 
 - **目录层（谁负责什么）**：`teams/<team>/` 是硬件、软件、模型、架构委员会、V&V 各自的工作边界，
   跨团队只通过 `contract.json`、`out/` 里的生成物、ADR 和测试交互，不通过聊天传数字；
-- **流程层（设计怎么跑）**：设计流程由 `integration/orchestration/` 下的 19 个 `design.*.workflow.js` 承载，
+- **流程层（设计怎么跑）**：设计流程由 `integration/orchestration/` 下的 20 个 `design.*.workflow.js` 承载，
   workflow 调起 `teams/council/strategies/` 下的 12 个**无状态策略**（6 个领域专家 + 6 个固定职能）。
   策略只含判断规则、禁止项和裁决枚举，不含路径、输出契约或流程；上下文（brief、候选、输出契约、落盘位置）
   全部由 workflow 在运行时注入，决定性数字和 Gate 结论只由脚本计算；

@@ -13,6 +13,7 @@ Everything in this directory is written by a script in `integration/pipelines/` 
 | `verification/` | `verify_report.json` / `audit_report.json` and their `*_run_record.json`, written by the E-group `design.verify` / `design.audit` workflows (report only when the run passes; the reference frame under `references/external/` is not a report and lands regardless) | the E-group design workflows |
 | `dashboard/` | Global dashboard | `generate_global_dashboard.js` |
 | `rdma/` | K3 Final Tuning search results and report (the published point) | `run_search.js` |
+| `attribution/` | TPS/usr sensitivity cards per design dimension (`sram_card.json`, `comm_card.json`, `joint_card.json`): every parameter of the dimension moved alone through the detailed model, with dTps, d area/power, break-even, critical-path share and a mechanical classification (MODEL; feeds no gate or baseline; input to `design.attribution`) | `generate_tps_attribution.js` (`npm run attribution:cards`) |
 | `agents/` | Agent organization detail and HTML | `generate_agent_org_*.js` |
 | `reviews/` | Review ledger per run (`<runId>.json`) plus `latest.json`, folded from the landed `verification/verify_report.json` and `verification/audit_report.json`, with a diff against the previous run | `generate_review_ledger.js` (reads the reports; it does not re-derive them, and it transcribes the gate decision rather than computing one) |
 
@@ -31,6 +32,7 @@ The design workflows in `integration/orchestration/` also write here. Workflows 
 | `governance/` | Direction-gate evidence package, the direction backflow proposal, and their run records | `design.dgate`, `design.backflow` |
 | `verification/` | Verify and audit reports and their run records | `design.verify`, `design.audit` |
 | `detailed/` | B0–B5 detail artifacts (`detail_freeze.json`, `detail_workload.json`, `detail_events.json`, `detail_execute.json`, `detail_integrate.json`), their `*_run_record.json`, and the convergence proposal (`converge_proposal.json`, `converge_run_record.json`) | the D-group design workflows (`design.detail.*`, `design.converge`) |
+| `attribution/reviews/` | Owner-expert review of one sensitivity card (`<dimension>_review.json`: load-bearing rows, slack rows, measurement plan, conflicts) and its run record; the cards themselves stay generator output and the workflow cannot land beside them | `design.attribution` |
 
 Two of these land outside `out/` on purpose. `design.learn` writes `references/sota/` — domain knowledge, which is not evidence and carries no repo provenance. `design.audit`'s optional external reference frame writes `references/external/`; it is ungated by the audit verdict because the four lenses failing does not make the reference frame false, and because intake gates admit only `out/` artifacts, so nothing under `references/` can be cited as evidence. A hand-authored brief is not a generated artifact and does not belong here: `design.intake` lands `teams/council/inputs/design_brief.intake.json`, and the per-stage briefs live beside it in `teams/council/inputs/`.
 

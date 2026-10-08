@@ -1,0 +1,559 @@
+{
+  "kind": "WORKFLOW_OUTCOME_NO_FILES",
+  "workflow": "attribution",
+  "runId": "attribution-sram-2026-10-08-r2",
+  "backend": "claude-code-workflow (native Workflow tool; run_workflow.js guard and landing gates not applied during the run)",
+  "agentCalls": 4,
+  "phases": [
+    "Card",
+    "Expert review",
+    "Merge",
+    "Invariant check"
+  ],
+  "citations": {
+    "checked": 104,
+    "problems": []
+  },
+  "result": {
+    "stage": "attribution",
+    "runId": "attribution-sram-2026-10-08-r2",
+    "verdict": "INVARIANT_VIOLATED",
+    "review": null,
+    "rejectedReview": {
+      "schemaVersion": "attribution-review-v0.1",
+      "dimension": "sram",
+      "runId": "attribution-sram-2026-10-08-r2",
+      "card": {
+        "path": "out/attribution/sram_card.json",
+        "sha256": "a099d725637eb0daee6bae8a53772d352d5e7db9dbe2c344f5eac542770ea45e",
+        "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+        "schemaVersion": "attribution-card-v0.1"
+      },
+      "loadBearing": [
+        {
+          "name": "hMiB",
+          "owner": "memory-expert",
+          "basis": "card_and_expert",
+          "source": "卡：parameters[hMiB].classification=loadBearing，bearsBy=feasibility；parameters[hMiB].moves[to=2].reasons=[H local tile]（nominal 与 stress 同）；bindingConstraints.byConstraint[H local tile]；criticalPath.occupancy.localTile.hCore。专家：memory-expert（design.attribution, sram, attribution-sram-2026-10-08-r2）判 breakEvenInsideRange=yes，可信区间为设计空间 {1,2,4,8} MiB/H core，出处 integration/detailed/k3_architecture_search.js:14、:100、:107、:7，teams/hardware/docs/03_TMA_AND_SRAM.md:61；足迹为 MODEL，LIMITS.usable 的预留内容没有出处，UNVERIFIED。software-expert 依赖说明：不可行结论以 OPT.kvCache='fp8' 及发布的 kvTile/headTile 为前提（k3_architecture_search.js:100,107；parameters[kvCache].moves[to='bf16'].reasons）"
+        },
+        {
+          "name": "layoutImbalance",
+          "owner": "memory-expert",
+          "basis": "card",
+          "source": "卡：parameters[layoutImbalance].classification=loadBearing，bearsBy=feasibility，evidence=ASSUMPTION；parameters[layoutImbalance].breakEven.valueAtBudget；moves[to=1.8].reasons=[H local tile]；bindingConstraints.byConstraint[H local tile]；couplings[tmaLane off x layoutImbalance=*]、couplings[kvPrefetch off x layoutImbalance=*]、couplings[sharedPortScaling off x layoutImbalance=*]、couplings[kvCache off x layoutImbalance=* @ kvTile=16384]。专家：memory-expert 同意分类，但判 breakEvenInsideRange=unknown：下界 1 来自定义（integration/detailed/k3_tps_design_baseline.js:87），上界 UNVERIFIED，仓库里只有下达指标（docs/architecture/DESIGN_TARGETS_AND_MARGINS.md:51）和扫描天花板（k3_tps_design_baseline.js:86），没有 memory compiler 或 Palladium 数据（teams/vv/docs/VV_MEASUREMENT_PLAN.md:27）。所以承重的依据只有卡，没有专家给出的可信区间支撑。software-expert 依赖说明：留在预算内以 OPT.kvCache='fp8'、OPT.tmaLane=true、OPT.kvPrefetch='window' 为前提"
+        },
+        {
+          "name": "kvPrefetch",
+          "owner": "software-expert",
+          "basis": "card_and_expert",
+          "source": "卡：parameters[kvPrefetch].classification=loadBearing，bearsBy=budget；moves[to='layer'].withinBudget=false；published.rawMarginUs；parameters[kvPrefetch].note（dmaPreempt 保持开启）；couplings[kvPrefetch off x dmaPreempt off]。专家：software-expert 判 breakEvenInsideRange=yes，可信集合 {'window','layer'}，'layer' 必然可实现；'window' 能否实现为 UNVERIFIED。出处 integration/detailed/k3_operator_sram_sim.js:36-37、:395，docs/architecture/21_TPS_DESIGN_BASELINE.md:260，teams/council/docs/reviews/2026-09-26_K3_P1_FREEZE_GAP_REVIEW.md:428，docs/architecture/DESIGN_EVIDENCE_MATRIX.md:32，teams/vv/docs/VV_MEASUREMENT_PLAN.md:23（B-003），证据等级 E0"
+        },
+        {
+          "name": "tmaLane",
+          "owner": "software-expert",
+          "basis": "card_and_expert",
+          "source": "卡：parameters[tmaLane].classification=loadBearing，bearsBy=budget；moves[to=false].withinBudget=false，moves[to=false].stress.withinBudget=false；criticalPath.lines[tmaFill]、criticalPath.lines[tmaHidden]。专家：software-expert 判 breakEvenInsideRange=yes，可信集合 {true,false}，false 必然可实现；true 依赖每域 TMA lane 和双缓冲空闲一半，二者能否实现均为 UNVERIFIED，且没有跟踪项。出处 integration/detailed/k3_operator_sram_sim.js:26-34，teams/hardware/docs/03_TMA_AND_SRAM.md:170-171，integration/detailed/k3_architecture_search.js:205，2026-09-26_K3_P1_FREEZE_GAP_REVIEW.md:340、:430，docs/architecture/OPEN_ISSUES.md:32（O-007）"
+        },
+        {
+          "name": "kvCache",
+          "owner": "software-expert",
+          "basis": "card_and_expert",
+          "source": "卡：parameters[kvCache].classification=loadBearing，bearsBy=feasibility，evidence=MODEL (precision open, B-001)；moves[to='bf16'].reasons=[H local tile]；couplings[kvTile=16384 x kvCache off]、couplings[kvTile=65536 x kvCache off]、couplings[kvCache off x softmaxFusion off @ kvTile=16384]。专家：software-expert 判 breakEvenInsideRange=yes，可信集合 {'fp8','bf16'}；fp8 在 1M context 下的精度合法性 UNVERIFIED（docs/architecture/OPEN_ISSUES.md:7 B-001、:38 O-013；teams/software/docs/PRECISION_POLICY.md:157；teams/council/adr/ADR-0005-tps-design-baseline.md:33）。容量依据：integration/detailed/k3_operator_sram_sim.js:77，k3_architecture_search.js:100,107，teams/software/docs/KERNEL_SPEC.md:223。专家指出，couplings[kvTile=16384 x kvCache off].both 显示，换到小 tile 后 bf16 只增加时间、不破预算；按 caveats[0]，这部分代价仍全额计给本行"
+        }
+      ],
+      "slack": [
+        {
+          "name": "lMiB",
+          "owner": "memory-expert",
+          "source": "卡：parameters[lMiB].classification=slack；moves[to=0.5] 的 dTps 为零，dDieAreaMm2/dDiePowerW 为负；criticalPath.occupancy.localTile.lCore.shareOfUsable。专家：memory-expert 同意，设计空间出处 integration/detailed/k3_architecture_search.js:14、integration/detailed/tps_attribution.js:228。保留意见：0.5 不在设计空间 {1,2,4,8} 内；省下的面积是否包含 ECC 位为 UNVERIFIED（k3_architecture_search.js:38，teams/hardware/docs/03_TMA_AND_SRAM.md:37），缺 SRAM compiler 的宏数据。这只影响释放量，不影响分类"
+        },
+        {
+          "name": "sharedPortScaling",
+          "owner": "memory-expert",
+          "source": "卡：parameters[sharedPortScaling].classification=slack；moves[0] 的 dTps 绝对值小于 1，同时释放 dDieAreaMm2/dDiePowerW/dCardPowerW；couplings[sharedPortScaling off x layoutImbalance=*].interactionTps 可忽略。专家：memory-expert 同意，系数为 MODEL，可信区间 UNVERIFIED（docs/architecture/OPEN_ISSUES.md:32 O-007；teams/hardware/docs/03_TMA_AND_SRAM.md:289、:133；端口面积折算见 integration/detailed/k3_rdma_final_tuning_model.js:140）。保留意见：本机制开启是 sharedSlices=32 因卡功耗不可行的原因（bindingConstraints.byConstraint[card power after shared-port scaling]），但缺 sharedSlices × sharedPortScaling 的耦合"
+        }
+      ],
+      "measurementPlan": [
+        {
+          "name": "hMiB",
+          "owner": "memory-expert",
+          "measurement": "卡 measurementNeeded：SRAM macro density；H-core tile footprint from the kernel mapping。专家补充：(a) H-core tile 足迹实测，同一份数据同时服务 kvTile、layoutImbalance、kvCache 三行；(b) LIMITS.usable 的出处，即 ECC/spare/碎片预留各占多少（k3_architecture_search.js:7，03_TMA_AND_SRAM.md:37）；(c) 补 hMiB × {kvTile, layoutImbalance, kvCache} 的耦合回放",
+          "priority": "high"
+        },
+        {
+          "name": "layoutImbalance",
+          "owner": "memory-expert",
+          "measurement": "卡 measurementNeeded：per-bank access histogram from Palladium（时间角色）。专家补充：VV_MEASUREMENT_PLAN.md:27 的 memory compiler 宏形状不均衡（容量角色）也需要，两者都要有，才能判断盈亏点是否落在可信区间内；与 lBanks/hBanks 的 Palladium bank-conflict 计数同一轮采集；补 hBanks × layoutImbalance 的耦合。测量定义的不一致见 conflicts",
+          "priority": "high"
+        },
+        {
+          "name": "kvPrefetch",
+          "owner": "software-expert",
+          "measurement": "卡 measurementNeeded：event-level trace showing the mechanism engages at the published point。专家补充：trace 要显示 KV DMA 的发射时刻早于所属层开始执行，同时给出 shared 占用峰值和 dmaPreemptions；可与 memory-expert 要的 shared 占用 trace（sharedMiB、depth 行）一起采集；dmaPreempt 的残留 stripe 成本目前按 0 建模（FREEZE_GAP_REVIEW.md:224，CLM-NEW-02）",
+          "priority": "high"
+        },
+        {
+          "name": "tmaLane",
+          "owner": "software-expert",
+          "measurement": "卡 measurementNeeded：event-level trace showing the mechanism engages at the published point。专家补充：记录每域 TMA fill 的起止时刻相对于 kernel 与集合通信的位置、tmaCancels、local 写口争用；把每域 TMA lane ABI 立为跟踪项；补 tmaLane × kvPrefetch、tmaLane × commOverlap 两对耦合。memory-expert 另要求 RTL 实测把 descriptor 吞吐与 burst 宽度分开（tmaEngines/tmaBytes 两行在模型里不可区分）",
+          "priority": "high"
+        },
+        {
+          "name": "kvCache",
+          "owner": "software-expert",
+          "measurement": "卡 measurementNeeded：event-level trace showing the mechanism engages at the published point。专家补充：卡住冻结的是 VV_MEASUREMENT_PLAN.md:29 的 #8 精度验收（B-001 / O-013），它不在卡的 measurementNeeded 里；补 headTile × kvCache 的耦合（FREEZE_GAP_REVIEW.md:372 所述的 SW-05 值没有入库，同文件:254）。专家给的优先级为 medium，理由是 couplings[kvTile=16384 x kvCache off].both 显示经 tile 重调后仍在预算内",
+          "priority": "medium"
+        }
+      ],
+      "routing": null,
+      "conflicts": [
+        {
+          "row": "layoutImbalance",
+          "between": "卡 parameters[layoutImbalance].measurementNeeded（Palladium 的 per-bank 访问直方图，对应时间角色） vs teams/vv/docs/VV_MEASUREMENT_PLAN.md:27（memory compiler 的宏形状不均衡，对应容量角色）；由 memory-expert 提出",
+          "resolution": "不裁决。模型用同一个系数同时承担时间和容量两个角色（k3_architecture_search.js:100），这样做有没有依据，目前没有证据。两项测量都列入 measurementPlan；测量定义交回 memory-expert 与 VV 计划 owner 统一"
+        },
+        {
+          "row": "kvCache",
+          "between": "teams/software/docs/TUNING_CONTRACT.md:66-67（bf16 在 kvTile=32768 下不可行，原因写成 dequant 占用 H 向量 lane） vs 卡 parameters[kvCache].moves[to='bf16'].reasons=[H local tile]，以及 integration/detailed/k3_architecture_search.js:107；由 software-expert 提出",
+          "resolution": "差异已能归因：bf16 没有 dequant，不可行来自容量检查；卡是数值和模型结论的唯一来源。文档由 software-expert 做局部修正，本行分类不受影响"
+        },
+        {
+          "row": "layoutImbalance",
+          "between": "卡 classification=loadBearing vs memory-expert breakEvenInsideRange=unknown（同意分类，但上界 UNVERIFIED，没能给出可信区间）",
+          "resolution": "不是分类冲突，照卡列为承重，basis 只记为 card。盈亏点 parameters[layoutImbalance].breakEven.valueAtBudget 是否落在可信区间内，留给下一步检点，本格不判"
+        }
+      ]
+    },
+    "violations": [
+      "C4c-1：memory-expert rows[bankBytes].plausibleRange 中的 '656 B/token/layer' 引 teams/hardware/docs/03_TMA_AND_SRAM.md:247，该行是表格边框，不含 656（同文件 :241、:248 才含）；卡里也没有该值。出处无法解析到该数字。",
+      "C4c-2：memory-expert rows[tmaEngines].reason 中的 '656 B 粒度'，本行 rangeEvidence（k3_architecture_search.js:14、:10，03_TMA_AND_SRAM.md:43、:141）没有一条含 656，卡里也没有。",
+      "C4c-3：software-expert softwareDependence[hMiB].reason 中的 '656 B 布局'，所引 integration/detailed/k3_architecture_search.js:100,107 不含 656，卡里也没有；该项不是可信区间，也没有其他出处。",
+      "C4c-4：memory-expert note 中的 'MC320'，卡里没有 320（inputs.x.mcGBs=640），所引 teams/hardware/inputs/memory_design_space.json:50 是 640 档条目，没有含 320 的出处。",
+      "C4c-5：合并 deltaNote 中的 'MC320'，卡里没有，合并也没有给出出处。"
+    ],
+    "coverage": {
+      "checked": [
+        "C1 owner 覆盖：16 行对 2 位 owner，按 D:/xihu/out/attribution/sram_card.json 的 parameters[].name 与审读 rows[].name 比对",
+        "C2 承重行不丢失：卡顶层 loadBearing 与合并 loadBearing 比对",
+        "C3 承重行的 owner、卡 evidence、measurementPlan 齐全",
+        "C4a 审读与合并中引用的卡字段与数值：逐项在 sram_card.json 中定位，包括 parameters[].moves[]、stress、breakEven、criticalPath、couplings、inputs.x、caveats",
+        "C4b 专家可信区间出处：逐行打开所引文件（k3_architecture_search.js、tps_attribution.js、k3_tps_design_baseline.js、k3_rdma_final_tuning_model.js、k3_operator_sram_sim.js、03_TMA_AND_SRAM.md、HARDWARE_PROCESS_AND_LIBRARY.md、DESIGN_TARGETS_AND_MARGINS.md、VV_MEASUREMENT_PLAN.md、OPEN_ISSUES.md、DESIGN_EVIDENCE_MATRIX.md、21_TPS_DESIGN_BASELINE.md、2026-09-26_K3_P1_FREEZE_GAP_REVIEW.md、TUNING_CONTRACT.md、KERNEL_SPEC.md、PRECISION_POLICY.md、ADR-0005、memory_design_space.json、k3_mc_baseline.json）核对行内容",
+        "C4c 无出处数字逐条列出",
+        "C5 references/sota 出处排除",
+        "C6 脚本机械比对确认",
+        "基线 sha256 与卡 inputs.baselineSha256 一致"
+      ],
+      "notChecked": [
+        "数字类之外的定性论断与卡语义是否一致（例如“硬件行中敏感度最大”“最紧的一项占用”）：不属于已声明的守恒判据，没有作为检点项，只在附记中记录一处",
+        "引用中的 ID 和标签（B-001、B-003、O-007、O-013、HW-09、SW-05、CLM-NEW-02、E0、策略规则编号）：按标识符处理，不按数值检点；只核对了所引行的存在，没有核对 ID 的定义",
+        "卡头注入内容与 sram_card.json 文件逐字段全量一致性：只抽查了 kvTile 和 layoutImbalance 两行 moves 与卡头 couplings 的对应值，没有全量比对"
+      ]
+    },
+    "ledgerPatch": {
+      "currentStage": "attribution",
+      "strategyVersions": {
+        "memory-expert": "1.0",
+        "software-expert": "1.0",
+        "integrator": "1.0",
+        "invariant-checker": "1.0"
+      },
+      "rejectedOptions": [],
+      "openBlockers": [
+        {
+          "id": "CONFLICT-ATTRIBUTION-SRAM-01",
+          "owner": "integrator",
+          "unblockCondition": "不裁决。模型用同一个系数同时承担时间和容量两个角色（k3_architecture_search.js:100），这样做有没有依据，目前没有证据。两项测量都列入 measurementPlan；测量定义交回 memory-expert 与 VV 计划 owner 统一"
+        },
+        {
+          "id": "CONFLICT-ATTRIBUTION-SRAM-02",
+          "owner": "integrator",
+          "unblockCondition": "差异已能归因：bf16 没有 dequant，不可行来自容量检查；卡是数值和模型结论的唯一来源。文档由 software-expert 做局部修正，本行分类不受影响"
+        },
+        {
+          "id": "CONFLICT-ATTRIBUTION-SRAM-03",
+          "owner": "integrator",
+          "unblockCondition": "不是分类冲突，照卡列为承重，basis 只记为 card。盈亏点 parameters[layoutImbalance].breakEven.valueAtBudget 是否落在可信区间内，留给下一步检点，本格不判"
+        }
+      ]
+    },
+    "runRecord": {
+      "stage": "attribution",
+      "dimension": "sram",
+      "runId": "attribution-sram-2026-10-08-r2",
+      "card": {
+        "path": "out/attribution/sram_card.json",
+        "sha256": "a099d725637eb0daee6bae8a53772d352d5e7db9dbe2c344f5eac542770ea45e",
+        "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+        "schemaVersion": "attribution-card-v0.1"
+      },
+      "owners": [
+        "memory-expert",
+        "software-expert"
+      ],
+      "reviews": [
+        {
+          "from": "memory-expert (design.attribution, dimension=sram, runId=attribution-sram-2026-10-08-r2)",
+          "verdict": "LOCAL_DETAIL_FIX",
+          "rows": [
+            {
+              "name": "lMiB",
+              "classification": "agree",
+              "plausibleRange": "设计空间 {1,2,4,8} MiB/L core（0.5 是空间外的一步）；每 MiB 的面积/功耗系数为 ASSUMPTION（SF4 由 HD bitcell 缩放，无 SRAM compiler 数据）",
+              "rangeEvidence": "integration/detailed/k3_architecture_search.js:14; integration/detailed/tps_attribution.js:228; teams/hardware/docs/HARDWARE_PROCESS_AND_LIBRARY.md:26; teams/hardware/docs/HARDWARE_PROCESS_AND_LIBRARY.md:82",
+              "breakEvenInsideRange": "not_applicable",
+              "measurementPriority": "low",
+              "reason": "同意 slack：moves[to=0.5] 的 dTps 为零且 dDieAreaMm2/dDiePowerW 为负，moves[to=2] 只加面积。L 侧瓶颈不在本地容量：criticalPath.occupancy.localTile.lCore.shareOfUsable 远离 1。按 per-core 口径看，L local tile 的检查也只针对单个 core（k3_architecture_search.js:107），不能拿整颗 die 的合计量来说明余量。保留一点：面积账只按数据 MiB 除以密度来算（k3_architecture_search.js:38），而 ECC、scrub、spare 不计入数据容量（teams/hardware/docs/03_TMA_AND_SRAM.md:37）。所以 dDieAreaMm2 是否含 ECC 位的面积，是 UNVERIFIED，缺 SRAM compiler 的宏面积数据。这一点只影响省下多少面积，不影响分类。"
+            },
+            {
+              "name": "hMiB",
+              "classification": "agree",
+              "plausibleRange": "设计空间 {1,2,4,8} MiB/H core；能否放下由 H local tile 足迹决定：两块 KV slab、FP32 双 score、输出累加器和 Q/work/control，整体再乘 layoutImbalance，最后与 hMiB×LIMITS.usable 比较。足迹本身是 MODEL，没有 kernel mapping 实测；LIMITS.usable 预留的是什么，仓库没有写明，UNVERIFIED",
+              "rangeEvidence": "integration/detailed/k3_architecture_search.js:14; integration/detailed/k3_architecture_search.js:100; integration/detailed/k3_architecture_search.js:107; integration/detailed/k3_architecture_search.js:7; teams/hardware/docs/03_TMA_AND_SRAM.md:61",
+              "breakEvenInsideRange": "yes",
+              "measurementPriority": "high",
+              "reason": "同意 loadBearing（bearsBy=feasibility）：moves[to=2] 在 nominal 和 stress 下都以 reasons=[H local tile] 判为不可行，而 2 MiB 本身就在设计空间内，所以这面墙在现实取值里碰得到。criticalPath.occupancy.localTile.hCore.shareOfUsable 是本卡最紧的一项占用。bindingConstraints.byConstraint[H local tile] 显示 hMiB、kvTile、layoutImbalance、kvCache 撞的是同一道约束。卡头 couplings 已覆盖 kvTile×kvCache 和 layoutImbalance×{kvCache, sharedPortScaling, kvPrefetch, tmaLane}，但没有 hMiB 与这些因子的耦合，例如 hMiB=8 能否放下 kvTile=65536 或 bf16 KV。这一对是缺的，本审读不估联合效应。先要实测 H-core tile 足迹（kernel mapping）：同一份数据同时服务 kvTile、layoutImbalance 和 kvCache 三行。另外缺 LIMITS.usable 的出处（ECC/spare/碎片预留各占多少），按策略规则 3 必须显式列出。"
+            },
+            {
+              "name": "sharedMiB",
+              "classification": "agree",
+              "plausibleRange": "设计空间 {16,24,32,48,64} MiB/die（12 在空间外，只为造出一个不利移动）；实际占用需求（DMA 预取窗口 + KV 窗口 + RDMA workspace）是 MODEL，缺 event-level 占用 trace，UNVERIFIED",
+              "rangeEvidence": "integration/detailed/k3_architecture_search.js:14; integration/detailed/tps_attribution.js:228; teams/hardware/docs/03_TMA_AND_SRAM.md:21; teams/hardware/docs/03_TMA_AND_SRAM.md:62",
+              "breakEvenInsideRange": "not_applicable",
+              "measurementPriority": "medium",
+              "reason": "同意 graded：moves[to=12].withinBudget 为 true，dTps 为负，而且是本卡硬件行里 nominal 代价最大的一项；moves[to=24] 只加面积。这说明 shared 窗口贴着它的容量边（对照 criticalPath.occupancy.sharedPeakReservedMiBPerCard 与 sharedWindowMiBPerCard）。两点需要标出。第一，moves[to=12].stress.dTps 为零而 nominal 代价很大，卡里只给了 nominal 点的占用（criticalPath.occupancy），没有 stress 点的占用，所以说不出 stress 下是什么在约束，也说不出为什么缩容不再有代价。第二，策略规则 6 要求 buffer lifetime 与 backpressure 建模，而 sharedPeakReserved 是峰值预留账，不是 generation-tagged slot 的生命周期回放（03_TMA_AND_SRAM.md 第 5 节只是初版）。所以“带宽账算得通、buffer 撑不到消费时刻”这种假通过，本行排除不了。需要一份 event-level 的 shared 占用 trace，把 RDMA workspace、预取窗口和 KV 窗口分开。"
+            },
+            {
+              "name": "lBanks",
+              "classification": "agree",
+              "plausibleRange": "设计空间 {8,16,32,64}/L core；bank 服务能力在模型里是 bank 数×bankBytes×频率×bankUtil 的合计，bankUtil 是固定 ASSUMPTION，没有 bank-cycle 仿真",
+              "rangeEvidence": "integration/detailed/k3_architecture_search.js:14; integration/detailed/k3_architecture_search.js:12; teams/hardware/docs/03_TMA_AND_SRAM.md:42; teams/hardware/docs/03_TMA_AND_SRAM.md:289",
+              "breakEvenInsideRange": "not_applicable",
+              "measurementPriority": "medium",
+              "reason": "同意 graded：moves[to=32] 在预算内，dTps 为负，同时省面积和功耗；moves[to=32].stress.dTps 很小。保留一点（策略规则 5）：这一行的代价只来自合计带宽变小，模型里没有 bank 级冲突服务。冲突被折进了两个常数，bankUtil 和 layoutImbalance，前者不在卡上任何一行里，也不在 stress point 里。所以 bank 数减半时冲突概率上升这部分代价，本行没有反映，分类是在这个前提下成立的。所需实测（Palladium 的 L-core bank-conflict 计数）与 layoutImbalance 的 per-bank 直方图可以同一轮采集，所以给 medium。"
+            },
+            {
+              "name": "hBanks",
+              "classification": "agree",
+              "plausibleRange": "设计空间 {8,16,32,64}/H core；bank 服务能力同 lBanks，为合计 × 固定 bankUtil（ASSUMPTION）",
+              "rangeEvidence": "integration/detailed/k3_architecture_search.js:14; integration/detailed/k3_architecture_search.js:12; teams/hardware/docs/03_TMA_AND_SRAM.md:42; teams/hardware/docs/03_TMA_AND_SRAM.md:289",
+              "breakEvenInsideRange": "not_applicable",
+              "measurementPriority": "medium",
+              "reason": "同意 graded：moves[to=32] 在预算内，dTps 为负，并且释放面积和功耗。H core 承载 KV 双缓冲和 m/l/O 累加器（03_TMA_AND_SRAM.md:33），访问模式比 L 侧的流式 GEMV 更容易打到同一个 bank，但模型只按合计带宽计价，冲突代价没有进入这一行（策略规则 5），而是折在 layoutImbalance 里。因此 hBanks 和 layoutImbalance 不能各自独立解读：卡里没有 hBanks×layoutImbalance 的耦合，这一对是缺的。实测来自 H-core 的 Palladium bank-conflict 计数，与 layoutImbalance 同一轮采集。"
+            },
+            {
+              "name": "bankBytes",
+              "classification": "agree",
+              "plausibleRange": "设计空间 {32,64} B；访问粒度参照：KV 656 B/token/layer（FlashMLA 布局），TMA burst 512 B/engine/cycle。bank 宽度与粒度怎么对齐，没有 kernel mapping 数据，UNVERIFIED",
+              "rangeEvidence": "integration/detailed/k3_architecture_search.js:14; teams/hardware/docs/03_TMA_AND_SRAM.md:247; teams/hardware/docs/03_TMA_AND_SRAM.md:140",
+              "breakEvenInsideRange": "not_applicable",
+              "measurementPriority": "low",
+              "reason": "同意 graded：moves[to=32] 在预算内，dTps 为负，dDiePowerW 为负，dDieAreaMm2 为零。面积不动是模型口径造成的，不是物理结论：bank 面积按 bank 个数×固定 bankArea 计价，与位宽无关（k3_architecture_search.js:39）。窄 bank 的宏面积变化缺 SRAM compiler 数据，UNVERIFIED，所以 dTpsPerMm2=null 不能读成“窄 bank 不省面积”。656 B 不是 32 或 64 的整数倍，对齐浪费也没有进入模型；这要靠 kernel mapping 的访问粒度统计来回答，不影响分类。"
+            },
+            {
+              "name": "sharedSlices",
+              "classification": "agree",
+              "plausibleRange": "设计空间 {8,16,32}/die；不利侧的代价来自 slice 端口与 NoC 争用，模型没有 event-level 争用 trace；上行受卡功耗上限约束",
+              "rangeEvidence": "integration/detailed/k3_architecture_search.js:14; teams/hardware/inputs/memory_design_space.json:25; teams/hardware/docs/03_TMA_AND_SRAM.md:107",
+              "breakEvenInsideRange": "not_applicable",
+              "measurementPriority": "medium",
+              "reason": "同意 graded：moves[to=8] 在预算内，dTps 为负，并释放面积和功耗。它的 stress.dTps 是本卡硬件行中 stress 敏感度最大的一项，说明 slice 争用在悲观点下会被放大，所以给 medium，需要 event-level 的 slice 争用 trace。上行 moves[to=32] 因 reasons=[card power after shared-port scaling] 不可行（bindingConstraints.byConstraint[card power after shared-port scaling]），也就是说这个上行失败依赖 sharedPortScaling 处于开启状态。卡头 couplings 里没有 sharedSlices×sharedPortScaling 这一对，说不出关掉端口放大后 32 slice 是否可行。这一对是缺的，本审读不估。"
+            },
+            {
+              "name": "tmaEngines",
+              "classification": "agree",
+              "plausibleRange": "设计空间 {1,2,4}/core；逻辑峰值是 engine 数×tmaBytes×频率，模型按固定 0.8 效率折算，并且受 Local 写口、Shared slice、NoC、MC 中最慢一项封顶。0.8 没有 RTL 依据，UNVERIFIED",
+              "rangeEvidence": "integration/detailed/k3_architecture_search.js:14; teams/hardware/docs/03_TMA_AND_SRAM.md:43; teams/hardware/docs/03_TMA_AND_SRAM.md:141; integration/detailed/k3_architecture_search.js:10",
+              "breakEvenInsideRange": "not_applicable",
+              "measurementPriority": "medium",
+              "reason": "同意 graded：moves[to=2] 在预算内，dTps 为负，并释放面积和功耗。代价小，是因为 TMA 装载大部分被掩盖：criticalPath.lines 里 tmaFill 占 raw 的份额不小，而 tmaHidden 抵掉了其中大部分。按策略规则 1，TMA 的 raw 峰值与 effective 之间只有一个 0.8 常数，descriptor 开销和 gather（656 B 粒度）的效率都没有分开。本行与 tmaBytes 行的 moves[0] 在 tpsPerUser、dRawUs、stress 上完全相同，说明模型只看 engine×bytes 的乘积，分不开 descriptor 吞吐与 burst 宽度。RTL 实测必须把两者分开测。"
+            },
+            {
+              "name": "tmaBytes",
+              "classification": "agree",
+              "plausibleRange": "设计空间 {128,256,512} B/cycle/engine；与 SRAM 端口宽度怎么匹配，缺 RTL，UNVERIFIED",
+              "rangeEvidence": "integration/detailed/k3_architecture_search.js:14; teams/hardware/docs/03_TMA_AND_SRAM.md:140",
+              "breakEvenInsideRange": "not_applicable",
+              "measurementPriority": "low",
+              "reason": "同意 graded：moves[to=256] 在预算内，dTps 为负，面积和功耗不变（dTpsPerMm2/dTpsPerW 为 null）。如 tmaEngines 行所述，两行结果完全一样，模型里两者可以互换。burst 与端口宽度的关系，与 tmaEngines 的 descriptor 吞吐放在同一轮 RTL 测量，本行单独的优先级给低。"
+            },
+            {
+              "name": "kvTile",
+              "classification": "agree",
+              "plausibleRange": "在发布的 hMiB 与 FP8 KV 下，可行的 tile 由 H local tile 足迹决定：16384–32768 token 在模型里放得下，65536 放不下。真实 FlashMLA kernel 可用的 tile 没有实测，UNVERIFIED",
+              "rangeEvidence": "integration/detailed/k3_architecture_search.js:100; integration/detailed/k3_architecture_search.js:107; teams/hardware/docs/03_TMA_AND_SRAM.md:61; docs/architecture/DESIGN_TARGETS_AND_MARGINS.md:95",
+              "breakEvenInsideRange": "no",
+              "measurementPriority": "medium",
+              "reason": "同意 graded：classes.loadBearing 明确不计 infeasible mapping，所以 moves[to=65536] 的 reasons=[H local tile] 不进入分类；moves[to=16384] 在预算内，dTps 为负。所以“打破预算”的只有那个本来就选不了的映射，它不在可行区间内，填 no。需要注意：kvTile=16384 同时又是 stress point 和 jointPessimistic.values 的成员，在那里它实际上代表“H tile 足迹比模型大”，moves[].stress 因此为 null。也就是说，本行的风险其实落在 H 足迹实测上（见 hMiB、layoutImbalance）。couplings[kvTile=16384 x kvCache off] 显示 bf16 只有在小 tile 上才放得下，couplings[kvTile=65536 x kvCache off] 两边都不可行；本审读按这两条引用，不另估。DESIGN_TARGETS_AND_MARGINS.md:98 已写明降 tile 换不来稳健性。"
+            },
+            {
+              "name": "depth",
+              "classification": "agree",
+              "plausibleRange": "SRAM 仿真器只映射 0..4 层，4 是最高一步；更深的前瞻曾因 shared SRAM thrash 被撤掉。实际能达到的前瞻深度没有 trace，UNVERIFIED",
+              "rangeEvidence": "integration/detailed/tps_attribution.js:240; integration/detailed/k3_rdma_final_tuning_model.js:24; docs/architecture/DESIGN_TARGETS_AND_MARGINS.md:96",
+              "breakEvenInsideRange": "not_applicable",
+              "measurementPriority": "low",
+              "reason": "同意 insensitive：只有一个不利移动 moves[to=3]，nominal 与 stress 下 dTps 都为零，面积和功耗不变。DESIGN_TARGETS_AND_MARGINS.md:96 记录 2–4 层结果相同、浅于 2 层才有代价，卡上邻居列表只测到 3。要提醒一点：深度 4 在模型里有效，前提是 shared 窗口装得下 4 层前瞻，而 shared 窗口已贴近容量（见 sharedMiB 行）。“前瞻在被逐出之前实际走到几层”只能靠 DMA 预取 trace 回答，这与 sharedMiB 的占用 trace 可以同一次采集。"
+            },
+            {
+              "name": "layoutImbalance",
+              "classification": "agree",
+              "plausibleRange": "下界 1（slowest-bank factor 的定义，1 表示完全均衡）；上界 UNVERIFIED：仓库只有下达指标 ≤1.30 和扫描天花板 2.5，没有 memory compiler 或 Palladium 数据",
+              "rangeEvidence": "integration/detailed/k3_tps_design_baseline.js:87; docs/architecture/DESIGN_TARGETS_AND_MARGINS.md:51; integration/detailed/k3_tps_design_baseline.js:86; teams/vv/docs/VV_MEASUREMENT_PLAN.md:27",
+              "breakEvenInsideRange": "unknown",
+              "measurementPriority": "high",
+              "reason": "同意 loadBearing（bearsBy=feasibility）。breakEven.valueAtBudget 是对“可行且在预算内”做二分（k3_tps_design_baseline.js:96），在这里落在 H local tile 的容量边上，而不是时间预算边上：moves[to=1.4] 可行且 withinBudget，moves[to=1.8] 以 reasons=[H local tile] 判为不可行。这与 DESIGN_TARGETS_AND_MARGINS.md:55 的“否则芯片不工作”一致。承重来自模型把整个 H 足迹乘上同一个系数（k3_architecture_search.js:100），而物理上 bank 访问偏斜影响的是时间，容量膨胀要来自布局 padding 或碎片，同一个系数能否同时承担两种角色，没有证据。测量定义也互相对不上：卡里 measurementNeeded 写的是 Palladium 的 per-bank 访问直方图（时间角色），VV_MEASUREMENT_PLAN.md:27 写的是 memory compiler 的宏形状不均衡（更接近容量角色），两者都需要，才能判断盈亏点是否落在可信区间内，所以填 unknown、优先级 high。耦合按卡头引用：couplings[tmaLane off x layoutImbalance=*] 和 couplings[kvPrefetch off x layoutImbalance=*] 里，a 单独已经 withinBudget=false，说明 1.3/1.4 留在预算内，是以这两个软件机制保持开启为前提的；couplings[sharedPortScaling off x layoutImbalance=*] 的 interactionTps 可以忽略。"
+            },
+            {
+              "name": "sharedPortScaling",
+              "classification": "agree",
+              "plausibleRange": "UNVERIFIED：四个系数都是 MODEL，没有 bank-cycle 仿真；TMA 独立端口能否实现还是 open issue",
+              "rangeEvidence": "docs/architecture/OPEN_ISSUES.md:32; teams/hardware/docs/03_TMA_AND_SRAM.md:289; teams/hardware/docs/03_TMA_AND_SRAM.md:133",
+              "breakEvenInsideRange": "not_applicable",
+              "measurementPriority": "low",
+              "reason": "同意 slack：唯一的不利移动 moves[0]（切回）dTps 绝对值小于 1，同时释放面积、die 功耗和卡功耗，stress.dTps 也接近零。couplings[sharedPortScaling off x layoutImbalance=*] 的 interactionTps 可以忽略，在 1.8 时两边都因 H local tile 不可行，说明这个机制不承担掩盖 bank 不均衡的作用。它唯一的外部影响是让 sharedSlices=32 因卡功耗不可行（bindingConstraints.byConstraint[card power after shared-port scaling]），对应的耦合缺失，见 sharedSlices 行。端口面积按交付带宽÷slice 带宽×bankArea 折算（k3_rdma_final_tuning_model.js:140），这是模型口径，没有宏数据。实测（机制是否在发布点真正生效）优先级低。"
+            }
+          ],
+          "note": "审读口径：本卡全部结果都在 x.mcGBs=640 上得出，这是 STRETCH_AGGRESSIVE 点，不是可制造默认值（teams/hardware/inputs/memory_design_space.json:50）。任何一行都不得当作 MC320 结论（策略规则 4）。criticalPath.memoryLane.busyShareOfRaw 接近 1，说明 SRAM 行的敏感度是在“DMA/MC 带宽定底”的前提下量出来的；换 MC 档位后，各行的 dTps 不能直接沿用。\n\n卡中缺失、需要 integrator 知悉的部分（不阻塞本次审读，所以 verdict 为 LOCAL_DETAIL_FIX）：\n(1) A.TECH bankUtil（k3_architecture_search.js:12）是承载 bank 级服务能力的 ASSUMPTION，但不是卡上的行，也不在 stress point 里；lBanks/hBanks 的 graded 分类是在它固定的前提下成立的。\n(2) LIMITS.usable（k3_architecture_search.js:7）决定 H local tile 墙的位置，但没有出处，不清楚它预留的是 ECC、spare 还是碎片；而 03_TMA_AND_SRAM.md:37 声明 ECC 不含在数据容量内。\n(3) 缺这几对耦合：hMiB × {kvTile, layoutImbalance, kvCache}；sharedSlices × sharedPortScaling；hBanks × layoutImbalance。\n(4) criticalPath.occupancy 只有 nominal 点，没有 stress 点的占用，sharedMiB 行的 stress 表现因此无法解释。\n(5) layoutImbalance 的测量定义在卡里（per-bank 访问直方图）和 VV_MEASUREMENT_PLAN.md:27（memory compiler 宏形状）之间不一致，两者对应模型里的时间和容量两个角色，都需要。\n\n方向级判断：唯一由可信区间决定的承重行是 layoutImbalance，它的上界 UNVERIFIED，不构成“可信区间整体落在预算外”，所以不触发 DIRECTION_BACKFLOW。本领域参照文件 references/sota/memory-subsystem.md 只讨论 HBM/DRAM 控制器，没有片上 SRAM 的 bank 不均衡或密度参照，本审读没有引用它的任何数字。"
+        },
+        {
+          "from": "software-expert",
+          "verdict": "LOCAL_DETAIL_FIX",
+          "rows": [
+            {
+              "name": "kvPrefetch",
+              "classification": "agree",
+              "plausibleRange": "离散集合 {'window','layer'}。'layer' 是机制没有生效时的回退值，一定能实现，模型中可回放（不跨层预取 KV）。'window' 能否实现标 UNVERIFIED：它在发布点的有效深度介于 0 与 x.depth 层之间，上限受 shared SRAM 余量约束，并依赖 OPT.dmaPreempt=true；没有 trace 证明 KV DMA 会跨层提前发射",
+              "rangeEvidence": "integration/detailed/k3_operator_sram_sim.js:36-37（window 语义：只受 shared 容量约束）；integration/detailed/k3_operator_sram_sim.js:395（layer 模式下非本层的 KV job 被跳过）；docs/architecture/21_TPS_DESIGN_BASELINE.md:260；teams/council/docs/reviews/2026-09-26_K3_P1_FREEZE_GAP_REVIEW.md:428（kvPrefetch 所依赖的 shared 余量随 HW-09 被 kill，需重新立项）；docs/architecture/DESIGN_EVIDENCE_MATRIX.md:32 与 teams/vv/docs/VV_MEASUREMENT_PLAN.md:23（B-003，没有 trace）",
+              "breakEvenInsideRange": "yes",
+              "measurementPriority": "high",
+              "reason": "同意 loadBearing，bearsBy=budget：moves[to='layer'] 的 feasible=true、withinBudget=false，dRawUs 超过 published.rawMarginUs。'layer' 本身就是可信集合中可实现的那个值，所以打破预算的移动落在区间内。收益的前提有三条：(1) shared 余量，对照 criticalPath.occupancy.sharedPeakReservedMiBPerCard 与 sharedWindowMiBPerCard；(2) x.depth；(3) OPT.dmaPreempt=true，本行 note 写明 dmaPreempt 保持开启。卡头 couplings[kvPrefetch off x dmaPreempt off] 已把两者拆开，interactionTps 为正，说明联合回退的损失小于两项单独回退之和，单行的 dTps 含有对 dmaPreempt 的依赖。criticalPath.memoryLane.busyShareOfRaw 接近 1，说明 window 的收益来自 DMA 发射次序，不来自带宽。这项收益只在 OPT 保持发布值时成立（caveats[0]），best/expected/worst 中只有 MODEL 的 expected，没有 trace，证据等级为 E0。要先拿的实测：卡 measurementNeeded 要求的事件级 trace，它必须显示 KV DMA 的发射时刻早于所属层开始执行，同时给出 shared 占用峰值和 dmaPreemptions；可以与 memory-expert 要的 shared 占用 trace 一起采集"
+            },
+            {
+              "name": "tmaLane",
+              "classification": "agree",
+              "plausibleRange": "离散集合 {true,false}。false 是串行装载，一定能实现。true 需要两项硬件/ABI 前提：每个域（L/H）有独立的 TMA lane，并且发射时该域的 local 双缓冲有空闲的一半；这两项能否实现都是 UNVERIFIED，仓库里也没有任何跟踪项",
+              "rangeEvidence": "integration/detailed/k3_operator_sram_sim.js:26-34（per-domain lane 语义，与 shared 读口、local 写口共享）；teams/hardware/docs/03_TMA_AND_SRAM.md:170-171（两个发射条件）；integration/detailed/k3_architecture_search.js:205（tmaFill 只拆出由 DMA 供数的那部分）；teams/council/docs/reviews/2026-09-26_K3_P1_FREEZE_GAP_REVIEW.md:340（每域 TMA lane ABI 没有跟踪项；O-007 只管独立端口）；teams/council/docs/reviews/2026-09-26_K3_P1_FREEZE_GAP_REVIEW.md:430；docs/architecture/OPEN_ISSUES.md:32（O-007）",
+              "breakEvenInsideRange": "yes",
+              "measurementPriority": "high",
+              "reason": "同意 loadBearing，bearsBy=budget：moves[to=false] 的 feasible=true、withinBudget=false，moves[to=false].stress.withinBudget 同样为 false。false 在可信集合内，所以打破预算的移动落在区间内。overlap 上限检查：moves[to=false].dRawUs 不超过 |criticalPath.lines[tmaHidden].us|，后者又不超过 criticalPath.lines[tmaFill].us，收益没有超出可重叠窗口。这只证明模型内部自洽，不是实测。发射条件中的“双缓冲空闲一半”已经计入 H local 容量账（k3_architecture_search.js:100 的两份 KV slab），所以本行的收益与 criticalPath.occupancy.localTile.hCore 共用同一块容量。卡里缺两项耦合：(a) tmaLane × kvPrefetch，KV fill 在 shared 就绪后才能发射，依赖 window 预取，卡头 couplings 里没有这一对，只有基线 21_TPS_DESIGN_BASELINE.md:317 的调度类整组联合回退；(b) tmaLane × commOverlap，fill 被集合通信掩盖（03_TMA_AND_SRAM.md:191），couplings 里同样没有。要先拿的实测：事件级 trace，记录每域 TMA fill 的起止时刻相对于 kernel 与集合通信的位置、tmaCancels，以及 local 写口争用。另需把每域 TMA lane ABI 立为跟踪项"
+            },
+            {
+              "name": "kvCache",
+              "classification": "agree",
+              "plausibleRange": "离散集合 {'fp8','bf16'}。bf16 是模型格式的回退值，一定合法；但在发布的 (kvTile, headTile) 下，因 H local 容量放不下而不可行，需要缩小 tile。fp8 在 1M context 下的精度没有评估，合法性 UNVERIFIED（B-001 / O-013），按 ADR 不得冻结",
+              "rangeEvidence": "docs/architecture/OPEN_ISSUES.md:7（B-001）；docs/architecture/OPEN_ISSUES.md:38（O-013）；teams/software/docs/PRECISION_POLICY.md:157（FP8 KV 精度未评估）；teams/council/adr/ADR-0005-tps-design-baseline.md:33（不得冻结依赖 B-001 的配置）；integration/detailed/k3_operator_sram_sim.js:77（fp8/bf16 字节布局）；integration/detailed/k3_architecture_search.js:100,107（kvBytesPerToken 进入 H local 容量检查）；teams/software/docs/KERNEL_SPEC.md:223（bf16 回退需要 KV tile 16384）",
+              "breakEvenInsideRange": "yes",
+              "measurementPriority": "medium",
+              "reason": "同意 loadBearing，bearsBy=feasibility：moves[to='bf16'] 的 feasible=false，reasons=[H local tile]。bf16 在可信集合内，所以不利移动落在区间内。这次不可行来自 (kvTile, kvCache) 共用 H local 容量墙，不来自 FP8 机制的时间收益：卡头 couplings[kvTile=16384 x kvCache off].both 的 feasible=true 且 withinBudget=true，换到更小的 tile 后，bf16 只花时间、不破预算。按 caveats[0]，这部分代价仍全额计给本行。量化收益的账：字节与 scale 布局有记录（sim.js:77）；dequant 记在 H 向量 lane 上，并从 softmax 掩盖预算中扣除；couplings[kvCache off x softmaxFusion off @ kvTile=16384] 的 interactionTps 为正，且 both.dTps 与 a.dTps 接近，说明 softmaxFusion 的收益与 fp8 的 dequant 记账互相纠缠；精度项缺失（B-001）。卡里缺一项耦合：headTile × kvCache。FREEZE_GAP_REVIEW.md:372 说 SW-05 在发布 kvTile 下缩小 headTile 后 bf16 可行，但这个值没有入库（同文件:254），卡头 couplings 也没有这一对。另外，teams/software/docs/TUNING_CONTRACT.md:66-67 把 bf16 在 32768 下不可行的原因写成 dequant 占 H 向量 lane，与模型不符：bf16 没有 dequant，不可行的原因是容量（moves[to='bf16'].reasons、k3_architecture_search.js:107）。这是文档的局部修正。实测排为 medium：耦合显示退回 bf16 后经 tile 重调仍在预算内，时间 trace 的承重程度低于 tmaLane 和 kvPrefetch。真正卡住冻结的是 VV_MEASUREMENT_PLAN.md:29 的 #8 精度验收（B-001 / O-013），它不属于卡 measurementNeeded 列出的 trace"
+            }
+          ],
+          "softwareDependence": [
+            {
+              "name": "hMiB",
+              "dependsOn": "OPT.kvCache='fp8'（以及发布的 kvTile/headTile 映射）",
+              "reason": "H local 容量需求按 kvBytesPerToken 计算（k3_architecture_search.js:100,107）。moves[to=2] 的不可行，以及当前 hCore 占用（criticalPath.occupancy.localTile.hCore），都以 fp8 的 656 B 布局为前提；在 bf16 下，发布的 hMiB 本身就不可行（parameters[kvCache].moves[to='bf16'].reasons）。双缓冲按 tmaLane 的发射条件计入容量，所以 tmaLane=true 不会额外改变容量账"
+            },
+            {
+              "name": "layoutImbalance",
+              "dependsOn": "OPT.kvCache='fp8'；OPT.tmaLane=true；OPT.kvPrefetch='window'",
+              "reason": "可行上界由同一个 H local 检查决定，该检查乘了 TECH.layoutImbalance 与 fp8 的 kvBytesPerToken（k3_architecture_search.js:100）。不破预算的那几步，以两个调度机制处于开启状态为前提：couplings[tmaLane off x layoutImbalance=1.3/1.4] 与 couplings[kvPrefetch off x layoutImbalance=1.3/1.4] 的 both.withinBudget 都为 false。couplings[kvCache off x layoutImbalance=* @ kvTile=16384] 显示，bf16 下不均衡系数的边际代价并入了 bf16 本身的代价，interactionTps 为正"
+            },
+            {
+              "name": "kvPrefetch",
+              "dependsOn": "OPT.dmaPreempt=true",
+              "reason": "本行 note 写明 dmaPreempt 保持开启。couplings[kvPrefetch off x dmaPreempt off] 的 interactionTps 为正，说明 window 的收益有一部分要靠 demand fetch 能暂停预取。dmaPreempt 的残留 stripe 成本按 0 建模（FREEZE_GAP_REVIEW.md:224，CLM-NEW-02）"
+            },
+            {
+              "name": "tmaLane",
+              "dependsOn": "OPT.kvPrefetch='window'；OPT.commOverlap（UNVERIFIED，卡里没有对应耦合）",
+              "reason": "TMA fill 的发射条件是输入已在 shared 就绪（03_TMA_AND_SRAM.md:170），KV fill 的提前量因此受 window 预取约束；fill 被集合通信掩盖（03_TMA_AND_SRAM.md:191）。卡头 couplings 里没有 tmaLane × kvPrefetch，也没有 tmaLane × commOverlap，依赖的大小无法从卡中读出"
+            },
+            {
+              "name": "kvCache",
+              "dependsOn": "OPT.softmaxFusion=true（以及 x.kvTile/x.headTile）",
+              "reason": "fp8 的 dequant 记在 H 向量 lane 上，并从 softmax 掩盖预算中扣除（k3_architecture_search.js:73-77 注释；21_TPS_DESIGN_BASELINE.md:274）。couplings[kvCache off x softmaxFusion off @ kvTile=16384] 的 interactionTps 为正，二者不独立。不可行的结论依赖发布的 kvTile（couplings[kvTile=16384 x kvCache off]）和 headTile（卡里没有对应耦合）"
+            }
+          ],
+          "note": "审读完成。三行都是离散机制，打破预算或可行性的回退值都在可信集合内。三行收益都只有 MODEL 的 expected，没有 trace，证据等级为 E0（B-003）。卡里缺三项耦合：tmaLane×kvPrefetch、tmaLane×commOverlap、headTile×kvCache。另有一处文档需要局部修正：teams/software/docs/TUNING_CONTRACT.md:66-67 写的 bf16 不可行原因与模型不符。kvCache 的耦合显示，fp8 不是方向级前提，因此不触发 DIRECTION_BACKFLOW。"
+        }
+      ],
+      "mechanicalChecks": {
+        "coverageGaps": [],
+        "droppedLoadBearing": [],
+        "unplannedLoadBearing": []
+      },
+      "merge": {
+        "loadBearing": [
+          {
+            "name": "hMiB",
+            "owner": "memory-expert",
+            "basis": "card_and_expert",
+            "source": "卡：parameters[hMiB].classification=loadBearing，bearsBy=feasibility；parameters[hMiB].moves[to=2].reasons=[H local tile]（nominal 与 stress 同）；bindingConstraints.byConstraint[H local tile]；criticalPath.occupancy.localTile.hCore。专家：memory-expert（design.attribution, sram, attribution-sram-2026-10-08-r2）判 breakEvenInsideRange=yes，可信区间为设计空间 {1,2,4,8} MiB/H core，出处 integration/detailed/k3_architecture_search.js:14、:100、:107、:7，teams/hardware/docs/03_TMA_AND_SRAM.md:61；足迹为 MODEL，LIMITS.usable 的预留内容没有出处，UNVERIFIED。software-expert 依赖说明：不可行结论以 OPT.kvCache='fp8' 及发布的 kvTile/headTile 为前提（k3_architecture_search.js:100,107；parameters[kvCache].moves[to='bf16'].reasons）"
+          },
+          {
+            "name": "layoutImbalance",
+            "owner": "memory-expert",
+            "basis": "card",
+            "source": "卡：parameters[layoutImbalance].classification=loadBearing，bearsBy=feasibility，evidence=ASSUMPTION；parameters[layoutImbalance].breakEven.valueAtBudget；moves[to=1.8].reasons=[H local tile]；bindingConstraints.byConstraint[H local tile]；couplings[tmaLane off x layoutImbalance=*]、couplings[kvPrefetch off x layoutImbalance=*]、couplings[sharedPortScaling off x layoutImbalance=*]、couplings[kvCache off x layoutImbalance=* @ kvTile=16384]。专家：memory-expert 同意分类，但判 breakEvenInsideRange=unknown：下界 1 来自定义（integration/detailed/k3_tps_design_baseline.js:87），上界 UNVERIFIED，仓库里只有下达指标（docs/architecture/DESIGN_TARGETS_AND_MARGINS.md:51）和扫描天花板（k3_tps_design_baseline.js:86），没有 memory compiler 或 Palladium 数据（teams/vv/docs/VV_MEASUREMENT_PLAN.md:27）。所以承重的依据只有卡，没有专家给出的可信区间支撑。software-expert 依赖说明：留在预算内以 OPT.kvCache='fp8'、OPT.tmaLane=true、OPT.kvPrefetch='window' 为前提"
+          },
+          {
+            "name": "kvPrefetch",
+            "owner": "software-expert",
+            "basis": "card_and_expert",
+            "source": "卡：parameters[kvPrefetch].classification=loadBearing，bearsBy=budget；moves[to='layer'].withinBudget=false；published.rawMarginUs；parameters[kvPrefetch].note（dmaPreempt 保持开启）；couplings[kvPrefetch off x dmaPreempt off]。专家：software-expert 判 breakEvenInsideRange=yes，可信集合 {'window','layer'}，'layer' 必然可实现；'window' 能否实现为 UNVERIFIED。出处 integration/detailed/k3_operator_sram_sim.js:36-37、:395，docs/architecture/21_TPS_DESIGN_BASELINE.md:260，teams/council/docs/reviews/2026-09-26_K3_P1_FREEZE_GAP_REVIEW.md:428，docs/architecture/DESIGN_EVIDENCE_MATRIX.md:32，teams/vv/docs/VV_MEASUREMENT_PLAN.md:23（B-003），证据等级 E0"
+          },
+          {
+            "name": "tmaLane",
+            "owner": "software-expert",
+            "basis": "card_and_expert",
+            "source": "卡：parameters[tmaLane].classification=loadBearing，bearsBy=budget；moves[to=false].withinBudget=false，moves[to=false].stress.withinBudget=false；criticalPath.lines[tmaFill]、criticalPath.lines[tmaHidden]。专家：software-expert 判 breakEvenInsideRange=yes，可信集合 {true,false}，false 必然可实现；true 依赖每域 TMA lane 和双缓冲空闲一半，二者能否实现均为 UNVERIFIED，且没有跟踪项。出处 integration/detailed/k3_operator_sram_sim.js:26-34，teams/hardware/docs/03_TMA_AND_SRAM.md:170-171，integration/detailed/k3_architecture_search.js:205，2026-09-26_K3_P1_FREEZE_GAP_REVIEW.md:340、:430，docs/architecture/OPEN_ISSUES.md:32（O-007）"
+          },
+          {
+            "name": "kvCache",
+            "owner": "software-expert",
+            "basis": "card_and_expert",
+            "source": "卡：parameters[kvCache].classification=loadBearing，bearsBy=feasibility，evidence=MODEL (precision open, B-001)；moves[to='bf16'].reasons=[H local tile]；couplings[kvTile=16384 x kvCache off]、couplings[kvTile=65536 x kvCache off]、couplings[kvCache off x softmaxFusion off @ kvTile=16384]。专家：software-expert 判 breakEvenInsideRange=yes，可信集合 {'fp8','bf16'}；fp8 在 1M context 下的精度合法性 UNVERIFIED（docs/architecture/OPEN_ISSUES.md:7 B-001、:38 O-013；teams/software/docs/PRECISION_POLICY.md:157；teams/council/adr/ADR-0005-tps-design-baseline.md:33）。容量依据：integration/detailed/k3_operator_sram_sim.js:77，k3_architecture_search.js:100,107，teams/software/docs/KERNEL_SPEC.md:223。专家指出，couplings[kvTile=16384 x kvCache off].both 显示，换到小 tile 后 bf16 只增加时间、不破预算；按 caveats[0]，这部分代价仍全额计给本行"
+          }
+        ],
+        "slack": [
+          {
+            "name": "lMiB",
+            "owner": "memory-expert",
+            "source": "卡：parameters[lMiB].classification=slack；moves[to=0.5] 的 dTps 为零，dDieAreaMm2/dDiePowerW 为负；criticalPath.occupancy.localTile.lCore.shareOfUsable。专家：memory-expert 同意，设计空间出处 integration/detailed/k3_architecture_search.js:14、integration/detailed/tps_attribution.js:228。保留意见：0.5 不在设计空间 {1,2,4,8} 内；省下的面积是否包含 ECC 位为 UNVERIFIED（k3_architecture_search.js:38，teams/hardware/docs/03_TMA_AND_SRAM.md:37），缺 SRAM compiler 的宏数据。这只影响释放量，不影响分类"
+          },
+          {
+            "name": "sharedPortScaling",
+            "owner": "memory-expert",
+            "source": "卡：parameters[sharedPortScaling].classification=slack；moves[0] 的 dTps 绝对值小于 1，同时释放 dDieAreaMm2/dDiePowerW/dCardPowerW；couplings[sharedPortScaling off x layoutImbalance=*].interactionTps 可忽略。专家：memory-expert 同意，系数为 MODEL，可信区间 UNVERIFIED（docs/architecture/OPEN_ISSUES.md:32 O-007；teams/hardware/docs/03_TMA_AND_SRAM.md:289、:133；端口面积折算见 integration/detailed/k3_rdma_final_tuning_model.js:140）。保留意见：本机制开启是 sharedSlices=32 因卡功耗不可行的原因（bindingConstraints.byConstraint[card power after shared-port scaling]），但缺 sharedSlices × sharedPortScaling 的耦合"
+          }
+        ],
+        "measurementPlan": [
+          {
+            "name": "hMiB",
+            "owner": "memory-expert",
+            "measurement": "卡 measurementNeeded：SRAM macro density；H-core tile footprint from the kernel mapping。专家补充：(a) H-core tile 足迹实测，同一份数据同时服务 kvTile、layoutImbalance、kvCache 三行；(b) LIMITS.usable 的出处，即 ECC/spare/碎片预留各占多少（k3_architecture_search.js:7，03_TMA_AND_SRAM.md:37）；(c) 补 hMiB × {kvTile, layoutImbalance, kvCache} 的耦合回放",
+            "priority": "high"
+          },
+          {
+            "name": "layoutImbalance",
+            "owner": "memory-expert",
+            "measurement": "卡 measurementNeeded：per-bank access histogram from Palladium（时间角色）。专家补充：VV_MEASUREMENT_PLAN.md:27 的 memory compiler 宏形状不均衡（容量角色）也需要，两者都要有，才能判断盈亏点是否落在可信区间内；与 lBanks/hBanks 的 Palladium bank-conflict 计数同一轮采集；补 hBanks × layoutImbalance 的耦合。测量定义的不一致见 conflicts",
+            "priority": "high"
+          },
+          {
+            "name": "kvPrefetch",
+            "owner": "software-expert",
+            "measurement": "卡 measurementNeeded：event-level trace showing the mechanism engages at the published point。专家补充：trace 要显示 KV DMA 的发射时刻早于所属层开始执行，同时给出 shared 占用峰值和 dmaPreemptions；可与 memory-expert 要的 shared 占用 trace（sharedMiB、depth 行）一起采集；dmaPreempt 的残留 stripe 成本目前按 0 建模（FREEZE_GAP_REVIEW.md:224，CLM-NEW-02）",
+            "priority": "high"
+          },
+          {
+            "name": "tmaLane",
+            "owner": "software-expert",
+            "measurement": "卡 measurementNeeded：event-level trace showing the mechanism engages at the published point。专家补充：记录每域 TMA fill 的起止时刻相对于 kernel 与集合通信的位置、tmaCancels、local 写口争用；把每域 TMA lane ABI 立为跟踪项；补 tmaLane × kvPrefetch、tmaLane × commOverlap 两对耦合。memory-expert 另要求 RTL 实测把 descriptor 吞吐与 burst 宽度分开（tmaEngines/tmaBytes 两行在模型里不可区分）",
+            "priority": "high"
+          },
+          {
+            "name": "kvCache",
+            "owner": "software-expert",
+            "measurement": "卡 measurementNeeded：event-level trace showing the mechanism engages at the published point。专家补充：卡住冻结的是 VV_MEASUREMENT_PLAN.md:29 的 #8 精度验收（B-001 / O-013），它不在卡的 measurementNeeded 里；补 headTile × kvCache 的耦合（FREEZE_GAP_REVIEW.md:372 所述的 SW-05 值没有入库，同文件:254）。专家给的优先级为 medium，理由是 couplings[kvTile=16384 x kvCache off].both 显示经 tile 重调后仍在预算内",
+            "priority": "medium"
+          }
+        ],
+        "conflicts": [
+          {
+            "row": "layoutImbalance",
+            "between": "卡 parameters[layoutImbalance].measurementNeeded（Palladium 的 per-bank 访问直方图，对应时间角色） vs teams/vv/docs/VV_MEASUREMENT_PLAN.md:27（memory compiler 的宏形状不均衡，对应容量角色）；由 memory-expert 提出",
+            "resolution": "不裁决。模型用同一个系数同时承担时间和容量两个角色（k3_architecture_search.js:100），这样做有没有依据，目前没有证据。两项测量都列入 measurementPlan；测量定义交回 memory-expert 与 VV 计划 owner 统一"
+          },
+          {
+            "row": "kvCache",
+            "between": "teams/software/docs/TUNING_CONTRACT.md:66-67（bf16 在 kvTile=32768 下不可行，原因写成 dequant 占用 H 向量 lane） vs 卡 parameters[kvCache].moves[to='bf16'].reasons=[H local tile]，以及 integration/detailed/k3_architecture_search.js:107；由 software-expert 提出",
+            "resolution": "差异已能归因：bf16 没有 dequant，不可行来自容量检查；卡是数值和模型结论的唯一来源。文档由 software-expert 做局部修正，本行分类不受影响"
+          },
+          {
+            "row": "layoutImbalance",
+            "between": "卡 classification=loadBearing vs memory-expert breakEvenInsideRange=unknown（同意分类，但上界 UNVERIFIED，没能给出可信区间）",
+            "resolution": "不是分类冲突，照卡列为承重，basis 只记为 card。盈亏点 parameters[layoutImbalance].breakEven.valueAtBudget 是否落在可信区间内，留给下一步检点，本格不判"
+          }
+        ],
+        "verdict": "INTEGRATION_OK",
+        "deltaNote": "与规格口径的比对（单独陈述，不是内部恒等式检查）：teams/hardware/inputs/k3_mc_baseline.json 实测 sha256 与卡 inputs.baselineSha256 一致。卡 inputs.x.mcGBs=640 对应 k3_mc_baseline.json:386；它在 teams/hardware/inputs/memory_design_space.json:50 被标为 STRETCH_AGGRESSIVE 发布点，这与 memory-expert 的说明一致，不是差异，但全部行都只适用于 MC640，不能沿用到 MC320。专家引用的卡字段（例如 hMiB.moves[to=2].stress.reasons、sharedMiB.moves[to=12].stress、sharedSlices.moves[to=32].reasons、kvCache.moves[to='bf16'].stress、layoutImbalance.breakEven）已按 D:/xihu/out/attribution/sram_card.json 逐项核对存在且语义相符。没有发现无法归因的差额。\n\n覆盖率：卡的 16 行全部被两位专家覆盖，没有分类异议。承重 5 行：hMiB、layoutImbalance、kvPrefetch、tmaLane、kvCache。专家判 breakEvenInsideRange=yes 的 4 行都已在其中。让出 2 行：lMiB、sharedPortScaling。未列入的行：graded 的 sharedMiB、lBanks、hBanks、bankBytes、sharedSlices、tmaEngines、tmaBytes、kvTile，以及 insensitive 的 depth。其中 lBanks、hBanks、sharedSlices、tmaEngines 的不利移动能释放面积或功耗，但卡判为 graded，专家也没有主张让出，所以不列入 slack。\n\n交回上游的缺口（都不是差额，不阻塞合并）：\n(1) 缺耦合：hMiB × {kvTile, layoutImbalance, kvCache}；sharedSlices × sharedPortScaling；hBanks × layoutImbalance；tmaLane × kvPrefetch；tmaLane × commOverlap；headTile × kvCache。\n(2) 卡里没有对应行的 ASSUMPTION/常数：A.TECH bankUtil（k3_architecture_search.js:12），TMA 效率 0.8，LIMITS.usable（k3_architecture_search.js:7），三者都没有出处。\n(3) criticalPath.occupancy 只有 nominal 点的数据，没有 stress 点。\n(4) 三个软件机制行的证据等级都是 E0（B-003），合并没有提升它们的证据等级。"
+      },
+      "invariantCheck": {
+        "verdict": "INVARIANT_VIOLATED",
+        "checks": [
+          {
+            "what": "C1 每一行都被其 owner 审过（coverageGaps）",
+            "result": "holds",
+            "evidence": "脚本 coverageGaps=[]，已确认。D:/xihu/out/attribution/sram_card.json 的 parameters 共 16 行，owners=[memory-expert, software-expert]。memory-expert 的 13 行（lMiB、hMiB、sharedMiB、lBanks、hBanks、bankBytes、sharedSlices、tmaEngines、tmaBytes、kvTile、depth、layoutImbalance、sharedPortScaling）都出现在 memory-expert 审读的 rows[] 里；software-expert 的 3 行（kvPrefetch、tmaLane、kvCache）都出现在 software-expert 审读的 rows[] 里。没有审读由非 owner 代审。"
+          },
+          {
+            "what": "C2 卡判承重的行全部出现在合并的 loadBearing 里（droppedLoadBearing）",
+            "result": "holds",
+            "evidence": "脚本 droppedLoadBearing=[]，已确认。卡顶层 loadBearing=[hMiB, layoutImbalance, kvPrefetch, tmaLane, kvCache]，合并的 loadBearing[] 正好是这 5 个名字，没有多也没有少。逐行 parameters[].classification=loadBearing 与之一致：hMiB 和 layoutImbalance 的 bearsBy=feasibility，kvPrefetch 和 tmaLane 的 bearsBy=budget，kvCache 的 bearsBy=feasibility。"
+          },
+          {
+            "what": "C3 每个承重行都有 owner、卡里的 evidence 和一条 measurementPlan（unplannedLoadBearing）",
+            "result": "holds",
+            "evidence": "脚本 unplannedLoadBearing=[]，已确认。owner：合并中各项的 owner 与卡行一致（hMiB、layoutImbalance 为 memory-expert；kvPrefetch、tmaLane、kvCache 为 software-expert）。evidence：卡行 evidence 依次为 hMiB='MODEL (A.TECH SRAM density; ...)'，layoutImbalance='ASSUMPTION'，kvPrefetch='MODEL'，tmaLane='MODEL'，kvCache='MODEL (precision open, B-001)'，都不为空。measurementPlan[] 里 5 行各有一条：hMiB、layoutImbalance、kvPrefetch、tmaLane 为 high，kvCache 为 medium；kvCache 的优先级与 software-expert 审读的 rows[kvCache].measurementPriority=medium 一致。有一处记录上的不对称，不判违规：合并 loadBearing[hMiB/kvPrefetch/tmaLane].source 没有转述卡行的 evidence 字段，但该字段在卡里存在。"
+          },
+          {
+            "what": "C4a 审读与合并中出现的数字可在卡里按行名或字段路径找到：设计空间以外的移动值、阈值、占用、耦合",
+            "result": "holds",
+            "evidence": "按 sram_card.json 逐项找到：lMiB.moves[to=0.5]；sharedMiB.moves[to=12]；lBanks、hBanks、bankBytes 的 moves[to=32]；sharedSlices.moves[to=8]，以及 moves[to=32].reasons=[card power after shared-port scaling]；tmaEngines.moves[to=2] 与 tmaBytes.moves[to=256] 的 dTps、dRawUs、stress 字段逐值相同；kvTile.moves[to=16384 / to=65536]，其 stress=null；depth.moves[to=3]；layoutImbalance.moves[to=1.3/1.4/1.8] 和 breakEven.valueAtBudget；hMiB.moves[to=2].stress.reasons=[H local tile]；kvPrefetch.moves[to='layer'].withinBudget=false；tmaLane.moves[to=false].stress.withinBudget=false；kvCache.moves[to='bf16'].reasons=[H local tile]；criticalPath.lines[tmaFill/tmaHidden]；criticalPath.occupancy.localTile.usable；x.kvTile=32768；x.mcGBs=640；caveats 中的 '1M context'。各条耦合的 interactionTps 符号（为正或可忽略）与卡头 couplings[] 一致。合并 deltaNote 里的计数（16/5/2 行）分别等于卡 parameters、loadBearing、slack 数组的长度；“yes 的 4 行”等于两份审读 breakEvenInsideRange=yes 的行数（hMiB、kvPrefetch、tmaLane、kvCache）。基线 sha256：teams/hardware/inputs/k3_mc_baseline.json 实测值等于 inputs.baselineSha256；k3_mc_baseline.json:386 为 \"mcGBs\": 640。"
+          },
+          {
+            "what": "C4b 专家可信区间中的数字带出处，且出处能解析到含该数字的行",
+            "result": "holds",
+            "evidence": "已核对的出处：k3_architecture_search.js:14 含 lMiB/hMiB:[1,2,4,8]、lBanks/hBanks:[8,16,32,64]、bankBytes:[32,64]、sharedMiB:[16,24,32,48,64]、sharedSlices:[8,16,32]、tmaEngines:[1,2,4]、tmaBytes:[128,256,512]；tps_attribution.js:228 写明 lMiB 0.5、sharedMiB 12 在空间外；tps_attribution.js:240 写明 depth 只映射 0..4；03_TMA_AND_SRAM.md:43 和 :140 含 TMA 0.8 效率与 512 B/cycle；DESIGN_TARGETS_AND_MARGINS.md:51 含 ≤1.30；VV_MEASUREMENT_PLAN.md:27 含 ≤1.30；k3_tps_design_baseline.js:86 含 ceiling 2.5；DESIGN_TARGETS_AND_MARGINS.md:96 含“取 2–4 同 TPS”；KERNEL_SPEC.md:223 含“需 KV tile 16384”；TUNING_CONTRACT.md:66 含 32768；VV_MEASUREMENT_PLAN.md:29 为第 8 项。layoutImbalance 的“下界 1”引的是 k3_tps_design_baseline.js:87，该行只给出 'slowest-bank factor' 的定义，没有写出数字 1；这里按定义所含的下界处理，判成立，但记录在案。数字超出可解析范围的情况见 C4c。"
+          },
+          {
+            "what": "C4c 既不在卡里、也不是带出处的专家可信区间的数字（逐条列出）",
+            "result": "violated",
+            "evidence": "(1) memory-expert rows[bankBytes].plausibleRange 中的 '656 B/token/layer'：rangeEvidence 给的是 teams/hardware/docs/03_TMA_AND_SRAM.md:247，该行实际是表格边框 '+------+...+'，不含 656；656 出现在同文件的 :241 和 :248。卡里也没有这个值。出处无法解析到该数字。(2) memory-expert rows[tmaEngines].reason 中的 'gather（656 B 粒度）'：该行 rangeEvidence 为 k3_architecture_search.js:14、03_TMA_AND_SRAM.md:43、:141、k3_architecture_search.js:10，没有一条含 656；卡里也没有。(3) software-expert softwareDependence[hMiB].reason 中的 'fp8 的 656 B 布局'：所引 k3_architecture_search.js:100,107 只有变量 kvBytesPerToken，不含 656；k3_operator_sram_sim.js:77 只有公式，没有该值；卡里也没有。这一项也不是可信区间。(4) memory-expert note 中的 'MC320'：卡里没有 320（inputs.x.mcGBs=640），所引 memory_design_space.json:50 是 640 档的条目，该审读没有给出含 320 的出处。(5) 合并 deltaNote 中的 'MC320'：同 (4)，合并没有给出出处。"
+          },
+          {
+            "what": "C5 专家可信区间的出处不得是 references/sota 下的知识文件",
+            "result": "holds",
+            "evidence": "两份审读的全部 rows[].rangeEvidence 都没有引用 references/sota 下的文件。memory-expert 的 note 提到 references/sota/memory-subsystem.md，但写明“没有引用它的任何数字”。合并的 loadBearing 和 slack 的 source 里也没有 references/sota 出处。"
+          },
+          {
+            "what": "C6 脚本的机械比对结果按原样确认，不解释掉",
+            "result": "holds",
+            "evidence": "coverageGaps=[]、droppedLoadBearing=[]、unplannedLoadBearing=[]，分别经 C1、C2、C3 独立复核，与卡和合并一致。"
+          },
+          {
+            "what": "附记（不属于已声明的判据，不计入裁决）：合并 deltaNote 自述“专家引用的卡字段语义相符”",
+            "result": "holds",
+            "evidence": "只作记录。memory-expert rows[hMiB].reason 说 criticalPath.occupancy.localTile.hCore.shareOfUsable 是“本卡最紧的一项占用”，而规格文件 teams/hardware/docs/03_TMA_AND_SRAM.md:62 记 Shared 窗口用 92%，卡 criticalPath.occupancy 里也有 sharedPeakReservedMiBPerCard 与 sharedWindowMiBPerCard 两项。这句表述与卡和规格的口径是否一致，本格不判：按策略规则 2 不能临时发明判据，这里仅报告。"
+          }
+        ],
+        "coverage": {
+          "checked": [
+            "C1 owner 覆盖：16 行对 2 位 owner，按 D:/xihu/out/attribution/sram_card.json 的 parameters[].name 与审读 rows[].name 比对",
+            "C2 承重行不丢失：卡顶层 loadBearing 与合并 loadBearing 比对",
+            "C3 承重行的 owner、卡 evidence、measurementPlan 齐全",
+            "C4a 审读与合并中引用的卡字段与数值：逐项在 sram_card.json 中定位，包括 parameters[].moves[]、stress、breakEven、criticalPath、couplings、inputs.x、caveats",
+            "C4b 专家可信区间出处：逐行打开所引文件（k3_architecture_search.js、tps_attribution.js、k3_tps_design_baseline.js、k3_rdma_final_tuning_model.js、k3_operator_sram_sim.js、03_TMA_AND_SRAM.md、HARDWARE_PROCESS_AND_LIBRARY.md、DESIGN_TARGETS_AND_MARGINS.md、VV_MEASUREMENT_PLAN.md、OPEN_ISSUES.md、DESIGN_EVIDENCE_MATRIX.md、21_TPS_DESIGN_BASELINE.md、2026-09-26_K3_P1_FREEZE_GAP_REVIEW.md、TUNING_CONTRACT.md、KERNEL_SPEC.md、PRECISION_POLICY.md、ADR-0005、memory_design_space.json、k3_mc_baseline.json）核对行内容",
+            "C4c 无出处数字逐条列出",
+            "C5 references/sota 出处排除",
+            "C6 脚本机械比对确认",
+            "基线 sha256 与卡 inputs.baselineSha256 一致"
+          ],
+          "notChecked": [
+            "数字类之外的定性论断与卡语义是否一致（例如“硬件行中敏感度最大”“最紧的一项占用”）：不属于已声明的守恒判据，没有作为检点项，只在附记中记录一处",
+            "引用中的 ID 和标签（B-001、B-003、O-007、O-013、HW-09、SW-05、CLM-NEW-02、E0、策略规则编号）：按标识符处理，不按数值检点；只核对了所引行的存在，没有核对 ID 的定义",
+            "卡头注入内容与 sram_card.json 文件逐字段全量一致性：只抽查了 kvTile 和 layoutImbalance 两行 moves 与卡头 couplings 的对应值，没有全量比对"
+          ]
+        },
+        "violations": [
+          "C4c-1：memory-expert rows[bankBytes].plausibleRange 中的 '656 B/token/layer' 引 teams/hardware/docs/03_TMA_AND_SRAM.md:247，该行是表格边框，不含 656（同文件 :241、:248 才含）；卡里也没有该值。出处无法解析到该数字。",
+          "C4c-2：memory-expert rows[tmaEngines].reason 中的 '656 B 粒度'，本行 rangeEvidence（k3_architecture_search.js:14、:10，03_TMA_AND_SRAM.md:43、:141）没有一条含 656，卡里也没有。",
+          "C4c-3：software-expert softwareDependence[hMiB].reason 中的 '656 B 布局'，所引 integration/detailed/k3_architecture_search.js:100,107 不含 656，卡里也没有；该项不是可信区间，也没有其他出处。",
+          "C4c-4：memory-expert note 中的 'MC320'，卡里没有 320（inputs.x.mcGBs=640），所引 teams/hardware/inputs/memory_design_space.json:50 是 640 档条目，没有含 320 的出处。",
+          "C4c-5：合并 deltaNote 中的 'MC320'，卡里没有，合并也没有给出出处。"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,2410 @@
+{
+  "schemaVersion": "attribution-card-v0.1",
+  "dimension": "sram",
+  "question": "How do on-die SRAM capacity, banking, TMA and the SRAM-side mapping move TPS/usr, and at what area and power?",
+  "status": "MODEL: one-at-a-time replays of the detailed model at one design point. Changes no baseline, gate or published number",
+  "inputs": {
+    "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
+    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "pointSource": "teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware.x",
+    "x": {
+      "nL": 8,
+      "nH": 4,
+      "lRows": 1,
+      "lCols": 256,
+      "lEngines": 8,
+      "hRows": 48,
+      "hCols": 128,
+      "hEngines": 5,
+      "ghz": 1,
+      "vectorLanes": 512,
+      "lMiB": 1,
+      "hMiB": 4,
+      "lBanks": 64,
+      "hBanks": 64,
+      "bankBytes": 64,
+      "sharedMiB": 16,
+      "sharedSlices": 16,
+      "tmaEngines": 4,
+      "tmaBytes": 512,
+      "nocBytes": 256,
+      "nocLanes": 4,
+      "reduceLanes": 4096,
+      "ucieLanes": 128,
+      "ucieGbps": 64,
+      "mcGBs": 640,
+      "rdmaLanes": 16,
+      "weightTileMiB": 8,
+      "kvTile": 32768,
+      "headTile": 96,
+      "depth": 4,
+      "windowFraction": 1
+    },
+    "goalTpsPerUser": 1000,
+    "rawBudgetUs": 854.7008547008547,
+    "engineeringMargin": 1.17,
+    "software": {
+      "tauUs": 1.15,
+      "countBasis": "reference-393",
+      "launchScale": 0.45,
+      "kvCache": "fp8",
+      "kvPrefetch": "window",
+      "pvMerge": "layer"
+    },
+    "stressPoint": {
+      "name": "JOINT_PESSIMISTIC.allUnmeasured",
+      "values": {
+        "matrixUtil": 0.5,
+        "vectorUtil": 0.25,
+        "unpackParamsPerLaneCycle": 1,
+        "layoutImbalance": 1.3,
+        "kvTile": 16384,
+        "mcUtil": 0.65,
+        "prediction": 0.7,
+        "launchScale": 0.7
+      }
+    },
+    "slackTps": 1
+  },
+  "published": {
+    "nominal": {
+      "feasible": true,
+      "tpsPerUser": 1101.771070241925,
+      "rawUs": 775.7517671190814,
+      "dieAreaMm2": 365.3410392708195,
+      "diePowerW": 283.2693760000001,
+      "cardPowerW": 2744.875008000001
+    },
+    "stress": {
+      "feasible": true,
+      "tpsPerUser": 906.5072465060036,
+      "rawUs": 942.8505486251446,
+      "dieAreaMm2": 365.3410392708195,
+      "diePowerW": 283.2693760000001,
+      "cardPowerW": 2724.3950080000004
+    },
+    "rawMarginUs": 78.94908758177337
+  },
+  "criticalPath": {
+    "lines": [
+      {
+        "name": "localTma",
+        "us": 42.874092680469154,
+        "shareOfRaw": 0.05526779892450801
+      },
+      {
+        "name": "tmaFill",
+        "us": 134.77336125833259,
+        "shareOfRaw": 0.17373258685422274
+      },
+      {
+        "name": "tmaHidden",
+        "us": -106.90661439522479,
+        "shareOfRaw": -0.1378103395010561
+      },
+      {
+        "name": "dmaWait",
+        "us": 22.353084639818142,
+        "shareOfRaw": 0.028814738924580297
+      }
+    ],
+    "netUs": 93.09392418339507,
+    "netShareOfRaw": 0.12000478520225497,
+    "memoryLane": {
+      "dmaBusyUs": 775.3004419656203,
+      "rawUs": 775.7517671190814,
+      "busyShareOfRaw": 0.9994182093130936,
+      "note": "the DMA/MC lane runs in parallel with the serial chain; busy close to raw means bandwidth, not SRAM, sets the floor"
+    },
+    "occupancy": {
+      "sharedWindowMiBPerCard": 108.8,
+      "sharedPeakReservedMiBPerCard": 100.24081361832157,
+      "localTile": {
+        "check": "A.mappedPlan: infeasible when usedMiB > usableMiB = capacityMiB x LIMITS.usable; usedMiB includes TECH.layoutImbalance",
+        "usable": 0.85,
+        "lCore": {
+          "usedMiB": 0.36134033203125,
+          "capacityMiB": 1,
+          "usableMiB": 0.85,
+          "shareOfUsable": 0.4251062729779412,
+          "shareOfCapacity": 0.36134033203125
+        },
+        "hCore": {
+          "usedMiB": 2.7447265625,
+          "capacityMiB": 4,
+          "usableMiB": 3.4,
+          "shareOfUsable": 0.8072725183823529,
+          "shareOfCapacity": 0.686181640625
+        }
+      }
+    }
+  },
+  "classes": {
+    "loadBearing": "an adverse move breaks the raw budget or makes the point infeasible (bearsBy says which); infeasible mappings and model errors are not counted",
+    "slack": "every adverse move costs < 1 TPS/usr and at least one frees die area or power",
+    "insensitive": "every adverse move costs < 1 TPS/usr and none frees area or power",
+    "graded": "adverse moves cost TPS but the budget holds",
+    "basis": "a counting basis (ADR-0004), not a design choice; reported, not classified",
+    "untested": "no adverse move on the list (the published value is the lowest step)"
+  },
+  "parameters": [
+    {
+      "name": "lMiB",
+      "kind": "hardware",
+      "where": "x.lMiB",
+      "published": 1,
+      "owner": "memory-expert",
+      "evidence": "MODEL (A.TECH SRAM density; L local tile use in criticalPath.occupancy.localTile.lCore)",
+      "measurementNeeded": "SRAM macro density and energy for the target process; L-core tile footprint from the kernel mapping",
+      "moves": [
+        {
+          "to": 0.5,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1101.771070241925,
+          "rawUs": 775.7517671190814,
+          "withinBudget": true,
+          "dTps": 0,
+          "dRawUs": 0,
+          "dDieAreaMm2": -3.9606953892669026,
+          "dDiePowerW": -0.36000000000001364,
+          "dCardPowerW": -2.880000000000109,
+          "dTpsPerMm2": 0,
+          "dTpsPerW": 0,
+          "stress": {
+            "tpsPerUser": 906.5072465060036,
+            "dTps": 0,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 2,
+          "adverse": false,
+          "feasible": true,
+          "tpsPerUser": 1101.771070241925,
+          "rawUs": 775.7517671190814,
+          "withinBudget": true,
+          "dTps": 0,
+          "dRawUs": 0,
+          "dDieAreaMm2": 7.921390778533578,
+          "dDiePowerW": 0.7199999999999704,
+          "dCardPowerW": 5.759999999999309,
+          "dTpsPerMm2": 0,
+          "dTpsPerW": 0,
+          "stress": {
+            "tpsPerUser": 906.5072465060036,
+            "dTps": 0,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "slack"
+    },
+    {
+      "name": "hMiB",
+      "kind": "hardware",
+      "where": "x.hMiB",
+      "published": 4,
+      "owner": "memory-expert",
+      "evidence": "MODEL (A.TECH SRAM density; H local tile use in criticalPath.occupancy.localTile.hCore)",
+      "measurementNeeded": "SRAM macro density; H-core tile footprint from the kernel mapping",
+      "moves": [
+        {
+          "to": 2,
+          "adverse": true,
+          "feasible": false,
+          "reasons": [
+            "H local tile"
+          ],
+          "withinBudget": false,
+          "stress": {
+            "feasible": false,
+            "reasons": [
+              "H local tile"
+            ]
+          }
+        },
+        {
+          "to": 8,
+          "adverse": false,
+          "feasible": true,
+          "tpsPerUser": 1101.771070241925,
+          "rawUs": 775.7517671190814,
+          "withinBudget": true,
+          "dTps": 0,
+          "dRawUs": 0,
+          "dDieAreaMm2": 15.84278155706727,
+          "dDiePowerW": 1.4399999999999977,
+          "dCardPowerW": 11.519999999999527,
+          "dTpsPerMm2": 0,
+          "dTpsPerW": 0,
+          "stress": {
+            "tpsPerUser": 906.5072465060036,
+            "dTps": 0,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "loadBearing",
+      "bearsBy": "feasibility"
+    },
+    {
+      "name": "sharedMiB",
+      "kind": "hardware",
+      "where": "x.sharedMiB",
+      "published": 16,
+      "owner": "memory-expert",
+      "evidence": "MODEL (A.TECH SRAM density)",
+      "measurementNeeded": "shared-SRAM occupancy trace (prefetch window, RDMA workspace) from an event-level replay",
+      "moves": [
+        {
+          "to": 12,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1022.7251932341995,
+          "rawUs": 835.7092016067429,
+          "withinBudget": true,
+          "dTps": -79.04587700772538,
+          "dRawUs": 59.957434487661544,
+          "dDieAreaMm2": -3.9606953892669026,
+          "dDiePowerW": -0.36000000000001364,
+          "dCardPowerW": -2.880000000000109,
+          "dTpsPerMm2": 19.95757543534703,
+          "dTpsPerW": 219.57188057700662,
+          "stress": {
+            "tpsPerUser": 906.5072465060036,
+            "dTps": 0,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 24,
+          "adverse": false,
+          "feasible": true,
+          "tpsPerUser": 1101.771070241925,
+          "rawUs": 775.7517671190814,
+          "withinBudget": true,
+          "dTps": 0,
+          "dRawUs": 0,
+          "dDieAreaMm2": 7.921390778533578,
+          "dDiePowerW": 0.7199999999999704,
+          "dCardPowerW": 5.759999999999309,
+          "dTpsPerMm2": 0,
+          "dTpsPerW": 0,
+          "stress": {
+            "tpsPerUser": 906.5072465060036,
+            "dTps": 0,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "lBanks",
+      "kind": "hardware",
+      "where": "x.lBanks",
+      "published": 64,
+      "owner": "memory-expert",
+      "evidence": "MODEL (A.TECH.bankArea)",
+      "measurementNeeded": "bank-conflict counts from Palladium cycles of the L-core kernels",
+      "moves": [
+        {
+          "to": 32,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1091.7667284364172,
+          "rawUs": 782.8603239493492,
+          "withinBudget": true,
+          "dTps": -10.004341805507693,
+          "dRawUs": 7.108556830267844,
+          "dDieAreaMm2": -6.539831932773154,
+          "dDiePowerW": -6.7584000000000515,
+          "dCardPowerW": -54.06720000000041,
+          "dTpsPerMm2": 1.52975518459011,
+          "dTpsPerW": 1.4802825824910655,
+          "stress": {
+            "tpsPerUser": 906.3529339255576,
+            "dTps": -0.15431258044600327,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "hBanks",
+      "kind": "hardware",
+      "where": "x.hBanks",
+      "published": 64,
+      "owner": "memory-expert",
+      "evidence": "MODEL (A.TECH.bankArea)",
+      "measurementNeeded": "bank-conflict counts from Palladium cycles of the H-core kernels",
+      "moves": [
+        {
+          "to": 32,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1095.3935143585072,
+          "rawUs": 780.2683177299907,
+          "withinBudget": true,
+          "dTps": -6.377555883417699,
+          "dRawUs": 4.5165506109093485,
+          "dDieAreaMm2": -3.269915966386634,
+          "dDiePowerW": -3.3792000000000257,
+          "dCardPowerW": -27.03360000000066,
+          "dTpsPerMm2": 1.950373021501562,
+          "dTpsPerW": 1.8872975507272878,
+          "stress": {
+            "tpsPerUser": 906.1202663766576,
+            "dTps": -0.38698012934605686,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "bankBytes",
+      "kind": "hardware",
+      "where": "x.bankBytes",
+      "published": 64,
+      "owner": "memory-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "bank width vs access granularity from the kernel mapping",
+      "moves": [
+        {
+          "to": 32,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1084.6047495898688,
+          "rawUs": 788.0297915199526,
+          "withinBudget": true,
+          "dTps": -17.16632065205613,
+          "dRawUs": 12.278024400871232,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": -10.13760000000002,
+          "dCardPowerW": -81.10080000000016,
+          "dTpsPerMm2": null,
+          "dTpsPerW": 1.6933318193710636,
+          "stress": {
+            "tpsPerUser": 905.9660855063071,
+            "dTps": -0.5411609996965581,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "sharedSlices",
+      "kind": "hardware",
+      "where": "x.sharedSlices",
+      "published": 16,
+      "owner": "memory-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "shared-slice contention trace (NoC + port) from an event-level replay",
+      "moves": [
+        {
+          "to": 8,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1067.8825292352935,
+          "rawUs": 800.3697329077035,
+          "withinBudget": true,
+          "dTps": -33.888541006631385,
+          "dRawUs": 24.617965788622087,
+          "dDieAreaMm2": -19.060340168067285,
+          "dDiePowerW": -5.670528000000047,
+          "dCardPowerW": -45.36422400000083,
+          "dTpsPerMm2": 1.7779609759224815,
+          "dTpsPerW": 5.976258473043622,
+          "stress": {
+            "tpsPerUser": 889.083323260374,
+            "dTps": -17.42392324562968,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 32,
+          "adverse": false,
+          "feasible": false,
+          "reasons": [
+            "card power after shared-port scaling"
+          ],
+          "withinBudget": false,
+          "stress": {
+            "tpsPerUser": 911.2318240259086,
+            "dTps": 4.724577519904983,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "tmaEngines",
+      "kind": "hardware",
+      "where": "x.tmaEngines",
+      "published": 4,
+      "owner": "memory-expert",
+      "evidence": "MODEL (A.TECH.tmaArea)",
+      "measurementNeeded": "TMA descriptor throughput on RTL",
+      "moves": [
+        {
+          "to": 2,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1098.4123502156492,
+          "rawUs": 778.123857158974,
+          "withinBudget": true,
+          "dTps": -3.358720026275705,
+          "dRawUs": 2.3720900398926688,
+          "dDieAreaMm2": -10.729411764705901,
+          "dDiePowerW": -1.9200000000000728,
+          "dCardPowerW": -15.360000000000582,
+          "dTpsPerMm2": 0.31303859894016933,
+          "dTpsPerW": 1.7493333470185302,
+          "stress": {
+            "tpsPerUser": 903.6785303609472,
+            "dTps": -2.8287161450564327,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "tmaBytes",
+      "kind": "hardware",
+      "where": "x.tmaBytes",
+      "published": 512,
+      "owner": "memory-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "TMA burst size vs SRAM port width on RTL",
+      "moves": [
+        {
+          "to": 256,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1098.4123502156492,
+          "rawUs": 778.123857158974,
+          "withinBudget": true,
+          "dTps": -3.358720026275705,
+          "dRawUs": 2.3720900398926688,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 903.6785303609472,
+            "dTps": -2.8287161450564327,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "kvTile",
+      "kind": "mapping",
+      "where": "x.kvTile",
+      "published": 32768,
+      "owner": "memory-expert",
+      "evidence": "MODEL (mapping choice)",
+      "measurementNeeded": "FlashMLA tile sweep on the target kernel",
+      "moves": [
+        {
+          "to": 16384,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1094.348484493772,
+          "rawUs": 781.0134219688033,
+          "withinBudget": true,
+          "dTps": -7.422585748152869,
+          "dRawUs": 5.2616548497219355,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": null
+        },
+        {
+          "to": 65536,
+          "adverse": true,
+          "feasible": false,
+          "reasons": [
+            "H local tile"
+          ],
+          "withinBudget": false,
+          "stress": null
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "depth",
+      "kind": "mapping",
+      "where": "x.depth",
+      "published": 4,
+      "owner": "memory-expert",
+      "evidence": "MODEL (prefetch lookahead in layers)",
+      "measurementNeeded": "DMA prefetch trace: lookahead actually reached before eviction",
+      "moves": [
+        {
+          "to": 3,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1101.771070241925,
+          "rawUs": 775.7517671190814,
+          "withinBudget": true,
+          "dTps": 0,
+          "dRawUs": 0,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 906.5072465060036,
+            "dTps": 0,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "insensitive"
+    },
+    {
+      "name": "headTile",
+      "kind": "mapping",
+      "where": "x.headTile",
+      "published": 96,
+      "owner": "memory-expert",
+      "evidence": "MODEL (mapping choice)",
+      "measurementNeeded": "H-core tile footprint per head tile from the kernel mapping (score and accumulator bytes scale with it)",
+      "moves": [
+        {
+          "to": 48,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1091.9480343725181,
+          "rawUs": 782.7303386209251,
+          "withinBudget": true,
+          "dTps": -9.823035869406795,
+          "dRawUs": 6.978571501843703,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 881.4827069991932,
+            "dTps": -25.02453950681047,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "layoutImbalance",
+      "kind": "assumption",
+      "where": "A.TECH.layoutImbalance",
+      "published": 1.15,
+      "owner": "memory-expert",
+      "evidence": "ASSUMPTION",
+      "measurementNeeded": "two roles, one factor: capacity (it scales the local tile bytes of the H/L tile check) needs the memory-compiler macro shape imbalance over every SRAM instance (VV_MEASUREMENT_PLAN.md item 6); time (it scales every kernel time) needs the per-bank access histogram from Palladium",
+      "note": "slowest-bank factor on every kernel time AND on the local-SRAM tile capacity check (H local tile use in criticalPath.occupancy.localTile.hCore): too large makes the point infeasible, not just slower; ASSUMPTION",
+      "moves": [
+        {
+          "to": 1.3,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1064.9156162177096,
+          "rawUs": 802.5996066585252,
+          "withinBudget": true,
+          "dTps": -36.855454024215305,
+          "dRawUs": 26.84783953944384,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 906.5072465060036,
+            "dTps": 0,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 1.4,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1040.39684392693,
+          "rawUs": 821.5142709149576,
+          "withinBudget": true,
+          "dTps": -61.374226314994985,
+          "dRawUs": 45.76250379587623,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 879.7658032810269,
+            "dTps": -26.741443224976706,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 1.8,
+          "adverse": true,
+          "feasible": false,
+          "reasons": [
+            "H local tile"
+          ],
+          "withinBudget": false,
+          "stress": {
+            "tpsPerUser": 786.7759419426255,
+            "dTps": -119.7313045633781,
+            "withinBudget": false
+          }
+        }
+      ],
+      "breakEven": {
+        "valueAtBudget": 1.424549918166758
+      },
+      "breakEvenBy": {
+        "by": "feasibility",
+        "past": 1.4245513427166763,
+        "reasons": [
+          "H local tile"
+        ]
+      },
+      "classification": "loadBearing",
+      "bearsBy": "feasibility"
+    },
+    {
+      "name": "sharedPortScaling",
+      "kind": "mechanism",
+      "where": "OPT.{localWriteRatio, tmaDedicatedPort, sharedReadScale, sharedReadPerWrite}",
+      "published": {
+        "localWriteRatio": 1,
+        "tmaDedicatedPort": true,
+        "tmaPortWriteScale": 1.55,
+        "sharedReadScale": 1.18,
+        "sharedReadPerWrite": 0.18
+      },
+      "owner": "memory-expert",
+      "evidence": "MODEL (O-007)",
+      "measurementNeeded": "event-level trace showing the mechanism engages at the published point",
+      "role": "shared-SRAM write/read port scaling and dedicated TMA port, charged in area/power",
+      "note": "tmaPortWriteScale multiplies the shared write port only while tmaDedicatedPort is on (O.mapped); the switch-back turns the port off, so the scale goes inert and is not patched",
+      "moves": [
+        {
+          "to": {
+            "localWriteRatio": 1,
+            "tmaDedicatedPort": false,
+            "sharedReadScale": 1,
+            "sharedReadPerWrite": 0
+          },
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1101.712046773222,
+          "rawUs": 775.7933274889456,
+          "withinBudget": true,
+          "dTps": -0.05902346870288966,
+          "dRawUs": 0.04156036986421441,
+          "dDieAreaMm2": -7.775860168067254,
+          "dDiePowerW": -2.7394560000000183,
+          "dCardPowerW": -21.915648000000147,
+          "dTpsPerMm2": 0.0075906031522118235,
+          "dTpsPerW": 0.0215456896197235,
+          "stress": {
+            "tpsPerUser": 906.5069467347336,
+            "dTps": -0.0002997712700789634,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "slack"
+    },
+    {
+      "name": "kvPrefetch",
+      "kind": "mechanism",
+      "where": "OPT.kvPrefetch",
+      "published": "window",
+      "owner": "software-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "event-level trace showing the mechanism engages at the published point",
+      "role": "KV context tiles of the next x.depth layers prefetched into shared SRAM",
+      "note": "replayed with dmaPreempt held on: the demand fetch parks an in-flight KV prefetch; the coupling kvPrefetch off x dmaPreempt off separates the two",
+      "moves": [
+        {
+          "to": "layer",
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 991.517550636064,
+          "rawUs": 862.0128349241619,
+          "withinBudget": false,
+          "dTps": -110.2535196058609,
+          "dRawUs": 86.26106780508053,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 867.7144570300195,
+            "dTps": -38.79278947598414,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "loadBearing",
+      "bearsBy": "budget"
+    },
+    {
+      "name": "tmaLane",
+      "kind": "mechanism",
+      "where": "OPT.tmaLane",
+      "published": true,
+      "owner": "software-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "event-level trace showing the mechanism engages at the published point",
+      "role": "shared->local fills issued ahead on per-domain (L/H) TMA lanes",
+      "moves": [
+        {
+          "to": false,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 984.2044518276964,
+          "rawUs": 868.4179929420663,
+          "withinBudget": false,
+          "dTps": -117.56661841422851,
+          "dRawUs": 92.66622582298498,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 822.9583476650449,
+            "dTps": -83.54889884095871,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "loadBearing",
+      "bearsBy": "budget"
+    },
+    {
+      "name": "kvCache",
+      "kind": "mechanism",
+      "where": "OPT.kvCache",
+      "published": "fp8",
+      "owner": "software-expert",
+      "evidence": "MODEL (precision open, B-001)",
+      "measurementNeeded": "event-level trace showing the mechanism engages at the published point",
+      "role": "FlashMLA FP8 KV layout, BF16 compute with in-kernel dequant; coupled to softmaxFusion -- the dequant runs on the H vector lanes and is charged against the softmax hiding budget, so ablating either alone understates the joint effect",
+      "note": "shares the H local tile check with kvTile and the H vector lanes with softmaxFusion; see the couplings with both",
+      "moves": [
+        {
+          "to": "bf16",
+          "adverse": true,
+          "feasible": false,
+          "reasons": [
+            "H local tile"
+          ],
+          "withinBudget": false,
+          "stress": {
+            "tpsPerUser": 905.249210888094,
+            "dTps": -1.258035617909627,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "loadBearing",
+      "bearsBy": "feasibility"
+    }
+  ],
+  "jointPessimistic": {
+    "values": {
+      "layoutImbalance": 1.3,
+      "kvTile": 16384
+    },
+    "alone": {
+      "tpsPerUser": 1055.4613369649962,
+      "rawUs": 809.7888807169072,
+      "dTps": -46.30973327692868,
+      "withinBudget": true
+    },
+    "allUnmeasured": {
+      "tpsPerUser": 906.5072465060036,
+      "withinBudget": false
+    },
+    "leaveOut": {
+      "tpsPerUser": 959.0300882401642,
+      "recoveryTps": 52.52284173416058,
+      "withinBudget": false
+    }
+  },
+  "bindingConstraints": {
+    "byConstraint": [
+      {
+        "constraint": "H local tile",
+        "moves": [
+          {
+            "name": "hMiB",
+            "to": 2,
+            "adverse": true
+          },
+          {
+            "name": "kvTile",
+            "to": 65536,
+            "adverse": true
+          },
+          {
+            "name": "layoutImbalance",
+            "to": 1.8,
+            "adverse": true
+          },
+          {
+            "name": "kvCache",
+            "to": "bf16",
+            "adverse": true
+          }
+        ]
+      },
+      {
+        "constraint": "card power after shared-port scaling",
+        "moves": [
+          {
+            "name": "sharedSlices",
+            "to": 32,
+            "adverse": false
+          }
+        ]
+      }
+    ],
+    "modelErrors": []
+  },
+  "couplings": [
+    {
+      "name": "kvTile=16384 x kvCache off",
+      "between": [
+        "kvTile",
+        "kvCache"
+      ],
+      "why": "both act on the H local tile check; the kvCache row alone cannot say whether bf16 costs time or only needs a smaller tile",
+      "a": {
+        "to": 16384,
+        "feasible": true,
+        "tpsPerUser": 1094.348484493772,
+        "rawUs": 781.0134219688033,
+        "withinBudget": true,
+        "dTps": -7.422585748152869,
+        "dRawUs": 5.2616548497219355,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": "bf16",
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1027.0759987657007,
+        "rawUs": 832.169046621672,
+        "withinBudget": true,
+        "dTps": -74.69507147622426,
+        "dRawUs": 56.417279502590645,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "kvTile=65536 x kvCache off",
+      "between": [
+        "kvTile",
+        "kvCache"
+      ],
+      "why": "both act on the H local tile check; the kvCache row alone cannot say whether bf16 costs time or only needs a smaller tile",
+      "a": {
+        "to": 65536,
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "b": {
+        "to": "bf16",
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "both": {
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "sharedPortScaling off x layoutImbalance=1.3",
+      "between": [
+        "sharedPortScaling",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "a": {
+        "to": {
+          "localWriteRatio": 1,
+          "tmaDedicatedPort": false,
+          "sharedReadScale": 1,
+          "sharedReadPerWrite": 0
+        },
+        "feasible": true,
+        "tpsPerUser": 1101.712046773222,
+        "rawUs": 775.7933274889456,
+        "withinBudget": true,
+        "dTps": -0.05902346870288966,
+        "dRawUs": 0.04156036986421441,
+        "dDieAreaMm2": -7.775860168067254,
+        "dDiePowerW": -2.7394560000000183,
+        "dCardPowerW": -21.915648000000147,
+        "dTpsPerMm2": 0.0075906031522118235,
+        "dTpsPerW": 0.0215456896197235
+      },
+      "b": {
+        "to": 1.3,
+        "feasible": true,
+        "tpsPerUser": 1064.9156162177096,
+        "rawUs": 802.5996066585252,
+        "withinBudget": true,
+        "dTps": -36.855454024215305,
+        "dRawUs": 26.84783953944384,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1064.9100719802543,
+        "rawUs": 802.6037852299538,
+        "withinBudget": true,
+        "dTps": -36.8609982616706,
+        "dRawUs": 26.85201811087245,
+        "dDieAreaMm2": -7.775860168067254,
+        "dDiePowerW": -2.7394560000000183,
+        "dCardPowerW": -21.915648000000147,
+        "dTpsPerMm2": 4.740439959690359,
+        "dTpsPerW": 13.455590548514142
+      },
+      "interactionTps": 0.05347923124759291,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "sharedPortScaling off x layoutImbalance=1.4",
+      "between": [
+        "sharedPortScaling",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "a": {
+        "to": {
+          "localWriteRatio": 1,
+          "tmaDedicatedPort": false,
+          "sharedReadScale": 1,
+          "sharedReadPerWrite": 0
+        },
+        "feasible": true,
+        "tpsPerUser": 1101.712046773222,
+        "rawUs": 775.7933274889456,
+        "withinBudget": true,
+        "dTps": -0.05902346870288966,
+        "dRawUs": 0.04156036986421441,
+        "dDieAreaMm2": -7.775860168067254,
+        "dDiePowerW": -2.7394560000000183,
+        "dCardPowerW": -21.915648000000147,
+        "dTpsPerMm2": 0.0075906031522118235,
+        "dTpsPerW": 0.0215456896197235
+      },
+      "b": {
+        "to": 1.4,
+        "feasible": true,
+        "tpsPerUser": 1040.39684392693,
+        "rawUs": 821.5142709149576,
+        "withinBudget": true,
+        "dTps": -61.374226314994985,
+        "dRawUs": 45.76250379587623,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1040.3911449874006,
+        "rawUs": 821.5187709149575,
+        "withinBudget": true,
+        "dTps": -61.37992525452432,
+        "dRawUs": 45.76700379587612,
+        "dDieAreaMm2": -7.775860168067254,
+        "dDiePowerW": -2.7394560000000183,
+        "dCardPowerW": -21.915648000000147,
+        "dTpsPerMm2": 7.893650853778245,
+        "dTpsPerW": 22.40588104153668
+      },
+      "interactionTps": 0.05332452917355113,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "sharedPortScaling off x layoutImbalance=1.8",
+      "between": [
+        "sharedPortScaling",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "a": {
+        "to": {
+          "localWriteRatio": 1,
+          "tmaDedicatedPort": false,
+          "sharedReadScale": 1,
+          "sharedReadPerWrite": 0
+        },
+        "feasible": true,
+        "tpsPerUser": 1101.712046773222,
+        "rawUs": 775.7933274889456,
+        "withinBudget": true,
+        "dTps": -0.05902346870288966,
+        "dRawUs": 0.04156036986421441,
+        "dDieAreaMm2": -7.775860168067254,
+        "dDiePowerW": -2.7394560000000183,
+        "dCardPowerW": -21.915648000000147,
+        "dTpsPerMm2": 0.0075906031522118235,
+        "dTpsPerW": 0.0215456896197235
+      },
+      "b": {
+        "to": 1.8,
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "both": {
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "kvPrefetch off x layoutImbalance=1.3",
+      "between": [
+        "kvPrefetch",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "a": {
+        "to": "layer",
+        "feasible": true,
+        "tpsPerUser": 991.517550636064,
+        "rawUs": 862.0128349241619,
+        "withinBudget": false,
+        "dTps": -110.2535196058609,
+        "dRawUs": 86.26106780508053,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": 1.3,
+        "feasible": true,
+        "tpsPerUser": 1064.9156162177096,
+        "rawUs": 802.5996066585252,
+        "withinBudget": true,
+        "dTps": -36.855454024215305,
+        "dRawUs": 26.84783953944384,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 960.8216011293601,
+        "rawUs": 889.5520809442983,
+        "withinBudget": false,
+        "dTps": -140.94946911256477,
+        "dRawUs": 113.8003138252169,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": 6.1595045175114365,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "kvPrefetch off x layoutImbalance=1.4",
+      "between": [
+        "kvPrefetch",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "a": {
+        "to": "layer",
+        "feasible": true,
+        "tpsPerUser": 991.517550636064,
+        "rawUs": 862.0128349241619,
+        "withinBudget": false,
+        "dTps": -110.2535196058609,
+        "dRawUs": 86.26106780508053,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": 1.4,
+        "feasible": true,
+        "tpsPerUser": 1040.39684392693,
+        "rawUs": 821.5142709149576,
+        "withinBudget": true,
+        "dTps": -61.374226314994985,
+        "dRawUs": 45.76250379587623,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 940.045277066207,
+        "rawUs": 909.2124342864589,
+        "withinBudget": false,
+        "dTps": -161.72579317571797,
+        "dRawUs": 133.46066716737755,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": 9.901952745137919,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "kvPrefetch off x layoutImbalance=1.8",
+      "between": [
+        "kvPrefetch",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "a": {
+        "to": "layer",
+        "feasible": true,
+        "tpsPerUser": 991.517550636064,
+        "rawUs": 862.0128349241619,
+        "withinBudget": false,
+        "dTps": -110.2535196058609,
+        "dRawUs": 86.26106780508053,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": 1.8,
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "both": {
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "tmaLane off x layoutImbalance=1.3",
+      "between": [
+        "tmaLane",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "a": {
+        "to": false,
+        "feasible": true,
+        "tpsPerUser": 984.2044518276964,
+        "rawUs": 868.4179929420663,
+        "withinBudget": false,
+        "dTps": -117.56661841422851,
+        "dRawUs": 92.66622582298498,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": 1.3,
+        "feasible": true,
+        "tpsPerUser": 1064.9156162177096,
+        "rawUs": 802.5996066585252,
+        "withinBudget": true,
+        "dTps": -36.855454024215305,
+        "dRawUs": 26.84783953944384,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 952.9969288616675,
+        "rawUs": 896.855833231042,
+        "withinBudget": false,
+        "dTps": -148.77414138025745,
+        "dRawUs": 121.1040661119606,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": 5.647931058186373,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "tmaLane off x layoutImbalance=1.4",
+      "between": [
+        "tmaLane",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "a": {
+        "to": false,
+        "feasible": true,
+        "tpsPerUser": 984.2044518276964,
+        "rawUs": 868.4179929420663,
+        "withinBudget": false,
+        "dTps": -117.56661841422851,
+        "dRawUs": 92.66622582298498,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": 1.4,
+        "feasible": true,
+        "tpsPerUser": 1040.39684392693,
+        "rawUs": 821.5142709149576,
+        "withinBudget": true,
+        "dTps": -61.374226314994985,
+        "dRawUs": 45.76250379587623,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 933.267720080386,
+        "rawUs": 915.8152974874521,
+        "withinBudget": false,
+        "dTps": -168.50335016153895,
+        "dRawUs": 140.06353036837072,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": 10.437494567684553,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "tmaLane off x layoutImbalance=1.8",
+      "between": [
+        "tmaLane",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "a": {
+        "to": false,
+        "feasible": true,
+        "tpsPerUser": 984.2044518276964,
+        "rawUs": 868.4179929420663,
+        "withinBudget": false,
+        "dTps": -117.56661841422851,
+        "dRawUs": 92.66622582298498,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": 1.8,
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "both": {
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "kvCache off x layoutImbalance=1.3 @ kvTile=16384",
+      "between": [
+        "kvCache",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "at": {
+        "moves": [
+          {
+            "name": "kvTile",
+            "to": 16384
+          }
+        ],
+        "feasible": true,
+        "tpsPerUser": 1094.348484493772,
+        "rawUs": 781.0134219688033,
+        "withinBudget": true,
+        "dTps": -7.422585748152869,
+        "dRawUs": 5.2616548497219355,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "a": {
+        "to": "bf16",
+        "feasible": true,
+        "tpsPerUser": 1027.0759987657007,
+        "rawUs": 832.169046621672,
+        "withinBudget": true,
+        "dTps": -74.69507147622426,
+        "dRawUs": 56.417279502590645,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": 1.3,
+        "feasible": true,
+        "tpsPerUser": 1055.4613369649962,
+        "rawUs": 809.7888807169072,
+        "withinBudget": true,
+        "dTps": -46.30973327692868,
+        "dRawUs": 34.03711359782585,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1027.0873914863043,
+        "rawUs": 832.1598159860691,
+        "withinBudget": true,
+        "dTps": -74.68367875562058,
+        "dRawUs": 56.40804886698777,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": 38.898540249379494,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "kvCache off x layoutImbalance=1.4 @ kvTile=16384",
+      "between": [
+        "kvCache",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "at": {
+        "moves": [
+          {
+            "name": "kvTile",
+            "to": 16384
+          }
+        ],
+        "feasible": true,
+        "tpsPerUser": 1094.348484493772,
+        "rawUs": 781.0134219688033,
+        "withinBudget": true,
+        "dTps": -7.422585748152869,
+        "dRawUs": 5.2616548497219355,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "a": {
+        "to": "bf16",
+        "feasible": true,
+        "tpsPerUser": 1027.0759987657007,
+        "rawUs": 832.169046621672,
+        "withinBudget": true,
+        "dTps": -74.69507147622426,
+        "dRawUs": 56.417279502590645,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": 1.4,
+        "feasible": true,
+        "tpsPerUser": 1030.5519769106352,
+        "rawUs": 829.3621999183944,
+        "withinBudget": true,
+        "dTps": -71.21909333128974,
+        "dRawUs": 53.610432799313,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1027.0679641900774,
+        "rawUs": 832.1755565366627,
+        "withinBudget": true,
+        "dTps": -74.7031060518475,
+        "dRawUs": 56.42378941758136,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": 63.78847300751363,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "kvCache off x layoutImbalance=1.8 @ kvTile=16384",
+      "between": [
+        "kvCache",
+        "layoutImbalance"
+      ],
+      "why": "the layoutImbalance row holds every mechanism on; this replays the imbalance with the mechanism switched back",
+      "at": {
+        "moves": [
+          {
+            "name": "kvTile",
+            "to": 16384
+          }
+        ],
+        "feasible": true,
+        "tpsPerUser": 1094.348484493772,
+        "rawUs": 781.0134219688033,
+        "withinBudget": true,
+        "dTps": -7.422585748152869,
+        "dRawUs": 5.2616548497219355,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "a": {
+        "to": "bf16",
+        "feasible": true,
+        "tpsPerUser": 1027.0759987657007,
+        "rawUs": 832.169046621672,
+        "withinBudget": true,
+        "dTps": -74.69507147622426,
+        "dRawUs": 56.417279502590645,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": 1.8,
+        "feasible": true,
+        "tpsPerUser": 941.657794855668,
+        "rawUs": 907.6554767242791,
+        "withinBudget": false,
+        "dTps": -160.11327538625687,
+        "dRawUs": 131.90370960519772,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 940.3301541618155,
+        "rawUs": 908.9369844389513,
+        "withinBudget": false,
+        "dTps": -161.44091608010945,
+        "dRawUs": 133.18521731986993,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": 65.94484503421882,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "kvPrefetch off x dmaPreempt off",
+      "between": [
+        "kvPrefetch",
+        "dmaPreempt"
+      ],
+      "why": "the KV prefetch and the demand fetch share the DMA lane; dmaPreempt decides which waits",
+      "a": {
+        "to": "layer",
+        "feasible": true,
+        "tpsPerUser": 991.517550636064,
+        "rawUs": 862.0128349241619,
+        "withinBudget": false,
+        "dTps": -110.2535196058609,
+        "dRawUs": 86.26106780508053,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": false,
+        "feasible": true,
+        "tpsPerUser": 1041.6591741005702,
+        "rawUs": 820.5187223919511,
+        "withinBudget": true,
+        "dTps": -60.11189614135469,
+        "dRawUs": 44.76695527286972,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 956.817262746001,
+        "rawUs": 893.2749104546056,
+        "withinBudget": false,
+        "dTps": -144.9538074959239,
+        "dRawUs": 117.5231433355242,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": 25.411608251291682,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "kvCache off x softmaxFusion off @ kvTile=16384",
+      "between": [
+        "kvCache",
+        "softmaxFusion"
+      ],
+      "why": "the fp8 dequant runs on the H vector lanes and is charged against the softmax hiding budget (B.MECHANISMS role)",
+      "at": {
+        "moves": [
+          {
+            "name": "kvTile",
+            "to": 16384
+          }
+        ],
+        "feasible": true,
+        "tpsPerUser": 1094.348484493772,
+        "rawUs": 781.0134219688033,
+        "withinBudget": true,
+        "dTps": -7.422585748152869,
+        "dRawUs": 5.2616548497219355,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "a": {
+        "to": "bf16",
+        "feasible": true,
+        "tpsPerUser": 1027.0759987657007,
+        "rawUs": 832.169046621672,
+        "withinBudget": true,
+        "dTps": -74.69507147622426,
+        "dRawUs": 56.417279502590645,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": false,
+        "feasible": true,
+        "tpsPerUser": 1034.932272964218,
+        "rawUs": 825.8519683156168,
+        "withinBudget": true,
+        "dTps": -66.83879727770682,
+        "dRawUs": 50.10020119653541,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1027.0609405204623,
+        "rawUs": 832.1812474610666,
+        "withinBudget": true,
+        "dTps": -74.71012972146264,
+        "dRawUs": 56.429480341985254,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": 59.40115328431557,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "hMiB=2 x kvTile=16384",
+      "between": [
+        "hMiB",
+        "kvTile"
+      ],
+      "why": "both sides of the H local tile check: capacity against the KV slab bytes",
+      "a": {
+        "to": 2,
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "b": {
+        "to": 16384,
+        "feasible": true,
+        "tpsPerUser": 1094.348484493772,
+        "rawUs": 781.0134219688033,
+        "withinBudget": true,
+        "dTps": -7.422585748152869,
+        "dRawUs": 5.2616548497219355,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1094.348484493772,
+        "rawUs": 781.0134219688033,
+        "withinBudget": true,
+        "dTps": -7.422585748152869,
+        "dRawUs": 5.2616548497219355,
+        "dDieAreaMm2": -7.9213907785336914,
+        "dDiePowerW": -0.7200000000000273,
+        "dCardPowerW": -5.760000000000218,
+        "dTpsPerMm2": 0.9370306245044062,
+        "dTpsPerW": 10.30914687243415
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "hMiB=8 x kvTile=65536",
+      "between": [
+        "hMiB",
+        "kvTile"
+      ],
+      "why": "both sides of the H local tile check: capacity against the KV slab bytes",
+      "a": {
+        "to": 8,
+        "feasible": true,
+        "tpsPerUser": 1101.771070241925,
+        "rawUs": 775.7517671190814,
+        "withinBudget": true,
+        "dTps": 0,
+        "dRawUs": 0,
+        "dDieAreaMm2": 15.84278155706727,
+        "dDiePowerW": 1.4399999999999977,
+        "dCardPowerW": 11.519999999999527,
+        "dTpsPerMm2": 0,
+        "dTpsPerW": 0
+      },
+      "b": {
+        "to": 65536,
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1101.771070241925,
+        "rawUs": 775.7517671190814,
+        "withinBudget": true,
+        "dTps": 0,
+        "dRawUs": 0,
+        "dDieAreaMm2": 15.84278155706727,
+        "dDiePowerW": 1.4399999999999977,
+        "dCardPowerW": 11.519999999999527,
+        "dTpsPerMm2": 0,
+        "dTpsPerW": 0
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "hMiB=8 x layoutImbalance=1.3",
+      "between": [
+        "hMiB",
+        "layoutImbalance"
+      ],
+      "why": "layoutImbalance scales the tile bytes; more H capacity may move the point where the tile stops fitting",
+      "a": {
+        "to": 8,
+        "feasible": true,
+        "tpsPerUser": 1101.771070241925,
+        "rawUs": 775.7517671190814,
+        "withinBudget": true,
+        "dTps": 0,
+        "dRawUs": 0,
+        "dDieAreaMm2": 15.84278155706727,
+        "dDiePowerW": 1.4399999999999977,
+        "dCardPowerW": 11.519999999999527,
+        "dTpsPerMm2": 0,
+        "dTpsPerW": 0
+      },
+      "b": {
+        "to": 1.3,
+        "feasible": true,
+        "tpsPerUser": 1064.9156162177096,
+        "rawUs": 802.5996066585252,
+        "withinBudget": true,
+        "dTps": -36.855454024215305,
+        "dRawUs": 26.84783953944384,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1064.9156162177096,
+        "rawUs": 802.5996066585252,
+        "withinBudget": true,
+        "dTps": -36.855454024215305,
+        "dRawUs": 26.84783953944384,
+        "dDieAreaMm2": 15.84278155706727,
+        "dDiePowerW": 1.4399999999999977,
+        "dCardPowerW": 11.519999999999527,
+        "dTpsPerMm2": -2.326324698188781,
+        "dTpsPerW": -25.594065294594003
+      },
+      "interactionTps": 0,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "hMiB=8 x layoutImbalance=1.4",
+      "between": [
+        "hMiB",
+        "layoutImbalance"
+      ],
+      "why": "layoutImbalance scales the tile bytes; more H capacity may move the point where the tile stops fitting",
+      "a": {
+        "to": 8,
+        "feasible": true,
+        "tpsPerUser": 1101.771070241925,
+        "rawUs": 775.7517671190814,
+        "withinBudget": true,
+        "dTps": 0,
+        "dRawUs": 0,
+        "dDieAreaMm2": 15.84278155706727,
+        "dDiePowerW": 1.4399999999999977,
+        "dCardPowerW": 11.519999999999527,
+        "dTpsPerMm2": 0,
+        "dTpsPerW": 0
+      },
+      "b": {
+        "to": 1.4,
+        "feasible": true,
+        "tpsPerUser": 1040.39684392693,
+        "rawUs": 821.5142709149576,
+        "withinBudget": true,
+        "dTps": -61.374226314994985,
+        "dRawUs": 45.76250379587623,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1040.39684392693,
+        "rawUs": 821.5142709149576,
+        "withinBudget": true,
+        "dTps": -61.374226314994985,
+        "dRawUs": 45.76250379587623,
+        "dDieAreaMm2": 15.84278155706727,
+        "dDiePowerW": 1.4399999999999977,
+        "dCardPowerW": 11.519999999999527,
+        "dTpsPerMm2": -3.8739552201688157,
+        "dTpsPerW": -42.620990496524364
+      },
+      "interactionTps": 0,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "hMiB=8 x layoutImbalance=1.8",
+      "between": [
+        "hMiB",
+        "layoutImbalance"
+      ],
+      "why": "layoutImbalance scales the tile bytes; more H capacity may move the point where the tile stops fitting",
+      "a": {
+        "to": 8,
+        "feasible": true,
+        "tpsPerUser": 1101.771070241925,
+        "rawUs": 775.7517671190814,
+        "withinBudget": true,
+        "dTps": 0,
+        "dRawUs": 0,
+        "dDieAreaMm2": 15.84278155706727,
+        "dDiePowerW": 1.4399999999999977,
+        "dCardPowerW": 11.519999999999527,
+        "dTpsPerMm2": 0,
+        "dTpsPerW": 0
+      },
+      "b": {
+        "to": 1.8,
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 952.6601038472486,
+        "rawUs": 897.1729279406237,
+        "withinBudget": false,
+        "dTps": -149.11096639467632,
+        "dRawUs": 121.42116082154234,
+        "dDieAreaMm2": 15.84278155706727,
+        "dDiePowerW": 1.4399999999999977,
+        "dCardPowerW": 11.519999999999527,
+        "dTpsPerMm2": -9.411918346381526,
+        "dTpsPerW": -103.54928221852539
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "hMiB=8 x kvCache off",
+      "between": [
+        "hMiB",
+        "kvCache"
+      ],
+      "why": "bf16 KV doubles the KV slab bytes of the H tile; more H capacity may let the fallback fit at the published kvTile",
+      "a": {
+        "to": 8,
+        "feasible": true,
+        "tpsPerUser": 1101.771070241925,
+        "rawUs": 775.7517671190814,
+        "withinBudget": true,
+        "dTps": 0,
+        "dRawUs": 0,
+        "dDieAreaMm2": 15.84278155706727,
+        "dDiePowerW": 1.4399999999999977,
+        "dCardPowerW": 11.519999999999527,
+        "dTpsPerMm2": 0,
+        "dTpsPerW": 0
+      },
+      "b": {
+        "to": "bf16",
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1000.1497046852375,
+        "rawUs": 854.5729211306844,
+        "withinBudget": true,
+        "dTps": -101.62136555668746,
+        "dRawUs": 78.82115401160308,
+        "dDieAreaMm2": 15.84278155706727,
+        "dDiePowerW": 1.4399999999999977,
+        "dCardPowerW": 11.519999999999527,
+        "dTpsPerMm2": -6.414363866006561,
+        "dTpsPerW": -70.57039274769974
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "headTile=48 x kvCache off",
+      "between": [
+        "headTile",
+        "kvCache"
+      ],
+      "why": "a smaller head tile frees the score / accumulator bytes that bf16 KV needs",
+      "a": {
+        "to": 48,
+        "feasible": true,
+        "tpsPerUser": 1091.9480343725181,
+        "rawUs": 782.7303386209251,
+        "withinBudget": true,
+        "dTps": -9.823035869406795,
+        "dRawUs": 6.978571501843703,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": "bf16",
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1028.1960226263736,
+        "rawUs": 831.2625568397441,
+        "withinBudget": true,
+        "dTps": -73.57504761555128,
+        "dRawUs": 55.51078972066273,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "hBanks=32 x layoutImbalance=1.3",
+      "between": [
+        "hBanks",
+        "layoutImbalance"
+      ],
+      "why": "fewer H banks and a worse slowest-bank factor both act on the H-side SRAM read time",
+      "a": {
+        "to": 32,
+        "feasible": true,
+        "tpsPerUser": 1095.3935143585072,
+        "rawUs": 780.2683177299907,
+        "withinBudget": true,
+        "dTps": -6.377555883417699,
+        "dRawUs": 4.5165506109093485,
+        "dDieAreaMm2": -3.269915966386634,
+        "dDiePowerW": -3.3792000000000257,
+        "dCardPowerW": -27.03360000000066,
+        "dTpsPerMm2": 1.950373021501562,
+        "dTpsPerW": 1.8872975507272878
+      },
+      "b": {
+        "to": 1.3,
+        "feasible": true,
+        "tpsPerUser": 1064.9156162177096,
+        "rawUs": 802.5996066585252,
+        "withinBudget": true,
+        "dTps": -36.855454024215305,
+        "dRawUs": 26.84783953944384,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1059.1224249778923,
+        "rawUs": 806.9896685632876,
+        "withinBudget": true,
+        "dTps": -42.648645264032666,
+        "dRawUs": 31.237901444206273,
+        "dDieAreaMm2": -3.269915966386634,
+        "dDiePowerW": -3.3792000000000257,
+        "dCardPowerW": -27.03360000000066,
+        "dTpsPerMm2": 13.042734340100134,
+        "dTpsPerW": 12.620929588077752
+      },
+      "interactionTps": 0.5843646436003382,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "hBanks=32 x layoutImbalance=1.4",
+      "between": [
+        "hBanks",
+        "layoutImbalance"
+      ],
+      "why": "fewer H banks and a worse slowest-bank factor both act on the H-side SRAM read time",
+      "a": {
+        "to": 32,
+        "feasible": true,
+        "tpsPerUser": 1095.3935143585072,
+        "rawUs": 780.2683177299907,
+        "withinBudget": true,
+        "dTps": -6.377555883417699,
+        "dRawUs": 4.5165506109093485,
+        "dDieAreaMm2": -3.269915966386634,
+        "dDiePowerW": -3.3792000000000257,
+        "dCardPowerW": -27.03360000000066,
+        "dTpsPerMm2": 1.950373021501562,
+        "dTpsPerW": 1.8872975507272878
+      },
+      "b": {
+        "to": 1.4,
+        "feasible": true,
+        "tpsPerUser": 1040.39684392693,
+        "rawUs": 821.5142709149576,
+        "withinBudget": true,
+        "dTps": -61.374226314994985,
+        "dRawUs": 45.76250379587623,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1035.6884410656066,
+        "rawUs": 825.2490042482891,
+        "withinBudget": true,
+        "dTps": -66.08262917631828,
+        "dRawUs": 49.49723712920775,
+        "dDieAreaMm2": -3.269915966386634,
+        "dDiePowerW": -3.3792000000000257,
+        "dCardPowerW": -27.03360000000066,
+        "dTpsPerMm2": 20.209274444854245,
+        "dTpsPerW": 19.55570228939328
+      },
+      "interactionTps": 1.669153022094406,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "hBanks=32 x layoutImbalance=1.8",
+      "between": [
+        "hBanks",
+        "layoutImbalance"
+      ],
+      "why": "fewer H banks and a worse slowest-bank factor both act on the H-side SRAM read time",
+      "a": {
+        "to": 32,
+        "feasible": true,
+        "tpsPerUser": 1095.3935143585072,
+        "rawUs": 780.2683177299907,
+        "withinBudget": true,
+        "dTps": -6.377555883417699,
+        "dRawUs": 4.5165506109093485,
+        "dDieAreaMm2": -3.269915966386634,
+        "dDiePowerW": -3.3792000000000257,
+        "dCardPowerW": -27.03360000000066,
+        "dTpsPerMm2": 1.950373021501562,
+        "dTpsPerW": 1.8872975507272878
+      },
+      "b": {
+        "to": 1.8,
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "both": {
+        "feasible": false,
+        "reasons": [
+          "H local tile"
+        ],
+        "withinBudget": false
+      },
+      "interactionTps": null,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "tmaLane off x kvPrefetch off",
+      "between": [
+        "tmaLane",
+        "kvPrefetch"
+      ],
+      "why": "the dedicated TMA lane and the KV prefetch both take shared->local traffic off the critical path",
+      "a": {
+        "to": false,
+        "feasible": true,
+        "tpsPerUser": 984.2044518276964,
+        "rawUs": 868.4179929420663,
+        "withinBudget": false,
+        "dTps": -117.56661841422851,
+        "dRawUs": 92.66622582298498,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": "layer",
+        "feasible": true,
+        "tpsPerUser": 991.517550636064,
+        "rawUs": 862.0128349241619,
+        "withinBudget": false,
+        "dTps": -110.2535196058609,
+        "dRawUs": 86.26106780508053,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 904.1533010423765,
+        "rawUs": 945.3052416172023,
+        "withinBudget": false,
+        "dTps": -197.61776919954843,
+        "dRawUs": 169.55347449812098,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": 30.202368820540983,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "tmaLane off x commOverlap off",
+      "between": [
+        "tmaLane",
+        "commOverlap"
+      ],
+      "why": "collectives overlap the TMA traffic; without the lane the overlap may have less to hide behind",
+      "a": {
+        "to": false,
+        "feasible": true,
+        "tpsPerUser": 984.2044518276964,
+        "rawUs": 868.4179929420663,
+        "withinBudget": false,
+        "dTps": -117.56661841422851,
+        "dRawUs": 92.66622582298498,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "b": {
+        "to": false,
+        "feasible": true,
+        "tpsPerUser": 1073.2442393620584,
+        "rawUs": 796.3712483645784,
+        "withinBudget": true,
+        "dTps": -28.526830879866566,
+        "dRawUs": 20.619481245497013,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 866.6967774754465,
+        "rawUs": 986.1590315248037,
+        "withinBudget": false,
+        "dTps": -235.07429276647838,
+        "dRawUs": 210.40726440572234,
+        "dDieAreaMm2": 0,
+        "dDiePowerW": 0,
+        "dCardPowerW": 0,
+        "dTpsPerMm2": null,
+        "dTpsPerW": null
+      },
+      "interactionTps": -88.9808434723833,
+      "breaksOnlyTogether": false
+    },
+    {
+      "name": "sharedSlices=8 x sharedPortScaling off",
+      "between": [
+        "sharedSlices",
+        "sharedPortScaling"
+      ],
+      "why": "fewer shared slices and no port scaling both cut the shared-SRAM write bandwidth",
+      "a": {
+        "to": 8,
+        "feasible": true,
+        "tpsPerUser": 1067.8825292352935,
+        "rawUs": 800.3697329077035,
+        "withinBudget": true,
+        "dTps": -33.888541006631385,
+        "dRawUs": 24.617965788622087,
+        "dDieAreaMm2": -19.060340168067285,
+        "dDiePowerW": -5.670528000000047,
+        "dCardPowerW": -45.36422400000083,
+        "dTpsPerMm2": 1.7779609759224815,
+        "dTpsPerW": 5.976258473043622
+      },
+      "b": {
+        "to": {
+          "localWriteRatio": 1,
+          "tmaDedicatedPort": false,
+          "sharedReadScale": 1,
+          "sharedReadPerWrite": 0
+        },
+        "feasible": true,
+        "tpsPerUser": 1101.712046773222,
+        "rawUs": 775.7933274889456,
+        "withinBudget": true,
+        "dTps": -0.05902346870288966,
+        "dRawUs": 0.04156036986421441,
+        "dDieAreaMm2": -7.775860168067254,
+        "dDiePowerW": -2.7394560000000183,
+        "dCardPowerW": -21.915648000000147,
+        "dTpsPerMm2": 0.0075906031522118235,
+        "dTpsPerW": 0.0215456896197235
+      },
+      "both": {
+        "feasible": true,
+        "tpsPerUser": 1068.04450626291,
+        "rawUs": 800.2483507840462,
+        "withinBudget": true,
+        "dTps": -33.72656397901483,
+        "dRawUs": 24.496583664964874,
+        "dDieAreaMm2": -22.948270252100883,
+        "dDiePowerW": -7.040256000000056,
+        "dCardPowerW": -56.322048000000905,
+        "dTpsPerMm2": 1.4696778279368226,
+        "dTpsPerW": 4.790530909531494
+      },
+      "interactionTps": 0.22100049631944785,
+      "breaksOnlyTogether": false
+    }
+  ],
+  "loadBearing": [
+    "hMiB",
+    "layoutImbalance",
+    "kvPrefetch",
+    "tmaLane",
+    "kvCache"
+  ],
+  "graded": [
+    "sharedMiB",
+    "lBanks",
+    "hBanks",
+    "bankBytes",
+    "sharedSlices",
+    "tmaEngines",
+    "tmaBytes",
+    "kvTile",
+    "headTile"
+  ],
+  "slack": [
+    "lMiB",
+    "sharedPortScaling"
+  ],
+  "insensitive": [
+    "depth"
+  ],
+  "untested": [],
+  "basis": [],
+  "owners": [
+    "memory-expert",
+    "software-expert"
+  ],
+  "caveats": [
+    "software configuration is held at the published OPT for every move; a hardware move that re-tuning would rescue is charged in full to the hardware",
+    "moves are one step on a neighbour list (or the sweep values), not gradients; interactions appear only in jointPessimistic, the stress replays and couplings",
+    "couplings are reported, not classified: a pair that breaks the budget only together is flagged breaksOnlyTogether, the rows keep their one-at-a-time class",
+    "the stress point (JOINT_PESSIMISTIC.allUnmeasured) is an invented scenario, not a forecast",
+    "K3 / TP32 / 1M context / Batch=1 on the detailed model only; GLM-5.2 and DeepSeek-V4-Pro have no attribution here (UNCORROBORATED)",
+    "dTpsPerMm2 / dTpsPerW are null where the move does not change die area / power",
+    "the classification is mechanical; whether a break-even lies inside the physically plausible range is decided in design.attribution, not here"
+  ],
+  "regenerate": "npm run attribution:cards (node integration/pipelines/generate_tps_attribution.js); checked by tests/regression/test_tps_attribution.js"
+}

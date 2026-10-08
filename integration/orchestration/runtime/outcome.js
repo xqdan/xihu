@@ -29,18 +29,20 @@ function compact(value) {
 }
 
 // Where a workflow's outcome record goes: the first directory it may land in. A workflow
-// whose only landing target is one exact file (intake) has no place for it.
-function outcomePath(workflow) {
+// whose only landing target is one exact file (intake) has no place for it. A workflow run
+// once per variant (attribution, per dimension) names the variant so runs do not overwrite.
+function outcomePath(workflow, variant) {
   const name = workflow.replace(/^design\./, '');
   const dir = (LANDING_POLICY[name] || []).find((prefix) => prefix.endsWith('/'));
-  return dir ? `${dir}${name.replace(/\./g, '_')}_outcome.json` : null;
+  const stem = variant ? `${name}_${variant}` : name;
+  return dir ? `${dir}${stem.replace(/\./g, '_')}_outcome.json` : null;
 }
 
 // Returns {path, content} or null when there is nothing to record (the run returned
 // files, or the workflow has no directory to put a record in).
-function buildOutcomeFile(workflow, result, meta = {}) {
+function buildOutcomeFile(workflow, result, meta = {}, variant) {
   if (!result || (Array.isArray(result.files) && result.files.length)) return null;
-  const target = outcomePath(workflow);
+  const target = outcomePath(workflow, variant);
   if (!target) return null;
   const {files, ...rest} = result;
   const record = {

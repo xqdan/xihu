@@ -12,7 +12,12 @@
 //   * an agent that writes to the working tree stops the run (exit 3), checked by the
 //     real git-backed guard;
 //   * a run that stops on a lateral expert's backflow returns no files, and still leaves
-//     an outcome record that names who stopped it (the finding is not only in the terminal).
+//     an outcome record that names who stopped it (the finding is not only in the terminal);
+//   * a returned file:line citation onto a blank line lands nothing (exit 7); on a stop
+//     the report goes into the outcome record instead;
+//   * attribution: an expert range number found neither on the card nor on its cited line
+//     lands nothing (exit 7); a loose number in a reason gets one repair call, and one left
+//     after it is a mechanical violation.
 
 const assert = require('assert');
 const fs = require('fs');
@@ -58,7 +63,7 @@ async function run(argv, deps) {
   assert.strictEqual((await run(['memory', '--backend', 'mock'])).code, 1, 'only compute has a default brief');
   const listed = await run(['--list']);
   assert.strictEqual(listed.code, 0);
-  assert.strictEqual(listed.text.split('\n').length, 19);
+  assert.strictEqual(listed.text.split('\n').length, 20);
 
   // The mock backend invents a winner; the artifact check must reject it before landing.
   const invented = await run(['compute', '--backend', 'mock'], {backend: createMockBackend({reply: (call) => withDims(call)})});
@@ -127,7 +132,62 @@ async function run(argv, deps) {
     fs.rmSync(probe, {force: true});
   }
 
-  console.log('PASS workflow driver: usage errors, invented winner stopped before landing, valid winner dry-run lands 2 files, working-tree write stops the run, a backflow leaves an outcome record');
+  // A cited file:line that is blank stops a result with files (exit 7); a stop that cites it
+  // still lands its outcome record, with the citation report inside. run_workflow.js:2 is blank.
+  const card = JSON.parse(fs.readFileSync(path.join(root, 'out/attribution/comm_card.json'), 'utf8'));
+  const attributionBackend = (evidence, reviewVerdict, {range = 'UNVERIFIED', reason = '', repairReason = '', calls = []} = {}) => createMockBackend({reply: (call) => {
+    calls.push(call.label);
+    const base = fromSchema(call.schema, '');
+    const review = call.label.match(/^(review|repair):(.+-expert)$/);
+    if (review) {
+      const from = review[2];
+      const extra = review[1] === 'repair' ? repairReason : reason;
+      const rows = card.parameters.filter((p) => p.owner === from).map((p) => ({name: p.name, classification: 'agree', plausibleRange: range, rangeEvidence: evidence, breakEvenInsideRange: 'unknown', measurementPriority: 'high', reason: `parameters[${p.name}]${extra}`}));
+      return {...base, from, rows, verdict: reviewVerdict, note: '', softwareDependence: []};
+    }
+    if (call.label === 'integrator') {
+      const lb = card.loadBearing.map((name) => ({name, owner: 'comm-expert', basis: 'card', source: `parameters[${name}].classification`}));
+      return {...base, loadBearing: lb, slack: [], measurementPlan: lb.map(({name, owner}) => ({name, owner, measurement: 'card measurementNeeded', priority: 'high'})), conflicts: [], verdict: 'INTEGRATION_OK', deltaNote: ''};
+    }
+    if (call.label === 'invariant-checker') return {...base, verdict: 'INVARIANT_OK', violations: []};
+    return undefined;
+  }});
+  const clean = await run(['attribution', '--backend', 'mock', '--dimension', 'comm'], {backend: attributionBackend('integration/pipelines/run_workflow.js:1', 'LOCAL_DETAIL_FIX')});
+  assert.strictEqual(clean.code, 0, clean.text);
+  assert.strictEqual(clean.summary.verdict, 'INVARIANT_OK');
+  assert.deepStrictEqual(clean.summary.landing.landed.map((f) => f.path).sort(), ['out/attribution/reviews/comm_review.json', 'out/attribution/reviews/comm_run_record.json']);
+  const blank = await run(['attribution', '--backend', 'mock', '--dimension', 'comm'], {backend: attributionBackend('integration/pipelines/run_workflow.js:2', 'LOCAL_DETAIL_FIX')});
+  assert.strictEqual(blank.code, 7, blank.text);
+  assert.strictEqual(blank.summary.citations.problems[0].problem, 'blank line');
+  assert.strictEqual(blank.summary.landing, undefined, 'a blank citation lands nothing');
+  const blockedStop = await run(['attribution', '--backend', 'mock', '--dimension', 'comm'], {backend: attributionBackend('integration/pipelines/run_workflow.js:2', 'BLOCKED_CONFIG')});
+  assert.strictEqual(blockedStop.code, 0, blockedStop.text);
+  assert.deepStrictEqual(blockedStop.summary.landing.landed.map((f) => f.path), ['out/attribution/reviews/attribution_comm_outcome.json']);
+  assert.strictEqual(blockedStop.summary.citations.problems.length, 1, 'the stop carries the citation report');
+
+  // An expert range number that is neither on the card nor on the cited line stops landing (exit 7).
+  const offCard = await run(['attribution', '--backend', 'mock', '--dimension', 'comm'], {backend: attributionBackend('integration/pipelines/run_workflow.js:1', 'LOCAL_DETAIL_FIX', {range: '123.456 us'})});
+  assert.strictEqual(offCard.code, 7, offCard.text);
+  assert.strictEqual(offCard.summary.rangeNumbers.problems[0].number, '123.456');
+  assert.strictEqual(offCard.summary.landing, undefined, 'an unsupported range number lands nothing');
+
+  // A loose number in a reason sends that expert back once; a clean repair lands, a repeat does not.
+  const repairedCalls = [];
+  const repaired = await run(['attribution', '--backend', 'mock', '--dimension', 'comm'], {backend: attributionBackend('integration/pipelines/run_workflow.js:1', 'LOCAL_DETAIL_FIX', {reason: ' about 123.456 us', calls: repairedCalls})});
+  assert.strictEqual(repaired.code, 0, repaired.text);
+  assert.strictEqual(repaired.summary.verdict, 'INVARIANT_OK');
+  assert(repairedCalls.some((l) => l.startsWith('repair:')), 'a loose number triggers a repair call');
+  const stuck = await run(['attribution', '--backend', 'mock', '--dimension', 'comm', '--result-file', resultFile], {backend: attributionBackend('integration/pipelines/run_workflow.js:1', 'LOCAL_DETAIL_FIX', {reason: ' about 123.456 us', repairReason: ' still 123.456 us'})});
+  try {
+    assert.strictEqual(stuck.code, 0, stuck.text);
+    assert.strictEqual(stuck.summary.verdict, 'INVARIANT_VIOLATED', 'a loose number left after the repair is a violation');
+    const full = JSON.parse(fs.readFileSync(resultFile, 'utf8'));
+    assert(full.runRecord.mechanicalChecks.looseNumbers.length > 0 && full.runRecord.mechanicalChecks.looseNumbers.every((l) => l.number === '123.456'));
+  } finally {
+    fs.rmSync(resultFile, {force: true});
+  }
+
+  console.log('PASS workflow driver: usage errors, invented winner stopped before landing, valid winner dry-run lands 2 files, working-tree write stops the run, a backflow leaves an outcome record, a blank file:line citation or an unsupported range number stops landing (exit 7), a loose number is repaired once and otherwise violates');
 })().catch((error) => {
   console.error(error);
   process.exit(1);

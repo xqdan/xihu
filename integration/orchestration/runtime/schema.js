@@ -9,7 +9,7 @@
 // backend produced it, and retries with the error list when it does not conform.
 //
 // The repository has no third-party dependencies, so this covers exactly the
-// keywords the 19 workflows use (type, properties, required, enum, items,
+// keywords the 20 workflows use (type, properties, required, enum, items,
 // additionalProperties, pattern) plus the usual neighbours (const, min/max,
 // minItems/maxItems, oneOf/anyOf). A keyword it does not know is ignored, never
 // treated as a pass-through for the whole schema: unknown *types* are errors.

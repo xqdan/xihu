@@ -14,26 +14,35 @@
  *   during   a working-tree snapshot is taken; agents must be read-only;
  *   after    if anything in the tree changed, nothing is landed (exit 3); a C-group
  *            winner is checked against the candidate artifact before anything is
- *            written (exit 5 on mismatch); then the returned files go through
+ *            written (exit 5 on mismatch); every `file:line` citation in the result
+ *            must point at an existing line with text (exit 7 otherwise; check_citations.js),
+ *            and for attribution every off-card number in an expert's plausibleRange must be
+ *            on a line its rangeEvidence cites (exit 7 too);
+ *            then the returned files go through
  *            land.js's path and content gates (exit 4 on rejection). A run that
  *            returned no files (a backflow, a blocked input) lands an outcome record
- *            instead, so the stop is on disk and not only in the terminal.
+ *            instead, so the stop is on disk and not only in the terminal; its citation
+ *            report goes into the record rather than stopping it.
  *
  * Landing is opt-in: without --land the run is a dry run that applies every gate and
  * writes nothing.
  *
  * Usage:
  *   node integration/pipelines/run_workflow.js <workflow> --backend mock|claude|cursor|exchange
- *        [--args file.json] [--brief file.json] [--run-id id] [--max N]
+ *        [--args file.json] [--brief file.json] [--run-id id] [--max N] [--dimension d]
  *        [--model name] [--concurrency N] [--timeout ms] [--exchange-dir dir]
  *        [--result-file file.json] [--land]
  *   <workflow>: compute | memory | comm | physical | intake | detail.events | ... (see --list)
+ *   attribution reads out/attribution/<d>_card.json (d = sram | comm | joint) and refuses a stale card.
  *
  * Exit codes: 0 ran (the workflow's own verdict is in the summary), 1 usage or
  * environment problem, 3 agents modified the tree, 4 a file was rejected, 5 the
- * winner does not match the candidate artifact.
+ * winner does not match the candidate artifact, 6 a reported gate decision differs from
+ * gate_status.json, 7 a cited file:line does not exist or has no text, or (attribution) a
+ * range number is supported neither by the card nor by its cited lines.
  */
 
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const {runWorkflow, listWorkflows} = require('../orchestration/runtime/core');
@@ -45,8 +54,11 @@ const {createCursorBackend} = require('../orchestration/runtime/backends/cursor'
 const {createExchangeBackend} = require('../orchestration/runtime/backends/exchange');
 const {buildOutcomeFile} = require('../orchestration/runtime/outcome');
 const {DOMAINS, DEFAULT_MAX, buildSearchBrief, verifyLandedWinner} = require('./search_brief');
+const {checkCitations, checkRangeNumbers} = require('./check_citations');
+const ATTRIBUTION = require('../detailed/tps_attribution');
 
 const root = path.resolve(__dirname, '../..');
+const sha256 = (data) => crypto.createHash('sha256').update(data).digest('hex');
 
 // Only compute has a committed brief; the others must be supplied.
 const DEFAULT_BRIEFS = {compute: 'teams/council/inputs/design_brief.m2.json'};
@@ -105,6 +117,23 @@ function prepareArgs(workflow, flags) {
     args.searchArtifact = DOMAINS[workflow].artifact;
     args.searchBrief = searchBrief;
   }
+  // design.attribution reads one sensitivity card (npm run attribution:cards). The card is
+  // handed over whole; a card built from another baseline is refused here, not in the script.
+  if (workflow === 'attribution') {
+    const dimension = flags.dimension || args.dimension;
+    if (!ATTRIBUTION.DEFAULT_DIMENSIONS.includes(dimension)) {
+      throw new Error(`design.attribution needs --dimension ${ATTRIBUTION.DEFAULT_DIMENSIONS.join(' | ')}`);
+    }
+    const cardPath = `${ATTRIBUTION.OUT_DIR}/${dimension}_card.json`;
+    if (!fs.existsSync(path.join(root, cardPath))) throw new Error(`${cardPath} is missing; run npm run attribution:cards`);
+    const text = fs.readFileSync(path.join(root, cardPath), 'utf8');
+    const card = JSON.parse(text);
+    const baselineSha256 = sha256(fs.readFileSync(path.join(root, ATTRIBUTION.BASELINE_FILE)));
+    if (!card.inputs || card.inputs.baselineSha256 !== baselineSha256) {
+      throw new Error(`${cardPath} is stale (built from another ${ATTRIBUTION.BASELINE_FILE}); run npm run attribution:cards`);
+    }
+    Object.assign(args, {dimension, card, cardPath, cardSha256: sha256(text)});
+  }
   return args;
 }
 
@@ -141,7 +170,7 @@ async function main(argv, deps = {}) {
   }
   const [workflow] = positional;
   if (flags.help || !workflow || !flags.backend) {
-    console.error('usage: run_workflow.js <workflow> --backend mock|claude|cursor|exchange [--args f] [--brief f] [--run-id id] [--max N] [--model m] [--concurrency N] [--timeout ms] [--exchange-dir d] [--result-file f] [--land]   (--list shows workflows)');
+    console.error('usage: run_workflow.js <workflow> --backend mock|claude|cursor|exchange [--args f] [--brief f] [--run-id id] [--max N] [--dimension sram|comm|joint] [--model m] [--concurrency N] [--timeout ms] [--exchange-dir d] [--result-file f] [--land]   (--list shows workflows)');
     return 1;
   }
 
@@ -200,13 +229,29 @@ async function main(argv, deps = {}) {
   }
 
   let files = (result && result.files) || [];
+  // A citation onto a blank line or past the end of a file is wrong whatever the agents said
+  // about it, and so is an expert range number found neither on the card nor on a line its
+  // evidence cites. A result with files does not land; a stop records the report alongside.
+  const citations = checkCitations(root, result);
+  summary.citations = {checked: citations.checked, problems: citations.problems, unresolved: citations.unresolved.length};
+  const rangeNumbers = workflow === 'attribution' ? checkRangeNumbers(root, result, {card: args.card}) : null;
+  if (rangeNumbers) summary.rangeNumbers = rangeNumbers;
   const outcome = buildOutcomeFile(workflow, result, {
     runId: result && result.runId,
     backend: backend.name,
     agentCalls: run.calls.length,
     phases: run.phases,
-  });
+    citations: {checked: citations.checked, problems: citations.problems},
+    ...(rangeNumbers ? {rangeNumbers} : {}),
+  }, workflow === 'attribution' ? args.dimension : undefined);
   if (outcome) files = [outcome];
+  else if (files.length && (!citations.ok || (rangeNumbers && !rangeNumbers.ok))) {
+    summary.error = !citations.ok
+      ? `${citations.problems.length} citation(s) point at a missing file, a line without text or past the end; nothing was landed`
+      : `${rangeNumbers.problems.length} plausibleRange number(s) are neither on the card nor on a line their rangeEvidence cites; nothing was landed`;
+    console.log(JSON.stringify(summary, null, 2));
+    return 7;
+  }
 
   // The C-group winner is checked against the candidate artifact BEFORE anything is
   // written: a winner that is not a verbatim artifact row must never reach out/.

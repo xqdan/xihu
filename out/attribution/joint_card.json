@@ -1,0 +1,453 @@
+{
+  "schemaVersion": "attribution-card-v0.1",
+  "dimension": "joint",
+  "question": "Does the raw budget hold when the unmeasured values are wrong together, and which dimension carries the gap?",
+  "status": "MODEL: one-at-a-time replays of the detailed model at one design point. Changes no baseline, gate or published number",
+  "inputs": {
+    "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
+    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "pointSource": "teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware.x",
+    "x": {
+      "nL": 8,
+      "nH": 4,
+      "lRows": 1,
+      "lCols": 256,
+      "lEngines": 8,
+      "hRows": 48,
+      "hCols": 128,
+      "hEngines": 5,
+      "ghz": 1,
+      "vectorLanes": 512,
+      "lMiB": 1,
+      "hMiB": 4,
+      "lBanks": 64,
+      "hBanks": 64,
+      "bankBytes": 64,
+      "sharedMiB": 16,
+      "sharedSlices": 16,
+      "tmaEngines": 4,
+      "tmaBytes": 512,
+      "nocBytes": 256,
+      "nocLanes": 4,
+      "reduceLanes": 4096,
+      "ucieLanes": 128,
+      "ucieGbps": 64,
+      "mcGBs": 640,
+      "rdmaLanes": 16,
+      "weightTileMiB": 8,
+      "kvTile": 32768,
+      "headTile": 96,
+      "depth": 4,
+      "windowFraction": 1
+    },
+    "goalTpsPerUser": 1000,
+    "rawBudgetUs": 854.7008547008547,
+    "engineeringMargin": 1.17,
+    "software": {
+      "tauUs": 1.15,
+      "countBasis": "reference-393",
+      "launchScale": 0.45,
+      "kvCache": "fp8",
+      "kvPrefetch": "window",
+      "pvMerge": "layer"
+    },
+    "stressPoint": {
+      "name": "JOINT_PESSIMISTIC.allUnmeasured",
+      "values": {
+        "matrixUtil": 0.5,
+        "vectorUtil": 0.25,
+        "unpackParamsPerLaneCycle": 1,
+        "layoutImbalance": 1.3,
+        "kvTile": 16384,
+        "mcUtil": 0.65,
+        "prediction": 0.7,
+        "launchScale": 0.7
+      }
+    },
+    "slackTps": 1
+  },
+  "published": {
+    "nominal": {
+      "feasible": true,
+      "tpsPerUser": 1101.771070241925,
+      "rawUs": 775.7517671190814,
+      "dieAreaMm2": 365.3410392708195,
+      "diePowerW": 283.2693760000001,
+      "cardPowerW": 2744.875008000001
+    },
+    "stress": {
+      "feasible": true,
+      "tpsPerUser": 906.5072465060036,
+      "rawUs": 942.8505486251446,
+      "dieAreaMm2": 365.3410392708195,
+      "diePowerW": 283.2693760000001,
+      "cardPowerW": 2724.3950080000004
+    },
+    "rawMarginUs": 78.94908758177337
+  },
+  "criticalPath": null,
+  "classes": {
+    "loadBearing": "the pessimistic value alone breaks the budget, or leaving it out of the joint point alone closes the gap",
+    "graded": "the pessimistic value alone costs >= 1 TPS/usr but the budget holds",
+    "insensitive": "the pessimistic value alone costs < 1 TPS/usr"
+  },
+  "parameters": [
+    {
+      "name": "matrixUtil",
+      "kind": "assumption",
+      "where": "A.TECH.matrixUtil",
+      "dimension": "compute",
+      "owner": "compute-expert",
+      "published": 0.65,
+      "pessimistic": 0.5,
+      "evidence": "ASSUMPTION",
+      "measurementNeeded": "kernel cycle counts on RTL / Palladium",
+      "alone": {
+        "tpsPerUser": 1039.9567850466626,
+        "rawUs": 821.8618956003105,
+        "dTps": -61.8142851952623,
+        "withinBudget": true
+      },
+      "leaveOut": {
+        "tpsPerUser": 945.085852068138,
+        "recoveryTps": 38.578605562134385,
+        "withinBudget": false
+      },
+      "closesGapAlone": false,
+      "breakEven": {
+        "valueAtBudget": 0.4432002184307748
+      },
+      "breakEvenBy": {
+        "by": "budget",
+        "past": 0.4431992184307748,
+        "rawUs": 854.701506950248
+      },
+      "classification": "graded"
+    },
+    {
+      "name": "vectorUtil",
+      "kind": "assumption",
+      "where": "A.TECH.vectorUtil",
+      "dimension": "compute",
+      "owner": "compute-expert",
+      "published": 0.35,
+      "pessimistic": 0.25,
+      "evidence": "ASSUMPTION",
+      "measurementNeeded": "vector kernel cycle counts on RTL / Palladium",
+      "alone": {
+        "tpsPerUser": 1084.5113259703626,
+        "rawUs": 788.0976751774485,
+        "dTps": -17.25974427156234,
+        "withinBudget": true
+      },
+      "leaveOut": {
+        "tpsPerUser": 913.6629542632274,
+        "recoveryTps": 7.155707757223809,
+        "withinBudget": false
+      },
+      "closesGapAlone": false,
+      "breakEven": {
+        "valueAtBudget": 0.14092509057181812
+      },
+      "breakEvenBy": {
+        "by": "budget",
+        "past": 0.14092409057181812,
+        "rawUs": 854.7019429997373
+      },
+      "classification": "graded"
+    },
+    {
+      "name": "unpackParamsPerLaneCycle",
+      "kind": "assumption",
+      "where": "A.TECH.unpackParamsPerLaneCycle",
+      "dimension": "compute",
+      "owner": "compute-expert",
+      "published": 2,
+      "pessimistic": 1,
+      "evidence": "ASSUMPTION (no RTL or microbenchmark)",
+      "measurementNeeded": "unpack microbenchmark on RTL",
+      "alone": {
+        "tpsPerUser": 1033.3625438884596,
+        "rawUs": 827.106478511099,
+        "dTps": -68.40852635346528,
+        "withinBudget": true
+      },
+      "leaveOut": {
+        "tpsPerUser": 964.1423744322569,
+        "recoveryTps": 57.63512792625329,
+        "withinBudget": false
+      },
+      "closesGapAlone": false,
+      "breakEven": {
+        "valueAtBudget": 0.8225037943573625
+      },
+      "breakEvenBy": {
+        "by": "budget",
+        "past": 0.8225027943573625,
+        "rawUs": 854.7010453094936
+      },
+      "classification": "graded"
+    },
+    {
+      "name": "layoutImbalance",
+      "kind": "assumption",
+      "where": "A.TECH.layoutImbalance",
+      "dimension": "sram",
+      "owner": "memory-expert",
+      "published": 1.15,
+      "pessimistic": 1.3,
+      "evidence": "ASSUMPTION",
+      "measurementNeeded": "two roles, one factor: capacity (it scales the local tile bytes of the H/L tile check) needs the memory-compiler macro shape imbalance over every SRAM instance (VV_MEASUREMENT_PLAN.md item 6); time (it scales every kernel time) needs the per-bank access histogram from Palladium",
+      "alone": {
+        "tpsPerUser": 1064.9156162177096,
+        "rawUs": 802.5996066585252,
+        "dTps": -36.855454024215305,
+        "withinBudget": true
+      },
+      "leaveOut": {
+        "tpsPerUser": 949.7659108892096,
+        "recoveryTps": 43.258664383205996,
+        "withinBudget": false
+      },
+      "closesGapAlone": false,
+      "breakEven": {
+        "valueAtBudget": 1.424549918166758
+      },
+      "breakEvenBy": {
+        "by": "feasibility",
+        "past": 1.4245513427166763,
+        "reasons": [
+          "H local tile"
+        ]
+      },
+      "classification": "graded"
+    },
+    {
+      "name": "kvTile",
+      "kind": "assumption",
+      "where": "x.kvTile",
+      "dimension": "sram",
+      "owner": "memory-expert",
+      "published": 32768,
+      "pessimistic": 16384,
+      "evidence": "MODEL (mapping choice)",
+      "measurementNeeded": "FlashMLA tile sweep on the target kernel",
+      "alone": {
+        "tpsPerUser": 1094.348484493772,
+        "rawUs": 781.0134219688033,
+        "dTps": -7.422585748152869,
+        "withinBudget": true
+      },
+      "leaveOut": {
+        "tpsPerUser": 916.2091462248712,
+        "recoveryTps": 9.701899718867594,
+        "withinBudget": false
+      },
+      "closesGapAlone": false,
+      "breakEven": null,
+      "classification": "graded"
+    },
+    {
+      "name": "mcUtil",
+      "kind": "assumption",
+      "where": "A.TECH.mcUtil",
+      "dimension": "mc",
+      "owner": "memory-expert",
+      "published": 0.7,
+      "pessimistic": 0.65,
+      "evidence": "ASSUMPTION",
+      "measurementNeeded": "sustained MC payload bandwidth on silicon or a vendor model",
+      "alone": {
+        "tpsPerUser": 1030.8929446709303,
+        "rawUs": 829.0878884360611,
+        "dTps": -70.8781255709946,
+        "withinBudget": true
+      },
+      "leaveOut": {
+        "tpsPerUser": 908.4415652163129,
+        "recoveryTps": 1.9343187103092987,
+        "withinBudget": false
+      },
+      "closesGapAlone": false,
+      "breakEven": {
+        "valueAtBudget": 0.6284493765729164
+      },
+      "breakEvenBy": {
+        "by": "budget",
+        "past": 0.6284483765729164,
+        "rawUs": 854.70208396082
+      },
+      "classification": "graded"
+    },
+    {
+      "name": "prediction",
+      "kind": "assumption",
+      "where": "plan.c.prediction (simulator input, 0.8)",
+      "dimension": "mc",
+      "owner": "memory-expert",
+      "published": 0.8,
+      "pessimistic": 0.7,
+      "evidence": "ASSUMPTION (B-003)",
+      "measurementNeeded": "expert-router trace: prefetch hit rate",
+      "alone": {
+        "tpsPerUser": 1084.1807189739066,
+        "rawUs": 788.3379954494701,
+        "dTps": -17.590351268018367,
+        "withinBudget": true
+      },
+      "leaveOut": {
+        "tpsPerUser": 915.2266395623731,
+        "recoveryTps": 8.719393056369427,
+        "withinBudget": false
+      },
+      "closesGapAlone": false,
+      "breakEven": {
+        "valueAtBudget": null,
+        "floor": 0.3,
+        "note": "the budget holds all the way to 0.3"
+      },
+      "classification": "graded"
+    },
+    {
+      "name": "launchScale",
+      "kind": "assumption",
+      "where": "OPT.launchScale",
+      "dimension": "software",
+      "owner": "software-expert",
+      "published": 0.45,
+      "pessimistic": 0.7,
+      "evidence": "ASSUMPTION (B-003)",
+      "measurementNeeded": "runtime launch trace with batching",
+      "alone": {
+        "tpsPerUser": 1096.1865258535381,
+        "rawUs": 779.7038501593948,
+        "dTps": -5.584544388386803,
+        "withinBudget": true
+      },
+      "leaveOut": {
+        "tpsPerUser": 911.3972375892894,
+        "recoveryTps": 4.889991083285736,
+        "withinBudget": false
+      },
+      "closesGapAlone": false,
+      "breakEven": null,
+      "classification": "graded"
+    }
+  ],
+  "jointPessimistic": {
+    "compute": {
+      "values": {
+        "matrixUtil": 0.5,
+        "vectorUtil": 0.25,
+        "unpackParamsPerLaneCycle": 1,
+        "layoutImbalance": 1.3,
+        "kvTile": 16384
+      },
+      "tpsPerUser": 921.6304666655911,
+      "withinBudget": false
+    },
+    "allUnmeasured": {
+      "values": {
+        "matrixUtil": 0.5,
+        "vectorUtil": 0.25,
+        "unpackParamsPerLaneCycle": 1,
+        "layoutImbalance": 1.3,
+        "kvTile": 16384,
+        "mcUtil": 0.65,
+        "prediction": 0.7,
+        "launchScale": 0.7
+      },
+      "tpsPerUser": 906.5072465060036,
+      "withinBudget": false,
+      "gapToGoalTps": -93.49275349399636
+    },
+    "byDimension": [
+      {
+        "dimension": "compute",
+        "owner": "compute-expert",
+        "keys": [
+          "matrixUtil",
+          "vectorUtil",
+          "unpackParamsPerLaneCycle"
+        ],
+        "aloneTpsPerUser": 975.7279173951796,
+        "aloneDTps": -126.04315284674533,
+        "leaveOutTpsPerUser": 1012.8149990350303,
+        "recoveryTps": 106.30775252902663,
+        "leaveOutWithinBudget": true
+      },
+      {
+        "dimension": "sram",
+        "owner": "memory-expert",
+        "keys": [
+          "layoutImbalance",
+          "kvTile"
+        ],
+        "aloneTpsPerUser": 1055.4613369649962,
+        "aloneDTps": -46.30973327692868,
+        "leaveOutTpsPerUser": 959.0300882401642,
+        "recoveryTps": 52.52284173416058,
+        "leaveOutWithinBudget": false
+      },
+      {
+        "dimension": "mc",
+        "owner": "memory-expert",
+        "keys": [
+          "mcUtil",
+          "prediction"
+        ],
+        "aloneTpsPerUser": 1014.4331637142442,
+        "aloneDTps": -87.33790652768073,
+        "leaveOutTpsPerUser": 916.6303500316244,
+        "recoveryTps": 10.123103525620763,
+        "leaveOutWithinBudget": false
+      },
+      {
+        "dimension": "software",
+        "owner": "software-expert",
+        "keys": [
+          "launchScale"
+        ],
+        "aloneTpsPerUser": 1096.1865258535381,
+        "aloneDTps": -5.584544388386803,
+        "leaveOutTpsPerUser": 911.3972375892894,
+        "recoveryTps": 4.889991083285736,
+        "leaveOutWithinBudget": false
+      }
+    ],
+    "routing": {
+      "routeTo": "compute",
+      "owner": "compute-expert",
+      "recoveryTps": 106.30775252902663,
+      "closesGap": true,
+      "note": "the dimension whose pessimistic values, if they were wrong, recover the most TPS/usr"
+    }
+  },
+  "loadBearing": [],
+  "graded": [
+    "matrixUtil",
+    "vectorUtil",
+    "unpackParamsPerLaneCycle",
+    "layoutImbalance",
+    "kvTile",
+    "mcUtil",
+    "prediction",
+    "launchScale"
+  ],
+  "insensitive": [],
+  "owners": [
+    "compute-expert",
+    "memory-expert",
+    "software-expert"
+  ],
+  "caveats": [
+    "software configuration is held at the published OPT for every move; a hardware move that re-tuning would rescue is charged in full to the hardware",
+    "moves are one step on a neighbour list (or the sweep values), not gradients; interactions appear only in jointPessimistic, the stress replays and couplings",
+    "couplings are reported, not classified: a pair that breaks the budget only together is flagged breaksOnlyTogether, the rows keep their one-at-a-time class",
+    "the stress point (JOINT_PESSIMISTIC.allUnmeasured) is an invented scenario, not a forecast",
+    "K3 / TP32 / 1M context / Batch=1 on the detailed model only; GLM-5.2 and DeepSeek-V4-Pro have no attribution here (UNCORROBORATED)",
+    "dTpsPerMm2 / dTpsPerW are null where the move does not change die area / power",
+    "the classification is mechanical; whether a break-even lies inside the physically plausible range is decided in design.attribution, not here"
+  ],
+  "regenerate": "npm run attribution:cards (node integration/pipelines/generate_tps_attribution.js); checked by tests/regression/test_tps_attribution.js"
+}

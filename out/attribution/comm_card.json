@@ -1,0 +1,694 @@
+{
+  "schemaVersion": "attribution-card-v0.1",
+  "dimension": "comm",
+  "question": "How do the collective latency floor, the counting basis, the links and the collective mechanisms move TPS/usr, and at what area and power?",
+  "status": "MODEL: one-at-a-time replays of the detailed model at one design point. Changes no baseline, gate or published number",
+  "inputs": {
+    "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
+    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "pointSource": "teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware.x",
+    "x": {
+      "nL": 8,
+      "nH": 4,
+      "lRows": 1,
+      "lCols": 256,
+      "lEngines": 8,
+      "hRows": 48,
+      "hCols": 128,
+      "hEngines": 5,
+      "ghz": 1,
+      "vectorLanes": 512,
+      "lMiB": 1,
+      "hMiB": 4,
+      "lBanks": 64,
+      "hBanks": 64,
+      "bankBytes": 64,
+      "sharedMiB": 16,
+      "sharedSlices": 16,
+      "tmaEngines": 4,
+      "tmaBytes": 512,
+      "nocBytes": 256,
+      "nocLanes": 4,
+      "reduceLanes": 4096,
+      "ucieLanes": 128,
+      "ucieGbps": 64,
+      "mcGBs": 640,
+      "rdmaLanes": 16,
+      "weightTileMiB": 8,
+      "kvTile": 32768,
+      "headTile": 96,
+      "depth": 4,
+      "windowFraction": 1
+    },
+    "goalTpsPerUser": 1000,
+    "rawBudgetUs": 854.7008547008547,
+    "engineeringMargin": 1.17,
+    "software": {
+      "tauUs": 1.15,
+      "countBasis": "reference-393",
+      "launchScale": 0.45,
+      "kvCache": "fp8",
+      "kvPrefetch": "window",
+      "pvMerge": "layer"
+    },
+    "stressPoint": {
+      "name": "JOINT_PESSIMISTIC.allUnmeasured",
+      "values": {
+        "matrixUtil": 0.5,
+        "vectorUtil": 0.25,
+        "unpackParamsPerLaneCycle": 1,
+        "layoutImbalance": 1.3,
+        "kvTile": 16384,
+        "mcUtil": 0.65,
+        "prediction": 0.7,
+        "launchScale": 0.7
+      }
+    },
+    "slackTps": 1
+  },
+  "published": {
+    "nominal": {
+      "feasible": true,
+      "tpsPerUser": 1101.771070241925,
+      "rawUs": 775.7517671190814,
+      "dieAreaMm2": 365.3410392708195,
+      "diePowerW": 283.2693760000001,
+      "cardPowerW": 2744.875008000001
+    },
+    "stress": {
+      "feasible": true,
+      "tpsPerUser": 906.5072465060036,
+      "rawUs": 942.8505486251446,
+      "dieAreaMm2": 365.3410392708195,
+      "diePowerW": 283.2693760000001,
+      "cardPowerW": 2724.3950080000004
+    },
+    "rawMarginUs": 78.94908758177337
+  },
+  "criticalPath": {
+    "lines": [
+      {
+        "name": "memoryTransport",
+        "us": 192.3679999999996,
+        "shareOfRaw": 0.24797623177114883
+      },
+      {
+        "name": "tpReduce",
+        "us": 1.87914285714285,
+        "shareOfRaw": 0.002422350727116543
+      },
+      {
+        "name": "cardLocal",
+        "us": 74.70554326923076,
+        "shareOfRaw": 0.09630083544207141
+      },
+      {
+        "name": "portTail",
+        "us": 0,
+        "shareOfRaw": 0
+      },
+      {
+        "name": "tauFloor",
+        "us": 182.99731387362533,
+        "shareOfRaw": 0.2358967412387917
+      },
+      {
+        "name": "commOverlap",
+        "us": -26.269469336035073,
+        "shareOfRaw": -0.03386324137370942
+      }
+    ],
+    "netUs": 425.6805306639635,
+    "netShareOfRaw": 0.5487329178054191,
+    "commUs": 451.94999999999703,
+    "collectives": [
+      {
+        "name": "LSE merge / output reduce-scatter",
+        "count": 24,
+        "timeUs": 23.48341620879122,
+        "avgUs": 0.9784756753663008
+      },
+      {
+        "name": "Attention output all-reduce",
+        "count": 93,
+        "timeUs": 71.5062266483516,
+        "avgUs": 0.768884157509157
+      },
+      {
+        "name": "Wdown + Router all-gather",
+        "count": 92,
+        "timeUs": 39.69188667582421,
+        "avgUs": 0.43143355082417617
+      },
+      {
+        "name": "Routed latent merge",
+        "count": 92,
+        "timeUs": 63.53381410256403,
+        "avgUs": 0.6905849358974351
+      },
+      {
+        "name": "Wup + Shared output all-reduce",
+        "count": 92,
+        "timeUs": 70.73734249084244,
+        "avgUs": 0.768884157509157
+      }
+    ],
+    "collectiveCount": 393
+  },
+  "classes": {
+    "loadBearing": "an adverse move breaks the raw budget or makes the point infeasible (bearsBy says which); infeasible mappings and model errors are not counted",
+    "slack": "every adverse move costs < 1 TPS/usr and at least one frees die area or power",
+    "insensitive": "every adverse move costs < 1 TPS/usr and none frees area or power",
+    "graded": "adverse moves cost TPS but the budget holds",
+    "basis": "a counting basis (ADR-0004), not a design choice; reported, not classified",
+    "untested": "no adverse move on the list (the published value is the lowest step)"
+  },
+  "parameters": [
+    {
+      "name": "tauUs",
+      "kind": "protocol",
+      "where": "OPT.tauUs",
+      "published": 1.15,
+      "owner": "comm-expert",
+      "evidence": "SPEC basis (ADR-0004); physical floor open (B-008)",
+      "measurementNeeded": "end-to-end per-collective latency on the RDMA path (PHY + switch + NIC + notify)",
+      "note": "per-collective latency floor; every collective costs at least tau",
+      "moves": [
+        {
+          "to": 1,
+          "adverse": false,
+          "feasible": true,
+          "tpsPerUser": 1101.7921567815936,
+          "rawUs": 775.7369204710001,
+          "withinBudget": true,
+          "dTps": 0.021086539668658588,
+          "dRawUs": -0.01484664808128855,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 966.964955537458,
+            "dTps": 60.45770903145433,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 1.3,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1025.8310509506623,
+          "rawUs": 833.1789663695429,
+          "withinBudget": true,
+          "dTps": -75.94001929126262,
+          "dRawUs": 57.42719925046151,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 853.1646901909112,
+            "dTps": -53.34255631509245,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 1.5,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 843.4796262348767,
+          "rawUs": 1013.3034967496102,
+          "withinBudget": false,
+          "dTps": -258.2914440070482,
+          "dRawUs": 237.55172963052883,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 791.0962797903919,
+            "dTps": -115.41096671561172,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 2,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 703.8049074624951,
+          "rawUs": 1214.4002487598466,
+          "withinBudget": false,
+          "dTps": -397.96616277942985,
+          "dRawUs": 438.6484816407652,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 669.3558520443246,
+            "dTps": -237.15139446167905,
+            "withinBudget": false
+          }
+        }
+      ],
+      "breakEven": {
+        "replayed": {
+          "valueAtBudget": 1.354763074633047
+        },
+        "analytic": {
+          "valueAtBudget": 1.3508882635668533,
+          "note": "tau + raw margin / collective count: assumes every collective is on the tau floor (doc 21, tpsDesign.sensitivity.tauBreakEvenUs)"
+        }
+      },
+      "breakEvenBy": {
+        "by": "budget",
+        "past": 1.3547644293961216,
+        "rawUs": 854.7013871222287
+      },
+      "classification": "loadBearing",
+      "bearsBy": "budget"
+    },
+    {
+      "name": "countBasis",
+      "kind": "basis",
+      "where": "OPT.countBasis",
+      "published": "reference-393",
+      "owner": "comm-expert",
+      "evidence": "ADR-0004 counting basis; shared-expert fold legality open (B-007)",
+      "measurementNeeded": "legality of the shared-expert fold (B-007)",
+      "moves": [
+        {
+          "to": "repo-510",
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 941.7402841820948,
+          "rawUs": 907.5759729691991,
+          "withinBudget": false,
+          "dTps": -160.03078605983012,
+          "dRawUs": 131.82420585011778,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 794.1904968550122,
+            "dTps": -112.31674965099148,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "basis"
+    },
+    {
+      "name": "rdmaLanes",
+      "kind": "hardware",
+      "where": "x.rdmaLanes",
+      "published": 16,
+      "owner": "comm-expert",
+      "evidence": "MODEL (A.TECH.rdmaLaneArea)",
+      "measurementNeeded": "RDMA PHY lane rate and sustained payload per lane",
+      "moves": [
+        {
+          "to": 8,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1095.2243455323455,
+          "rawUs": 780.3888383118605,
+          "withinBudget": true,
+          "dTps": -6.546724709579394,
+          "dRawUs": 4.6370711927791035,
+          "dDieAreaMm2": -2.8000000000000114,
+          "dDiePowerW": -3.3600000000000136,
+          "dCardPowerW": -26.88000000000011,
+          "dTpsPerMm2": 2.338115967706917,
+          "dTpsPerW": 1.9484299730890973,
+          "stress": {
+            "tpsPerUser": 901.1217891634648,
+            "dTps": -5.385457342538871,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "ucieLanes",
+      "kind": "hardware",
+      "where": "x.ucieLanes",
+      "published": 128,
+      "owner": "comm-expert",
+      "evidence": "MODEL (A.TECH.ucieLaneArea)",
+      "measurementNeeded": "UCIe PHY characterisation (lanes, shoreline)",
+      "moves": [
+        {
+          "to": 64,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1016.5831727785072,
+          "rawUs": 840.758412678425,
+          "withinBudget": true,
+          "dTps": -85.1878974634177,
+          "dRawUs": 65.00664555934361,
+          "dDieAreaMm2": -7.168000000000006,
+          "dDiePowerW": -15.728640000000041,
+          "dCardPowerW": -125.82912000000033,
+          "dTpsPerMm2": 11.88447230237411,
+          "dTpsPerW": 5.416100658634026,
+          "stress": {
+            "tpsPerUser": 901.9634462387392,
+            "dTps": -4.543800267264487,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 256,
+          "adverse": false,
+          "feasible": false,
+          "reasons": [
+            "die power",
+            "card power"
+          ],
+          "withinBudget": false,
+          "stress": {
+            "feasible": false,
+            "reasons": [
+              "die power",
+              "card power"
+            ]
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "ucieGbps",
+      "kind": "hardware",
+      "where": "x.ucieGbps",
+      "published": 64,
+      "owner": "comm-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "UCIe PHY characterisation (rate, BER at rate)",
+      "moves": [
+        {
+          "to": 32,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1016.5831727785072,
+          "rawUs": 840.758412678425,
+          "withinBudget": true,
+          "dTps": -85.1878974634177,
+          "dRawUs": 65.00664555934361,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": -15.728640000000041,
+          "dCardPowerW": -125.82912000000033,
+          "dTpsPerMm2": null,
+          "dTpsPerW": 5.416100658634026,
+          "stress": {
+            "tpsPerUser": 901.9634462387392,
+            "dTps": -4.543800267264487,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "nocLanes",
+      "kind": "hardware",
+      "where": "x.nocLanes",
+      "published": 4,
+      "owner": "comm-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "NoC link utilisation from an event-level replay",
+      "moves": [
+        {
+          "to": 2,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1017.4936366464509,
+          "rawUs": 840.0060933234496,
+          "withinBudget": true,
+          "dTps": -84.27743359547401,
+          "dRawUs": 64.25432620436823,
+          "dDieAreaMm2": -14.12603697478994,
+          "dDiePowerW": -5.990400000000022,
+          "dCardPowerW": -47.92320000000018,
+          "dTpsPerMm2": 5.96610597479533,
+          "dTpsPerW": 14.068748930868338,
+          "stress": {
+            "tpsPerUser": 899.3642687655,
+            "dTps": -7.142977740503625,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "nocBytes",
+      "kind": "hardware",
+      "where": "x.nocBytes",
+      "published": 256,
+      "owner": "comm-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "NoC flit width vs payload from the RTL",
+      "moves": [
+        {
+          "to": 128,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1017.4936366464509,
+          "rawUs": 840.0060933234496,
+          "withinBudget": true,
+          "dTps": -84.27743359547401,
+          "dRawUs": 64.25432620436823,
+          "dDieAreaMm2": -14.12603697478994,
+          "dDiePowerW": -5.990400000000022,
+          "dCardPowerW": -47.92320000000018,
+          "dTpsPerMm2": 5.96610597479533,
+          "dTpsPerW": 14.068748930868338,
+          "stress": {
+            "tpsPerUser": 899.3642687655,
+            "dTps": -7.142977740503625,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 512,
+          "adverse": false,
+          "feasible": false,
+          "reasons": [
+            "card power"
+          ],
+          "withinBudget": false,
+          "stress": {
+            "feasible": false,
+            "reasons": [
+              "card power after shared-port scaling"
+            ]
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "reduceLanes",
+      "kind": "hardware",
+      "where": "x.reduceLanes",
+      "published": 4096,
+      "owner": "comm-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "Reduce-unit throughput on RTL",
+      "moves": [
+        {
+          "to": 2048,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1083.6254419644877,
+          "rawUs": 788.7419597230764,
+          "withinBudget": true,
+          "dTps": -18.145628277437254,
+          "dRawUs": 12.99019260399507,
+          "dDieAreaMm2": -20.927462184873946,
+          "dDiePowerW": -16.384000000000015,
+          "dCardPowerW": -131.07200000000012,
+          "dTpsPerMm2": 0.8670725631774234,
+          "dTpsPerW": 1.1075212571678001,
+          "stress": {
+            "tpsPerUser": 893.0255883006248,
+            "dTps": -13.481658205378835,
+            "withinBudget": false
+          }
+        },
+        {
+          "to": 8192,
+          "adverse": false,
+          "feasible": false,
+          "reasons": [
+            "die power",
+            "card power"
+          ],
+          "withinBudget": false,
+          "stress": {
+            "feasible": false,
+            "reasons": [
+              "die power",
+              "card power"
+            ]
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "commOverlap",
+      "kind": "mechanism",
+      "where": "OPT.commOverlap",
+      "published": true,
+      "owner": "software-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "event-level trace showing the mechanism engages at the published point",
+      "role": "shared experts run under the Wdown + Router all-gather",
+      "moves": [
+        {
+          "to": false,
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1073.2442393620584,
+          "rawUs": 796.3712483645784,
+          "withinBudget": true,
+          "dTps": -28.526830879866566,
+          "dRawUs": 20.619481245497013,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 881.2140461831247,
+            "dTps": -25.293200322878988,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    },
+    {
+      "name": "pvMerge",
+      "kind": "mechanism",
+      "where": "OPT.pvMerge",
+      "published": "layer",
+      "owner": "software-expert",
+      "evidence": "MODEL",
+      "measurementNeeded": "event-level trace showing the mechanism engages at the published point",
+      "role": "PV m/l/O merged once per layer, cross-die ring reduce-scatter by heads",
+      "moves": [
+        {
+          "to": "tile",
+          "adverse": true,
+          "feasible": true,
+          "tpsPerUser": 1082.211841520481,
+          "rawUs": 789.7722256485581,
+          "withinBudget": true,
+          "dTps": -19.559228721444015,
+          "dRawUs": 14.020458529476741,
+          "dDieAreaMm2": 0,
+          "dDiePowerW": 0,
+          "dCardPowerW": 0,
+          "dTpsPerMm2": null,
+          "dTpsPerW": null,
+          "stress": {
+            "tpsPerUser": 853.9425101759955,
+            "dTps": -52.564736330008145,
+            "withinBudget": false
+          }
+        }
+      ],
+      "classification": "graded"
+    }
+  ],
+  "jointPessimistic": {
+    "values": {},
+    "replay": null,
+    "note": "JOINT_PESSIMISTIC declares no pessimistic value for comm"
+  },
+  "bindingConstraints": {
+    "byConstraint": [
+      {
+        "constraint": "card power",
+        "moves": [
+          {
+            "name": "ucieLanes",
+            "to": 256,
+            "adverse": false
+          },
+          {
+            "name": "nocBytes",
+            "to": 512,
+            "adverse": false
+          },
+          {
+            "name": "reduceLanes",
+            "to": 8192,
+            "adverse": false
+          }
+        ]
+      },
+      {
+        "constraint": "die power",
+        "moves": [
+          {
+            "name": "ucieLanes",
+            "to": 256,
+            "adverse": false
+          },
+          {
+            "name": "reduceLanes",
+            "to": 8192,
+            "adverse": false
+          }
+        ]
+      }
+    ],
+    "modelErrors": []
+  },
+  "couplings": [],
+  "loadBearing": [
+    "tauUs"
+  ],
+  "graded": [
+    "rdmaLanes",
+    "ucieLanes",
+    "ucieGbps",
+    "nocLanes",
+    "nocBytes",
+    "reduceLanes",
+    "commOverlap",
+    "pvMerge"
+  ],
+  "slack": [],
+  "insensitive": [],
+  "untested": [],
+  "basis": [
+    "countBasis"
+  ],
+  "owners": [
+    "comm-expert",
+    "software-expert"
+  ],
+  "caveats": [
+    "software configuration is held at the published OPT for every move; a hardware move that re-tuning would rescue is charged in full to the hardware",
+    "moves are one step on a neighbour list (or the sweep values), not gradients; interactions appear only in jointPessimistic, the stress replays and couplings",
+    "couplings are reported, not classified: a pair that breaks the budget only together is flagged breaksOnlyTogether, the rows keep their one-at-a-time class",
+    "the stress point (JOINT_PESSIMISTIC.allUnmeasured) is an invented scenario, not a forecast",
+    "K3 / TP32 / 1M context / Batch=1 on the detailed model only; GLM-5.2 and DeepSeek-V4-Pro have no attribution here (UNCORROBORATED)",
+    "dTpsPerMm2 / dTpsPerW are null where the move does not change die area / power",
+    "the classification is mechanical; whether a break-even lies inside the physically plausible range is decided in design.attribution, not here"
+  ],
+  "regenerate": "npm run attribution:cards (node integration/pipelines/generate_tps_attribution.js); checked by tests/regression/test_tps_attribution.js"
+}

@@ -34,6 +34,8 @@ const LANDING_POLICY = {
   memory: ['out/memory/'],
   comm: ['out/comm/'],
   physical: ['out/physical/'],
+  // Reviews only: the cards in out/attribution/ are generator output and stay out of reach.
+  attribution: ['out/attribution/reviews/'],
   'detail.freeze': ['out/detailed/'],
   'detail.workload': ['out/detailed/'],
   'detail.events': ['out/detailed/'],

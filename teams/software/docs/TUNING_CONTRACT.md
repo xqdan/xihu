@@ -63,9 +63,13 @@
    （`DESIGN_TARGETS_AND_MARGINS.md` §2.1）。
 2. **Die 面积 ≤ 400 mm²、Die 功耗 ≤ 300 W、卡功耗 ≤ 2800 W**：搜索已按此过滤。
 3. **主域频率固定 1.0 GHz，不参与搜索**（NFR-05）。任何"降频换面积"的方案直接不合法。
-4. **KV tile 与 `kvCache` dtype 耦合**：32768 在 BF16 下 **不可行**，
-   因为 dequant 要走 H 向量 lane 并从 softmax 可掩盖预算中扣除。
-   搜索必须同时选 `(kvTile, kvCache)`，不能分别最优。
+4. **KV tile 与 `kvCache` dtype 耦合**：在已发布点（headTile 96、hMiB 4）上，32768 在 BF16 下 **不可行**，
+   因为 BF16 KV 让每 token 的 KV slab 字节翻倍，H local tile 放不下（`A.mappedPlan` 的 H local tile 检查，
+   `integration/detailed/k3_architecture_search.js:100`）。dequant 走 H 向量 lane、从 softmax 可掩盖预算中扣除，
+   是 FP8 一侧的代价（`kvCache` 与 `softmaxFusion` 的耦合），不是 BF16 不可行的原因。
+   同一道墙也受 headTile 和 hMiB 影响：sram 灵敏度卡的 `couplings` 里，`headTile=48 x kvCache off`、
+   `hMiB=8 x kvCache off` 两对在 32768 下 BF16 可行。
+   搜索必须同时选 `(kvTile, headTile, hMiB, kvCache)`，不能分别最优。
 5. **条件路由的旋钮必须重新调整**：见 §4。
 
 ## 3. 回标路径（每项的关闭证据）

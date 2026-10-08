@@ -1,4 +1,4 @@
-# 19 个 workflow 的业务含义
+# 20 个 workflow 的业务含义
 
 本文回答一个问题：**每个 workflow 在芯片架构设计这件事里，对应哪一个业务环节？**
 它不重复实现细节（见各脚本的 `meta` 与 [`README.md`](README.md)），也不重复方法论（见
@@ -18,6 +18,7 @@ flowchart TB
   DG --> C["compute / memory / comm / physical<br/>四个硬件域各选出具体设计点"]
   C --> D0["detail.freeze → workload → events → execute → integrate<br/>细化：冻结、算账、事件、执行/PPA、粗细估对账"]
   D0 --> CV["converge<br/>架构定型 / 回流 / 送评审"]
+  AT["attribution（sram / comm / joint）<br/>每个参数怎么影响 TPS/usr、谁承重"] -.->|"灵敏度卡 + 承重项"| CV
   CV -->|"DIRECTION_BACKFLOW"| BF["backflow<br/>把 delta 归因变成方向级回流"]
   BF --> DIR
   VF["verify（产物能否站住）<br/>audit（依据是否自洽）"] -.->|"只读已落盘产物"| C
@@ -33,6 +34,7 @@ flowchart TB
 | 方向级探索（Stage A） | `direction`、`dgate` | 在资源包络内比较架构路线，并凑齐"能否进细化"的证据 |
 | 域内设计 | `compute`、`memory`、`comm`、`physical` | 方向定了之后，每个硬件域在设计空间里选出一个具体设计点 |
 | 参数级细化（Stage B） | `detail.freeze` → `workload` → `events` → `execute` → `integrate` | 逐层把粗估变细估，并对账 |
+| 维度归因 | `attribution` | 每个设计维度的参数动一步，TPS/usr 变多少、代价多少、哪些承重 |
 | 收敛 | `converge` | 这一轮到此为止、回流重来，还是送评审 |
 | 回流与复核 | `backflow`、`verify`、`audit` | 不达标往回退；独立复核产物和依据 |
 | 例外与准备 | `explore`、`learn` | 受控的自由探索；一次性学习外部方案 |
@@ -107,6 +109,16 @@ D 组是同一条链上的前后依赖，不得并行：每一格消费上一格
 - 专家裁决枚举的含义：`LOCAL_DETAIL_FIX` 是本域局部调整即可；`DIRECTION_BACKFLOW` 是问题在方向层；`PPA_DIRECTION_BACKFLOW` 是 PPA 层面的方向问题，走专属回流；`DELTA_UNEXPLAINED` 是粗细估差异无法归因。
 - **不负责**：不跑 `stage_b.js`，也不改既有产物；这些格审的是"账是否站得住"，TPS 数字来自脚本。
 
+### 维度归因（L4，按维度参数化）
+
+#### `design.attribution` — 这个维度的每个参数怎么影响 TPS/usr，谁承重
+- **业务问题**：在已发布设计点上，片上 SRAM（容量、bank、slice、TMA、KV tile、预取深度、端口扩展）、集合通信（τ、计数口径、RDMA/UCIe/NoC/Reduce、commOverlap、pvMerge）各自动一步，TPS/usr 变多少、面积功耗变多少、盈亏点在哪；未测参数一起取悲观端时缺口落在哪一维（`joint`）。
+- **什么时候跑**：`npm run attribution:cards` 生成灵敏度卡之后，每个维度跑一次（`--dimension sram | comm | joint`，互相独立，可并行）。基线变了卡即过期，`run_workflow.js` 拒收过期卡。
+- **做法**：数全部来自卡（`integration/detailed/tps_attribution.js` 在详细模型上逐项重放，分类是机械的）→ 每行的 owner 专家（compute / memory / comm / software）只审自己的行：同不同意分类、该参数物理上可信的区间与出处、盈亏点是否落在区间内、先测什么；`software-expert` 另判哪些承重结论依赖软件机制 → `integrator` 合并承重项、富余项、回标计划与冲突 → `invariant-checker` 检点（漏审行、漏列承重行、承重行缺回标计划由脚本机械比对，检点者不能解释掉）。
+- **产出**：`out/attribution/reviews/<dimension>_review.json` 与 run record。卡本身是生成物，本格不能落到卡旁边。返回值里任何 `文件:行号` 指向没有文字的行（空行、表格边框、代码围栏）或越界，或专家 `plausibleRange` 里的卡外数字不在其 `rangeEvidence` 所引的行上，主循环不落盘（退出码 7）。审读与合并里的卡外数字由 workflow 脚本比对，修正一次仍不合规即 `INVARIANT_VIOLATED`。
+- **结局**：检点通过则落盘审读；专家缺席或输入不足 `BLOCKED_CONFIG`；承重参数的可信区间整体落在预算外时 `DIRECTION_BACKFLOW`。
+- **不负责**：不算任何数（卡里没有的数不得出现）、不改卡、不提设计改动（那是域设计格的事）、不判门控。目前只覆盖 K3 / TP32 的详细模型，其他模型无归因。
+
 #### `design.converge` — 这一轮怎么收场
 - **业务问题**：细化链走完后，架构是冻结、回到方向层重定，还是证据已够、送评审？
 - **做法**：相关专家（1–3 个，互不可见）回报本域残余缺口 → `framing-critic` 审查"收敛问的是不是该问的" → `gate-keeper` 汇总证据完备性 → `architect` 在 `ARCH_FREEZE` / `DIRECTION_BACKFLOW` / `D_GATE_PROPOSAL` 里裁决 → `invariant-checker` 检点。
@@ -162,6 +174,7 @@ D 组是同一条链上的前后依赖，不得并行：每一格消费上一格
 | 域间接口要改 | `contract` |
 | 要重新比较架构路线 | `direction`，然后 `dgate` |
 | 想看某个硬件域的设计点怎么选 | 对应的 `compute` / `memory` / `comm` / `physical` |
+| SRAM、集合通信等某个维度怎么影响 TPS/usr，哪些参数承重 | `npm run attribution:cards`，再 `attribution --dimension sram`（或 `comm` / `joint`） |
 | 方向已定，想验证细估能不能站住 | D 组从 `detail.freeze` 起依次跑到 `integrate`，再 `converge` |
 | 细估和粗估对不上 | 先 `integrate` 的 delta 归因，再 `backflow` |
 | 想让外人复核结论 | `verify`，再 `audit` |
@@ -172,5 +185,5 @@ D 组是同一条链上的前后依赖，不得并行：每一格消费上一格
 在 Claude Code 里原生运行；在 Cursor 或终端里用 `npm run workflow:run -- <workflow> --backend claude|cursor|mock`（默认 dry run，加 `--land` 才落盘），
 详见 [`README.md`](README.md) 的“在哪里运行”。
 
-这 19 个 workflow 目前经过结构测试、C 组的 mock runtime 行为测试，以及运行时与驱动器的单元/回归测试（后端用假 CLI、假 SDK）；
+这 20 个 workflow 目前经过结构测试、C 组的 mock runtime 行为测试，以及运行时与驱动器的单元/回归测试（后端用假 CLI、假 SDK）；
 **尚未用真实模型端到端运行过**。产出路径以脚本里的 `path:` 为准；本文与脚本冲突时以脚本为准。

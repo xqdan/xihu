@@ -218,4 +218,7 @@ function build(x, budgetUs) {
   };
 }
 
-module.exports = {build, MECHANISMS, NO_EFFECT, SHARED_PORT_UNSCALED, JOINT_PESSIMISTIC, replayJoint};
+// The replay helpers and sweeps are exported for integration/detailed/tps_attribution.js,
+// which asks the same questions per design dimension; it must not keep a second copy.
+module.exports = {build, MECHANISMS, NO_EFFECT, SHARED_PORT_UNSCALED, JOINT_PESSIMISTIC, replayJoint,
+  ASSUMPTION_SWEEPS, breakEven, withOpt, withTech, withPrediction, category};
