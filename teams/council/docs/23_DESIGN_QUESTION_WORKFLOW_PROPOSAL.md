@@ -145,7 +145,7 @@ flowchart TB
 5. **`B-AREA` 的限值**：用详细模型实际执行的 `k3_physical_basis.BASIS.limits`（SF4、液冷：die 400 mm²、die 300 W、卡 2800 W），不是 `A.LIMITS` 的风冷功耗口径；合同同时给发布点与 SRAM 下限处的面积 / 功耗。
 6. **覆盖范围**：规划部分覆盖三个模型 × TP8/16/32，合同只在 TP32 上切（`scope.tp`）；`B-SRAM-CAP` 与所有详细界只有 K3（规划模型没有 SRAM 项），其他模型 `UNCORROBORATED`。软件开关全程保持发布点的 `OPT`，不重调。带宽搜索止于 MC640，需要超过 MC640 的切分不提供。
 7. **回流**：所有切分都被否（或内核一份都给不出）→ `DIRECTION_BACKFLOW`，`routeTo: design.intake`（L0，交人决定目标或场景），落结果记录 `out/budget/req_budget_outcome.json`；`physical-expert` 的 `PPA_DIRECTION_BACKFLOW` 或 `architect` 判方向回退 → `routeTo: design.direction`。
-8. **合同尚无下游消费者**：L2 / L3 仍按"保持已发布 TPS"判可行，`make_brief.js` 与 ledger 注入是 P3。任何 Gate 都不读前沿或合同。
+8. **合同的下游消费者在 P3 接上**：`direction` / `compute` / `memory` / `comm` / `physical` 的 brief 由 `make_brief.js` 从合同派生（见 §8 的 P3 实现状态）。L2 / L3 的搜索脚本本身仍按"保持已发布 TPS"判可行——合同进的是题面（预算与硬约束），不是搜索的可行判据。任何 Gate 都不读前沿或合同。
 
 ### L2 `design.arch.direction` — 粗架构形态（合并 `direction` 与 `dgate`）
 
@@ -296,12 +296,25 @@ flowchart TB
 |---|---|---|---|
 | P1（已实现，见 §4 L4 的实现状态） | L4 `attribution` + `tps_attribution.js`，先做 `sram`、`comm`、`joint` 三个维度 | 内核约 70% 可复用 `k3_tps_design_baseline.js` / `die_area_reallocation.js` | 直接回答"SRAM、集合通信怎么影响 TPS/usr"；不依赖其他格 |
 | P2（已实现，见 §4 L1-b 的实现状态） | L1-b `req.budget` + `requirement_frontier.js` | 规划部分基本是 `maxTauForTarget` 的推广；详细部分是小网格重放 | 把"算力 / 带宽 / τ"的关系变成可下发的合同 |
-| P3 | 预算合同 schema + `make_brief.js` + ledger 注入 | 中 | 接通层间链 |
+| P3（已实现，见下） | 预算合同 schema + `make_brief.js` + ledger 注入 | 中 | 接通层间链 |
 | P4 | L3 改可行条件；拆 `sram` / `mc`；补旁证专家 | `sram_design_space.json` + 搜索脚本 | 依赖 P2 的合同 |
 | P5 | L3 `coupling` | 中 | 依赖 P4 |
 | P6 | L1-a 前移、L2 合并、L5 合并、converge 新判据 | 以删改为主 | 收口 |
 
 **P1 之后停一次**：如果灵敏度卡在真实设计点上读不出"哪些参数承重"，说明维度切法或参数清单不对，应先调整再往下做。
+
+#### P3 实现状态（已实现，与上文的出入）
+
+`integration/pipelines/make_brief.js`、`integration/pipelines/design_ledger.js`，主循环接在 `run_workflow.js`，回归测试 `tests/regression/test_brief_and_ledger.js`。与上表那一行的出入：
+
+1. **没有单独的"预算合同 schema 文件"**。合同的形状由产它的内核（`requirement_frontier.js`）固定，由消费它的 `make_brief.js` 在读的时候校验（`layer`、`schemaVersion`、六个必需 split 条目都在），不合即拒。再写一份 JSON Schema 等于给同一个形状立第二份定义，两份会漂。L1 合同已经被 `run_workflow.js` 的 `verifyLandedBudget` 逐字段核对过它等于前沿里那一条切分——真正的"合同对不对"由那里判，schema 文件补不出新的保证。
+2. **brief 是现派生的，不落盘**。`make_brief.js` 把散文（`teams/council/inputs/brief_intents.json`：题目、形态、禁止项、退出条件、设计空间、profile 绑定）与合同里的数拼成一份 `DesignBrief`：面积/功耗/带宽预算与七条硬约束全部派生，每条的 `source` 是指回合同文件里那个 split 条目的 JSON Pointer。仓库里因此没有第二份合同数字可以陈旧。本轮覆盖合同的直接消费者：`direction`、`compute`、`memory`、`comm`、`physical`；其余各格仍需 `--brief`。
+3. **带宽是合同自己的数乘封装基数**，不是基线发布点：`B-MEM-BW.min`（每 cube）× `k3_mc_baseline.json` 的 `card.memoryCubesPerComputeDie`。
+4. **`profileBinding.mcProfile` 手写，不从合同的 `point.mcGBs` 推**。ADR-0021 下 MC320 是唯一可制造默认值、MC640 只能是 stretch，而当前默认切分 `S-CMP` 要求的每 cube 带宽正好高于 MC320 参照——按 point 推会让一个 stretch 档位自称可制造默认值。这条由测试钉住。
+5. **ledger 由主循环写，不走 `land.js`**。`out/governance/` 是 `dgate` 与 `backflow` 的落盘前缀，ledger 不是任何一格的产物。`--land` 且文件全部落盘后才并入，并完校验 `design_ledger.schema.json`；不合格则文件已落、ledger 不动（退出码 8）。合并只增不减：被否方案、未决阻塞、证据索引按自然键合并，同一个 ADR 给出不同结论是错误而不是合并结果。
+6. **顺带补了校验器的 `minProperties` / `maxProperties`**：`design_ledger.schema.json` 早就写了 `minProperties: 1`（没有策略版本的 ledger 不是 ledger），而 `runtime/schema.js` 一直静默忽略它。
+7. **`stage` 枚举补了 `req.budget`**（`design_brief.schema.json` 与 `design_ledger.schema.json`），P2 那一格此前不在枚举里。
+8. **Gate 仍然不读 brief 或 ledger**。接通的是层间的输入链，不是判据链。
 
 成本：主链单轮约 L1 ≈ 12、L2 ≈ 6+N、L3 ≈ 5×(4+N) + 4、L4 ≈ 4×6、L5 ≈ 12 个策略实例；N 取 4 时约 110 个，低于现有全量的 300 多个。L4 各维度互相独立，可以并行跑。
 

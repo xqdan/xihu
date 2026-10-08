@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "brief-intents-v0.1",
+  "description": "make_brief.js 的散文来源：每个 stage 的 objective / shapeIntent / 该阶段自己的 forbidden 与 exitCriteria。数值不在这里——预算数字与可派生硬约束一律从 out/budget/L1_budget.json 的 split 条目派生，见 integration/pipelines/make_brief.js。这里只写确定性脚本算不出来的东西：人要问的问题、想要的形态、不许做的事。",
+  "generatedBy": "hand-authored; reviewed with the L1 contract, not derived from it",
+  "sharedConstraints": [
+    {
+      "id": "C-SPEC-SINGLE",
+      "text": "P1 是唯一硬件规格；MC320 与 MC640 必须分离陈述，MC640 只能是 stretch",
+      "source": "ADR-0021"
+    },
+    {
+      "id": "C-MODELS-3",
+      "text": "结论必须覆盖 K3、GLM-5.2、DeepSeek-V4-Pro 三个模型，不得只对 K3 成立",
+      "source": "ADR-0009",
+      "value": 3
+    },
+    {
+      "id": "C-FFN-TP",
+      "text": "FFN/MoE 为 TP-only，不建 expert all-to-all 或 dispatch/combine",
+      "source": "ADR-0020"
+    },
+    {
+      "id": "C-PEAK-SEP",
+      "text": "数学 peak、effective peak、measured/calibrated peak 必须分开陈述；利用率必须有 trace 来源",
+      "source": "teams/hardware/inputs/k3_mc_baseline.json"
+    }
+  ],
+  "stages": {
+    "direction": {
+      "objective": "在 L1 预算合同给定的四轴边界内，确定走哪条架构路线：TP 档位、算力/带宽/τ 的相对形态，以及由此收敛出的候选集（≤3），使 K3 / GLM-5.2 / DeepSeek-V4-Pro 的粗估 TPS/usr 全部过门槛且在包络内",
+      "shapeIntent": "先用确定性枚举把路线空间走完（stage_a.js 的方向包络与打分卡），只在枚举给出的可行集里做取舍；倾向于保留 P1 单一硬件规格下的形态，除非能证明另一条路线在粗估口径上明显更划算。收敛是数据（selectCandidates 的结果加取舍记录），不是让某个 agent 自己挑三条。",
+      "forbidden": [
+        "不得输出 TPS/usr 或任何全局性能指标（本 stage 只报路线形态与相对方向）",
+        "不判门控；D 门结论只能来自 evaluate_gates.js 算好的打分卡",
+        "不得引入第二份硬件规格，不得用 MC640 数字冒充可制造默认值",
+        "不得给出细粒度（核内配比、SRAM 窗口、放置）的设计取值——那是下游 C/D 组的问题",
+        "不得输出 PASS / D_GATE_PASSED 字面量"
+      ],
+      "exitCriteria": [
+        "候选集收敛到 ≤3，且每个候选能指回确定性包络与打分卡产物",
+        "三模型粗估 TPS/usr 与包络、门槛的关系逐条陈述，达标与不达标都给出依据",
+        "被否路线逐条登记，理由写清是哪条约束或哪个包络边界否掉的",
+        "framing-critic 与 gate-keeper 的裁决都被消费，检点项无缺口"
+      ],
+      "allowedDesignSpace": [
+        {
+          "optionId": "matrix_vector",
+          "description": "teams/hardware/inputs/matrix_vector_design_space.json"
+        },
+        {
+          "optionId": "memory",
+          "description": "teams/hardware/inputs/memory_design_space.json"
+        },
+        {
+          "optionId": "comm_core",
+          "description": "teams/hardware/inputs/comm_core_design_space.json"
+        },
+        {
+          "optionId": "physical",
+          "description": "teams/hardware/inputs/physical_design_space.json"
+        }
+      ]
+    },
+    "compute": {
+      "objective": "AI Core 的 matrix:vector 配比取哪一组（vectorLanes × 低精度输入路径 × exp 单元），使 K3 / GLM-5.2 / DeepSeek-V4-Pro 三模型的 H-core kernel 全部隐藏向量时间，且 die 面积与功耗不超 L1 合同给出的边界",
+      "shapeIntent": "先用确定性搜索把 matrix:vector 配比在 K3 详细回放上收敛，只在搜索给出的可行集里做取舍；倾向于保留 P1 发布点的 512 lanes 与 vector 解包路径，除非能证明原生低精度张量输入在面积/功耗上更划算——原生输入多 8% 的矩阵面积，必须由省下的向量解包周期挣回来。语义上不得把 dequant 代价藏进 peak。",
+      "forbidden": [
+        "不得给出 TPS/usr 或任何整机级性能数字（本 stage 只报核内配比与时间）",
+        "不得手工填写面积或功耗；必须取自规格文件或搜索脚本产物",
+        "不得引入第二份硬件规格，不得用 MC640 数字冒充可制造默认值",
+        "不得通过降低精度换取算力，除非同时给出软件侧精度验收路径",
+        "不得输出 PASS / D_GATE_PASSED 字面量"
+      ],
+      "exitCriteria": [
+        "winner 的每个数值字段都能指回确定性搜索产物",
+        "搜索产物的设计空间 sha256 已记录，与磁盘上的设计空间文件一致",
+        "三模型 H-core kernel 的隐藏条件全部成立",
+        "die 面积与功耗在 L1 合同给定的边界内",
+        "integrated winner 通过 invariant-checker 的全部检点项"
+      ],
+      "allowedDesignSpace": "teams/hardware/inputs/matrix_vector_design_space.json"
+    },
+    "memory": {
+      "objective": "存储子系统取哪一组（每 cube 链路带宽 × cube 容量 × 卡上组合），使三模型全部落到 L1 合同要求的目标 TPS/usr 之上，且 SMIC 28 HKE+ 的 cube 侧口径与 UCIe 1.1 接口不被打穿",
+      "shapeIntent": "先在确定性搜索里把 cube 档位与容量组合枚举完，只在可行集里做取舍；倾向于保留参考件的 320 GB/s 兼容点作为下限参照，往上的每一档都要说明它换来的 TPS/usr 是必需的还是裕量。容量口径与链路口径必须分开陈述，不得用容量数字掩盖带宽缺口。",
+      "forbidden": [
+        "不得给出 TPS/usr 或任何整机级性能数字（本 stage 只报存储侧取值与时间账）",
+        "不得手工填写面积或功耗；必须取自规格文件或搜索脚本产物",
+        "不得把 cube 容量与 cube 带宽混成一个数字陈述",
+        "不得引入第二份硬件规格，不得用 MC640 数字冒充可制造默认值",
+        "不得输出 PASS / D_GATE_PASSED 字面量"
+      ],
+      "exitCriteria": [
+        "winner 的每个数值字段都能指回确定性搜索产物，容量与带宽口径分别标明",
+        "三模型都达到目标 TPS/usr，未达标者给出是哪一条约束卡住的",
+        "cube 侧链路带宽与 UCIe 接口容量的关系逐条陈述",
+        "die 面积与功耗在 L1 合同给定的边界内",
+        "integrated winner 通过 invariant-checker 的全部检点项"
+      ],
+      "allowedDesignSpace": "teams/hardware/inputs/memory_design_space.json"
+    },
+    "comm": {
+      "objective": "Comm Core 取哪一组（放置位置 × 集合通信粒度 × 归约路径），使三模型的集合通信时间在 L1 合同给定的 τ 上限内，且 die 面积与功耗不被集合通信吃掉",
+      "shapeIntent": "先在确定性搜索里把放置与归约路径枚举完，只在可行集里做取舍；倾向于把集合通信放在 Reduce 引擎附近的空位，除非能证明换位换来的绕线或端口开销更小。τ 是被 L1 合同定死的上限，不是可以拿面积去换的旋钮。",
+      "forbidden": [
+        "不得给出 TPS/usr 或任何整机级性能数字（本 stage 只报集合通信侧取值与时间账）",
+        "不得手工填写面积或功耗；必须取自规格文件或搜索脚本产物",
+        "不得把 τ 当作可以放宽的变量——它由 L1 合同给上限",
+        "不得引入第二份硬件规格，不得用 MC640 数字冒充可制造默认值",
+        "不得输出 PASS / D_GATE_PASSED 字面量"
+      ],
+      "exitCriteria": [
+        "winner 的每个数值字段都能指回确定性搜索产物",
+        "三模型的集合通信时间都落在 τ 上限内，超出者给出是哪条约束卡住的",
+        "放置位置与 die 内绕线、端口的代价逐条陈述",
+        "die 面积与功耗在 L1 合同给定的边界内",
+        "integrated winner 通过 invariant-checker 的全部检点项"
+      ],
+      "allowedDesignSpace": "teams/hardware/inputs/comm_core_design_space.json"
+    },
+    "physical": {
+      "objective": "物理实现取哪一组（工艺基准 × 矩阵密度 × 冷却 × 预留比例），使单 die 面积与功耗、整卡功耗都不超 L1 合同的边界，且为后续 SRAM 与端口增量留出可用的预留面积",
+      "shapeIntent": "先在确定性搜索里把工艺基准、矩阵密度与冷却组合枚举完，只在可行集里做取舍；倾向于保留已发布的 SF4 基准与液冷冷板，除非能证明另一组在同样的面积/功耗上限下留出更多可用预留。预留比例的含义必须说清是面积预留还是功耗预留。",
+      "forbidden": [
+        "不得给出 TPS/usr 或任何整机级性能数字（本 stage 只报 PPA 口径与裕量）",
+        "不得手工填写面积或功耗；必须取自规格文件或搜索脚本产物",
+        "不得用气冷限值（260 W / 2400 W）冒充本 stage 的功率边界——边界取 L1 合同给出的液冷口径",
+        "不得把预留比例的含义留空或让它有两解",
+        "不得输出 PASS / D_GATE_PASSED 字面量"
+      ],
+      "exitCriteria": [
+        "winner 的每个数值字段都能指回确定性搜索产物",
+        "die 面积、die 功耗、整卡功耗三者都在 L1 合同给定的边界内，裕量分别列出",
+        "预留面积的口径（含不包括哪些增量）逐条陈述",
+        "功耗口径与冷却方式一致，不得混用气冷与液冷限值",
+        "integrated winner 通过 invariant-checker 的全部检点项"
+      ],
+      "allowedDesignSpace": "teams/hardware/inputs/physical_design_space.json"
+    }
+  }
+}

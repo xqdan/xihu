@@ -19,7 +19,9 @@
 //     lands nothing (exit 7); a loose number in a reason gets one repair call, and one left
 //     after it is a mechanical violation;
 //   * req.budget: an unreachable entry rules its split out, none left is a direction backflow,
-//     and a landed contract that is not its frontier split verbatim is refused (exit 5).
+//     and a landed contract that is not its frontier split verbatim is refused (exit 5);
+//   * the budget contract's consumers get their brief derived from the contract rather than
+//     from a committed file, and every other stage still has to be handed one.
 
 const assert = require('assert');
 const fs = require('fs');
@@ -28,6 +30,7 @@ const path = require('path');
 const {main, halfWinnerResult} = require('../../integration/pipelines/run_workflow.js');
 const {createMockBackend, fromSchema} = require('../../integration/orchestration/runtime/backends/mock.js');
 const {buildSearchBrief} = require('../../integration/pipelines/search_brief.js');
+const {briefFor} = require('../../integration/pipelines/make_brief.js');
 
 const root = path.resolve(__dirname, '../..');
 
@@ -62,7 +65,16 @@ async function run(argv, deps) {
   assert.strictEqual((await run([])).code, 1);
   assert.strictEqual((await run(['compute'])).code, 1, 'a backend is required');
   assert.strictEqual((await run(['compute', '--backend', 'nonsense'])).code, 1);
-  assert.strictEqual((await run(['memory', '--backend', 'mock'])).code, 1, 'only compute has a default brief');
+  // A stage outside the budget contract's consumers still has to be handed a brief.
+  assert.strictEqual((await run(['contract', '--backend', 'mock'])).code, 1, 'design.contract has no derivable brief');
+  // The contract's consumers derive theirs instead -- memory has no committed brief file and
+  // still gets past prepareArgs, which is the whole point of make_brief.js.
+  const derived = await run(['memory', '--backend', 'mock']);
+  assert.notStrictEqual(derived.code, 1, `memory must derive its brief from the budget contract: ${derived.text}`);
+  const builtBrief = briefFor('memory').brief;
+  assert.strictEqual(builtBrief.stage, 'memory');
+  assert.strictEqual(builtBrief.profileBinding.mcProfile, 'MC320', 'the manufacturable binding is hand-authored, never read off the contract point (ADR-0021)');
+  assert(builtBrief.hardConstraints.every((c) => c.source && c.source !== 'TBD'), 'every derived constraint names where its number came from');
   const listed = await run(['--list']);
   assert.strictEqual(listed.code, 0);
   assert.strictEqual(listed.text.split('\n').length, 21);
@@ -242,7 +254,7 @@ async function run(argv, deps) {
   assert(!verifyLandedBudget(budgetFiles(split.contract, 'other'), frontier, 'abc').ok, 'a contract from another frontier is refused');
   assert(!verifyLandedBudget(budgetFiles(split.contract).slice(0, 1), frontier, 'abc').ok, 'a contract without its run record is half a result');
 
-  console.log('PASS workflow driver: usage errors, invented winner stopped before landing, valid winner dry-run lands 2 files, working-tree write stops the run, a backflow leaves an outcome record, a blank file:line citation or an unsupported range number stops landing (exit 7), a loose number is repaired once and otherwise violates; req.budget lands a verbatim frontier split, rules out unreachable splits and backflows when none is left');
+  console.log('PASS workflow driver: usage errors, a derived brief for the contract\'s consumers, invented winner stopped before landing, valid winner dry-run lands 2 files, working-tree write stops the run, a backflow leaves an outcome record, a blank file:line citation or an unsupported range number stops landing (exit 7), a loose number is repaired once and otherwise violates; req.budget lands a verbatim frontier split, rules out unreachable splits and backflows when none is left');
 })().catch((error) => {
   console.error(error);
   process.exit(1);

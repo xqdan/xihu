@@ -18,9 +18,9 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 第二种由 [`runtime/`](runtime/)（注入 `args` / `agent` / `parallel` / `phase` / `log`）加
 [`../pipelines/run_workflow.js`](../pipelines/run_workflow.js)（主循环）实现。`runtime/` 不读写仓库文件，主循环做三件事：
 
-1. **前置**：C 组先跑 `search_brief.js`，把核验过的候选集作为 `args.searchBrief` 注入；`attribution` 读灵敏度卡、`req.budget` 读预算前沿，各自核对输入指纹，过期即拒收（退出码 1）；
+1. **前置**：C 组先跑 `search_brief.js`，把核验过的候选集作为 `args.searchBrief` 注入；`attribution` 读灵敏度卡、`req.budget` 读预算前沿，各自核对输入指纹，过期即拒收（退出码 1）；预算合同的下游（`direction` / `compute` / `memory` / `comm` / `physical`）的 `args.brief` 由 [`../pipelines/make_brief.js`](../pipelines/make_brief.js) 从合同现派生而不是读一份手写文件（`--brief` 仍可覆盖）；`args.ledger` 由 [`../pipelines/design_ledger.js`](../pipelines/design_ledger.js) 读 `out/governance/design_ledger.json` 注入——这是跨 stage 的唯一通道，前面各格的被否方案、未决阻塞与证据索引都在里面；
 2. **执行**：运行前后各取一次工作区快照（`runtime/guard.js`），agent 若改动了任何文件，本次不落盘（退出码 3）；
-3. **后置**：C 组 winner 先与候选产物逐字段核对（不一致退出码 5，不落盘；`req.budget` 的合同同样要与前沿里所选切分逐字段一致）；返回值里每个 `文件:行号` 引用都由 `../pipelines/check_citations.js` 机械核对——文件不存在、越界或所引行没有文字（空行、表格边框、代码围栏）即不落盘（退出码 7；`attribution` 与 `req.budget` 还要求专家 `plausibleRange` 里的卡外（前沿外）数字出现在其 `rangeEvidence` 所引的行上，不符同样退出码 7；行内容是否支持论断仍由 `invariant-checker` 判断）；再经 `runtime/land.js` 的路径与内容闸门落盘（拒绝退出码 4）。落盘是**可选的**：不加 `--land` 就是 dry run，闸门全跑、不写任何文件。
+3. **后置**：C 组 winner 先与候选产物逐字段核对（不一致退出码 5，不落盘；`req.budget` 的合同同样要与前沿里所选切分逐字段一致）；返回值里每个 `文件:行号` 引用都由 `../pipelines/check_citations.js` 机械核对——文件不存在、越界或所引行没有文字（空行、表格边框、代码围栏）即不落盘（退出码 7；`attribution` 与 `req.budget` 还要求专家 `plausibleRange` 里的卡外（前沿外）数字出现在其 `rangeEvidence` 所引的行上，不符同样退出码 7；行内容是否支持论断仍由 `invariant-checker` 判断）；再经 `runtime/land.js` 的路径与内容闸门落盘（拒绝退出码 4）；文件全部落盘后，本格返回的 `ledgerPatch`（`design.intake` 为 `ledgerSeed`）并入 ledger 并写回（并入后不合 schema 则退出码 8，文件已落、ledger 未动）。落盘是**可选的**：不加 `--land` 就是 dry run，闸门全跑、不写任何文件，ledger 也不写。
    一次运行若没有返回任何文件（旁证回退、输入不足），主循环改为落一份结果记录 `out/<域>/<workflow>_outcome.json`（按维度跑的 `attribution` 为 `attribution_<维度>_outcome.json`；`runtime/outcome.js`；候选明细折叠成 id 列表），让“谁在什么约束上停了这次运行”留在磁盘上而不只在终端里；这时引用核对的结果写进记录的 `citations`，不阻止落记录。`--result-file <path>` 另存完整返回值。
 
 在 Claude Code 里用 Workflow 工具原生跑时，上面的快照与闸门都不经过主循环：落盘前由主循环（会话）自己对返回值跑一次 `npm run workflow:citations -- <输出文件>`（接受 Workflow 输出，取其 `result`），有问题即不落盘。
@@ -208,6 +208,27 @@ npm run -s workflow:verify-landed -- compute                     # 落盘后：w
 另一条同类规则：旁证阶段（`constraint:*`）任何一路专家调用失败，workflow 退回 `BLOCKED_CONFIG` 并在 `absentLateral` 里点名——缺席的一侧不能当作"没有意见"。
 
 `tests/regression/test_c_group_workflow_behavior.js` 用 mock 运行时真正执行这四个脚本，覆盖上述两条。
+
+## brief 与 ledger：跨格的两条通道
+
+一格要知道的东西只有两类：架构师给它的题（brief），与前面各格已经定下的事（ledger）。两者都由主循环注入，脚本不读文件。
+
+```sh
+npm run -s workflow:design-brief -- memory              # 从预算合同派生这一格的 brief（--provenance 附来源）
+npm run -s workflow:design-brief -- --list              # 覆盖哪些 stage
+npm run -s workflow:ledger                              # 当前 ledger（文件不存在时打印空 ledger）
+npm run -s workflow:ledger-check                        # 校验磁盘上的 ledger
+```
+
+**brief 是合同的视图，不是合同的副本。** 散文（题目、想要的形态、禁止项、退出条件、设计空间、profile 绑定）写在 `teams/council/inputs/brief_intents.json`——这些是确定性脚本算不出来的判断。数字一律从预算合同派生：面积/功耗/带宽预算与七条硬约束，每条的 `source` 是指回合同文件里那个 split 条目的 JSON Pointer（`…#/splits/1/contract/split/4/max`），所以 brief 里不存在第二份合同数字，改合同下一次 brief 就跟着改，没有陈旧副本要记得更新。合同按 `--contract` → `out/budget/L1_budget.json` → `out/requirements/budget_frontier.json` 的某个切分 → （仅 `compute`）已提交的 `design_brief.m2.json` 取第一个存在的。派生出的 brief 在交出去之前先过 `design_brief.schema.json`。
+
+其中 `profileBinding.mcProfile` 刻意手写而不从合同的 `point.mcGBs` 推：ADR-0021 下 MC320 是唯一可制造默认值、MC640 只能是 stretch，而合同要求的每 cube 带宽本来就可能落在 stretch 档——按 point 推会让一个 stretch 档位自称可制造默认值。
+
+**ledger 是跨格的唯一通道。** 每个 workflow 最后返回 `ledgerPatch`（`design.intake` 返回整份 `ledgerSeed`），主循环在文件全部落盘后并进 `out/governance/design_ledger.json`。合并规则：`currentStage` 覆盖；`strategyVersions`、`budgetBalance` 按键合并；`rejectedOptions`、`openBlockers`、`evidenceIndex` 按自然键合并且**只增不减**——被否过的方案不能因为下一格没提就被重跑重新发明，没人提起的阻塞也不等于阻塞已解；`frozenDecisions` 按 id 合并，同一个 ADR 给出不同结论是错误而不是合并结果（改 ADR，不改 ledger）。并完校验 `design_ledger.schema.json`，不合格就不写。
+
+ledger 不走 `land.js`：`out/governance/` 是 `design.dgate` 与 `design.backflow` 的落盘前缀，而 ledger 不是任何一格的产物，是主循环自己的记录。
+
+`tests/regression/test_brief_and_ledger.js` 覆盖这两条：每个 stage 派生出的 brief 合 schema、每条约束的 `source` 解出来的值等于它自己写的值、绑定不随合同点漂移；ledger 的累积、幂等、冻结冲突与写入失败不留半截文件。
 
 ## 落盘方式
 
