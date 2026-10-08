@@ -27,6 +27,8 @@ const {gateLiteralPattern} = require('../../governance/evaluate_gates');
 // Prefixes end in `/` for directories; an entry without one is an exact file.
 const LANDING_POLICY = {
   intake: ['teams/council/inputs/design_brief.intake.json'],
+  // The chosen L1 contract and its run record; the frontier in out/requirements/ is generator output.
+  'req.budget': ['out/budget/'],
   contract: ['out/contracts/'],
   direction: ['out/direction/'],
   dgate: ['out/governance/'],

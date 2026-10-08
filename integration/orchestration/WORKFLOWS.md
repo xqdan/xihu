@@ -1,4 +1,4 @@
-# 20 个 workflow 的业务含义
+# 21 个 workflow 的业务含义
 
 本文回答一个问题：**每个 workflow 在芯片架构设计这件事里，对应哪一个业务环节？**
 它不重复实现细节（见各脚本的 `meta` 与 [`README.md`](README.md)），也不重复方法论（见
@@ -13,6 +13,9 @@
 ```mermaid
 flowchart TB
   IN["intake<br/>需求 → 可下发的 brief"] --> CT["contract<br/>四域/五专家对外接口"]
+  IN --> RB["req.budget<br/>算力 / 带宽 / τ 的预算切分 → L1 合同"]
+  RB -.->|"L1 预算合同（下游尚未消费）"| DIR
+  RB -->|"所有切分都不可达"| IN
   CT --> DIR["direction<br/>走哪条架构路线"]
   DIR --> DG["dgate<br/>候选能否进细化（凑证据，不判门）"]
   DG --> C["compute / memory / comm / physical<br/>四个硬件域各选出具体设计点"]
@@ -31,6 +34,7 @@ flowchart TB
 | 业务阶段 | workflow | 一句话 |
 |---|---|---|
 | 立项与接口 | `intake`、`contract` | 把需求变成可计算输入；各域对外承诺什么接口 |
+| 需求预算（L1-b） | `req.budget` | 达到目标 TPS/usr，算力、带宽、τ 各给多少，切成一份可下发的预算合同 |
 | 方向级探索（Stage A） | `direction`、`dgate` | 在资源包络内比较架构路线，并凑齐"能否进细化"的证据 |
 | 域内设计 | `compute`、`memory`、`comm`、`physical` | 方向定了之后，每个硬件域在设计空间里选出一个具体设计点 |
 | 参数级细化（Stage B） | `detail.freeze` → `workload` → `events` → `execute` → `integrate` | 逐层把粗估变细估，并对账 |
@@ -59,6 +63,16 @@ flowchart TB
 - **做法**：5 个专家各申报接口 → `architect` 收敛成一份契约 → `verifier` **只读已落盘契约**做独立验证 → `invariant-checker` 检点。
 - **产出**：`out/contracts/contract_interfaces.json`。契约文件本身由 `generate_team_contracts.js` 生成，本格只审查。
 - **不负责**：不生成契约、不改 `teams/*/contract.json`。
+
+### 需求预算（L1-b）
+
+#### `design.req.budget` — 算力、带宽、τ 各给多少
+- **业务问题**：要达到 1000 TPS/usr（raw 预算约 854.7 µs），持续带宽最少多少、有效算力最少多少、τ 最多多大；这几项之间怎么换；切成哪一份预算合同交给下游。
+- **什么时候跑**：`npm run budget:frontier` 生成预算前沿之后。基线或规划算子账变了前沿即过期，`run_workflow.js` 拒收过期前沿。
+- **做法**：数全部来自前沿（`integration/planning/requirement_frontier.js`：规划 token time 给每个模型 × TP 的带宽下限与"算力 ↔ τ"等 TPS 直线，K3 TP32 详细模型给单轴余量与 SRAM 下限，再枚举 4 份候选切分 `S-TAU` / `S-CMP` / `S-BW` / `S-BAL`，每份都在两个模型上复算过守得住预算）→ 每条预算条目的 owner 专家（compute / memory / comm / physical）判本域的数**物理上**是否可达（`reachable` / `unreachable` / `unknown`，附可信区间与出处）→ 有条目不可达的切分被否，记入 `ledgerPatch.rejectedOptions` → `architect` 只在剩下的切分里挑一份（只选 id，不填数）→ `framing-critic` 审预算是否把设计空间写窄 → `invariant-checker` 检点（漏审条目、选了被否切分、卡外数字由脚本机械比对）。
+- **产出**：`out/budget/L1_budget.json`（所选切分的合同原样 + `selection` 记录）与 `L1_run_record.json`。落盘前主循环核对合同与前沿里那份切分逐字段一致、`selection.frontierSha256` 是读入的那份前沿，不符退出码 5；专家 `plausibleRange` 里的前沿外数字不在其 `rangeEvidence` 所引行上，退出码 7。
+- **结局**：检点通过则落盘合同；所有切分都有条目不可达 → `DIRECTION_BACKFLOW`，回 `intake` 由人决定目标或场景；`physical-expert` 或 `architect` 判方向级问题 → 回 `direction`；专家缺席或输入不足 `BLOCKED_CONFIG`。
+- **不负责**：不算任何数、不编新切分、不判门控。合同目前还没有下游格消费（`make_brief.js` 是下一步，见 23 号文档 §7）；前沿只覆盖 K3 的详细模型，GLM-5.2、DeepSeek-V4-Pro 只受规划模型约束。
 
 ### 方向级探索（Stage A）
 
@@ -171,6 +185,7 @@ D 组是同一条链上的前后依赖，不得并行：每一格消费上一格
 | 我想知道 / 想做 | 跑这一格 |
 |---|---|
 | 需求或预算变了，要重新下发约束 | `intake` |
+| 达到目标要多少带宽、多少算力、τ 最多多大，选一份预算切分 | `npm run budget:frontier`，再 `req.budget` |
 | 域间接口要改 | `contract` |
 | 要重新比较架构路线 | `direction`，然后 `dgate` |
 | 想看某个硬件域的设计点怎么选 | 对应的 `compute` / `memory` / `comm` / `physical` |
@@ -185,5 +200,5 @@ D 组是同一条链上的前后依赖，不得并行：每一格消费上一格
 在 Claude Code 里原生运行；在 Cursor 或终端里用 `npm run workflow:run -- <workflow> --backend claude|cursor|mock`（默认 dry run，加 `--land` 才落盘），
 详见 [`README.md`](README.md) 的“在哪里运行”。
 
-这 20 个 workflow 目前经过结构测试、C 组的 mock runtime 行为测试，以及运行时与驱动器的单元/回归测试（后端用假 CLI、假 SDK）；
+这 21 个 workflow 目前经过结构测试、C 组的 mock runtime 行为测试，以及运行时与驱动器的单元/回归测试（后端用假 CLI、假 SDK）；
 **尚未用真实模型端到端运行过**。产出路径以脚本里的 `path:` 为准；本文与脚本冲突时以脚本为准。
