@@ -17,7 +17,8 @@
 //     the report goes into the outcome record instead;
 //   * attribution: an expert range number found neither on the card nor on its cited line
 //     lands nothing (exit 7); a loose number in a reason gets one repair call, and one left
-//     after it is a mechanical violation;
+//     after it is a mechanical violation; a card built at another design point than the one
+//     design_point.js resolves is refused before the run (exit 1);
 //   * req.budget: an unreachable entry rules its split out, none left is a direction backflow,
 //     and a landed contract that is not its frontier split verbatim is refused (exit 5);
 //   * design.coupling's joint point is checked against its artifact under its own file names;
@@ -32,6 +33,7 @@ const {main, halfWinnerResult} = require('../../integration/pipelines/run_workfl
 const {createMockBackend, fromSchema} = require('../../integration/orchestration/runtime/backends/mock.js');
 const {buildSearchBrief} = require('../../integration/pipelines/search_brief.js');
 const {briefFor} = require('../../integration/pipelines/make_brief.js');
+const DP = require('../../integration/pipelines/design_point.js');
 
 const root = path.resolve(__dirname, '../..');
 
@@ -204,6 +206,16 @@ async function run(argv, deps) {
   assert.strictEqual(blockedStop.code, 0, blockedStop.text);
   assert.deepStrictEqual(blockedStop.summary.landing.landed.map((f) => f.path), ['out/attribution/reviews/attribution_comm_outcome.json']);
   assert.strictEqual(blockedStop.summary.citations.problems.length, 1, 'the stop carries the citation report');
+
+  // Once design.coupling has landed a joint point the cards must be rebuilt at it: a card at the
+  // published point is refused before any agent (exit 1).
+  const coupling = JSON.parse(fs.readFileSync(path.join(root, 'out/detailed/coupling_candidates.json'), 'utf8'));
+  const jointRow = coupling.candidates.find((c) => c.feasible);
+  const jointPoint = () => DP.resolve({point: 'joint', artifact: coupling, runRecord: {candidateSetSha256: coupling.candidateSetSha256},
+    jointPoint: {optionId: jointRow.optionId, values: JSON.stringify(jointRow), provenance: 'test', x: jointRow.x, opt: jointRow.opt, model: jointRow.model}});
+  const otherPoint = await run(['attribution', '--backend', 'mock', '--dimension', 'comm'], {backend: attributionBackend('integration/pipelines/run_workflow.js:1', 'LOCAL_DETAIL_FIX'), designPoint: jointPoint});
+  assert.strictEqual(otherPoint.code, 1, 'a card at another design point is refused');
+  assert.strictEqual(otherPoint.summary, null, 'nothing ran');
 
   // An expert range number that is neither on the card nor on the cited line stops landing (exit 7).
   const offCard = await run(['attribution', '--backend', 'mock', '--dimension', 'comm'], {backend: attributionBackend('integration/pipelines/run_workflow.js:1', 'LOCAL_DETAIL_FIX', {range: '123.456 us'})});

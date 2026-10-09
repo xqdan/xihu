@@ -40,6 +40,15 @@
       "depth": 4,
       "windowFraction": 1
     },
+    "point": {
+      "kind": "published",
+      "source": "teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware.x",
+      "optionId": null,
+      "sha256": "37dee117d1c87f42554bc1f645f0a863f5c4f4fcdfeadd7cadb8707921724559",
+      "opt": null,
+      "model": null,
+      "departsFromPublished": false
+    },
     "goalTpsPerUser": 1000,
     "rawBudgetUs": 854.7008547008547,
     "engineeringMargin": 1.17,
@@ -2398,7 +2407,8 @@
     "software-expert"
   ],
   "caveats": [
-    "software configuration is held at the published OPT for every move; a hardware move that re-tuning would rescue is charged in full to the hardware",
+    "software configuration is held at the design point's OPT for every move (the published OPT, patched by inputs.point.opt at a joint point); a hardware move that re-tuning would rescue is charged in full to the hardware",
+    "die area / power are the detailed model's; at a joint point they leave out the Comm Core area (inputs.point.model.commCoreAreaMm2), which the coupling row's die area includes",
     "moves are one step on a neighbour list (or the sweep values), not gradients; interactions appear only in jointPessimistic, the stress replays and couplings",
     "couplings are reported, not classified: a pair that breaks the budget only together is flagged breaksOnlyTogether, the rows keep their one-at-a-time class",
     "the stress point (JOINT_PESSIMISTIC.allUnmeasured) is an invented scenario, not a forecast",

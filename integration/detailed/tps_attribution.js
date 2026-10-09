@@ -24,7 +24,9 @@
  * left out, and grouped by the dimension that owns it.
  *
  * A card is input to design.attribution; agents read it and may not change a number in it.
- * It changes no baseline, gate or published number.
+ * It changes no baseline, gate or published number. Its design point is the one
+ * integration/pipelines/design_point.js resolves (the joint point once design.coupling has landed
+ * one, the published point before), recorded in inputs.point.
  */
 const crypto = require('crypto');
 const fs = require('fs');
@@ -32,6 +34,7 @@ const path = require('path');
 const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const B = require('./k3_tps_design_baseline.js');
+const C = require('./coupling_search.js');
 
 const root = path.resolve(__dirname, '../..');
 const BASELINE_FILE = 'teams/hardware/inputs/k3_mc_baseline.json';
@@ -131,12 +134,14 @@ function compare(base, s, budgetUs, stressBase, stress) {
 
 // Hardware: the adverse move is the smaller neighbour (less silicon). Mapping (kvTile, depth): a
 // mapping is a choice, so both neighbours count as adverse ("does the budget rest on this choice").
-function field(name, values, {kind = 'hardware', owner}) {
+// A design point whose value is not on the list (the joint point's tmaEngines 1) gets it inserted,
+// so its neighbours are still list steps; at the bottom of the list it has no adverse move.
+function field(name, list, {kind = 'hardware', owner}) {
   return {name, kind, where: `x.${name}`, owner,
     published: x => x[name],
     moves: x => {
+      const values = list.includes(x[name]) ? list : [...list, x[name]].sort((a, b) => a - b);
       const i = values.indexOf(x[name]);
-      if (i < 0) throw new Error(`${name}: published value ${x[name]} is not in the move list`);
       return [i - 1, i + 1].filter(j => j >= 0 && j < values.length).map(j => ({
         to: values[j], adverse: kind === 'mapping' || values[j] < x[name],
         run: y => O.evaluate({...y, [name]: values[j]}),
@@ -338,22 +343,34 @@ const DIMENSIONS = {
 
 // ---- builders ----------------------------------------------------------------------------------
 
+// Every replay of a card runs at its design point. The published point needs no scope; a joint
+// point (integration/pipelines/design_point.js) brings its OPT patch, the compute winner's model
+// patch and the comm winner's control path, replayed exactly as coupling_search.js replayed its row.
+const atPoint = (point, fn) => (point && point.model ? C.withPoint({opt: point.opt || {}, model: point.model}, fn) : fn());
+
+// options.point: a resolved design point (design_point.resolve); without one, options.x or the
+// published point. The record of it (inputs.point) is what run_workflow.js checks a card against.
 function context(options = {}) {
   const text = options.text || fs.readFileSync(path.join(root, BASELINE_FILE), 'utf8');
   const spec = JSON.parse(text);
-  const x = options.x || spec.tpsDesign.hardware.x;
-  const r = O.evaluate(x);
-  if (!r.feasible) throw new Error(`design point is infeasible: ${(r.reasons || []).join(', ')}`);
-  const base = snap(r);
-  return {text, spec, x, r, base,
-    stressBase: snap(B.replayJoint(STRESS, x)),
-    budgetUs: spec.goal.rawLatencyBudgetUs,
-    collectiveCount: r.protocol.reduce((s, a) => s + a.count, 0),
-    inputs: {baseline: BASELINE_FILE, baselineSha256: crypto.createHash('sha256').update(text).digest('hex'),
-      pointSource: options.pointSource || `${BASELINE_FILE}#tpsDesign.hardware.x`, x: {...x},
-      goalTpsPerUser: spec.goal.target, rawBudgetUs: spec.goal.rawLatencyBudgetUs, engineeringMargin: spec.goal.engineeringMargin,
-      software: {tauUs: O.OPT.tauUs, countBasis: O.OPT.countBasis, launchScale: O.OPT.launchScale, kvCache: O.OPT.kvCache, kvPrefetch: O.OPT.kvPrefetch, pvMerge: O.OPT.pvMerge},
-      stressPoint: {name: 'JOINT_PESSIMISTIC.allUnmeasured', values: STRESS}, slackTps: SLACK_TPS}};
+  const point = options.point || null;
+  const x = point ? point.x : options.x || spec.tpsDesign.hardware.x;
+  return atPoint(point, () => {
+    const r = O.evaluate(x);
+    if (!r.feasible) throw new Error(`design point is infeasible: ${(r.reasons || []).join(', ')}`);
+    const base = snap(r);
+    return {text, spec, x, r, base, point,
+      stressBase: snap(B.replayJoint(STRESS, x)),
+      budgetUs: spec.goal.rawLatencyBudgetUs,
+      collectiveCount: r.protocol.reduce((s, a) => s + a.count, 0),
+      inputs: {baseline: BASELINE_FILE, baselineSha256: crypto.createHash('sha256').update(text).digest('hex'),
+        pointSource: point ? point.source : options.pointSource || `${BASELINE_FILE}#tpsDesign.hardware.x`, x: {...x},
+        ...(point ? {point: {kind: point.kind, source: point.source, optionId: point.optionId, sha256: point.sha256,
+          opt: point.opt, model: point.model, departsFromPublished: point.departsFromPublished}} : {}),
+        goalTpsPerUser: spec.goal.target, rawBudgetUs: spec.goal.rawLatencyBudgetUs, engineeringMargin: spec.goal.engineeringMargin,
+        software: {tauUs: O.OPT.tauUs, countBasis: O.OPT.countBasis, launchScale: O.OPT.launchScale, kvCache: O.OPT.kvCache, kvPrefetch: O.OPT.kvPrefetch, pvMerge: O.OPT.pvMerge},
+        stressPoint: {name: 'JOINT_PESSIMISTIC.allUnmeasured', values: STRESS}, slackTps: SLACK_TPS}};
+  });
 }
 
 // A move the model could not evaluate says nothing about the design and is never counted. A mapping
@@ -412,7 +429,8 @@ function dimensionJoint(dimension, ctx) {
 }
 
 const CAVEATS = [
-  'software configuration is held at the published OPT for every move; a hardware move that re-tuning would rescue is charged in full to the hardware',
+  'software configuration is held at the design point\'s OPT for every move (the published OPT, patched by inputs.point.opt at a joint point); a hardware move that re-tuning would rescue is charged in full to the hardware',
+  'die area / power are the detailed model\'s; at a joint point they leave out the Comm Core area (inputs.point.model.commCoreAreaMm2), which the coupling row\'s die area includes',
   'moves are one step on a neighbour list (or the sweep values), not gradients; interactions appear only in jointPessimistic, the stress replays and couplings',
   'couplings are reported, not classified: a pair that breaks the budget only together is flagged breaksOnlyTogether, the rows keep their one-at-a-time class',
   'the stress point (JOINT_PESSIMISTIC.allUnmeasured) is an invented scenario, not a forecast',
@@ -550,7 +568,7 @@ function build(dimension, options = {}) {
     throw new Error(`unknown dimension "${dimension}"; expected one of ${[...Object.keys(DIMENSIONS), 'joint'].join(', ')}`);
   }
   const ctx = options.context || context(options);
-  return dimension === 'joint' ? jointCard(ctx) : dimensionCard(dimension, ctx);
+  return atPoint(ctx.point, () => (dimension === 'joint' ? jointCard(ctx) : dimensionCard(dimension, ctx)));
 }
 
 module.exports = {build, context, classify, DIMENSIONS, DEFAULT_DIMENSIONS, KEY_DIMENSION, DIMENSION_OWNER, CLASSES, SLACK_TPS, TAU_SWEEP,

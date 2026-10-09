@@ -117,10 +117,11 @@ function context() {
   const opt = {...sram.opt, ...signalOpt, commOverlap: O.OPT.commOverlap, tauUs: tau.max};
   const model = {native: mv.lowPrecisionInput.native, softmaxOpsPerScore: mv.expUnit.softmaxOpsPerScore,
     matrixAreaOverhead: mv.lowPrecisionInput.matrixAreaOverhead, vectorAreaOverhead: mv.expUnit.vectorAreaOverhead,
-    commCoreAreaMm2: comm.evaluation.areaMm2};
+    commCoreAreaMm2: comm.evaluation.areaMm2,
+    controlUs: Object.fromEntries(comm.controlPath.classes.map(k => [k.name, k.controlUs]))};
   const mvSpace = read(MV.SPACE_FILE);
   return {space, spec, contract, prov, winners: W, x, opt, model, signalOpt,
-    controlUs: Object.fromEntries(comm.controlPath.classes.map(k => [k.name, k.controlUs])),
+    controlUs: model.controlUs,
     target: C.target,
     entries: {sram: CONTRACT.entry(C, 'B-SRAM-CAP'), mc: CONTRACT.entry(C, 'B-MEM-BW'), tau, area, compute: CONTRACT.entry(C, 'B-SERIAL-CMP')},
     limits: {dieAreaMm2: area.max, diePowerW: Math.min(area.limits.diePowerW, phys.cooling.diePowerLimitW),
@@ -161,16 +162,24 @@ function slowestCollective(ctx, x, opt) {
   return slowest;
 }
 
-// K3 detailed replay at one joint point: the compute winner's model patch (unpack, softmax op
-// count), the OPT patch (port scaling, signal delivery, overlap, tau) and the comm control
-// path, all restored afterwards. When the model rejects the point it reports no area, so the
-// area is rebuilt from the physical sizing plus the port charge it did report.
+// The scope a joint point is replayed in: the compute winner's model patch (unpack, softmax op
+// count), the row's OPT patch (port scaling, signal delivery, overlap, tau) and the comm
+// winner's control path, all restored afterwards. `point` is a row or a landed joint point
+// ({opt, model}); anything replayed inside fn (O.evaluate and every helper built on it) sees
+// the point, which is how a consumer (tps_attribution.js) replays it without a copy of this.
+function withPoint({opt, model}, fn) {
+  return MV.withModel({tech: model.native ? MV.NATIVE_TECH : {}, softmaxOpsPerScore: model.softmaxOpsPerScore},
+    () => COMM.withProtocol({controlUs: name => model.controlUs[name] || 0, opt}, fn));
+}
+
+// K3 detailed replay at one joint point (withPoint). When the model rejects the point it
+// reports no area, so the area is rebuilt from the physical sizing plus the port charge it
+// did report.
 function replay(ctx, x, opt) {
   const key = JSON.stringify([x, opt]);
   if (ctx.replays.has(key)) return ctx.replays.get(key);
   const m = ctx.model;
-  const r = MV.withModel({tech: m.native ? MV.NATIVE_TECH : {}, softmaxOpsPerScore: m.softmaxOpsPerScore},
-    () => COMM.withProtocol({controlUs: name => ctx.controlUs[name] || 0, opt}, () => O.evaluate(x)));
+  const r = withPoint({opt, model: m}, () => O.evaluate(x));
   let p = r.feasible ? r.p : null;
   if (!p) {
     const p0 = P.resize(A.physical(x)), c = r.sharedPortCost || {areaMm2PerDie: 0, powerWPerDie: 0};
@@ -445,4 +454,4 @@ function build(result = search()) {
   };
 }
 
-module.exports = {SPACE_FILE, context, evaluate, search, candidates, build, replay, grid, steps, fingerprint, kernelCheck};
+module.exports = {SPACE_FILE, context, evaluate, search, candidates, build, replay, withPoint, grid, steps, fingerprint, kernelCheck};
