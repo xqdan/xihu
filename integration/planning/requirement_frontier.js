@@ -31,6 +31,7 @@ const A = require('../detailed/k3_architecture_search.js');
 const O = require('../detailed/k3_rdma_final_tuning_model.js');
 const B = require('../detailed/k3_tps_design_baseline.js');
 const P = require('../detailed/k3_physical_basis.js');
+const BP = require('../detailed/baseline_point.js');
 
 const root = path.resolve(__dirname, '../..');
 const BASELINE_FILE = 'teams/hardware/inputs/k3_mc_baseline.json';
@@ -73,7 +74,7 @@ function context(options = {}) {
   const workloadText = options.workloadText || fs.readFileSync(path.join(root, WORKLOAD_FILE), 'utf8');
   const spec = JSON.parse(text);
   const workload = JSON.parse(workloadText);
-  const x = spec.tpsDesign.hardware.x;
+  const x = BP.publishedX(spec, 'generate_budget_frontier.js');
   const models = Object.keys(workload.provenance);
   const planning = Object.fromEntries(models.map(m => [m, TT.planningModel(workload, m)]));
   return {spec, workload, x, planning,

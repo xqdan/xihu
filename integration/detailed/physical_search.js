@@ -47,6 +47,7 @@ const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const P = require('./k3_physical_basis.js');
 const CONTRACT = require('./design_contract.js');
+const BP = require('./baseline_point.js');
 
 const root = path.resolve(__dirname, '../..');
 const SPACE_FILE = 'teams/hardware/inputs/physical_design_space.json';
@@ -130,7 +131,7 @@ function context() {
   const space = read(SPACE_FILE);
   CONTRACT.declared(space, 'physical', SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
-  const x = spec.tpsDesign.hardware.x;
+  const x = BP.publishedX(spec, 'generate_physical_design.js');
   // The shared-port bandwidth charge physical() does not carry, read from the model's
   // own accounting rather than re-derived: O.chargeSharedPortCost() prices the card-level
   // shared-SRAM bandwidth the plan asks for beyond what physical() sized, one entry per

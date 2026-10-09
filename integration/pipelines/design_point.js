@@ -9,10 +9,13 @@
  * fall-back to the published point.
  *
  * resolve() never moves the baseline. `departures` lists every field where the joint point differs
- * from what the baseline and the model replay by default; Stage B and the D group run on the
- * baseline, so while that list is not empty their artifacts describe another point, and
- * design.converge stops on it (args.designPoint). Closing the gap is an ADR plus
- * npm run baseline:sync, not something this module does.
+ * from the baseline's own point -- tpsDesign.hardware.x, the model's OPT, and the published
+ * replay's model defaults; when the baseline carries a designPoint block (synced by
+ * sync_baseline_spec.js --point joint under an ADR) that block is the baseline's point instead, so
+ * a synced baseline reports no departures. Stage B and the D group run on the baseline, so while
+ * the list is not empty their artifacts describe another point, and design.converge stops on it
+ * (args.designPoint). Closing the gap is an ADR plus npm run baseline:sync, not something this
+ * module does.
  *
  * Run: node integration/pipelines/design_point.js [auto|joint|published]   (npm run workflow:design-point)
  */
@@ -39,14 +42,33 @@ function publishedModel(model) {
     commCoreAreaMm2: 0, controlUs: Object.fromEntries(Object.keys(model.controlUs || {}).map(name => [name, 0]))};
 }
 
-const diff = (point, published, keys) => keys.filter(k => !isDeepStrictEqual(point[k], published[k]))
-  .map(k => ({key: k, published: published[k] === undefined ? null : published[k], point: point[k]}));
+// The baseline's own point. With no designPoint block that is tpsDesign.hardware.x at the model's
+// own OPT and model -- the replay the domain searches and Stage B do. After
+// `sync_baseline_spec.js --point joint` the block is the point the whole baseline was replayed at,
+// so comparisons are against it rather than against the model defaults.
+function baselinePoint(baseline) {
+  const x = baseline.tpsDesign.hardware.x;
+  const d = baseline.designPoint;
+  if (!d || !d.opt) return {source: `${BASELINE_FILE}#tpsDesign.hardware.x`, x, opt: O.OPT, model: null, optionId: null, adr: null};
+  const model = {...publishedModel(d.model), ...d.model};
+  return {source: `${BASELINE_FILE}#designPoint (${d.optionId}, ${d.adr})`, x, opt: {...O.OPT, ...d.opt}, model,
+    optionId: d.optionId, adr: d.adr};
+}
 
-function departures(point, publishedX) {
+// The fields of one part (x, opt, model) where the point differs from the baseline's own. A field
+// the point does not carry at all is reported with `to: undefined` rather than skipped: a model
+// patch that drops a control path is as much a departure as one that changes it.
+const diff = (a = {}, b = {}, keys) => {
+  const out = [];
+  for (const key of [...new Set(keys)]) if (!isDeepStrictEqual(a[key], b[key])) out.push({key, from: b[key], to: a[key]});
+  return out;
+};
+
+function departures(point, base) {
   return {
-    x: diff(point.x, publishedX, [...new Set([...Object.keys(publishedX), ...Object.keys(point.x)])]),
-    opt: diff(point.opt, O.OPT, Object.keys(point.opt)),
-    model: diff(point.model, publishedModel(point.model), Object.keys(point.model))
+    x: diff(point.x, base.x, [...new Set([...Object.keys(base.x), ...Object.keys(point.x)])]),
+    opt: diff(point.opt, base.opt, Object.keys(point.opt)),
+    model: diff(point.model, base.model || publishedModel(point.model), Object.keys(point.model))
   };
 }
 
@@ -59,12 +81,12 @@ const pointSha256 = ({x, opt, model}) => sha256(JSON.stringify({x, opt, model}))
 function resolve({point = 'auto', baselineText, jointPoint, runRecord, artifact} = {}) {
   if (!KINDS.includes(point)) throw new Error(`unknown design point "${point}"; expected ${KINDS.join(' | ')}`);
   const baseline = JSON.parse(baselineText || readText(BASELINE_FILE));
-  const publishedX = baseline.tpsDesign.hardware.x;
+  const base = baselinePoint(baseline);
   const landed = jointPoint !== undefined || fs.existsSync(path.join(root, JOINT_FILE));
   if (point === 'published' || (point === 'auto' && !landed)) {
-    const p = {x: publishedX, opt: null, model: null};
-    return {kind: 'published', source: `${BASELINE_FILE}#tpsDesign.hardware.x`, optionId: null, ...p, sha256: pointSha256(p),
-      departures: null, departsFromPublished: false};
+    const p = {x: base.x, opt: base.opt, model: base.model};
+    return {kind: 'published', source: base.source, optionId: null, ...p, sha256: pointSha256(p),
+      baselineAdr: base.adr, departures: null, departsFromPublished: false};
   }
   if (!landed) throw new Error(`${JOINT_FILE} is missing; design.coupling has not landed a joint point`);
   const winner = jointPoint !== undefined ? jointPoint : JSON.parse(readText(JOINT_FILE));
@@ -73,9 +95,15 @@ function resolve({point = 'auto', baselineText, jointPoint, runRecord, artifact}
   const check = verifyLandedWinner('coupling', winner, record, {artifact});
   if (!check.ok) throw new Error(`${JOINT_FILE} does not verify against ${STAGES.coupling.artifact}: ${check.failures.join('; ')}`);
   const p = {x: winner.x, opt: winner.opt, model: winner.model};
-  const d = departures(p, publishedX);
-  return {kind: 'joint', source: JOINT_FILE, optionId: winner.optionId, ...p, sha256: pointSha256(p),
-    departures: d, departsFromPublished: Object.values(d).some(list => list.length > 0)};
+  const d = departures(p, base);
+  // On a baseline synced onto the joint point the baseline's own point IS this point, and the
+  // record of it is the designPoint block the ADR wrote -- that is where a reader should go. On an
+  // unsynced baseline the point exists only in the landed artifact.
+  if (base.adr && base.optionId !== winner.optionId) {
+    throw new Error(`${BASELINE_FILE} is synced onto ${base.optionId} (${base.adr}) but the landed joint point is ${winner.optionId}; the baseline block and ${JOINT_FILE} disagree`);
+  }
+  return {kind: 'joint', source: base.adr ? base.source : JOINT_FILE, optionId: winner.optionId, ...p, sha256: pointSha256(p),
+    baselineAdr: base.adr, departures: d, departsFromPublished: Object.values(d).some(list => list.length > 0)};
 }
 
 // The part of a resolved point a consumer records (a card's inputs.point, a run record).
@@ -90,4 +118,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = {BASELINE_FILE, JOINT_FILE, RECORD_FILE, KINDS, resolve, summary, departures, publishedModel, pointSha256};
+module.exports = {BASELINE_FILE, JOINT_FILE, RECORD_FILE, KINDS, resolve, summary, baselinePoint, departures, publishedModel, pointSha256};

@@ -121,7 +121,7 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 
 D 组**不得并行化**：这五个环节是同一条链上的前后依赖，用 workflow 并行它们只会把串行链拆碎，不会更快。
 
-`design.converge` 需要主循环注入的 `args.designPoint`（`design_point.js`）。D 组产物由 `stage_b.js` 在基线上算出；设计点是与基线不同的联合点时，D 组审的是另一个点，本格不召集 agent 即返回 `BLOCKED_CONFIG`，出路是 ADR + `baseline:sync` 后重跑 Stage B 与 D 组（doc 23 §8 "设计点接线"）。
+`design.converge` 需要主循环注入的 `args.designPoint`（`design_point.js`）。D 组产物由 `stage_b.js` 在基线上算出；设计点是与基线不同的联合点时，D 组审的是另一个点，本格不召集 agent 即返回 `BLOCKED_CONFIG`，出路是 ADR 加上 `npm run baseline:sync -- --point joint --adr <ADR 文件>` 把联合点搬进基线，再重跑 Stage B 与 D 组（doc 23 §8 "设计点接线"）。
 
 ### L4 组 · 维度归因（按维度参数化）
 

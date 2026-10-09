@@ -34,6 +34,7 @@ const O = require('./k3_rdma_final_tuning_model.js');
 const P = require('./k3_physical_basis.js');
 const R = require('./k3_sram_memory_rdma_model.js');
 const CONTRACT = require('./design_contract.js');
+const BP = require('./baseline_point.js');
 
 const root = path.resolve(__dirname, '../..');
 const SPACE_FILE = 'teams/hardware/inputs/comm_core_design_space.json';
@@ -110,7 +111,7 @@ function context() {
   const space = read(SPACE_FILE);
   CONTRACT.declared(space, 'comm', SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
-  const x = spec.tpsDesign.hardware.x, point = spec.tpsDesign.point;
+  const x = BP.publishedX(spec, 'generate_comm_core_design.js'), point = spec.tpsDesign.point;
   const signals = {};
   for (const name of Object.keys(space.dimensions.signal.options)) {
     const opt = signalOpt(name, x);
