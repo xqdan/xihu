@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Charon 论文分析 | MLSys 2026</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffdf8;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #e7e0d4;
+      --accent: #9a3412;
+      --accent-soft: #fed7aa;
+      --teal: #0f766e;
+      --navy: #1e3a5f;
+      --shadow: 0 12px 40px rgba(28, 25, 23, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "Source Han Serif SC", "Noto Serif SC", Georgia, serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #fde68a33, transparent 50%),
+        radial-gradient(900px 500px at 100% 0%, #99f6e433, transparent 45%),
+        var(--bg);
+      line-height: 1.75;
+    }
+    a { color: var(--navy); }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 28px 80px; }
+    header.hero {
+      background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow);
+      padding: 42px 48px 36px; margin-bottom: 28px; position: relative; overflow: hidden;
+    }
+    header.hero::before {
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7px;
+      background: linear-gradient(180deg, #c2410c, #0f766e);
+    }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .badge {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 12px; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 999px;
+      background: #f5f5f4; color: var(--muted); border: 1px solid var(--line);
+    }
+    .badge.hot { background: #ffedd5; color: #9a3412; border-color: #fdba74; }
+    .badge.ok { background: #ccfbf1; color: #115e59; border-color: #5eead4; }
+    h1 { font-size: 30px; line-height: 1.35; margin: 0 0 10px; letter-spacing: -0.02em; }
+    .subtitle { font-size: 16px; color: var(--muted); margin: 0 0 18px; }
+    .meta {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 13.5px; color: var(--muted);
+    }
+    .meta strong { color: var(--ink); }
+    nav.toc {
+      background: var(--paper); border: 1px solid var(--line); padding: 22px 28px; margin-bottom: 28px;
+    }
+    nav.toc h2 {
+      margin: 0 0 10px; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    nav.toc ol { margin: 0; padding-left: 22px; columns: 2; font-size: 14.5px; }
+    nav.toc a { text-decoration: none; }
+    nav.toc a:hover { text-decoration: underline; }
+    section.card {
+      background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow);
+      padding: 34px 42px 38px; margin-bottom: 22px;
+    }
+    h2 { margin: 0 0 16px; font-size: 23px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    h3 { margin: 26px 0 10px; font-size: 18px; color: var(--navy); }
+    p { margin: 0 0 14px; }
+    ul, ol { margin: 0 0 14px; padding-left: 22px; }
+    li { margin-bottom: 6px; }
+    .lead { font-size: 17.5px; color: #292524; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 16px 0; }
+    .tile { background: #faf7f2; border: 1px solid var(--line); padding: 16px 16px 14px; }
+    .tile h4 { margin: 0 0 6px; font-size: 15px; }
+    .tile p { margin: 0; font-size: 14px; color: var(--muted); }
+    .callout {
+      border-left: 4px solid var(--accent); background: #fff7ed; padding: 12px 16px;
+      margin: 16px 0 18px; font-size: 15px;
+    }
+    .callout.teal { border-left-color: var(--teal); background: #f0fdfa; }
+    .callout.navy { border-left-color: var(--navy); background: #f0f4f8; }
+    table {
+      width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 12px 0 18px;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f5f0e6; font-weight: 650; }
+    tr:nth-child(even) td { background: #faf8f4; }
+    .eq {
+      background: #f8fafc; border: 1px dashed #cbd5e1; padding: 14px 16px; margin: 12px 0 16px;
+      overflow-x: auto; font-family: "Cambria Math", "Times New Roman", serif; text-align: center;
+      font-size: 15.5px; line-height: 1.7;
+    }
+    footer { margin-top: 10px; color: var(--muted); font-size: 13px; text-align: center; }
+    .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 8px; }
+    .kpi .n {
+      font-size: 26px; font-weight: 700; color: var(--accent);
+      font-family: "Segoe UI", sans-serif; line-height: 1.15;
+    }
+    .kpi .k { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+    .kpi > div { background: #fff7ed; border: 1px solid #fed7aa; padding: 12px 12px 10px; }
+    .fig {
+      margin: 22px 0 6px; background: #faf8f4; border: 1px solid var(--line);
+      padding: 18px 14px 10px; overflow-x: auto;
+    }
+    .fig svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+    .figcap {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 13px; color: var(--muted); text-align: center; margin: 6px 0 20px; line-height: 1.55;
+    }
+    code { font-family: "Cascadia Code", Consolas, monospace; font-size: 0.92em; background: #f5f0e6; padding: 1px 5px; }
+    .steps { counter-reset: step; list-style: none; padding-left: 0; }
+    .steps li {
+      position: relative; padding: 10px 12px 10px 48px; margin-bottom: 8px;
+      background: #faf7f2; border: 1px solid var(--line);
+    }
+    .steps li::before {
+      counter-increment: step; content: counter(step);
+      position: absolute; left: 12px; top: 12px; width: 24px; height: 24px;
+      border-radius: 50%; background: var(--navy); color: #fff;
+      font: 700 12px/24px "Segoe UI", sans-serif; text-align: center;
+    }
+    @media (max-width: 860px) {
+      header.hero, section.card { padding: 24px 20px; }
+      nav.toc ol, .grid-2, .grid-3, .kpi { columns: 1; grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; }
+      header.hero, section.card, nav.toc { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="badge-row">
+        <span class="badge hot">MLSys 2026 · Oral</span>
+        <span class="badge">arXiv:2605.17164v2</span>
+        <span class="badge">性能模拟器 · 设计空间探索</span>
+        <span class="badge ok">ByteDance Seed + UT Austin</span>
+        <span class="badge ok">编译器式 Graph Pass</span>
+        <span class="badge ok">训练 + 推理统一</span>
+      </div>
+      <h1>把 LLM 性能模拟做成一条编译管线</h1>
+      <p class="subtitle">Charon: A Unified and Fine-Grained Simulator for Large-Scale LLM Training and Inference</p>
+      <p class="meta">
+        <strong>作者：</strong>Mengtian Yang、Zhekun Zhang、Mingheng Wu、Jianwen Yan、Hanshi Sun、Li-wen Chang（ByteDance Seed / UT Austin）<br />
+        <strong>原文：</strong><a href="https://arxiv.org/abs/2605.17164" target="_blank" rel="noopener">arXiv:2605.17164</a>
+        · MLSys 2026 Oral（2026-05-21）
+      </p>
+    </header>
+
+    <nav class="toc">
+      <h2>目录</h2>
+      <ol>
+        <li><a href="#s1">一句话结论与动机</a></li>
+        <li><a href="#s2">现有模拟器卡在哪：碎片化与可用性税</a></li>
+        <li><a href="#s3">架构总览：前端 / 多引擎后端 / 设计探索器</a></li>
+        <li><a href="#s4">Graph-based 前端：原生模型直接吃进来</a></li>
+        <li><a href="#s5">多引擎后端：profiling / prediction / analytical / fused</a></li>
+        <li><a href="#s6">算子重叠建模：比例降速与带宽拥塞</a></li>
+        <li><a href="#s7">设计空间探索：剪枝搜索</a></li>
+        <li><a href="#s8">实验：端到端精度、细粒度、内存、消融、跨规模</a></li>
+        <li><a href="#s9">案例研究：动态 SP 与推理 Pareto 前沿</a></li>
+        <li><a href="#s10">定位与局限</a></li>
+      </ol>
+    </nav>
+
+    <section class="card" id="s1">
+      <h2>1. 一句话结论与动机</h2>
+      <p class="lead">
+        训练 LLaMA-3 405B 要烧 1.6 万张 H100、超过 3000 万 GPU 小时；哪怕只在 GPU 型号、并行策略、并行度三个维度各给 4 个候选做穷举调优，总探索成本也能逼近 10<sup>6</sup> GPU 小时。Charon 的立场是：<strong>把 LLM 性能模拟当成一次编译器式的渐进变换</strong>——模型、调度、系统表示逐级细化，在速度、精度、可扩展性之间连续取舍，而不是在"分析式快但粗"和"profiling 准但慢"之间二选一。
+      </p>
+      <div class="kpi">
+        <div>
+          <div class="n">&gt;30,000×</div>
+          <div class="k">相对集群 profiling 的成本节省（大规模实验）</div>
+        </div>
+        <div>
+          <div class="n">&lt;5.35%</div>
+          <div class="k">整体端到端预测误差上界</div>
+        </div>
+        <div>
+          <div class="n">&lt;3.74%</div>
+          <div class="k">大规模 GPU 集群训练误差</div>
+        </div>
+        <div>
+          <div class="n">&lt;2 分钟</div>
+          <div class="k">LLaMA-3 70B 推理配置空间完整 Pareto 分析耗时</div>
+        </div>
+      </div>
+      <div class="callout">
+        Charon 不是又一个"更准的模拟器"，而是第一个同时做到：原生吃 HuggingFace / vLLM / 自定义 PyTorch 模型（不用手搭 workload）、训练和推理统一覆盖、算子级细粒度（不是层级近似）、以及内置设计空间搜索的系统。
+      </div>
+    </section>
+
+    <section class="card" id="s2">
+      <h2>2. 现有模拟器卡在哪：碎片化与可用性税</h2>
+      <p>
+        论文开篇给了一张能力对比表，把 Astra-sim、SimAI、Lumos、Echo、Vidur、LLMServingSim 和 Charon 并排放在一起看，维度包括训练/推理覆盖、是否支持设计搜索、trace 生成、融合/重排等优化、重叠降速建模、计算/通信建模方式、并行策略覆盖、输入形式。
+      </p>
+      <table>
+        <thead>
+          <tr><th></th><th>Astra-sim</th><th>SimAI</th><th>Lumos</th><th>Echo</th><th>Vidur</th><th>LLMServingSim</th><th>Charon</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>训练</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✗</td><td>✗</td><td>✓</td></tr>
+          <tr><td>推理</td><td>✓</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td><td>✓</td><td>✓</td></tr>
+          <tr><td>设计搜索</td><td>✗</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td><td>✗</td><td>✓（w/ 3D Timeline）</td></tr>
+          <tr><td>Trace 生成</td><td>✗</td><td>✗</td><td>✓</td><td>✗</td><td>✓</td><td>✗</td><td>✓</td></tr>
+          <tr><td>融合/重排优化</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td><td>✗</td><td>✗</td><td>✓</td></tr>
+          <tr><td>计算建模</td><td>Analytical</td><td>Profile/Analytical</td><td>Profile/In-house</td><td>Profile</td><td>Profile</td><td>Profile/Analytical</td><td>Analytical/Profile/Prediction</td></tr>
+          <tr><td>通信建模</td><td>Analytical</td><td>Analytical</td><td>In-house</td><td>Analytical/Prediction</td><td>Profile</td><td>Analytical</td><td>Analytical/Profile/Prediction</td></tr>
+          <tr><td>并行支持</td><td>TP/DP/PP</td><td>TP/DP/PP/EP</td><td>TP/PP/DP</td><td>TP/PP/DP</td><td>TP/PP</td><td>TP/PP</td><td>TP/PP/DP/EP/SP/ZeRO/DualPipe</td></tr>
+          <tr><td>输入形式</td><td>手搭</td><td>Mock 模型</td><td>Profiled trace</td><td>Mock trace</td><td>Mock 模型</td><td>手搭</td><td>原生 HF/PyTorch/vLLM 模型</td></tr>
+        </tbody>
+      </table>
+      <div class="grid-3">
+        <div class="tile">
+          <h4>要么练要么推</h4>
+          <p>Astra-sim/SimAI/Lumos/Echo 专攻训练；Vidur/LLMServingSim 专攻推理。工程师被迫维护两套互不兼容的工具链。</p>
+        </div>
+        <div class="tile">
+          <h4>模型要手搭或预处理</h4>
+          <p>Astra-sim 要按模板手写 workload；Lumos/Echo 吃的是 profile 出来的 trace 或合成 trace，前置预处理本身就是成本。</p>
+        </div>
+        <div class="tile">
+          <h4>粒度和灵活性二选一</h4>
+          <p>LLMServingSim/Astra-sim 缺算子级粒度；Vidur/Echo 把模型锁死在自己的框架里，改不动算子图去模拟编译优化。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="s3">
+      <h2>3. 架构总览：前端 / 多引擎后端 / 设计探索器</h2>
+      <p>
+        Charon 吃两类输入：<strong>原生模型</strong>（HuggingFace / vLLM / 自定义 PyTorch）和<strong>系统配置</strong>（GPU/NPU 规格、互联拓扑、并行方案）。输出既有高层汇总（FLOPs、MFU、显存、功耗/TDP 估计），也有可选的细粒度执行 trace（PyTorch Profiler 风格的单层 timeline 和完整 3D 多卡 trace）。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Charon三大组件架构">
+          <g font-family="Segoe UI, sans-serif" font-size="12">
+            <rect x="15" y="30" width="200" height="200" rx="8" fill="#fff7ed" stroke="#c2410c"/>
+            <text x="115" y="56" text-anchor="middle" font-weight="700" font-size="13" fill="#9a3412">输入</text>
+            <text x="115" y="84" text-anchor="middle">HuggingFace</text>
+            <text x="115" y="104" text-anchor="middle">vLLM</text>
+            <text x="115" y="124" text-anchor="middle">自定义 PyTorch</text>
+            <text x="115" y="156" text-anchor="middle">+ 系统配置</text>
+            <text x="115" y="176" text-anchor="middle" fill="#57534e">GPU/NPU · 互联</text>
+            <text x="115" y="194" text-anchor="middle" fill="#57534e">并行方案</text>
+
+            <rect x="245" y="30" width="230" height="200" rx="8" fill="#ffedd5" stroke="#fdba74"/>
+            <text x="360" y="56" text-anchor="middle" font-weight="700" font-size="13" fill="#9a3412">Graph-based 前端</text>
+            <text x="360" y="86" text-anchor="middle">编译器式 pass 链</text>
+            <text x="360" y="110" text-anchor="middle" fill="#57534e">追踪算子</text>
+            <text x="360" y="130" text-anchor="middle" fill="#57534e">注入并行</text>
+            <text x="360" y="150" text-anchor="middle" fill="#57534e">调度执行</text>
+            <text x="360" y="170" text-anchor="middle" fill="#57534e">分析结果</text>
+
+            <rect x="505" y="30" width="230" height="200" rx="8" fill="#ccfbf1" stroke="#14b8a6"/>
+            <text x="620" y="56" text-anchor="middle" font-weight="700" font-size="13" fill="#115e59">多引擎后端</text>
+            <text x="620" y="86" text-anchor="middle">Profiling / Prediction</text>
+            <text x="620" y="106" text-anchor="middle">Analytical / Fused</text>
+            <text x="620" y="136" text-anchor="middle" fill="#134e4a">算子级计算+通信模拟</text>
+            <text x="620" y="156" text-anchor="middle" fill="#134e4a">+ Op Overlap Processor</text>
+
+            <rect x="765" y="30" width="200" height="200" rx="8" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="865" y="56" text-anchor="middle" font-weight="700" font-size="13" fill="#1e3a5f">设计探索器</text>
+            <text x="865" y="86" text-anchor="middle">规则剪枝</text>
+            <text x="865" y="106" text-anchor="middle">参数空间搜索</text>
+            <text x="865" y="140" text-anchor="middle" fill="#334155">输出：</text>
+            <text x="865" y="160" text-anchor="middle" fill="#334155">最优配置 / 期望性能</text>
+            <text x="865" y="180" text-anchor="middle" fill="#334155">执行 timeline</text>
+
+            <path d="M218 130 L242 130" stroke="#9a3412" stroke-width="2"/>
+            <path d="M478 130 L502 130" stroke="#0f766e" stroke-width="2"/>
+            <path d="M738 130 L762 130" stroke="#1e3a5f" stroke-width="2"/>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 1 · 原始输入经前端编译成带并行信息的计算图,交给多引擎后端做算子级模拟,最后由设计探索器在整个配置空间里剪枝搜索。</p>
+    </section>
+
+    <section class="card" id="s4">
+      <h2>4. Graph-based 前端：原生模型直接吃进来</h2>
+      <h3>(a) 图生成</h3>
+      <p>
+        前端用 <code>torch.fx.symbolic_trace</code> 或 <code>torch.compile</code> 把原生模型转成中间计算图。因为现代 LLM 由大量重复的 Transformer block 堆叠而成，Charon <strong>只抽取并模拟单个 decoder block</strong>，大幅加速模拟同时保留架构保真度；非对称模型或需要 PP 的场景则按模型定义把不同层追踪进独立 FX 图,按 rank 显式调度,保证跨 stage 依赖建模准确。为支持 disaggregated serving,prefill 和 decode 也可以被追踪成独立的计算图,分别映射到不同硬件集群。
+      </p>
+      <p>
+        训练任务需要反向图时，Graph Tracer 用 <code>torch._functorch.aot_autograd</code> 自动生成：给前向图加一个 dummy loss 和假输入张量以支持动态输出 shape，联合图（FWD+BWD）经过加元数据、重命名、去除 view/detach 等无用算子的多轮 pass 清洗后，用 <code>default_partition</code> 切成独立的前向/反向图模块，反向图再做自函数化算子分解、去自克隆、死代码消除。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 262" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Charon 前端图生成管线">
+          <defs>
+            <marker id="arwA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11.5">
+            <text x="12" y="20" font-weight="700" font-size="12" fill="#57534e">① 前向图生成</text>
+
+            <rect x="12" y="34" width="152" height="72" rx="7" fill="#fff7ed" stroke="#c2410c"/>
+            <text x="88" y="62" text-anchor="middle" font-weight="700" fill="#9a3412">原生模型</text>
+            <text x="88" y="82" text-anchor="middle" fill="#57534e">HF / vLLM</text>
+            <text x="88" y="98" text-anchor="middle" fill="#57534e">自定义 PyTorch</text>
+
+            <rect x="202" y="34" width="152" height="72" rx="7" fill="#ffedd5" stroke="#fdba74"/>
+            <text x="278" y="62" text-anchor="middle" font-weight="700" fill="#9a3412">图追踪</text>
+            <text x="278" y="82" text-anchor="middle" font-size="10.5" fill="#57534e">torch.fx.symbolic_trace</text>
+            <text x="278" y="98" text-anchor="middle" fill="#57534e">/ torch.compile</text>
+
+            <rect x="392" y="34" width="152" height="72" rx="7" fill="#ffedd5" stroke="#fdba74"/>
+            <text x="468" y="62" text-anchor="middle" font-weight="700" fill="#9a3412">FX 计算图</text>
+            <text x="468" y="82" text-anchor="middle" fill="#57534e">算子级中间表示 IR</text>
+            <text x="468" y="98" text-anchor="middle" fill="#57534e">prefill / decode 可分离</text>
+
+            <rect x="582" y="34" width="152" height="72" rx="7" fill="#ffedd5" stroke="#fdba74"/>
+            <text x="658" y="62" text-anchor="middle" font-weight="700" fill="#9a3412">块抽取</text>
+            <text x="658" y="82" text-anchor="middle" fill="#57534e">只模拟单个</text>
+            <text x="658" y="98" text-anchor="middle" fill="#57534e">decoder block</text>
+
+            <rect x="772" y="34" width="196" height="72" rx="7" fill="#f5f5f4" stroke="#a8a29e" stroke-dasharray="5 3"/>
+            <text x="870" y="62" text-anchor="middle" font-weight="700" fill="#57534e">非对称 / PP 回退</text>
+            <text x="870" y="82" text-anchor="middle" fill="#57534e">按层追踪成独立 FX 图</text>
+            <text x="870" y="98" text-anchor="middle" fill="#57534e">按 rank 显式调度</text>
+
+            <line x1="166" y1="70" x2="199" y2="70" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+            <line x1="356" y1="70" x2="389" y2="70" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+            <line x1="546" y1="70" x2="579" y2="70" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+            <line x1="736" y1="70" x2="769" y2="70" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+
+            <path d="M 468 108 L 468 132 L 88 132 L 88 157" fill="none" stroke="#0f766e" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arwA)"/>
+            <text x="484" y="127" font-size="10.5" fill="#0f766e">训练任务需要反向图</text>
+
+            <text x="12" y="150" font-weight="700" font-size="12" fill="#57534e">② 反向图自动生成</text>
+
+            <rect x="12" y="160" width="152" height="80" rx="7" fill="#f0fdfa" stroke="#14b8a6"/>
+            <text x="88" y="186" text-anchor="middle" font-weight="700" fill="#115e59">加 dummy loss</text>
+            <text x="88" y="206" text-anchor="middle" fill="#57534e">+ 假输入张量</text>
+            <text x="88" y="224" text-anchor="middle" fill="#57534e">支持动态输出 shape</text>
+
+            <rect x="202" y="160" width="152" height="80" rx="7" fill="#f0fdfa" stroke="#14b8a6"/>
+            <text x="278" y="186" text-anchor="middle" font-weight="700" fill="#115e59">aot_autograd</text>
+            <text x="278" y="212" text-anchor="middle" fill="#57534e">联合图 FWD + BWD</text>
+
+            <rect x="392" y="160" width="152" height="80" rx="7" fill="#f0fdfa" stroke="#14b8a6"/>
+            <text x="468" y="186" text-anchor="middle" font-weight="700" fill="#115e59">清洗 pass</text>
+            <text x="468" y="206" text-anchor="middle" fill="#57534e">加元数据 · 重命名</text>
+            <text x="468" y="224" text-anchor="middle" fill="#57534e">去 view / detach</text>
+
+            <rect x="582" y="160" width="152" height="80" rx="7" fill="#f0fdfa" stroke="#14b8a6"/>
+            <text x="658" y="186" text-anchor="middle" font-weight="700" fill="#115e59">default_partition</text>
+            <text x="658" y="212" text-anchor="middle" fill="#57534e">切成独立 FWD / BWD 图</text>
+
+            <rect x="772" y="160" width="196" height="80" rx="7" fill="#f0fdfa" stroke="#14b8a6"/>
+            <text x="870" y="186" text-anchor="middle" font-weight="700" fill="#115e59">反向图后处理</text>
+            <text x="870" y="206" text-anchor="middle" fill="#57534e">自函数化算子分解 · 去自克隆</text>
+            <text x="870" y="224" text-anchor="middle" fill="#57534e">死代码消除</text>
+
+            <line x1="166" y1="200" x2="199" y2="200" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+            <line x1="356" y1="200" x2="389" y2="200" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+            <line x1="546" y1="200" x2="579" y2="200" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+            <line x1="736" y1="200" x2="769" y2="200" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 2 · 前端图生成管线：原生模型经 <code>torch.fx</code> / <code>torch.compile</code> 追踪成 FX 计算图，推理路径直接取单个 decoder block 加速模拟；训练路径再经 <code>aot_autograd</code> 生成联合图并切分为独立的前向 / 反向图。</p>
+      <h3>(b) 图优化与并行化 pass</h3>
+      <p>
+        优化和并行都被抽象成直接作用于计算图的 <strong>graph manipulation pass</strong>，加/删 pass 就能开关某个优化，不同 pass 可以自由组合成混合并行策略：
+      </p>
+      <ul>
+        <li><strong>Shard 类（TP/SP/EP）</strong>：追踪计算图，调整分片算子的张量 shape，按选定策略在分片算子前后插入 <code>all_reduce</code>、<code>all_gather</code>、<code>reduce_scatter</code>。</li>
+        <li><strong>PP</strong>：用 schedule pattern generator 构造跨设备的 stage 依赖，插入 <code>send</code>/<code>recv</code> 通信算子，支持经典 1F1B 调度和带计算通信重叠的 DualPipe 调度。</li>
+        <li><strong>DP</strong>：支持 PyTorch DDP、FSDP、ZeRO。DDP 显式插入梯度同步的集合通信算子；FSDP/ZeRO 额外建模参数/优化器状态分片、状态同步与预取分析。</li>
+      </ul>
+      <div class="fig">
+        <svg viewBox="0 0 980 312" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="四类并行 pass 对计算图的改写">
+          <defs>
+            <marker id="arwB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <text x="10" y="24" font-weight="700" font-size="12.5" fill="#9a3412">Shard 类：TP / SP / EP</text>
+            <rect x="10" y="34" width="112" height="40" rx="6" fill="#faf7f2" stroke="#a8a29e"/>
+            <text x="66" y="50" text-anchor="middle" fill="#57534e">输入激活</text>
+            <text x="66" y="65" text-anchor="middle" font-size="10" fill="#78716c">(已切分)</text>
+            <rect x="140" y="34" width="118" height="40" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="199" y="50" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" fill="#9a3412">all_gather</text>
+            <text x="199" y="65" text-anchor="middle" font-size="10" fill="#9a3412">TP 聚合分片权重</text>
+            <rect x="276" y="34" width="112" height="40" rx="6" fill="#faf7f2" stroke="#a8a29e"/>
+            <text x="332" y="58" text-anchor="middle" fill="#57534e">分片 Linear 计算</text>
+            <rect x="406" y="34" width="118" height="40" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="465" y="50" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" fill="#9a3412">all_reduce</text>
+            <text x="465" y="65" text-anchor="middle" font-size="10" fill="#9a3412">sum 部分和</text>
+            <rect x="542" y="34" width="130" height="40" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="607" y="50" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" fill="#9a3412">reduce_scatter</text>
+            <text x="607" y="65" text-anchor="middle" font-size="10" fill="#9a3412">回到切分输出</text>
+            <rect x="690" y="34" width="112" height="40" rx="6" fill="#faf7f2" stroke="#a8a29e"/>
+            <text x="746" y="58" text-anchor="middle" fill="#57534e">输出激活</text>
+            <rect x="820" y="34" width="150" height="40" rx="6" fill="#ffe4e6" stroke="#be123c"/>
+            <text x="895" y="50" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" fill="#9f1239">all_to_all</text>
+            <text x="895" y="65" text-anchor="middle" font-size="10" fill="#9f1239">EP：token 路由到专家</text>
+
+            <line x1="124" y1="54" x2="137" y2="54" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <line x1="260" y1="54" x2="273" y2="54" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <line x1="390" y1="54" x2="403" y2="54" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <line x1="526" y1="54" x2="539" y2="54" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <line x1="674" y1="54" x2="687" y2="54" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <line x1="804" y1="54" x2="817" y2="54" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+
+            <text x="10" y="106" font-weight="700" font-size="12.5" fill="#1e3a5f">PP：Stage 依赖与调度</text>
+            <rect x="10" y="118" width="150" height="38" rx="6" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="85" y="134" text-anchor="middle" fill="#1e3a5f">Stage 0 前向 (microbatch)</text>
+            <text x="85" y="149" text-anchor="middle" font-size="10" fill="#475569">例如 layer 0–13</text>
+            <rect x="180" y="118" width="120" height="38" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="240" y="134" text-anchor="middle" font-family="Consolas, monospace" font-size="10.5" fill="#9a3412">send / recv</text>
+            <text x="240" y="149" text-anchor="middle" font-size="10" fill="#9a3412">跨 stage 激活传输</text>
+            <rect x="320" y="118" width="150" height="38" rx="6" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="395" y="134" text-anchor="middle" fill="#1e3a5f">Stage 1 前向 (microbatch)</text>
+            <text x="395" y="149" text-anchor="middle" font-size="10" fill="#475569">例如 layer 14–27</text>
+            <rect x="490" y="118" width="200" height="38" rx="6" fill="#f0fdfa" stroke="#14b8a6"/>
+            <text x="590" y="134" text-anchor="middle" fill="#115e59">调度模式</text>
+            <text x="590" y="149" text-anchor="middle" font-size="10" fill="#115e59">经典 1F1B / DualPipe（算通重叠）</text>
+
+            <line x1="162" y1="137" x2="177" y2="137" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <line x1="302" y1="137" x2="317" y2="137" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <line x1="472" y1="137" x2="487" y2="137" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+
+            <text x="10" y="192" font-weight="700" font-size="12.5" fill="#0f766e">DP：DDP / FSDP / ZeRO</text>
+            <rect x="10" y="204" width="130" height="38" rx="6" fill="#faf7f2" stroke="#a8a29e"/>
+            <text x="75" y="227" text-anchor="middle" fill="#57534e">前向</text>
+            <rect x="158" y="204" width="130" height="38" rx="6" fill="#faf7f2" stroke="#a8a29e"/>
+            <text x="223" y="227" text-anchor="middle" fill="#57534e">反向</text>
+            <rect x="306" y="204" width="140" height="38" rx="6" fill="#f0fdfa" stroke="#0f766e"/>
+            <text x="376" y="221" text-anchor="middle" font-size="10.5" fill="#115e59">梯度 all_reduce (DDP)</text>
+            <text x="376" y="236" text-anchor="middle" font-size="10" fill="#115e59">或分片同步 + 预取</text>
+            <rect x="464" y="204" width="230" height="38" rx="6" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="579" y="221" text-anchor="middle" font-size="10.5" fill="#1e3a5f">FSDP / ZeRO：参数、梯度、优化器状态分片</text>
+            <text x="579" y="236" text-anchor="middle" font-size="10" fill="#475569">按需 all_gather 取回完整参数</text>
+            <rect x="712" y="204" width="258" height="38" rx="6" fill="#fff7ed" stroke="#c2410c"/>
+            <text x="841" y="227" text-anchor="middle" font-size="10.5" fill="#9a3412">pass 可自由组合 → 混合并行策略</text>
+
+            <line x1="142" y1="223" x2="155" y2="223" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <line x1="290" y1="223" x2="303" y2="223" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <line x1="448" y1="223" x2="461" y2="223" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <line x1="696" y1="223" x2="709" y2="223" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+
+            <rect x="10" y="262" width="960" height="40" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="279" text-anchor="middle" font-size="11" fill="#57534e">算子重写与融合：match-and-replace 框架 — 遍历图匹配预定义模式 → 命中后改节点类型 / 合并多算子 / 替换低效算子形式</text>
+            <text x="490" y="295" text-anchor="middle" font-size="11" fill="#78716c">新增优化规则只需定义新的匹配模式与变换动作；量化既可加精度变换 pass，也可直接追踪已量化模型</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 3 · 并行化与优化全部实现为作用在计算图上的 pass：Shard 类（TP/SP/EP）调整分片算子的张量 shape 并在前后插入集合通信；PP 用调度模式生成器构造 stage 依赖并插入 <code>send</code>/<code>recv</code>；DP 建模梯度同步与状态分片。所有 pass 可自由组合成混合并行策略。</p>
+      <p>
+        算子重写和融合通过一套 match-and-replace 框架实现：遍历图找匹配预定义模式的节点，命中后修改节点类型和属性（合并多算子、替换低效算子形式）。新增优化规则只需定义新的匹配模式和变换动作，扩展性较好。量化既可以加一个精度变换 pass，也可以直接追踪已量化模型。
+      </p>
+      <h3>(c) 基于 pass 的多粒度分析</h3>
+      <p>
+        分析器统一用图处理同时支持两类指标：<strong>不依赖算子顺序</strong>的指标（如 MFU）直接在计算图上逐节点算，图遍历聚合成系统级结果；<strong>依赖执行顺序</strong>的指标（如详细 timeline）要调用后端拿每个算子的起止时间，再经 operator scheduler 根据算子间依赖（如 pipeline stage）精修出准确的执行 timeline。
+      </p>
+      <div class="callout teal">
+        内存建模是 Charon 区别于层级模拟器的关键点之一。层级模拟器只能按静态张量大小估算优化器状态和权重/梯度；Charon 利用反向计算图做<strong>张量生命周期（liveness）遍历</strong>，精确知道每个中间张量何时被分配、使用、释放，从而复现真实的临时张量复用和释放时机——这对评估 ZeRO、FSDP、选择性激活检查点这类"峰值显存出现在反向传播某个瞬间"的配置至关重要。
+      </div>
+    </section>
+
+    <section class="card" id="s5">
+      <h2>5. 多引擎后端：profiling / prediction / analytical / fused</h2>
+      <p>
+        后端负责模拟单个计算或通信算子的延迟，四种引擎各有取舍，统一支持 FP32/BF16/FP16/FP8/INT8 精度感知的延迟和显存建模。
+      </p>
+      <table>
+        <thead>
+          <tr><th>引擎</th><th>原理</th><th>优点</th><th>代价</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Profiling Engine</strong></td><td>真机执行算子并计时，结果存进 profiling 数据库，命中（算子类型+shape）直接查表复用</td><td>精度最高</td><td>首次执行开销大</td></tr>
+          <tr><td><strong>Prediction Engine</strong></td><td>每种算子类型配一个基于 profiling 数据训练的轻量 random-forest 预测器，从算子类型+输入 shape 直接估延迟</td><td>覆盖 profiling 库里没见过的 shape，速度快</td><td>依赖训练数据的代表性</td></tr>
+          <tr><td><strong>Analytical Engine</strong></td><td>计算算子用 Roofline 模型（取计算时间和访存时间较大者）；通信算子用分层 link-centric 模型，拆解集合通信到物理链路级传输，按校准过的 per-hop 延迟和有效带宽算，支持 Ring/Tree 算法与 Ring/Switch/Mesh 拓扑</td><td>不依赖 profiling 数据，覆盖新算子</td><td>复杂算子（如 FlashAttention-3）误差大</td></tr>
+          <tr><td><strong>Fused Engine</strong></td><td>按优先级 fallback：优先 profiling → 其次 prediction → 兜底 analytical，每种引擎维护自己支持的算子注册表</td><td>新模型/新算子也能跑，不牺牲整体保真度</td><td>-</td></tr>
+        </tbody>
+      </table>
+      <div class="fig">
+        <svg viewBox="0 0 980 336" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="多引擎优先级回退级联">
+          <defs>
+            <marker id="arwC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+            <marker id="arwC2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#c2410c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11.5">
+            <rect x="20" y="36" width="440" height="64" rx="7" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.6"/>
+            <text x="40" y="60" font-weight="700" fill="#115e59">① Profiling Engine　优先级最高</text>
+            <text x="40" y="80" fill="#134e4a">真机执行算子并计时 → 结果写入 profiling 数据库</text>
+            <text x="40" y="94" font-size="10.5" fill="#134e4a">命中条件：算子类型 + 输入 shape 完全一致</text>
+
+            <path d="M 240 100 L 240 120" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arwC2)"/>
+            <text x="250" y="115" font-size="10.5" fill="#c2410c">未命中 ↓</text>
+
+            <rect x="20" y="124" width="440" height="64" rx="7" fill="#f0fdfa" stroke="#14b8a6" stroke-width="1.6"/>
+            <text x="40" y="148" font-weight="700" fill="#115e59">② Prediction Engine</text>
+            <text x="40" y="168" fill="#134e4a">每种算子类型一个 random-forest 预测器</text>
+            <text x="40" y="182" font-size="10.5" fill="#134e4a">兜住 profiling 库里没见过的 shape，毫秒级出结果</text>
+
+            <path d="M 240 188 L 240 208" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arwC2)"/>
+            <text x="250" y="203" font-size="10.5" fill="#c2410c">未命中 ↓</text>
+
+            <rect x="20" y="212" width="440" height="64" rx="7" fill="#f5f5f4" stroke="#a8a29e" stroke-width="1.6"/>
+            <text x="40" y="236" font-weight="700" fill="#44403c">③ Analytical Engine　最后兜底</text>
+            <text x="40" y="256" fill="#57534e">计算：Roofline（取算力时间与访存时间较大者）</text>
+            <text x="40" y="270" font-size="10.5" fill="#57534e">通信：分层 link-centric 模型，拆到物理链路级</text>
+
+            <path d="M 464 68 L 574 68" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arwC)"/>
+            <path d="M 464 156 L 574 156" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arwC)"/>
+            <path d="M 464 244 L 574 244" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arwC)"/>
+            <text x="519" y="60" text-anchor="middle" font-size="10.5" fill="#0f766e">命中</text>
+            <text x="519" y="148" text-anchor="middle" font-size="10.5" fill="#0f766e">命中</text>
+            <text x="519" y="236" text-anchor="middle" font-size="10.5" fill="#0f766e">命中</text>
+
+            <rect x="580" y="36" width="380" height="240" rx="7" fill="#fff7ed" stroke="#c2410c" stroke-width="1.6"/>
+            <text x="770" y="64" text-anchor="middle" font-weight="700" font-size="13" fill="#9a3412">统一输出：算子级结果</text>
+            <line x1="612" y1="76" x2="928" y2="76" stroke="#fdba74"/>
+            <text x="770" y="102" text-anchor="middle" fill="#57534e">单算子延迟（μs）</text>
+            <text x="770" y="128" text-anchor="middle" fill="#57534e">显存占用估计</text>
+            <text x="770" y="154" text-anchor="middle" fill="#57534e">精度感知：FP32 / BF16 / FP16 / FP8 / INT8</text>
+            <line x1="612" y1="172" x2="928" y2="172" stroke="#fdba74"/>
+            <text x="770" y="196" text-anchor="middle" font-size="11" fill="#9a3412">任一引擎命中即返回，精度随优先级递减</text>
+            <text x="770" y="222" text-anchor="middle" font-size="10.5" fill="#78716c">新模型 / 新算子不会跑不起来</text>
+            <text x="770" y="242" text-anchor="middle" font-size="10.5" fill="#78716c">代价是兜底路径的保真度下降</text>
+
+            <rect x="20" y="290" width="940" height="36" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="313" text-anchor="middle" font-size="11" fill="#57534e">三种引擎各自维护支持的算子注册表；通信建模不依赖理论硬件规格，而用 profiling 校准出的 per-hop 延迟与有效带宽 —— 跨平台更可移植也更准</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 4 · 后端引擎的优先级回退级联：profiling 精确但开销大，prediction 覆盖未见过的 shape，analytical 无数据也能算。三者按优先级 fallback，使新模型、新算子既能跑起来，又不拖累整体保真度。</p>
+      <div class="callout">
+        通信分析的关键细节：Charon<strong>不依赖理论硬件规格</strong>，而是用从 profiling 校准出的 per-hop 延迟和有效带宽去建模集群拓扑，这样跨平台更可移植也更准。
+      </div>
+    </section>
+
+    <section class="card" id="s6">
+      <h2>6. 算子重叠建模：比例降速与带宽拥塞</h2>
+      <p>
+        现代训练/推理框架普遍把通信和计算、或通信和通信相互重叠。Charon 用两层模型描述重叠的代价：
+      </p>
+      <div class="grid-2">
+        <div class="tile">
+          <h4>粗粒度：比例降速模型</h4>
+          <p>对所有重叠算子套用从目标集群 profiling 数据里标定的降速因子，只作用在两算子实际重叠的那一段。计算-通信重叠用两个独立降速因子；通信-通信重叠共享同一个降速因子。</p>
+        </div>
+        <div class="tile">
+          <h4>细粒度：带宽感知拥塞模型</h4>
+          <p>仅在 analytical 引擎下对通信-通信重叠生效。按每段重叠区间检查互联层级（NVLink / IB）的链路拥塞情况，根据有效带宽的竞争比例计算降速,逼近真实网络包级拥塞控制的效果。</p>
+        </div>
+      </div>
+      <div class="fig">
+        <svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="带宽感知拥塞模型">
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="20" y="44" width="450" height="190" rx="7" fill="#faf8f4" stroke="#e7e0d4"/>
+            <text x="245" y="70" text-anchor="middle" font-weight="700" font-size="12.5" fill="#57534e">① 不重叠：每个通信算子独占链路</text>
+
+            <circle cx="52" cy="110" r="4" fill="#0f766e"/>
+            <rect x="70" y="96" width="200" height="28" fill="#0f766e" opacity="0.85"/>
+            <text x="82" y="115" fill="#fff" font-size="10.5" font-family="Consolas, monospace">NVLink</text>
+            <text x="282" y="115" fill="#115e59">50 GB/s（满速）</text>
+
+            <circle cx="52" cy="164" r="4" fill="#1e3a5f"/>
+            <rect x="70" y="150" width="200" height="28" fill="#1e3a5f" opacity="0.85"/>
+            <text x="82" y="169" fill="#fff" font-size="10.5" font-family="Consolas, monospace">IB</text>
+            <text x="282" y="169" fill="#1e3a5f">200 GB/s（满速）</text>
+
+            <text x="245" y="212" text-anchor="middle" font-size="10.5" fill="#78716c">条形长度 ∝ 该链路可用的有效带宽</text>
+            <text x="245" y="228" text-anchor="middle" font-size="10.5" fill="#78716c">各算子互不干扰，无需降速</text>
+
+            <rect x="510" y="44" width="450" height="190" rx="7" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="735" y="70" text-anchor="middle" font-weight="700" font-size="12.5" fill="#9a3412">② 重叠：按请求带宽比例重新分配</text>
+
+            <circle cx="542" cy="110" r="4" fill="#0f766e"/>
+            <rect x="560" y="96" width="100" height="28" fill="#0f766e" opacity="0.85"/>
+            <text x="738" y="115" fill="#9a3412">25 GB/s　← 被抢占一半</text>
+            <rect x="660" y="96" width="100" height="28" fill="#d6d3d1" stroke="#a8a29e" stroke-dasharray="4 3"/>
+            <text x="710" y="115" text-anchor="middle" fill="#57534e" font-size="10">让给 Comm Op1</text>
+
+            <circle cx="542" cy="164" r="4" fill="#1e3a5f"/>
+            <rect x="560" y="150" width="160" height="28" fill="#1e3a5f" opacity="0.85"/>
+            <text x="790" y="169" fill="#1e3a5f">160 GB/s　← 降 20%</text>
+            <rect x="720" y="150" width="40" height="28" fill="#d6d3d1" stroke="#a8a29e" stroke-dasharray="4 3"/>
+
+            <text x="735" y="212" text-anchor="middle" font-size="10.5" fill="#9a3412">灰色段 = 被竞争算子夺走的带宽</text>
+            <text x="735" y="228" text-anchor="middle" font-size="10.5" fill="#9a3412">而非简单套一个固定折扣系数</text>
+
+            <rect x="20" y="250" width="940" height="40" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="267" text-anchor="middle" font-size="11" fill="#57534e">粗粒度：比例降速模型 —— 对所有重叠算子套用从目标集群 profiling 标定的降速因子，只作用于实际重叠区间（算通重叠两个因子，通通重叠共享一个）</text>
+            <text x="490" y="283" text-anchor="middle" font-size="11" fill="#78716c">细粒度：带宽感知拥塞模型 —— 仅 analytical 引擎下的通信-通信重叠启用，逐重叠区间检查 NVLink / IB 的链路竞争比例</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 5 · 论文 Figure 6 的带宽重分配示例：Comm Op0 单独跑时 NVLink 段满速 50 GB/s、IB 段 200 GB/s；与 Comm Op1 重叠后，Charon 按各自请求带宽的比例重新分配有效带宽（NVLink 降到 25 GB/s、IB 降到 160 GB/s），逼近真实网络包级拥塞控制的效果，而不是简单套一个固定折扣。</p>
+    </section>
+
+    <section class="card" id="s7">
+      <h2>7. 设计空间探索：剪枝搜索</h2>
+      <p>
+        给定目标模型和任务，Charon 把用户输入的 GPU 数量、并行策略、并行度组合成完整设计空间，内置原生搜索工具，省掉"跑完模拟还要自己写脚本分析结果"这一层工程负担。用户可以预先标注已知的低效配置，搜索工具据此直接跳过对应子空间的模拟，提高搜索效率。这把"最优配置、期望性能、执行 timeline"三件事收口到同一次调用里。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="设计空间剪枝搜索">
+          <defs>
+            <marker id="arwE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="380" y="14" width="220" height="38" rx="7" fill="#fff7ed" stroke="#c2410c" stroke-width="1.6"/>
+            <text x="490" y="39" text-anchor="middle" font-weight="700" font-size="13" fill="#9a3412">完整设计空间</text>
+
+            <path d="M 490 52 V 70 M 134 70 H 846" stroke="#a8a29e" stroke-width="1.3" fill="none"/>
+
+            <rect x="22" y="86" width="225" height="42" rx="6" fill="#faf7f2" stroke="#a8a29e"/>
+            <text x="134" y="104" text-anchor="middle" fill="#57534e">维度① GPU 数量</text>
+            <text x="134" y="119" text-anchor="middle" font-size="10" fill="#78716c">8 / 16 / 64 / 128 …</text>
+            <path d="M 134 70 V 86" stroke="#a8a29e" stroke-width="1.3"/>
+
+            <rect x="259" y="86" width="225" height="42" rx="6" fill="#faf7f2" stroke="#a8a29e"/>
+            <text x="371" y="104" text-anchor="middle" fill="#57534e">维度② 并行策略</text>
+            <text x="371" y="119" text-anchor="middle" font-size="10" fill="#78716c">TP / PP / DP / EP / SP 组合</text>
+            <path d="M 371 70 V 86" stroke="#a8a29e" stroke-width="1.3"/>
+
+            <rect x="496" y="86" width="225" height="42" rx="6" fill="#faf7f2" stroke="#a8a29e"/>
+            <text x="608" y="104" text-anchor="middle" fill="#57534e">维度③ 并行度</text>
+            <text x="608" y="119" text-anchor="middle" font-size="10" fill="#78716c">TP=8 / PP=4 / DP=2 …</text>
+            <path d="M 608 70 V 86" stroke="#a8a29e" stroke-width="1.3"/>
+
+            <rect x="733" y="86" width="225" height="42" rx="6" fill="#faf7f2" stroke="#a8a29e"/>
+            <text x="845" y="104" text-anchor="middle" fill="#57534e">维度④ 调度 / 精度</text>
+            <text x="845" y="119" text-anchor="middle" font-size="10" fill="#78716c">1F1B / DualPipe · BF16 / FP8</text>
+            <path d="M 845 70 V 86" stroke="#a8a29e" stroke-width="1.3"/>
+
+            <path d="M 490 128 V 148" stroke="#0f766e" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arwE)"/>
+            <text x="500" y="143" font-size="10.5" fill="#0f766e">规则剪枝：用户标注的低效配置直接跳过</text>
+
+            <rect x="16" y="160" width="148" height="46" rx="6" fill="#f0fdfa" stroke="#0f766e"/>
+            <text x="90" y="179" text-anchor="middle" font-size="10.5" fill="#115e59">8卡 · TP8 · 1F1B</text>
+            <text x="90" y="195" text-anchor="middle" font-size="13" fill="#0f766e">✓ 保留</text>
+
+            <rect x="176" y="160" width="148" height="46" rx="6" fill="#f0fdfa" stroke="#0f766e"/>
+            <text x="250" y="179" text-anchor="middle" font-size="10.5" fill="#115e59">8卡 · TP8 · DualPipe</text>
+            <text x="250" y="195" text-anchor="middle" font-size="13" fill="#0f766e">✓ 保留</text>
+
+            <rect x="336" y="160" width="148" height="46" rx="6" fill="#f0fdfa" stroke="#0f766e"/>
+            <text x="410" y="179" text-anchor="middle" font-size="10.5" fill="#115e59">16卡 · TP8 · DP2</text>
+            <text x="410" y="195" text-anchor="middle" font-size="13" fill="#0f766e">✓ 保留</text>
+
+            <rect x="496" y="160" width="148" height="46" rx="6" fill="#f5f5f4" stroke="#a8a29e" stroke-dasharray="5 3"/>
+            <text x="570" y="179" text-anchor="middle" font-size="10.5" fill="#78716c">batch / seq 越界</text>
+            <text x="570" y="195" text-anchor="middle" font-size="13" fill="#a8a29e">✗ 剪掉</text>
+
+            <rect x="656" y="160" width="148" height="46" rx="6" fill="#f0fdfa" stroke="#0f766e"/>
+            <text x="730" y="179" text-anchor="middle" font-size="10.5" fill="#115e59">64卡 · PP8 · DP8</text>
+            <text x="730" y="195" text-anchor="middle" font-size="13" fill="#0f766e">✓ 保留</text>
+
+            <rect x="816" y="160" width="148" height="46" rx="6" fill="#f5f5f4" stroke="#a8a29e" stroke-dasharray="5 3"/>
+            <text x="890" y="179" text-anchor="middle" font-size="10.5" fill="#78716c">显存超限预判</text>
+            <text x="890" y="195" text-anchor="middle" font-size="13" fill="#a8a29e">✗ 剪掉</text>
+
+            <path d="M 490 210 V 240" stroke="#0f766e" stroke-width="1.6" marker-end="url(#arwE)"/>
+            <text x="500" y="230" font-size="10.5" fill="#0f766e">仅对保留子空间调用后端</text>
+
+            <rect x="270" y="248" width="440" height="42" rx="6" fill="#ccfbf1" stroke="#14b8a6" stroke-width="1.6"/>
+            <text x="490" y="274" text-anchor="middle" font-weight="700" font-size="12.5" fill="#115e59">多引擎后端逐配置模拟　（多进程并行加速）</text>
+
+            <path d="M 490 290 V 306 M 165 306 H 815" stroke="#a8a29e" stroke-width="1.3" fill="none"/>
+            <path d="M 165 306 V 322 M 490 306 V 322 M 815 306 V 322" stroke="#a8a29e" stroke-width="1.3" fill="none"/>
+
+            <rect x="35" y="324" width="260" height="46" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="165" y="352" text-anchor="middle" font-size="11.5" fill="#9a3412">最优配置</text>
+
+            <rect x="360" y="324" width="260" height="46" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="490" y="352" text-anchor="middle" font-size="11.5" fill="#9a3412">期望性能</text>
+
+            <rect x="685" y="324" width="260" height="46" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="815" y="352" text-anchor="middle" font-size="11.5" fill="#9a3412">执行 timeline</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 6 · 设计空间探索把"用户输入的 GPU 数量 × 并行策略 × 并行度"铺成完整空间，先用规则剪掉用户标注的低效配置与明显越界项，再只对保留子空间调用多引擎后端，最终一次调用同时给出最优配置、期望性能和执行 timeline。</p>
+    </section>
+
+    <section class="card" id="s8">
+      <h2>8. 实验：端到端精度、细粒度、内存、消融、跨规模</h2>
+      <h3>端到端精度（对比 Astra-SIM 2.0 / SimAI / Vidur）</h3>
+      <p>
+        测试模型覆盖两个稠密模型 Qwen3-8B、LLaMA3-8B 和一个 MoE 模型 Qwen3-30B-A3B。训练在 Megatron 和 VeOmni 框架下测，推理在 vLLM 框架下测。结果：Charon 在训练和推理任务、不同模型和框架组合下都拿到最佳端到端精度。
+      </p>
+      <ul>
+        <li><strong>对比 Astra-SIM</strong>：纯 analytical 建模通信/计算，粗粒度，Charon 的算子图级模拟明显更准。</li>
+        <li><strong>对比 SimAI</strong>：两者计算都走 profiling 后端，但 SimAI 的通信模拟继承自 Astra-SIM 1.0，是层级信息而非细粒度，处理通信重叠时会失真。</li>
+        <li><strong>对比 Vidur（推理）</strong>：两者 TTFT 都准（都是 profiling-based 计算+通信）；但 TPOT 上 Vidur 的 prediction 引擎对小算子精度不够，Charon 更稳。</li>
+      </ul>
+      <h3>算子级时间拆解（Qwen3-8B）</h3>
+      <table>
+        <thead>
+          <tr><th>训练（TP8, Ampere, μs）</th><th>Prof(前向)</th><th>Sim(前向)</th><th>Prof(反向)</th><th>Sim(反向)</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Attention</td><td>1842</td><td>1770</td><td>30275</td><td>30329</td></tr>
+          <tr><td>Feed-Forward</td><td>6589</td><td>6490</td><td>40280</td><td>38430</td></tr>
+          <tr><td>All-Gather</td><td>13180</td><td>12980</td><td>13130</td><td>12980</td></tr>
+          <tr><td>Reduce-Scatter</td><td>13876</td><td>12980</td><td>14500</td><td>12980</td></tr>
+        </tbody>
+      </table>
+      <p>推理（TP1, Hopper）同样做到算子级吻合：Attention prefill 实测 3923μs / 模拟 3906μs；decode 阶段实测 58.2μs / 模拟 72.1μs。单层 trace 和 vLLM 真实 profiled trace 的时间线图形状高度一致（论文 Figure 8）。</p>
+      <h3>内存预测精度</h3>
+      <p>
+        在 Qwen3-30B-A3B MoE 训练（8 GPU，FSDP=8，batch_size=2，seqlen=8192）上，最大已分配显存误差 <strong>+0.39%</strong>，最大保留显存误差 <strong>+0.29%</strong>，总显存误差 <strong>-0.03%</strong>——这得益于前面提到的基于 liveness 的图分析，而不是静态张量大小估算。
+      </p>
+      <h3>后端消融：analytical vs prediction</h3>
+      <p>
+        对未见过的 Linear、RMSNorm、FlashAttention-3 算子做统计偏差对比：analytical 引擎在 Linear（MAE 6.60%）、RMSNorm（MAE 5.70%）上尚可，但在 FlashAttention-3 上 MAE 高达 <strong>31.84%</strong>；prediction 引擎在三者上分别稳定在 <strong>1.44% / 1.12% / 2.22%</strong>。这组数字直接证明了"为什么需要混合引擎"——复杂 kernel 的解析模型会系统性失真，必须靠数据驱动的预测器兜底。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="analytical 与 prediction 引擎的算子级 MAE 对比">
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <line x1="180" y1="40" x2="180" y2="248" stroke="#1c1917" stroke-width="1.3"/>
+            <line x1="180" y1="248" x2="900" y2="248" stroke="#1c1917" stroke-width="1.3"/>
+            <g stroke="#d6d3d1" stroke-width="1">
+              <line x1="330" y1="44" x2="330" y2="248"/>
+              <line x1="480" y1="44" x2="480" y2="248"/>
+              <line x1="630" y1="44" x2="630" y2="248"/>
+            </g>
+            <g text-anchor="middle" fill="#78716c" font-size="10.5">
+              <text x="180" y="266">0</text>
+              <text x="330" y="266">10%</text>
+              <text x="480" y="266">20%</text>
+              <text x="630" y="266">30%</text>
+            </g>
+
+            <text x="170" y="76" text-anchor="end" font-weight="700" fill="#1c1917">Linear</text>
+            <rect x="180" y="52" width="99" height="22" fill="#c2410c"/>
+            <text x="285" y="68" fill="#9a3412" font-weight="700">6.60%</text>
+            <rect x="180" y="78" width="22" height="22" fill="#0f766e"/>
+            <text x="208" y="94" fill="#0f766e" font-weight="700">1.44%</text>
+
+            <text x="170" y="146" text-anchor="end" font-weight="700" fill="#1c1917">RMSNorm</text>
+            <rect x="180" y="122" width="86" height="22" fill="#c2410c"/>
+            <text x="272" y="138" fill="#9a3412" font-weight="700">5.70%</text>
+            <rect x="180" y="148" width="17" height="22" fill="#0f766e"/>
+            <text x="203" y="164" fill="#0f766e" font-weight="700">1.12%</text>
+
+            <text x="170" y="216" text-anchor="end" font-weight="700" fill="#1c1917">FlashAttn-3</text>
+            <rect x="180" y="192" width="478" height="22" fill="#c2410c"/>
+            <text x="664" y="208" fill="#9a3412" font-weight="700">31.84%</text>
+            <rect x="180" y="218" width="33" height="22" fill="#0f766e"/>
+            <text x="219" y="234" fill="#0f766e" font-weight="700">2.22%</text>
+
+            <rect x="700" y="96" width="262" height="76" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="712" y="116" font-size="10.5" fill="#9a3412">复杂 kernel 的解析模型</text>
+            <text x="712" y="133" font-size="10.5" fill="#9a3412">会系统性失真：FlashAttn-3 上</text>
+            <text x="712" y="150" font-size="10.5" fill="#9a3412">MAE 高达 31.84%，</text>
+            <text x="712" y="166" font-size="10.5" fill="#9a3412">必须靠数据驱动预测器兜底。</text>
+
+            <rect x="612" y="40" width="18" height="12" fill="#c2410c"/>
+            <text x="636" y="50" fill="#57534e" font-size="10.5">Analytical Engine</text>
+            <rect x="762" y="40" width="18" height="12" fill="#0f766e"/>
+            <text x="786" y="50" fill="#57534e" font-size="10.5">Prediction Engine</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 7 · 两个后端引擎在未见过的算子上的统计偏差（MAE）。解析模型在规整算子（Linear / RMSNorm）上尚可，但在 FlashAttention-3 这类复杂 kernel 上误差放大到 31.84%；预测引擎在三者上均稳定在 2.22% 以内 —— 这正是混合引擎存在的理由。</p>
+      <h3>跨 GPU 架构与集群规模</h3>
+      <p>
+        覆盖 Nvidia Hopper/Ampere（H800/A100 训练）、Hopper/Ada Lovelace（H20/L20 推理），整体误差 &lt;4.98%。集群规模从小到接近万卡（覆盖 DP/PP/EP/SP/TP 全并行组合），误差始终 &lt;3.74%。两类误差的来源被归结为真实集群里网络抖动、动态拥塞、数据相关 kernel 执行的随机性——Charon 当前不对这些微观随机性做确定性建模，但不影响整体可靠性。
+      </p>
+    </section>
+
+    <section class="card" id="s9">
+      <h2>9. 案例研究：动态 SP 与推理 Pareto 前沿</h2>
+      <h3>9.1 动态 Sequence Parallel 策略</h3>
+      <p>
+        Zigzag attention（LLaMA-3 等大模型广泛使用）把序列维度切成 2×SP 块按 zigzag 模式分配给各 rank 以平衡负载，但对短序列并不划算——过度切分带来的 all-gather 通信开销会反超计算收益。论文用 Charon 分析不同序列长度分布下计算分布与通信开销的权衡，提出<strong>按请求动态选择 SP 配置</strong>：长序列继续用 zigzag 平衡，短序列降低切分避免多余 all-gather。
+      </p>
+      <p>
+        在 LLaMA-3 70B + 8× Ada Lovelace 推理 GPU 上验证，动态 SP 相对 zigzag 基线平均降低 attention block 延迟 <strong>15%</strong>，收益主要来自短序列请求省下的通信开销；作者预期在 PCIe 这类通信延迟更高的互联上收益会更大。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="动态序列并行按请求长度选择 SP 配置">
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="20" y="34" width="460" height="200" rx="7" fill="#faf8f4" stroke="#e7e0d4"/>
+            <text x="250" y="58" text-anchor="middle" font-weight="700" font-size="12.5" fill="#1e3a5f">长序列请求</text>
+            <text x="250" y="76" text-anchor="middle" font-size="10.5" fill="#78716c">计算量大 → 负载不均成为主要矛盾</text>
+
+            <text x="50" y="102" font-size="10.5" fill="#115e59">zigzag（2×SP 切分）</text>
+            <rect x="50" y="108" width="140" height="24" fill="#0f766e"/>
+            <text x="120" y="124" text-anchor="middle" fill="#fff" font-size="10">计算 180</text>
+            <rect x="190" y="108" width="28" height="24" fill="#c2410c"/>
+            <text x="226" y="124" font-size="10" fill="#9a3412">通信 30</text>
+
+            <text x="50" y="152" font-size="10.5" fill="#57534e">不分 SP（SP=1）</text>
+            <rect x="50" y="158" width="170" height="24" fill="#a8a29e"/>
+            <text x="135" y="174" text-anchor="middle" fill="#fff" font-size="10">瓶颈 rank 计算 260</text>
+
+            <text x="50" y="204" fill="#0f766e" font-size="11.5" font-weight="700">→ 选 zigzag：省下的等待时间大于多出的 all-gather</text>
+            <text x="50" y="222" fill="#78716c" font-size="10.5">横轴 = 每 rank 耗时（相对量）</text>
+
+            <rect x="500" y="34" width="460" height="200" rx="7" fill="#faf8f4" stroke="#e7e0d4"/>
+            <text x="730" y="58" text-anchor="middle" font-weight="700" font-size="12.5" fill="#1e3a5f">短序列请求</text>
+            <text x="730" y="76" text-anchor="middle" font-size="10.5" fill="#78716c">计算量小 → 通信开销反超负载均衡收益</text>
+
+            <text x="530" y="102" font-size="10.5" fill="#57534e">zigzag（2×SP 切分）</text>
+            <rect x="530" y="108" width="40" height="24" fill="#0f766e"/>
+            <text x="576" y="124" font-size="10" fill="#115e59">计算 60</text>
+            <rect x="530" y="108" width="40" height="24" fill="#0f766e"/>
+            <rect x="570" y="108" width="24" height="24" fill="#c2410c"/>
+            <text x="600" y="124" font-size="10" fill="#9a3412">通信 30 ← 占比过半</text>
+
+            <text x="530" y="152" font-size="10.5" fill="#0f766e">降级切分（SP=1）</text>
+            <rect x="530" y="158" width="48" height="24" fill="#0f766e"/>
+            <text x="584" y="174" font-size="10" fill="#115e59">计算 80，省掉 all-gather</text>
+
+            <text x="530" y="204" fill="#0f766e" font-size="11.5" font-weight="700">→ 选降级切分：过度切分不划算</text>
+            <text x="530" y="222" fill="#78716c" font-size="10.5">注：两面板纵轴刻度不同，绝对耗时不可直接比较</text>
+
+            <rect x="20" y="248" width="940" height="42" rx="6" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="490" y="274" text-anchor="middle" font-size="11.5" fill="#1e3a5f">按请求的序列长度分布动态选择 SP 配置 → LLaMA-3 70B / 8× Ada Lovelace 上 attention block 延迟平均降低 15%</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 8 · 动态 SP 的核心权衡：zigzag 切分通过 2×SP 块平衡各 rank 负载，但对短序列而言多出的 all-gather 开销会反超收益。Charon 用分析结果支撑按请求长度切换 SP 配置，相对 zigzag 基线平均降低 attention block 延迟 15%。</p>
+      <h3>9.2 推理性能的多目标优化</h3>
+      <p>
+        LLM 推理是 TTFT/TPOT（用户侧）与 TPS/GPU（硬件侧成本）的多目标优化，受调度算法、TP/PP 大小、prefill chunk size、prefill/decode batch size 等参数联合影响，解析求最优基本不可行，传统做法只能靠大量实测。
+      </p>
+      <p>
+        Charon 把这套搜索压缩到 <strong>2 分钟以内</strong>完成。在 LLaMA-3 70B + Hopper 推理 GPU 上扫描配置空间（图 13），找到的最优点（红点）相对次优配置在相同用户侧性能下明显更高的 TPS/GPU；沿最优前沿放松 TPS/user 约束，系统吞吐最多可提升 <strong>7×</strong>。在生产环境里，面对 100ms 端到端延迟 SLO 的固定输出长度服务，Charon 找到的配置明显优于工程师手调的基线。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="推理配置空间的 Pareto 前沿">
+          <defs>
+            <marker id="arwG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#9a3412"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="90" y="46" width="810" height="230" fill="#faf8f4" stroke="#e7e0d4"/>
+            <line x1="90" y1="46" x2="90" y2="276" stroke="#1c1917" stroke-width="1.3"/>
+            <line x1="90" y1="276" x2="900" y2="276" stroke="#1c1917" stroke-width="1.3"/>
+
+            <g fill="#a8a29e">
+              <circle cx="170" cy="255" r="4"/><circle cx="250" cy="262" r="4"/><circle cx="262" cy="225" r="4"/>
+              <circle cx="300" cy="210" r="4"/><circle cx="382" cy="192" r="4"/><circle cx="420" cy="186" r="4"/>
+              <circle cx="452" cy="221" r="4"/><circle cx="500" cy="160" r="4"/><circle cx="560" cy="156" r="4"/>
+              <circle cx="622" cy="142" r="4"/><circle cx="650" cy="190" r="4"/><circle cx="700" cy="132" r="4"/>
+              <circle cx="790" cy="126" r="4"/><circle cx="852" cy="112" r="4"/><circle cx="330" cy="248" r="4"/>
+              <circle cx="540" cy="205" r="4"/><circle cx="740" cy="165" r="4"/>
+            </g>
+
+            <polyline points="150,240 230,190 330,150 450,120 600,98 760,84 880,78"
+                      fill="none" stroke="#9a3412" stroke-width="2.4"/>
+            <g fill="#9a3412">
+              <circle cx="150" cy="240" r="5"/><circle cx="230" cy="190" r="5"/><circle cx="330" cy="150" r="5"/>
+              <circle cx="450" cy="120" r="5"/><circle cx="600" cy="98" r="5"/><circle cx="760" cy="84" r="5"/>
+              <circle cx="880" cy="78" r="5"/>
+            </g>
+
+            <circle cx="450" cy="120" r="11" fill="none" stroke="#be123c" stroke-width="2.4"/>
+            <circle cx="450" cy="120" r="5" fill="#be123c"/>
+            <text x="450" y="104" text-anchor="middle" font-weight="700" fill="#be123c" font-size="11.5">Charon 找到的最优点</text>
+
+            <path d="M 620 92 C 700 60 800 56 866 66" fill="none" stroke="#9a3412" stroke-width="1.4" stroke-dasharray="5 3" marker-end="url(#arwG)"/>
+            <text x="748" y="52" text-anchor="middle" font-size="10.5" fill="#9a3412">沿前沿放松 TPS/user 约束 → 吞吐最多 +7×</text>
+
+            <path d="M 240 210 L 224 218" stroke="#78716c" stroke-width="1"/>
+            <text x="196" y="212" font-size="10.5" fill="#78716c">灰色点 = 被支配的配置</text>
+            <text x="196" y="228" font-size="10.5" fill="#78716c">（既有配置比它更好）</text>
+
+            <text x="495" y="302" text-anchor="middle" font-weight="700" font-size="11.5" fill="#1c1917">用户侧性能 →（TTFT / TPOT 折算的 TPS per user）</text>
+            <text x="30" y="165" text-anchor="middle" font-weight="700" font-size="11.5" fill="#1c1917" transform="rotate(-90 30 165)">硬件侧效率 →（TPS / GPU）</text>
+
+            <rect x="612" y="196" width="278" height="70" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="624" y="216" font-size="10.5" fill="#9a3412">扫描维度：调度算法 · TP/PP 大小</text>
+            <text x="624" y="233" font-size="10.5" fill="#9a3412">prefill chunk size · prefill/decode batch size</text>
+            <text x="624" y="253" font-size="11" font-weight="700" fill="#9a3412">LLaMA-3 70B 全空间 &lt; 2 分钟扫完</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 9 · 推理配置空间的 Pareto 前沿（对应论文 Figure 13）。Charon 在 2 分钟内扫完 LLaMA-3 70B / Hopper 的完整配置空间，红点为找到的最优配置；灰色点是被支配的低效配置 —— 传统做法要靠大量实测才能分辨这两类点。</p>
+      <div class="callout navy">
+        实现层面：Charon 依赖预先 profile 好的 kernel 延迟 + 多进程并行模拟来做到这个速度，并与自研推理框架和标准 HuggingFace Transformers 深度集成——自动从 HF 配置解析模型架构，从自研框架里提取 PyTorch FX 图和对应 kernel 实现，把使用门槛压到接近零。
+      </div>
+    </section>
+
+    <section class="card" id="s10">
+      <h2>10. 定位与局限</h2>
+      <p>
+        Charon 的核心方法论贡献是把"LLM 性能模拟"重新表述成一个<strong>编译器式的渐进细化问题</strong>：frontend 做图变换（trace→优化→并行→分析），backend 做算子级执行（可插拔的多引擎），顶层再叠一个设计空间搜索器。这个架构选择直接决定了它相对前序工作的四个优势——原生模型输入消除手搭/预处理成本、pass-based 设计让新优化和新并行策略"插拔"而不用重构核心、多粒度分析同时产出系统级指标和 PyTorch 风格细粒度 trace、混合引擎在速度和精度间做运行时取舍。
+      </p>
+      <p>
+        局限方面，论文自己承认的误差来源是<strong>不对真实集群的微观随机性做确定性建模</strong>（网络抖动、动态拥塞、数据相关的 kernel 执行随机性），这把精度天花板钉在个位数百分比而不是逼近 0。此外单 transformer block 抽取模拟是一个明确为对称架构设计的性能优化，非对称模型/异构 PP 需要退回到逐层追踪，工程复杂度更高。
+      </p>
+      <div class="callout">
+        与本仓库的关系：Charon 在硬件已定时搜索"怎么跑"（并行与调度），本仓库在负载已定时搜索"造什么芯片"（Core / SRAM / MC / NoC / RDMA）。本页只作方法参考，不是证据；借鉴方案（执行 trace 导出、链路级 τ 推导、重叠争用、算子成本提供者等）见 <a href="../teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md">24 号建议稿</a>。
+      </div>
+    </section>
+
+    <footer>
+      分析基于 arXiv:2605.17164v2（2026-05-19）· MLSys 2026 Oral
+    </footer>
+  </div>
+</body>
+</html>
