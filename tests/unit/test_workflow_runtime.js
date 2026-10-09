@@ -61,7 +61,7 @@ assert.throws(() => extractJson('no json here'), /not valid JSON/);
 
 // ---- every workflow compiles ----------------------------------------------
 const names = listWorkflows(root);
-assert.strictEqual(names.length, 23, `expected 23 workflows, found ${names.length}`);
+assert.strictEqual(names.length, 19, `expected 19 workflows, found ${names.length}`);
 for (const name of names) assert.strictEqual(typeof compileWorkflow(root, name), 'function', name);
 assert.throws(() => compileWorkflow(root, 'nope'), /no such workflow/);
 
@@ -106,27 +106,27 @@ assert.throws(() => compileWorkflow(root, 'nope'), /no such workflow/);
   assert(/outside what compute may land/.test(reject('compute', [{path: 'out/mc/x.json', content: '{}'}])));
   assert(/outside what explore may land/.test(reject('explore', [{path: 'out/x.md', content: 'hi'}])), 'explore may only write scratch/');
   assert.strictEqual(reject('explore', [{path: 'scratch/explore_1.md', content: 'hi'}]), '');
-  assert(/gate literal/.test(reject('dgate', [{path: 'out/governance/e.json', content: '{\n  "decision": "PASS"\n}'}])));
-  assert(/gate literal/.test(reject('dgate', [{path: 'out/governance/e.json', content: 'D_GATE_PASSED'}])));
-  assert.strictEqual(reject('dgate', [{path: 'out/governance/e.json', content: '不得写 PASS 字面量'}]), '', 'a prohibition may name the literal');
-  assert.strictEqual(reject('dgate', [{path: 'out/governance/e.json', content: 'PASSTHROUGH and BYPASS'}]), '', 'a substring is not the literal');
+  assert(/gate literal/.test(reject('arch.direction', [{path: 'out/governance/e.json', content: '{\n  "decision": "PASS"\n}'}])));
+  assert(/gate literal/.test(reject('arch.direction', [{path: 'out/governance/e.json', content: 'D_GATE_PASSED'}])));
+  assert.strictEqual(reject('arch.direction', [{path: 'out/governance/e.json', content: '不得写 PASS 字面量'}]), '', 'a prohibition may name the literal');
+  assert.strictEqual(reject('arch.direction', [{path: 'out/governance/e.json', content: 'PASSTHROUGH and BYPASS'}]), '', 'a substring is not the literal');
   assert(/no landing policy/.test(reject('mystery', [{path: 'out/x.json', content: '{}'}])));
   // The script's own decision may be carried; anything else may not.
   fs.mkdirSync(path.join(tmp, 'out/governance'), {recursive: true});
   fs.writeFileSync(path.join(tmp, 'out/governance/gate_status.json'), JSON.stringify({directionGate: {decision: 'PASS'}, quantificationGate: {decision: 'BLOCKED_BY_X'}}));
-  const decisions = scriptGateDecisions(tmp, 'dgate');
-  assert.deepStrictEqual(decisions, ['PASS'], 'dgate reports on the direction gate only');
+  const decisions = scriptGateDecisions(tmp, 'arch.direction');
+  assert.deepStrictEqual(decisions, ['PASS'], 'arch.direction reports on the direction gate only');
   assert.deepStrictEqual(scriptGateDecisions(tmp, 'design.verify'), ['PASS', 'BLOCKED_BY_X']);
   assert.deepStrictEqual(scriptGateDecisions(tmp, 'compute'), []);
   const evidence = (value) => [{path: 'out/governance/e.json', content: `{\n  "gateDecision": "${value}",\n  "x": 1\n}\n`}];
-  assert.strictEqual(landFiles({root: tmp, workflow: 'dgate', files: evidence('PASS'), dryRun: true, scriptDecisions: decisions}).rejected.length, 0, 'the script value lands');
-  assert.strictEqual(landFiles({root: tmp, workflow: 'dgate', files: evidence('PASS'), dryRun: true}).rejected.length, 1, 'without the script value the literal is refused');
-  assert.strictEqual(landFiles({root: tmp, workflow: 'dgate', files: [{path: 'out/governance/e.json', content: '{"gateDecision": "PASS", "note": "PASS"}'}], dryRun: true, scriptDecisions: decisions}).rejected.length, 1, 'only the exact gateDecision line is exempt');
-  assert.strictEqual(landFiles({root: tmp, workflow: 'dgate', files: [{path: 'out/governance/e.json', content: '{\n  "summary": "PASS"\n}'}], dryRun: true, scriptDecisions: decisions}).rejected.length, 1, 'other keys stay refused');
-  assert.strictEqual(recheckGateDecision('dgate', {gateDecision: 'PASS'}, decisions), null);
-  assert.strictEqual(recheckGateDecision('dgate', {gateDecision: 'UNVERIFIED'}, decisions), null);
-  assert(/does not match/.test(recheckGateDecision('dgate', {gateDecision: 'D_GATE_PASSED'}, decisions)), 'an invented decision is refused');
-  assert(/does not match/.test(recheckGateDecision('dgate', {gateDecision: 'BLOCKED_BY_X'}, decisions)), 'the quantification decision is not the direction gate');
+  assert.strictEqual(landFiles({root: tmp, workflow: 'arch.direction', files: evidence('PASS'), dryRun: true, scriptDecisions: decisions}).rejected.length, 0, 'the script value lands');
+  assert.strictEqual(landFiles({root: tmp, workflow: 'arch.direction', files: evidence('PASS'), dryRun: true}).rejected.length, 1, 'without the script value the literal is refused');
+  assert.strictEqual(landFiles({root: tmp, workflow: 'arch.direction', files: [{path: 'out/governance/e.json', content: '{"gateDecision": "PASS", "note": "PASS"}'}], dryRun: true, scriptDecisions: decisions}).rejected.length, 1, 'only the exact gateDecision line is exempt');
+  assert.strictEqual(landFiles({root: tmp, workflow: 'arch.direction', files: [{path: 'out/governance/e.json', content: '{\n  "summary": "PASS"\n}'}], dryRun: true, scriptDecisions: decisions}).rejected.length, 1, 'other keys stay refused');
+  assert.strictEqual(recheckGateDecision('arch.direction', {gateDecision: 'PASS'}, decisions), null);
+  assert.strictEqual(recheckGateDecision('arch.direction', {gateDecision: 'UNVERIFIED'}, decisions), null);
+  assert(/does not match/.test(recheckGateDecision('arch.direction', {gateDecision: 'D_GATE_PASSED'}, decisions)), 'an invented decision is refused');
+  assert(/does not match/.test(recheckGateDecision('arch.direction', {gateDecision: 'BLOCKED_BY_X'}, decisions)), 'the quantification decision is not the direction gate');
   assert.strictEqual(recheckGateDecision('compute', {gateDecision: 'PASS'}, []), null, 'other workflows are not rechecked');
   const atomic = landFiles({root: tmp, workflow: 'verify', files: [
     {path: 'out/verification/verify_report.json', content: '{}'},
@@ -250,7 +250,7 @@ assert.throws(() => compileWorkflow(root, 'nope'), /no such workflow/);
 
   // ---- outcome record -----------------------------------------------------
   assert.strictEqual(outcomePath('design.compute'), 'out/compute/compute_outcome.json');
-  assert.strictEqual(outcomePath('detail.events'), 'out/detailed/detail_events_outcome.json');
+  assert.strictEqual(outcomePath('integrate'), 'out/detailed/integrate_outcome.json');
   assert.strictEqual(outcomePath('explore'), 'scratch/explore_outcome.json');
   assert.strictEqual(outcomePath('intake'), null, 'intake can only land one exact file');
   assert.strictEqual(buildOutcomeFile('compute', {verdict: 'X', files: [{path: 'out/compute/a.json', content: '{}'}]}), null, 'a run with files needs no outcome record');

@@ -143,8 +143,34 @@ function observationCoverage(matrix) {
   };
 }
 
-function evaluateQuantificationGate(detail, matrix, register, directionGate) {
+// The two L4 sensitivity-card checks of the converge criteria (doc 23 §4 L5-b). They were
+// stated by agents in design.converge; they are computed here now, so a proposal can only
+// cite them. `cards` maps a dimension to its out/attribution/<dimension>_card.json.
+// A missing joint card fails closed: an unmeasured joint pessimism is not a met one.
+function attributionChecks(cards, targetTps) {
+  const joint = cards.joint;
+  const jointTps = joint && joint.dimension === 'joint' && joint.jointPessimistic && joint.jointPessimistic.allUnmeasured
+    ? joint.jointPessimistic.allUnmeasured.tpsPerUser
+    : null;
+  // A load-bearing parameter is accounted for when it names who owns it, what its value
+  // rests on, and what measurement would recalibrate it (`measurementNeeded`).
+  const loadBearing = Object.entries(cards).flatMap(([dimension, card]) => (card.loadBearing || []).map(name => {
+    const row = (card.parameters || []).find(p => p.name === name) || {};
+    return {dimension, name, accounted: Boolean(row.owner && row.evidence && row.measurementNeeded)};
+  }));
+  return {
+    attributionCards: {source: 'out/attribution/<dimension>_card.json', dimensions: Object.keys(cards).sort()},
+    jointPessimisticTpsPerUser: jointTps,
+    jointPessimisticMeetsTarget: Number.isFinite(jointTps) && Number.isFinite(targetTps) && jointTps >= targetTps,
+    loadBearingParameters: loadBearing.length,
+    loadBearingUnaccounted: loadBearing.filter(p => !p.accounted).map(p => `${p.dimension}/${p.name}`),
+    loadBearingAccounted: Object.keys(cards).length > 0 && loadBearing.every(p => p.accounted)
+  };
+}
+
+function evaluateQuantificationGate(detail, matrix, register, directionGate, cards = {}) {
   const coverage = observationCoverage(matrix);
+  const attribution = attributionChecks(cards, detail.sizing && detail.sizing.targetTpsPerUser);
   const agentRuns = detail.agentRuns || {};
   const manifestsResolved = Object.values(detail.manifestStatus || {})
     .every(status => !String(status).startsWith('BLOCKED'));
@@ -163,20 +189,27 @@ function evaluateQuantificationGate(detail, matrix, register, directionGate) {
     agentRuns.Q6 && agentRuns.Q6.status === 'COMPLETE'
   );
   const fineTpsReady = Boolean(agentRuns.Q8 && agentRuns.Q8.status === 'COMPLETE');
-  const pass = Boolean(
-    directionGate.decision === 'PASS' &&
-    detail.runMode === 'FORMAL_QUANTIFICATION' &&
-    manifestsResolved &&
-    detail.evidenceKind === 'VALIDATED_EVENT_TIMING' &&
-    coverage.observedSlots === coverage.requiredSlots &&
-    coverage.allObservedSlotsReplayable &&
-    matrix.observations.every(x => x.runId === detail.runId && x.manifestHash === detail.manifestHash) &&
-    sharedManifest &&
-    fineTpsReady &&
-    provenanceComplete &&
-    coverage.observationMatrixCompleteOrBlocked &&
-    coverage.allObservedSlotsHaveProvenance
-  );
+  // Every conjunct is a named check, so a blocked Q-Gate says which ones failed. The last
+  // three are the converge criteria (L5-b): joint pessimism, load-bearing parameters, and
+  // every one of the 18 slots either observed or terminally blocked.
+  const checks = {
+    directionGatePassed: directionGate.decision === 'PASS',
+    formalQuantification: detail.runMode === 'FORMAL_QUANTIFICATION',
+    manifestComplete: manifestsResolved,
+    validatedEventTiming: detail.evidenceKind === 'VALIDATED_EVENT_TIMING',
+    allSlotsObserved: coverage.observedSlots === coverage.requiredSlots,
+    allObservedSlotsReplayable: coverage.allObservedSlotsReplayable,
+    observationsBoundToRun: matrix.observations.every(x => x.runId === detail.runId && x.manifestHash === detail.manifestHash),
+    sharedManifestAcrossRooflineAndReplay: sharedManifest,
+    fineTpsReady,
+    provenanceComplete,
+    allObservedSlotsHaveProvenance: coverage.allObservedSlotsHaveProvenance,
+    jointPessimisticMeetsTarget: attribution.jointPessimisticMeetsTarget,
+    loadBearingAccounted: attribution.loadBearingAccounted,
+    observationMatrixCompleteOrBlocked: coverage.observationMatrixCompleteOrBlocked
+  };
+  const failedChecks = Object.keys(checks).filter(key => !checks[key]);
+  const pass = failedChecks.length === 0;
 
   return {
     evidenceKind: detail.evidenceKind || 'UNSPECIFIED',
@@ -198,8 +231,22 @@ function evaluateQuantificationGate(detail, matrix, register, directionGate) {
     provenanceComplete,
     ...coverage,
     fineTpsReady,
+    ...attribution,
+    failedChecks,
     decision: pass ? 'PASS' : 'BLOCKED_BY_D_GATE_MANIFEST_EVENT_MODEL_AND_PROVENANCE'
   };
+}
+
+// The L4 sensitivity cards on disk, keyed by dimension. Only the Q-Gate reads them; the
+// D-Gate decides the direction before any card exists.
+function readAttributionCards() {
+  const dir = path.join(root, 'out/attribution');
+  if (!fs.existsSync(dir)) return {};
+  return Object.fromEntries(fs.readdirSync(dir)
+    .map(name => name.match(/^(\w+)_card\.json$/))
+    .filter(Boolean)
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .map(m => [m[1], read(`out/attribution/${m[0]}`)]));
 }
 
 function writeGateStatus() {
@@ -210,7 +257,7 @@ function writeGateStatus() {
   const detailPath = path.join(root, 'out/detailed/detailed_architecture_run.json');
   const directionGate = evaluateDirectionGate(env, score, register);
   const quantificationGate = fs.existsSync(detailPath)
-    ? evaluateQuantificationGate(read('out/detailed/detailed_architecture_run.json'), matrix, register, directionGate)
+    ? evaluateQuantificationGate(read('out/detailed/detailed_architecture_run.json'), matrix, register, directionGate, readAttributionCards())
     : {decision: 'NOT_RUN'};
   const out = {
     schemaVersion: 'architecture-gate-status-v0.2',
@@ -237,6 +284,8 @@ module.exports = {
   evaluateDirectionGate,
   evaluateQuantificationGate,
   observationCoverage,
+  attributionChecks,
+  readAttributionCards,
   writeGateStatus,
   FORBIDDEN_GATE_LITERALS,
   gateLiteralPattern

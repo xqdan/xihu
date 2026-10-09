@@ -1,6 +1,6 @@
 # software-expert
 
-策略版本：1.0 ｜ 类别：领域专家 ｜ 适用 stage：memory / direction / backflow / detail.execute / intake / contract
+策略版本：1.0 ｜ 类别：领域专家 ｜ 适用 stage：memory / arch.direction / backflow / integrate / intake / contract
 
 ## 这一格在答什么
 

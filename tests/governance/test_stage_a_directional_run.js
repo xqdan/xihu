@@ -10,7 +10,7 @@ const workload = read('out/direction/directional_workload_baseline.json');
 const score = read('out/direction/directional_tps_scorecard.json');
 const register = read('out/governance/candidate_register.json');
 const report = fs.readFileSync(path.join(root, IDS.stageAReport), 'utf8');
-assert.strictEqual(env.stage, 'direction');
+assert.strictEqual(env.stage, 'arch.direction');
 assert.strictEqual(env.runId, IDS.stageARunId);
 assert.strictEqual(env.models.length, 3);
 assert.strictEqual(env.packageEnvelope.areaConservation, true);
@@ -47,6 +47,125 @@ for (const row of score.candidates.filter(c => blockedIds.includes(c.modelId))) 
 // never copied into the runner.
 const mcSpec = read('teams/hardware/inputs/k3_mc_baseline.json');
 const RES = require('../../teams/hardware/src/resource_profiles');
+
+// --- L2: the morphology macro-parameter space, scored against the default L1 contract --------
+// The published grid above still decides the D-Gate (candidateCount / summary count unchanged), so
+// the morphology table is additive. What it must be is COMPLETE and HONEST: every shape scored, its
+// numbers traceable to the published point and the contract, and the contract read rather than
+// restated.
+const MORPH = require('../../integration/planning/morphology');
+const morphology = score.morphology;
+assert(morphology && Array.isArray(morphology.rows), 'the scorecard must carry the L2 morphology table; run `npm run model:planning`');
+assert.strictEqual(morphology.candidateCount, morphology.rows.length);
+assert.strictEqual(morphology.rows.length, MORPH.enumerate().length, 'the table must score exactly the enumerated space');
+assert.deepStrictEqual(morphology.rows.map(r => r.morphologyId), MORPH.enumerate().map(r => r.morphologyId));
+
+// The published grid is a subset of the space: a morphology at the published shape IS the grid slot,
+// so the two tables are comparable instead of describing different hardware.
+for (const mcTier of MORPH.MC_TIERS) {
+  for (const tp of MORPH.TPS) {
+    const id = `${RES.coreProfiles.P1.id}-${mcTier}-TP${tp}`;
+    const row = morphology.rows.find(r => r.morphologyId === id);
+    assert(row, `${id} must appear in the morphology table`);
+    assert.strictEqual(row.axes.dies, 8, `${id} is the published shape, so it is the published 8-die package`);
+    const grid = score.candidates.find(c => c.candidateId === id && c.modelId === 'K3');
+    const morph = row.tpsPerModel.K3;
+    assert(Math.abs(grid.tpsPerUser - morph.tpsPerUser) < 1e-9 * morph.tpsPerUser,
+      `${id}: the published grid and the morphology table must agree on TPS/usr at the published shape (${grid.tpsPerUser} vs ${morph.tpsPerUser})`);
+    assert.strictEqual(grid.bottleneck, morph.bound, `${id}: the two tables must agree on the bounding lane`);
+  }
+}
+
+// Area and power come from the existing detailed basis, not a second model.
+const BASIS = require('../../integration/detailed/k3_physical_basis');
+const A = require('../../integration/detailed/k3_architecture_search');
+for (const row of morphology.rows) {
+  const r = row.physical;
+  assert.strictEqual(r.basis, BASIS.BASIS.process);
+  assert.strictEqual(r.cooling, BASIS.BASIS.cooling);
+  assert(r.dieAreaMm2 > 0 && r.cardPowerW > 0 && r.packageAreaMm2 > 0);
+  assert.strictEqual(r.feasible, r.reasons.length === 0);
+  assert.strictEqual(r.limits.packageAreaMm2.max, BASIS.BASIS.limits.packageArea);
+  // A die count that does not fit the placement window must be reported infeasible, not dropped:
+  // "差多少" needs the number, and a silently missing shape reads as an option nobody considered.
+  assert.strictEqual(r.limits.packageAreaMm2.satisfied, r.packageAreaMm2 <= BASIS.BASIS.limits.packageArea);
+  assert.strictEqual(row.hardware.cubes, row.axes.dies * A.LIMITS.mcCountPerDie);
+}
+
+// Every axis of the L1 contract is checked, and a miss carries the shortfall.
+assert.deepStrictEqual(morphology.rows[0].checks.map(c => c.id), morphology.contract.entries.map(e => e.id),
+  'every contract entry must be checked, in the contract\'s own order');
+for (const row of morphology.rows) {
+  for (const c of row.checks) {
+    const entry = morphology.contract.entries.find(e => e.id === c.id);
+    assert(c.requirement.min !== null || c.requirement.max !== null, `${row.morphologyId}/${c.id}: a check must carry the bound it was tested against`);
+    if (entry.min !== null) assert.strictEqual(c.requirement.min, entry.min, `${c.id}: the requirement is the contract's number, not a copy`);
+    if (entry.max !== null) assert.strictEqual(c.requirement.max, entry.max);
+    assert.strictEqual(c.satisfied, c.shortfall === 0, `${row.morphologyId}/${c.id}: a satisfied check has no shortfall and a miss has one`);
+    if (!c.satisfied) assert(c.shortfall > 0, `${row.morphologyId}/${c.id}: a miss must say by how much`);
+  }
+  assert.deepStrictEqual(row.misses, row.checks.filter(c => !c.satisfied).map(c => ({id: c.id, shortfall: c.shortfall})));
+}
+// The contract is the DEFAULT split; if that changes, this table is being scored against the wrong
+// budget and the failure should name the contract rather than leave a silently different table.
+const MB = require('../../integration/pipelines/make_brief');
+const frontier = read('out/requirements/budget_frontier.json');
+assert.strictEqual(morphology.contract.splitId, MB.DEFAULT_SPLIT, 'the morphology table is scored against the default split; a different split needs a different table, not a different number here');
+const sCmp = frontier.splits.find(s => s.splitId === MB.DEFAULT_SPLIT).contract;
+assert.strictEqual(morphology.contract.targetTpsPerUser, sCmp.target.tpsPerUser);
+assert.strictEqual(morphology.contract.architectureGateTpsPerUser, sCmp.target.architectureGate);
+for (const e of sCmp.split) {
+  const scored = morphology.contract.entries.find(x => x.id === e.id);
+  assert(scored, `${e.id} is in the L1 contract and must be scored`);
+  assert.strictEqual(scored.min, e.min === undefined ? null : e.min, `${e.id}: min`);
+  assert.strictEqual(scored.max, e.max === undefined ? null : e.max, `${e.id}: max`);
+}
+// The baseline the whole table is measured from is the published RDMA point, and it is P1.
+assert.deepStrictEqual(morphology.baseline.x, read('out/rdma/k3_rdma_final_tuning_results.json').search.best.x,
+  'the morphology axes are measured from the published search:final point');
+// And the area/power chain must reproduce the L1 contract's own published point -- B-AREA carries
+// atPublishedSram precisely so the contract can be checked against the physical model instead of
+// trusting it. If the morphology path did not land here, every "差多少" in the table would be the
+// difference between two different models of the same die.
+{
+  const at = sCmp.split.find(e => e.id === 'B-AREA').atPublishedSram;
+  const published = morphology.rows.find(r => r.morphologyId === 'P1-compact-MC640-TP32').physical;
+  for (const [field, expected] of [['dieAreaMm2', at.dieAreaMm2], ['diePowerW', at.diePowerW], ['cardPowerW', at.cardPowerW]]) {
+    assert(Math.abs(published[field] - expected) < 1e-6 * Math.abs(expected),
+      `${field}: the morphology path gives ${published[field]} at the published shape but B-AREA.atPublishedSram says ${expected}; the physical model and the L1 contract disagree about the same die`);
+  }
+}
+assert.strictEqual(MORPH.morphologyId(MORPH.shape()), 'P1-compact-MC640-TP32',
+  'the published shape must keep the published id; only a deviation is tagged');
+// A tagged id still parses back through the spec's three readers: stage_b.js resolves all three.
+for (const row of morphology.rows) {
+  assert.strictEqual(RES.tpOf(row.morphologyId), row.axes.tp, `${row.morphologyId}: tp must parse back`);
+  assert.strictEqual(RES.mcProfileOf(row.morphologyId), row.axes.mcTier, `${row.morphologyId}: the MC tier must parse back`);
+  assert.strictEqual(RES.physicalProfileOf(row.morphologyId), 'P1', `${row.morphologyId}: the profile id must parse back`);
+}
+// A morphology is never a coreProfiles entry: one hardware spec (ADR-0021). Its point travels on the slot.
+for (const row of morphology.rows) {
+  assert.strictEqual(score.resourceProfiles[row.morphologyId], undefined, 'a morphology must not be registered as a physical profile');
+}
+
+// --- L2_budget.json: the L1 contract refined one layer down ----------------------------------
+const l2 = read('out/budget/L2_budget.json');
+assert.strictEqual(l2.layer, 'L2');
+assert.strictEqual(l2.schemaVersion, 'budget-contract-v0.1');
+assert.strictEqual(l2.splitId, morphology.contract.splitId);
+assert.strictEqual(l2.sourceContract.path, 'out/requirements/budget_frontier.json');
+const shared = l2.split.find(e => e.id === 'L2-SRAM-SHARED');
+const local = l2.split.find(e => e.id === 'L2-SRAM-LOCAL');
+assert(shared && local, 'L2 refines B-SRAM-CAP into shared and local');
+assert.strictEqual(shared.refines, 'B-SRAM-CAP');
+assert.strictEqual(shared.min, sCmp.split.find(e => e.id === 'B-SRAM-CAP').min, 'the L2 shared floor IS the L1 entry, not a new number');
+assert.strictEqual(shared.depth, sCmp.split.find(e => e.id === 'B-SRAM-CAP').depth);
+// Every other L1 entry is carried as inherited, so no L1 number is restated at L2.
+assert.deepStrictEqual(l2.inherited.map(e => e.id), sCmp.split.filter(e => e.id !== 'B-SRAM-CAP').map(e => e.id));
+assert(l2.inherited.every(e => e.relationship === 'INHERITED' && e.layer === 'L1'));
+assert.deepStrictEqual(l2.morphology.satisfiesEveryEntry, morphology.satisfiesEveryEntry);
+assert.strictEqual(l2.morphology.bestByContract, morphology.bestByContract);
+
 const peak = (shape, cores, ghz) => cores * shape.engines * shape.rows * shape.cols * 2 * ghz * 1e9 * 8;
 assert.deepStrictEqual(Object.keys(score.resourceProfiles), ['P1']);
 const p1 = score.resourceProfiles.P1;
@@ -60,6 +179,11 @@ assert.strictEqual(score.inputHashes.runner, hashFile('integration/pipelines/sta
   'scorecard was generated with a different integration/pipelines/stage_a.js; run `npm run model:planning`');
 assert.strictEqual(score.inputHashes.mcSpec, hashFile('teams/hardware/inputs/k3_mc_baseline.json'),
   'scorecard predates the current k3_mc_baseline.json; run `npm run baseline:sync && npm run model:planning`');
+// The morphology table is a statement about a particular contract, scored by a particular model.
+assert.strictEqual(score.inputHashes.l1Contract, hashFile('out/requirements/budget_frontier.json'),
+  'scorecard predates the current budget frontier; run `npm run budget:frontier && npm run model:planning`');
+assert.strictEqual(score.inputHashes.morphologyModel, hashFile('integration/planning/morphology.js'),
+  'scorecard was generated with a different integration/planning/morphology.js; run `npm run model:planning`');
 const cand = mcSpec.computeDieCandidate;
 assert.strictEqual(p1.lCoresPerDie, cand.lCores);
 assert.strictEqual(p1.hCoresPerDie, cand.hCores);

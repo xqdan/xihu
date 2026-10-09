@@ -176,8 +176,13 @@ assert.strictEqual(JSON.stringify(O.OPT), optBefore, 'the OPT patch is restored 
 assert.throws(() => DP.resolve({point: 'auto', baselineText: text, jointPoint: {...landed, opt: {...row.opt, tauUs: 1.0}}, runRecord: record, artifact: coupling}), /does not verify/);
 assert.throws(() => DP.resolve({point: 'joint', baselineText: text, jointPoint: landed, runRecord: null, artifact: coupling}), /does not verify/);
 
-// No gate may depend on an attribution card.
-for (const f of fs.readdirSync('out/governance')) assert(!fs.readFileSync(`out/governance/${f}`, 'utf8').includes('out/attribution'), `${f}: no gate may depend on an attribution card`);
+// Only the Q-Gate reads attribution cards (the converge criteria, doc 23 §4 L5-b); the D-Gate
+// decides the direction before any card exists, and no other governance artifact cites one.
+for (const f of fs.readdirSync('out/governance')) {
+  const text = fs.readFileSync(`out/governance/${f}`, 'utf8');
+  if (f !== 'gate_status.json') assert(!text.includes('out/attribution'), `${f}: only the Q-Gate may depend on an attribution card`);
+  else assert(!JSON.stringify(JSON.parse(text).directionGate).includes('out/attribution'), 'the D-Gate must not depend on an attribution card');
+}
 
 const f1 = v => (typeof v === 'number' ? v.toFixed(1) : String(v));
 console.log(`PASS tps attribution: ${T.DEFAULT_DIMENSIONS.map(d => `${d} ${cards[d].parameters.length} rows`).join(', ')}; `

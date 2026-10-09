@@ -1,6 +1,6 @@
 # model-expert
 
-策略版本：1.0 ｜ 类别：领域专家 ｜ 适用 stage：detail.freeze / detail.workload / intake / contract / direction
+策略版本：1.0 ｜ 类别：领域专家 ｜ 适用 stage：integrate / req.workload / intake / contract / arch.direction
 
 ## 这一格在答什么
 

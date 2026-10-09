@@ -51,7 +51,11 @@ function limitReasons(p, suffix = '') {
   return reasons;
 }
 
-function resize(p, basis = BASIS) {
+// `dies` must be the same die count that built `p` (A.physical(x, dies)). It defaults to the
+// package's own count, which is what every caller before the L2 morphology axis used. The die
+// term is `dies x (dieArea - p.dieArea)`: the package grows or shrinks by the die count's worth
+// of the area delta, and the MC cubes ride along inside p.packageArea at the same count.
+function resize(p, basis = BASIS, dies = A.LIMITS.dies) {
   const proc = PROCESS[basis.process];
   if (!proc) throw new Error('unknown process ' + basis.process);
   const area = {};
@@ -60,7 +64,7 @@ function resize(p, basis = BASIS) {
     area[k] = v * proc[CLASS[k]] * (k === 'matrix' ? A.TECH.matrixTFPerMm2 / basis.matrixTFPerMm2 : 1);
   }
   const dieArea = Object.values(area).reduce((a, b) => a + b, 0);
-  const packageArea = p.packageArea + A.LIMITS.dies * (dieArea - p.dieArea);
+  const packageArea = p.packageArea + dies * (dieArea - p.dieArea);
   const edgeBudget = 4 * Math.sqrt(dieArea) * A.TECH.phyEdgeFraction;
   const q = {...p, area, dieArea, packageArea, edgeBudget, basis: basis.process};
   const reasons = [...p.reasons.filter(r => !LIMIT_REASONS.includes(r)), ...limitReasons(q)];
@@ -68,4 +72,4 @@ function resize(p, basis = BASIS) {
   return {...q, feasible: !reasons.length, reasons};
 }
 
-module.exports = {PROCESS, BASIS, CLASS, resize, limitReasons};
+module.exports = {PROCESS, BASIS, CLASS, LIMIT_REASONS, resize, limitReasons};

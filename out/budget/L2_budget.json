@@ -1,0 +1,166 @@
+{
+  "schemaVersion": "budget-contract-v0.1",
+  "layer": "L2",
+  "splitId": "S-CMP",
+  "sourceContract": {
+    "layer": "L1",
+    "splitId": "S-CMP",
+    "path": "out/requirements/budget_frontier.json"
+  },
+  "target": {
+    "tpsPerUser": 1000,
+    "architectureGate": 1050,
+    "rawBudgetUs": 854.7008547008547,
+    "engineeringMargin": 1.17
+  },
+  "split": [
+    {
+      "id": "L2-SRAM-LOCAL",
+      "quantity": "on-chip local SRAM per die (L cores x lMiB + H cores x hMiB)",
+      "layer": "L2",
+      "min": 16,
+      "basis": "per-core local SRAM sizes the spec fixes (computeDieCandidate lCore/hCore localSramMiB), summed over the cores per die",
+      "atBaseline": 24
+    },
+    {
+      "id": "L2-SRAM-SHARED",
+      "quantity": "shared SRAM window per die",
+      "layer": "L2",
+      "min": 16,
+      "max": null,
+      "depth": 4,
+      "refines": "B-SRAM-CAP",
+      "basis": null,
+      "note": "L2 may choose the split; the floor is L1's B-SRAM-CAP and the window must still hold the expert working set at depth",
+      "holdsBySharedMiB": [
+        {
+          "sharedMiB": 8,
+          "holds": false
+        },
+        {
+          "sharedMiB": 10,
+          "holds": false
+        },
+        {
+          "sharedMiB": 12,
+          "holds": false
+        },
+        {
+          "sharedMiB": 13,
+          "holds": false
+        },
+        {
+          "sharedMiB": 14,
+          "holds": false
+        },
+        {
+          "sharedMiB": 16,
+          "holds": true
+        },
+        {
+          "sharedMiB": 20,
+          "holds": true
+        },
+        {
+          "sharedMiB": 24,
+          "holds": true
+        }
+      ],
+      "satisfiesFloor": [
+        "P1-compact-MC320-TP8",
+        "P1-compact-MC320-TP16",
+        "P1-compact-MC320-TP32",
+        "P1-compact-MC640-TP8",
+        "P1-compact-MC640-TP16",
+        "P1-compact-MC640-TP32",
+        "P1-compact-N4x4-MC640-TP32",
+        "P1-compact-N12x4-MC640-TP32",
+        "P1-compact-N16x4-MC640-TP32",
+        "P1-compact-N8x8-MC640-TP32",
+        "P1-compact-N8x12-MC640-TP32",
+        "P1-compact-N8x16-MC640-TP32",
+        "P1-compact-L1H4S20-MC640-TP32",
+        "P1-compact-L1H4S24-MC640-TP32",
+        "P1-compact-L1H4S32-MC640-TP32",
+        "P1-compact-L2H4S16-MC640-TP32",
+        "P1-compact-L4H4S16-MC640-TP32",
+        "P1-compact-L1H2S16-MC640-TP32",
+        "P1-compact-L1H8S16-MC640-TP32",
+        "P1-compact-D4-MC640-TP32",
+        "P1-compact-D6-MC640-TP32",
+        "P1-compact-L1H4S24-MC320-TP32"
+      ],
+      "missesFloor": [
+        {
+          "morphologyId": "P1-compact-L1H4S8-MC640-TP32",
+          "shortfallMiB": 8
+        },
+        {
+          "morphologyId": "P1-compact-L1H4S12-MC640-TP32",
+          "shortfallMiB": 4
+        },
+        {
+          "morphologyId": "P1-compact-L1H4S8-MC320-TP32",
+          "shortfallMiB": 8
+        }
+      ]
+    }
+  ],
+  "inherited": [
+    {
+      "id": "B-MEM-BW",
+      "layer": "L1",
+      "quantity": "mcPayloadGBsPerCube",
+      "min": 640,
+      "max": null,
+      "set": "fixed by split",
+      "relationship": "INHERITED"
+    },
+    {
+      "id": "B-SERIAL-CMP",
+      "layer": "L1",
+      "quantity": "computeScale",
+      "min": 0.7444854736328125,
+      "max": null,
+      "set": "derived",
+      "relationship": "INHERITED"
+    },
+    {
+      "id": "B-TAU",
+      "layer": "L1",
+      "quantity": "tauUs",
+      "min": null,
+      "max": 1.15,
+      "set": "fixed by split",
+      "relationship": "INHERITED"
+    },
+    {
+      "id": "B-AREA",
+      "layer": "L1",
+      "quantity": "dieAreaMm2",
+      "min": null,
+      "max": 400,
+      "set": "k3_physical_basis.BASIS.limits",
+      "relationship": "INHERITED"
+    }
+  ],
+  "morphology": {
+    "count": 25,
+    "satisfiesEveryEntry": [
+      "P1-compact-MC640-TP8",
+      "P1-compact-MC640-TP16",
+      "P1-compact-MC640-TP32",
+      "P1-compact-N12x4-MC640-TP32",
+      "P1-compact-L1H4S20-MC640-TP32",
+      "P1-compact-L1H4S24-MC640-TP32",
+      "P1-compact-L1H4S32-MC640-TP32",
+      "P1-compact-L2H4S16-MC640-TP32",
+      "P1-compact-L4H4S16-MC640-TP32",
+      "P1-compact-L1H2S16-MC640-TP32",
+      "P1-compact-L1H8S16-MC640-TP32",
+      "P1-compact-D6-MC640-TP32"
+    ],
+    "bestByContract": "P1-compact-L1H2S16-MC640-TP32",
+    "table": "out/direction/directional_tps_scorecard.json#/morphology"
+  }
+}

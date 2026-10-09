@@ -41,13 +41,16 @@
  *        [--args file.json] [--brief file.json] [--split S-CMP] [--run-id id] [--max N] [--dimension d]
  *        [--model name] [--concurrency N] [--timeout ms] [--exchange-dir dir]
  *        [--result-file file.json] [--land]
- *   <workflow>: compute | sram | mc | comm | physical | intake | detail.events | ... (see --list)
- *   direction, compute, sram, mc, comm and physical derive their brief from the budget contract;
+ *   <workflow>: compute | sram | mc | comm | physical | intake | integrate | ... (see --list)
+ *   arch.direction, compute, sram, mc, comm and physical derive their brief from the budget contract;
  *   --brief overrides that, and every other stage still needs it.
  *   attribution reads out/attribution/<d>_card.json (d = sram | comm | joint) and refuses a stale card,
  *   or one built at another design point than design_point.js resolves (the joint point after L3).
- *   converge gets args.designPoint (design_point.js) and stops when it is not the baseline's point.
+ *   converge gets args.designPoint (design_point.js) and stops when it is not the baseline's point,
+ *   and args.convergeCriteria: the three L5-b checks of out/governance/gate_status.json#quantificationGate.
  *   req.budget reads out/requirements/budget_frontier.json and refuses a stale frontier.
+ *   req.workload reads out/requirements/workload_requirements.json (npm run workload:requirements)
+ *   and refuses a stale one, alongside the operator workload it was summarised from.
  *
  * Exit codes: 0 ran (the workflow's own verdict is in the summary), 1 usage or
  * environment problem, 3 agents modified the tree, 4 a file was rejected, 5 the
@@ -77,6 +80,7 @@ const LEDGER = require('./design_ledger');
 const ATTRIBUTION = require('../detailed/tps_attribution');
 const DESIGN_POINT = require('./design_point');
 const FRONTIER = require('../planning/requirement_frontier');
+const WORKLOAD_REQUIREMENTS = require('../planning/requirement_workload');
 
 const root = path.resolve(__dirname, '../..');
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest('hex');
@@ -183,7 +187,23 @@ function prepareArgs(workflow, flags, {designPoint = () => DESIGN_POINT.resolve(
   }
   // design.converge proposes on the D group's artifacts, which Stage B builds from the baseline.
   // It gets the design point the stages after L3 read, and stops when the two are not the same point.
-  if (workflow === 'converge') args.designPoint = designPoint();
+  // Its three criteria (doc 23 §4 L5-b) are Q-Gate checks evaluate_gates.js computed; it gets
+  // them as computed, so no agent in the run re-decides them.
+  if (workflow === 'converge') {
+    args.designPoint = designPoint();
+    const gatePath = 'out/governance/gate_status.json';
+    if (!fs.existsSync(path.join(root, gatePath))) throw new Error(`${gatePath} is missing; run npm run model:planning`);
+    const q = JSON.parse(fs.readFileSync(path.join(root, gatePath), 'utf8')).quantificationGate || {};
+    args.convergeCriteria = {
+      source: `${gatePath}#quantificationGate`,
+      jointPessimisticTpsPerUser: q.jointPessimisticTpsPerUser,
+      jointPessimisticMeetsTarget: q.jointPessimisticMeetsTarget,
+      loadBearingParameters: q.loadBearingParameters,
+      loadBearingUnaccounted: q.loadBearingUnaccounted,
+      loadBearingAccounted: q.loadBearingAccounted,
+      observationMatrixCompleteOrBlocked: q.observationMatrixCompleteOrBlocked
+    };
+  }
   // design.req.budget reads the budget frontier (npm run budget:frontier) the same way: whole,
   // and refused when any input it was built from has changed since.
   if (workflow === 'req.budget') {
@@ -197,6 +217,63 @@ function prepareArgs(workflow, flags, {designPoint = () => DESIGN_POINT.resolve(
       throw new Error(`${frontierPath} is stale (built from another ${stale.map((a) => a.path).join(', ')}); run npm run budget:frontier`);
     }
     Object.assign(args, {frontier, frontierPath, frontierSha256: sha256(text)});
+  }
+  // design.req.workload reads the L1-a workload summary (npm run workload:requirements) the same
+  // way: whole, and refused when an input it was built from has changed since. The two files are
+  // read-only views of the derivation kernel, so a stale one is a view of a model nobody is
+  // designing any more -- the run must stop here, not compare the numbers afterwards.
+  if (workflow === 'req.workload') {
+    const requirementsPath = WORKLOAD_REQUIREMENTS.OUT_FILE;
+    if (!fs.existsSync(path.join(root, requirementsPath))) {
+      throw new Error(`${requirementsPath} is missing; run npm run workload:requirements`);
+    }
+    const text = fs.readFileSync(path.join(root, requirementsPath), 'utf8');
+    const requirements = JSON.parse(text);
+    const stale = ((requirements.inputs && requirements.inputs.sourceArtifacts) || [])
+      .filter((a) => !fs.existsSync(path.join(root, a.path)) || sha256(fs.readFileSync(path.join(root, a.path))) !== a.sha256);
+    if (stale.length) {
+      throw new Error(`${requirementsPath} is stale (built from another ${stale.map((a) => a.path).join(', ')}); run npm run workload:requirements`);
+    }
+    if (!fs.existsSync(path.join(root, WORKLOAD_REQUIREMENTS.WORKLOAD_FILE))) {
+      throw new Error(`${WORKLOAD_REQUIREMENTS.WORKLOAD_FILE} is missing; run npm run workload:planning`);
+    }
+    Object.assign(args, {workloadRequirements: requirementsPath, workloadRequirementsSha256: sha256(text),
+      workloadArtifact: WORKLOAD_REQUIREMENTS.WORKLOAD_FILE});
+  }
+  // design.arch.direction (L2) is where the D-Gate is decided, so it reads three artifacts rather
+  // than one: the scorecard and envelope carry the candidate space and the morphology table the
+  // gate is computed over, the gate status carries the CURRENT decision, and the L2 budget is what
+  // the L1 contract looks like one layer down. All four are handed over whole. The workflow is
+  // required to agree with the script's gate, so a stale scorecard would let it argue about a
+  // candidate space that no longer exists -- that is a stop, not a warning.
+  if (workflow === 'arch.direction') {
+    const files = {
+      scorecardArtifact: 'out/direction/directional_tps_scorecard.json',
+      envelopeArtifact: 'out/direction/directional_resource_envelope.json',
+      gateStatusArtifact: 'out/governance/gate_status.json',
+      l2BudgetArtifact: 'out/budget/L2_budget.json'
+    };
+    for (const relativePath of Object.values(files)) {
+      if (!fs.existsSync(path.join(root, relativePath))) {
+        throw new Error(`${relativePath} is missing; run npm run model:planning`);
+      }
+    }
+    Object.assign(args, files);
+    const scorecardText = fs.readFileSync(path.join(root, files.scorecardArtifact), 'utf8');
+    const scorecardSha256 = sha256(scorecardText);
+    if (args.scorecardSha256 && args.scorecardSha256 !== scorecardSha256) {
+      throw new Error(`--args names scorecard ${args.scorecardSha256} but ${files.scorecardArtifact} is ${scorecardSha256}; the scorecard was regenerated (npm run model:planning) between the two`);
+    }
+    const scorecard = JSON.parse(scorecardText);
+    // The candidates are stage_a.js's morphology rows, handed over as computed. The shapes that
+    // satisfy every L1 contract entry go first, so the workflow's maxCandidates slice keeps them.
+    if (!args.candidates) {
+      const morphology = scorecard.morphology || {};
+      const satisfying = new Set(morphology.satisfiesEveryEntry || []);
+      args.candidates = [...(morphology.rows || [])].sort((a, b) => satisfying.has(b.morphologyId) - satisfying.has(a.morphologyId));
+    }
+    Object.assign(args, {scorecard, scorecardSha256,
+      l2Budget: JSON.parse(fs.readFileSync(path.join(root, files.l2BudgetArtifact), 'utf8'))});
   }
   return args;
 }
@@ -395,7 +472,7 @@ async function main(argv, deps = {}) {
   const landing = landFiles({root, workflow, files, dryRun: !flags.land, scriptDecisions});
   summary.landing = {dryRun: !flags.land, landed: landing.landed, rejected: landing.rejected};
   // The ledger is the loop's own record, not one of the workflow's files: it goes through
-  // neither the path policy (out/governance/ belongs to dgate and backflow) nor the content
+  // neither the path policy (out/governance/ belongs to arch.direction and backflow) nor the content
   // gate. It is written only when everything the workflow returned actually landed.
   const ledger = ledgerUpdate({land: flags.land, landing, result});
   if (ledger.write) {

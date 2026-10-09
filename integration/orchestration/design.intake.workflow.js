@@ -389,7 +389,7 @@ const framingOk = rounds.some((r) => r.framing === 'FRAMING_OK')
 // 那它就是一则注释，不是一条边。
 //
 //   ARCH_FREEZE        → 注入契约可定稿，交下游
-//   D_GATE_PROPOSAL    → brief 定稿，但下一格是 dgate 裁定候选集，不是直接开工
+//   D_GATE_PROPOSAL    → brief 定稿，但下一格是 arch.direction 裁定候选集，不是直接开工
 //   DIRECTION_BACKFLOW → 不落盘，交回 direction（循环内已就地终止）
 //
 // 落盘仍要求 framing-critic 通过：架构师说"可以冻结"与框架审查说"没有实质缺口"
@@ -398,8 +398,8 @@ const framingOk = rounds.some((r) => r.framing === 'FRAMING_OK')
 // ---------------------------------------------------------------------------
 const ROUTE = {
   ARCH_FREEZE: {lands: true, next: 'downstream'},
-  D_GATE_PROPOSAL: {lands: true, next: 'dgate'},
-  DIRECTION_BACKFLOW: {lands: false, next: 'direction'},
+  D_GATE_PROPOSAL: {lands: true, next: 'arch.direction'},
+  DIRECTION_BACKFLOW: {lands: false, next: 'arch.direction'},
 }
 const route = ROUTE[verdict] || {lands: false, next: null}
 const briefLanded = framingOk && route.lands
@@ -445,7 +445,7 @@ return {
   runId: RUN_ID,
   sourceCommit: SOURCE_COMMIT,
   verdict,
-  // 裁决的消费点：next 决定下一格走哪条边（dgate 还是直接下游），改这个表就等于改路由。
+  // 裁决的消费点：next 决定下一格走哪条边（arch.direction 还是直接下游），改这个表就等于改路由。
   nextStage: route.next,
   framingOk,
   rounds,

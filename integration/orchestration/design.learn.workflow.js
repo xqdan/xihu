@@ -32,12 +32,12 @@ export const meta = {
 // 本脚本落 references/sota/README.md + references/sota/<unit>.md。
 // "落盘"本身不产生价值——**有人读才算**。所以每个单元都登记了它被哪一格注入：
 //
-//   memory-subsystem         → design.sram / design.mc / design.dgate 的 memory-expert 实例
-//   interconnect-collective  → design.comm / design.dgate 的 comm-expert 实例
-//   compute-core             → design.compute / design.dgate 的 compute-expert 实例
-//   model-workload           → design.detail.workload / design.dgate 的 model-expert 实例
-//   package-ppa              → design.physical / design.dgate 的 physical-expert 实例
-//   sustained-tps            → design.direction 的 architect 实例
+//   memory-subsystem         → design.sram / design.mc / design.arch.direction 的 memory-expert 实例
+//   interconnect-collective  → design.comm / design.arch.direction 的 comm-expert 实例
+//   compute-core             → design.compute / design.arch.direction 的 compute-expert 实例
+//   model-workload           → design.req.workload / design.arch.direction 的 model-expert 实例
+//   package-ppa              → design.physical / design.arch.direction 的 physical-expert 实例
+//   sustained-tps            → design.arch.direction 的 architect 实例
 //   evidence-governance      → design.audit 的 verifier 实例
 //
 // 注入的是**文件路径**，不是正文内容。理由与策略正文相同：注入路径，实例自己去读，
@@ -77,7 +77,7 @@ const UNITS = [
     key: 'memory-subsystem',
     title: '内存子系统与 MC 效率',
     as_of: '2026-01',
-    consumedBy: 'design.sram / design.mc / design.dgate 的 memory-expert 实例',
+    consumedBy: 'design.sram / design.mc / design.arch.direction 的 memory-expert 实例',
     focus:
       'HBM/DRAM 控制器的 sustained 效率（raw→effective 折扣的实际分布）、命令混合与 refresh 的影响、' +
       'bank/row 冲突下的可达带宽、QoS 与多租户干扰、容量与带宽的权衡、' +
@@ -88,7 +88,7 @@ const UNITS = [
     key: 'interconnect-collective',
     title: '互联、Die-to-Die 与集合通信',
     as_of: '2026-01',
-    consumedBy: 'design.comm / design.dgate 的 comm-expert 实例',
+    consumedBy: 'design.comm / design.arch.direction 的 comm-expert 实例',
     focus:
       'UCIe/Die-to-Die 的协议效率与有效带宽折减、PHY/SerDes 每 hop 时延的典型量级、' +
       'ring 与 hierarchical allreduce 的 hop/链路数与可达时延、TP 规模扩大时 collective 的占比演化、' +
@@ -99,7 +99,7 @@ const UNITS = [
     key: 'compute-core',
     title: 'AI Core、阵列利用率与片上存储',
     as_of: '2026-01',
-    consumedBy: 'design.compute / design.dgate 的 compute-expert 实例',
+    consumedBy: 'design.compute / design.arch.direction 的 compute-expert 实例',
     focus:
       'peak 到 sustained 的算力折减（阵列填充率、kernel 级利用率的实测分布）、' +
       '脉动阵列/张量核在 MoE 与 attention 上的实际利用率、tiling 与数据复用对有效算力的影响、' +
@@ -110,7 +110,7 @@ const UNITS = [
     key: 'model-workload',
     title: 'MoE 推理的模型侧参数与量化',
     as_of: '2026-01',
-    consumedBy: 'design.detail.workload / design.dgate 的 model-expert 实例',
+    consumedBy: 'design.req.workload / design.arch.direction 的 model-expert 实例',
     focus:
       'MoE 专家预测命中率的公开实测区间、activeParams 与路由分布对吞吐的影响、' +
       'FP8/BF16 混合精度下 KV cache 与权重的实际开销、量化的精度-吞吐权衡与失效模式、' +
@@ -121,7 +121,7 @@ const UNITS = [
     key: 'sustained-tps',
     title: '推理系统的端到端吞吐账与 SLO 口径',
     as_of: '2026-01',
-    consumedBy: 'design.direction 的 architect 实例（方向级粗估的口径参照）',
+    consumedBy: 'design.arch.direction 的 architect 实例（方向级粗估的口径参照）',
     focus:
       'TPS/usr 这类指标在公开资料里的定义分歧、batch=1 与 batch>1 的口径差异、' +
       'decode 阶段的内存带宽下界估算方法（bytes/token 推导）、' +
@@ -144,7 +144,7 @@ const UNITS = [
     key: 'package-ppa',
     title: '封装、面积、功耗与热',
     as_of: '2026-01',
-    consumedBy: 'design.physical / design.dgate 的 physical-expert 实例',
+    consumedBy: 'design.physical / design.arch.direction 的 physical-expert 实例',
     focus:
       '多 die/多 reticle 封装的面积与 RDL/PHY 开销占比、' +
       '面积受限时提高内存带宽的可行路径（堆叠、封装内互联、外挂）、' +

@@ -1,6 +1,6 @@
 # invariant-checker
 
-策略版本：1.0 ｜ 类别：固定职能 ｜ 适用 stage：compute / memory / comm / physical / converge / detail.integrate
+策略版本：1.0 ｜ 类别：固定职能 ｜ 适用 stage：compute / memory / comm / physical / converge / integrate
 
 ## 这一格在答什么
 

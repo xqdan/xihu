@@ -130,17 +130,30 @@ function collective(name,payload,p,x,c=OPT){
   return q;
 }
 
+// The OPT shared-port scaling applied to card-level shared read/write TB/s:
+// the scaled pair, and the extra bandwidth it adds over what physical() sized.
+// mapped() applies it to the plan; morphology.js prices the same extra at its own die count.
+function sharedPortScaling(readTBs,writeTBs,c=OPT){
+  let write=writeTBs*c.localWriteRatio;
+  if(c.tmaDedicatedPort)write*=c.tmaPortWriteScale;
+  let read=readTBs*c.sharedReadScale;
+  read+=write*c.sharedReadPerWrite;
+  return {readTBs:read,writeTBs:write,extraCardTBs:(read-readTBs)+(write-writeTBs)};
+}
+
 // Charge extra shared-SRAM port bandwidth (card-level TB/s beyond what
 // physical() sized) as bank/port area and port power, then re-check limits.
 // Area and limits follow the die's physical basis (P.BASIS: process, cooling).
-function chargeSharedPortCost(p,x,extraCardTBs){
-  const D=A.LIMITS.dies,T=A.TECH;
+// `dies` must be the die count that built `p` (as in P.resize); non-limit reasons carry over.
+function chargeSharedPortCost(p,x,extraCardTBs,dies=A.LIMITS.dies){
+  const D=dies,T=A.TECH;
   const perDie=Math.max(0,extraCardTBs)/D;
   const sliceTBs=512*x.ghz/1000*T.bankUtil;          // read bandwidth of one shared slice
   const area=perDie/sliceTBs*32*T.bankArea*P.PROCESS[P.BASIS.process].logic; // ports cost the bank area that would deliver them
   const power=perDie*T.sharedPortWPerTB;
   const dieArea=p.dieArea+area,diePower=p.diePower+power,cardPower=p.cardPower+D*power,packageArea=p.packageArea+D*area;
-  const reasons=P.limitReasons({dieArea,diePower,cardPower,packageArea},' after shared-port scaling');
+  const reasons=[...(p.reasons||[]).filter(r=>!P.LIMIT_REASONS.includes(r)),
+    ...P.limitReasons({dieArea,diePower,cardPower,packageArea},' after shared-port scaling')];
   return {...p,area:{...p.area,sharedPorts:area},power:{...p.power,sharedPorts:power},dieArea,diePower,cardPower,packageArea,
     sharedPortCost:{extraTBsPerDie:perDie,areaMm2PerDie:area,powerWPerDie:power,cardPowerW:D*power},feasible:!reasons.length,reasons};
 }
@@ -163,12 +176,9 @@ function mapped(x,step={}){
   const pc=m.plan.c;
   pc.batch=tokens;pc.depth=x.depth;
   // Shared-SRAM port scaling (card-level TB/s in plan.c)
-  const baseRead=pc.sramReadTBs,baseWrite=pc.sramWriteTBs;
-  pc.sramWriteTBs*=c.localWriteRatio;
-  if(c.tmaDedicatedPort)pc.sramWriteTBs*=c.tmaPortWriteScale;
-  pc.sramReadTBs*=c.sharedReadScale;
-  pc.sramReadTBs+=pc.sramWriteTBs*c.sharedReadPerWrite;
-  const extraCardTBs=(pc.sramReadTBs-baseRead)+(pc.sramWriteTBs-baseWrite);
+  const ports=sharedPortScaling(pc.sramReadTBs,pc.sramWriteTBs,c);
+  pc.sramReadTBs=ports.readTBs;pc.sramWriteTBs=ports.writeTBs;
+  const extraCardTBs=ports.extraCardTBs;
   const p=c.chargeSharedPortCost?chargeSharedPortCost(p0,x,extraCardTBs):p0;
   if(!p.feasible)return {feasible:false,reasons:p.reasons,sharedPortCost:p.sharedPortCost};
   // Kernel-side gains
@@ -216,4 +226,4 @@ function evaluate(x,{detail=false,tokens=1,seqs=tokens,union}={}){
   if(detail){o.layers=layerStats;o.micro=m.plan.ops.filter(a=>a.layer===4).map(a=>({name:a.name,unit:a.unit,duration:a.duration,timing:a.timing,read:a.read,write:a.write}));}
   return o;
 }
-module.exports={OPT,GAIN,mapped,evaluate,chargeSharedPortCost};
+module.exports={OPT,GAIN,mapped,evaluate,sharedPortScaling,chargeSharedPortCost};

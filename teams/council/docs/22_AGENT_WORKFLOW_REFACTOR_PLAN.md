@@ -52,8 +52,8 @@ D2 一个人管 MC + SRAM + TMA 三件事，Q1 是"阶段"而不是"专家"。�
 | `k3_multiteam_review.workflow.js` | 五团队 probe+lead、六接口配对、blocker 三视角核验 | → `design.verify` 的骨架；"按 ownership 覆盖 + 三视角对抗核验"保留在 `design.verify` / `design.audit` |
 | `k3_external_references.workflow.js` | 为 premises 找外部参照系 | → `design.audit` 的一个可选阶段（传 `args.premises` 时启用），产物落 `references/external/` |
 | `k3_agent_learning.workflow.js` | 一次性沉淀 `references/sota/` | → `design.learn.workflow.js`，仍是一次性；产物按领域登记注入点（见下） |
-| `integration/pipelines/stage_a.js` | Stage A 方向级运行 | → `design.direction` 的确定性内核 |
-| `integration/pipelines/stage_b.js` | Stage B 详细运行 | → D 组 5 个 workflow 的确定性内核 |
+| `integration/pipelines/stage_a.js` | Stage A 方向级运行 | → `design.arch.direction` 的确定性内核 |
+| `integration/pipelines/stage_b.js` | Stage B 详细运行 | → D 组 `design.integrate` 的确定性内核（doc 23 P6 之前是 5 个串行 workflow） |
 | `generate_matrix_vector_design.js` | AI Core 设计空间搜索 | → `design.compute` 的确定性内核 |
 | `generate_comm_core_design.js` | Comm Core 设计空间搜索 | → `design.comm` 的确定性内核 |
 | `generate_team_contracts.js` | 合成本团队 contract | → `design.contract` 的确定性内核 |
@@ -209,17 +209,16 @@ C 组四域读取产物这一步同样**不由 agent 做**：agent 转写候选�
 |---|---|---|---|---|---|
 | A | `design.contract` | 接口长什么样 | 5 个专家各申报接口 | 架构师定契约 | `generate_team_contracts.js` |
 | B | `design.intake` | 需求+约束能否变成可计算输入 | 6 专家各报所需约束 | 架构师合并 brief | 新建 |
-| B | `design.direction` | 走哪条路线 | 6–12 候选各一 agent | 排序+敏感性 → 只留 winner | `stage_a.js`、`directional_envelope.js` |
-| B | `design.dgate` | 候选能否进细化 | 8 条门槛各一独立 agent | **脚本**算门控 | `evaluate_gates.js` |
+| B | `design.arch.direction`（doc 23 P6 由 `design.direction` + `design.dgate` 合并） | 走哪条路线、它能否进细化 | 形态宏参数候选各一 agent | 排序+敏感性 → 只留 ≤3；**脚本**算门控 | `stage_a.js`、`morphology.js`、`directional_envelope.js`、`evaluate_gates.js` |
 | C | `design.compute` | AI Core 设计空间 | N 个选项各一 agent | 收敛到 winner | `generate_matrix_vector_design.js` |
 | C | `design.memory`（已按 doc 23 P4 拆为 `design.sram` / `design.mc`） | SRAM/MC/TMA 设计空间 | N | 同上 | `k3_mc_baseline.json` |
 | C | `design.comm` | NoC/collective 设计空间 | N | 同上 | `generate_comm_core_design.js` |
 | C | `design.physical` | 封装/面积/功耗/热 | N | 同上 | 7R baseline |
-| D | `design.detail.freeze` | 冻结 manifest 与 provenance | — | 串行 | `stage_b.js` 的 B0 |
-| D | `design.detail.workload` | 算术强度/Roofline/sizing | 2 | 串行 | B1 |
-| D | `design.detail.events` | tile/packet/kernel 事件 | 3 | 串行 | B2 |
-| D | `design.detail.execute` | schedule/PPA | 2 | 串行 | B3 |
-| D | `design.detail.integrate` | fine TPS + delta 归因 | — | 串行 | B4 |
+| B | `design.req.workload`（doc 23 P6 由 `design.detail.workload` 前移） | 算术强度/Roofline/sizing | 3 个专家各认领本域算子 | integrator 合并算子账本 | `requirement_workload.js`（B1 前移） |
+| B | `design.req.budget`（doc 23 P2） | 算力/带宽/τ 的预算切分 | 每条预算条目的 owner 专家 | 架构师只选切分 id | `requirement_frontier.js` |
+| C | `design.coupling`（doc 23 P5） | 五域联合点 | 耦合两侧五席 | integrator 取联合点 | `coupling_search.js` |
+| D | `design.integrate`（doc 23 P6 由 `design.detail.freeze` / `events` / `execute` / `integrate` 合并，四块保留为内部 phase） | 冻结 → 事件与守恒 → 执行账本 → fine TPS + delta 归因 | 块内 2 / 3 / 2 路 | 串行，末尾一次检点 | `stage_b.js` 的 B0 / B2 / B3 / B4 |
+| L4 | `design.attribution`（doc 23 P1） | 每个维度的参数怎么影响 TPS/usr | 每行的 owner 专家 | integrator 合并承重项 | `tps_attribution.js` |
 | D | `design.converge` | 架构定型 + ADR | — | 串行 | A0 扩权 |
 | E | `design.verify` | 独立门控 | 每类检查一 agent（≥6） | verifier 汇总 | 原 `k3_multiteam_review`（已并入本格） |
 | E | `design.backflow` | 不达标回流 | — | 串行 | `generate_direction_feedback.js` |
@@ -233,17 +232,13 @@ C 组四域读取产物这一步同样**不由 agent 做**：agent 转写候选�
 |---|---|
 | `design.contract` | `architect`×1 · 5 个专家（compute/memory/comm/physical/software）×各1 · `invariant-checker`×1 · `verifier`×1 |
 | `design.intake` | 6 个专家×各1 · `architect`×1 · `framing-critic`×每轮1（无 `invariant-checker`） |
-| `design.direction` | `architect`×1 · 候选评估×6–12（同一 `architect` 策略、各看一个候选，互相看不见）· `integrator`×1 · `framing-critic`×1 · `gate-keeper`×1 · `invariant-checker`×1 |
-| `design.dgate` | `gate-keeper`×8（独立实例）· `invariant-checker`×1 · `architect`×1 |
+| `design.arch.direction`（doc 23 P6 由 `design.direction` + `design.dgate` 合并） | `architect`×1 · 形态候选各一（同一 `architect` 策略、各看一个候选，互相看不见）· `integrator`×1 · `framing-critic`×1 · `gate-keeper`×1（**一次核完 8 条**，逐条输出；原 dgate 的 8 个独立实例收成 1 个）· `architect`×1（证据包汇总）· `invariant-checker`×1 |
 | `design.compute` | `compute-expert`×N · 旁证 `memory-expert`/`physical-expert`×各1 · `integrator`×1 · `invariant-checker`×1（无 `gate-keeper`：门控由脚本算） |
 | `design.memory`（已拆为 `design.sram` / `design.mc`，旁证见 doc 23 §4） | `memory-expert`×N · 旁证 `compute-expert`/`software-expert`×各1 · `integrator`×1 · `invariant-checker`×1 |
 | `design.comm` | `comm-expert`×N · 旁证 `memory-expert`/`physical-expert`×各1 · `integrator`×1 · `invariant-checker`×1 |
 | `design.physical` | `physical-expert`×N · 旁证 `compute`/`memory`/`comm`×各1 · `integrator`×1 · `invariant-checker`×1 |
-| `design.detail.freeze` | `model-expert`×1 · `memory-expert`×1 · `invariant-checker`×1（**无 integrator**） |
-| `design.detail.workload` | `model-expert`×1 · `compute-expert`×1 · `memory-expert`×1 · `integrator`×1 · `invariant-checker`×1 |
-| `design.detail.events` | `memory-expert`×1 · `comm-expert`×1 · `compute-expert`×1（三路并行，共享 manifest hash）· `integrator`×1 · `invariant-checker`×1 |
-| `design.detail.execute` | `software-expert`×1 · `physical-expert`×1（两路并行）· `integrator`×1 · `invariant-checker`×1 |
-| `design.detail.integrate` | `integrator`×1 · `architect`×1（delta 归因裁决）· `verifier`×1 · `invariant-checker`×1 |
+| `design.req.workload`（原 `design.detail.workload`） | `model-expert`×1 · `compute-expert`×1 · `memory-expert`×1 · `comm-expert`×1（三路并行）· `integrator`×1 · `invariant-checker`×1 |
+| `design.integrate`（原 `detail.freeze` / `events` / `execute` / `integrate`） | B0 `model-expert`×1 · `memory-expert`×1 → B2 `memory-expert`/`comm-expert`/`compute-expert`×各1（三路并行，共享 manifest hash）· `integrator`×1 → B3 `software-expert`×1 · `physical-expert`×1（两路并行）· `integrator`×1 → B4 `integrator`×1 · `architect`×1（delta 归因裁决）→ `verifier`×1 · `invariant-checker`×1（中间四次检点收成末尾一次） |
 | `design.converge` | `architect`×1 · `gate-keeper`×1 · `invariant-checker`×1 · `framing-critic`×1 · 相关专家×1–3（从 6 个专家池中取） |
 | `design.verify` | `verifier`×≥6（独立实例）· `gate-keeper`×1 · `architect`×1 |
 | `design.backflow` | `integrator`×1 · 被归因专家×1–3 · `architect`×1 · `framing-critic`×1 |
@@ -396,7 +391,7 @@ return { verdict: ok ? 'INVARIANT_OK' : 'INVARIANT_VIOLATED', winner: ok ? merge
 
 | 既有机制 | 重构后如何处理 |
 |---|---|
-| `integration/governance/evaluate_gates.js` | 不变。`design.dgate` / `design.verify` 只调用它，不出判据 |
+| `integration/governance/evaluate_gates.js` | 不变。`design.arch.direction` / `design.verify` 只调用它，不出判据 |
 | `tests/structure/test_project_structure.js` | 按 §5.2 扩展 |
 | `teams/<team>/contract.json` | 由 `design.contract` 维护，`generate_team_contracts.js` 仍是生成器 |
 | `references/sota/*` | 从"主 workflow 公共读区"改为**按领域作为注入参数**传给对应策略；"知识不是证据"的隔离规则原样保留 |
@@ -421,8 +416,8 @@ return { verdict: ok ? 'INVARIANT_OK' : 'INVARIANT_VIOLATED', winner: ok ? merge
 | **S2** | 架构师策略：A0 扩权为"输入需求+约束+形态意图 → 输出 brief" | `design.intake` workflow 骨架 + `architect` 策略 + `framing-critic` 策略 | S1 | 能从一段需求文本产出填满 `hardConstraints`/`budget`/`shapeIntent` 的 brief，且 `framing-critic` 反问有实质内容 |
 | **S3** | **样板 workflow**：`design.compute` | `integration/orchestration/design.compute.workflow.js` | S1、S2 | 跑通 §4.3 六步闭环；检点不通过时返回 `{blocked}` 且不写 winner；回写 `rejectedOptions` + `strategyVersions` |
 | **S4** | 复制到 `design.memory` / `design.comm` / `design.physical` | 3 个 workflow | S3 | 复用骨架，仅换主策略与设计空间；4 域共享同一 `design_ledger` |
-| **S5** | B 组：`design.contract` / `design.direction` / `design.dgate` | 3 个 workflow | S3 | `design.direction` 从 6–12 候选收敛到 ≤3；`design.dgate` 结论与 `evaluate_gates.js` 一致，且不含 `PASS` 字面量 |
-| **S6** | D 组 5 个串行 workflow + `design.converge` | 6 个 workflow | S4、S5 | 粗估-细估 delta 有归因；`DIRECTION_BACKFLOW` / `LOCAL_DETAIL_FIX` 分支可执行 |
+| **S5** | B 组：`design.contract` / `design.arch.direction`（doc 23 P6 由 `design.direction` + `design.dgate` 合并，两个旧文件已删） | 2 个 workflow | S3 | `design.arch.direction` 从形态宏参数候选收敛到 ≤3；门控结论与 `evaluate_gates.js` 一致，且不含 `PASS` 字面量 |
+| **S6** | D 组 5 个串行 workflow + `design.converge`（doc 23 P6 后 B1 前移为 `design.req.workload`，其余四格合成 `design.integrate`） | 6 个 workflow（现为 2 个） | S4、S5 | 粗估-细估 delta 有归因；`DIRECTION_BACKFLOW` / `LOCAL_DETAIL_FIX` 分支可执行 |
 | **S7** | E 组 3 个横切 workflow + `design.explore` | 4 个 workflow | S6 | 原 `k3_multiteam_review` 已并入 `design.verify` 并删除；verify/audit 的策略注入里确认不含设计中间产物 |
 | **S8** | 文档与结构测试收口 | 改 `17/18/19`、`AGENTS.md`、`docs/README.md`、`docs/architecture/README.md`、`test_project_structure.js` | S7 | `npm test` 全绿；`17/18/19` 里 D\*/Q\* 已明确标注为"阶段名，非 agent" |
 
@@ -432,7 +427,7 @@ return { verdict: ok ? 'INVARIANT_OK' : 'INVARIANT_VIOLATED', winner: ok ? merge
 
 - **S1–S2**：`framing-critic` 能在 brief 上找到至少一处实质缺口（否则说明它没起作用）；校验脚本对假策略报错。
 - **S3–S4**：每个域产出 winner + `rejectedOptions`；检点不通过时不落盘。
-- **S5**：候选从 6–12 收敛到 ≤3；`design.dgate` 不产生 `PASS` 字面量。
+- **S5**：候选收敛到 ≤3（原为 6–12 候选；doc 23 P6 后候选是形态宏参数，上限仍是 `args.maxCandidates`，默认 12）；`design.arch.direction` 不产生 `PASS` 字面量。
 - **S6**：D 组任一步骤缺输入时必须输出 `BLOCKED_CONFIG` + `nextActions`，不得静默补全。
 - **S7**：verify/audit 的策略无法读到设计阶段产物（prompt 约束 + 抽查验证）；`design.explore` 产物全部落在 `scratch/`。
 - **S8**：`npm test`、`npm run check:structure` 通过；`AGENTS.md` §5 的完成定义在新流程下仍成立。

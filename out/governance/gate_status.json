@@ -40,6 +40,28 @@
     "allObservedSlotsHaveProvenance": true,
     "allObservedSlotsReplayable": true,
     "fineTpsReady": false,
+    "attributionCards": {
+      "source": "out/attribution/<dimension>_card.json",
+      "dimensions": [
+        "comm",
+        "joint",
+        "sram"
+      ]
+    },
+    "jointPessimisticTpsPerUser": 906.5072465060036,
+    "jointPessimisticMeetsTarget": false,
+    "loadBearingParameters": 6,
+    "loadBearingUnaccounted": [],
+    "loadBearingAccounted": true,
+    "failedChecks": [
+      "formalQuantification",
+      "validatedEventTiming",
+      "allSlotsObserved",
+      "sharedManifestAcrossRooflineAndReplay",
+      "fineTpsReady",
+      "jointPessimisticMeetsTarget",
+      "observationMatrixCompleteOrBlocked"
+    ],
     "decision": "BLOCKED_BY_D_GATE_MANIFEST_EVENT_MODEL_AND_PROVENANCE"
   }
 }

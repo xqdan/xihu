@@ -29,9 +29,13 @@ const LANDING_POLICY = {
   intake: ['teams/council/inputs/design_brief.intake.json'],
   // The chosen L1 contract and its run record; the frontier in out/requirements/ is generator output.
   'req.budget': ['out/budget/'],
+  // The operator ledger and its run record. The summary and the operator workload it reads are
+  // generator output (out/requirements/*.json, out/workload/*.json) and stay out of reach.
+  'req.workload': ['out/requirements/workload/'],
   contract: ['out/contracts/'],
-  direction: ['out/direction/'],
-  dgate: ['out/governance/'],
+  // 路线选择与 D-Gate 证据合在一格（见 design.arch.direction.workflow.js 顶部的说明），
+  // 所以它同时落三处：选中的形态、L2 预算合同、门槛证据包。
+  'arch.direction': ['out/direction/', 'out/budget/', 'out/governance/'],
   compute: ['out/compute/'],
   sram: ['out/sram/'],
   mc: ['out/mc/'],
@@ -41,11 +45,8 @@ const LANDING_POLICY = {
   coupling: ['out/coupling/'],
   // Reviews only: the cards in out/attribution/ are generator output and stay out of reach.
   attribution: ['out/attribution/reviews/'],
-  'detail.freeze': ['out/detailed/'],
-  'detail.workload': ['out/detailed/'],
-  'detail.events': ['out/detailed/'],
-  'detail.execute': ['out/detailed/'],
-  'detail.integrate': ['out/detailed/'],
+  // D 组五格合成一格（design.integrate.workflow.js），冻结清单、事件流、执行账本与 18 位合并同落一处。
+  integrate: ['out/detailed/'],
   converge: ['out/detailed/'],
   verify: ['out/verification/'],
   audit: ['out/verification/', 'references/external/'],
@@ -62,7 +63,7 @@ function allowedBy(relative, prefixes) {
 }
 
 const GATE_STATUS = 'out/governance/gate_status.json';
-const GATE_KEYS = {dgate: ['directionGate'], verify: ['directionGate', 'quantificationGate']};
+const GATE_KEYS = {'arch.direction': ['directionGate'], verify: ['directionGate', 'quantificationGate']};
 
 // The decisions the validator wrote, restricted to the gates this workflow may report on.
 function scriptGateDecisions(root, workflow) {

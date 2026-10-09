@@ -1,6 +1,6 @@
 # verifier
 
-策略版本：1.0 ｜ 类别：固定职能 ｜ 适用 stage：contract / detail.integrate / verify / audit
+策略版本：1.0 ｜ 类别：固定职能 ｜ 适用 stage：contract / integrate / verify / audit
 
 ## 这一格在答什么
 

@@ -80,7 +80,7 @@ async function run(argv, deps) {
   assert(builtBrief.hardConstraints.every((c) => c.source && c.source !== 'TBD'), 'every derived constraint names where its number came from');
   const listed = await run(['--list']);
   assert.strictEqual(listed.code, 0);
-  assert.strictEqual(listed.text.split('\n').length, 23);
+  assert.strictEqual(listed.text.split('\n').length, 19);
 
   // The mock backend invents a winner; the artifact check must reject it before landing.
   const invented = await run(['compute', '--backend', 'mock'], {backend: createMockBackend({reply: (call) => withDims(call)})});
@@ -265,7 +265,10 @@ async function run(argv, deps) {
     assert.strictEqual(landedBudget.summary.verdict, 'INVARIANT_OK');
     assert.strictEqual(landedBudget.summary.verifyLanded.ok, true);
     assert.deepStrictEqual(landedBudget.summary.landing.landed.map((f) => f.path).sort(), ['out/budget/L1_budget.json', 'out/budget/L1_run_record.json']);
-    assert(!fs.existsSync(path.join(root, 'out/budget')), 'a dry run must not create out/budget');
+    // out/budget/ itself exists (stage_a.js writes L2_budget.json there); the L1 files must not.
+    for (const f of ['out/budget/L1_budget.json', 'out/budget/L1_run_record.json']) {
+      assert(!fs.existsSync(path.join(root, f)), `a dry run must not create ${f}`);
+    }
     const full = JSON.parse(fs.readFileSync(resultFile, 'utf8'));
     assert.strictEqual(full.splitId, 'S-CMP', 'the unreachable S-TAU is not offered to the architect');
     assert.deepStrictEqual(full.ledgerPatch.rejectedOptions.map((r) => [r.optionId, r.rejectedBy]), [['S-TAU', 'comm-expert']]);

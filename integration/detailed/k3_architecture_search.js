@@ -20,8 +20,14 @@ const BASE={nL:8,nH:8,lRows:16,lCols:128,lEngines:1,hRows:64,hCols:64,hEngines:4
 // out/rdma/k3_rdma_final_tuning_results.json, and adding a key there would
 // churn a generated artifact for no modelling gain.
 const SHARED_WRITE_READ_RATIO=.5;
-function physical(x){
- const D=LIMITS.dies,f=x.ghz,n=x.nL+x.nH;
+// `dies` is the package's die count. It defaults to LIMITS.dies, so every existing caller
+// (mappedPlan, the RDMA tuning search, the morphology-free path) is unchanged. The parametrized
+// form exists for the L2 arch.direction morphology axis: a shape that changes the die count
+// must be costed at its own count, or card power, package area and the RDMA card cap would all
+// be computed for a package that is not the one being proposed. Card-level terms below are the
+// only ones that read D: per-die peaks (lTF/hTF/vectorTOP) and dieArea/diePower do not.
+function physical(x,dies){
+ const D=dies||LIMITS.dies,f=x.ghz,n=x.nL+x.nH;
  const lTF=x.nL*x.lRows*x.lCols*x.lEngines*2*f/1000,hTF=x.nH*x.hRows*x.hCols*x.hEngines*2*f/1000;
  const vectorTOP=n*x.vectorLanes*2*f/1000;
  const localMiB=x.nL*x.lMiB+x.nH*x.hMiB,totalMiB=localMiB+x.sharedMiB;
@@ -44,8 +50,9 @@ function physical(x){
  sram:totalMiB*TECH.sramLeakWPerMiB+(x.nL*lRead+x.nH*hRead)*TECH.localPortWPerTB+sharedRead*TECH.sharedPortWPerTB,
    noc:nocTB*TECH.nocWPerTB,tma:n*x.tmaEngines*TECH.tmaControlW*f,reduce:x.reduceLanes*TECH.reduceLaneW*f,
    ucie:4*uciePortGB*8/1000*TECH.uciePjPerBit,rdma:rdmaDieGB*8/1000*TECH.rdmaPjPerBit,control:20+n*.3};
- const diePower=Object.values(power).reduce((a,b)=>a+b,0),mcPower=16*(TECH.mcBaseW+x.mcGBs*TECH.mcUtil*8/1000*TECH.mcPjPerBit);
- const cardPower=D*diePower+mcPower+80,packageArea=D*dieArea+16*LIMITS.mcArea;
+ const cubes=D*LIMITS.mcCountPerDie;
+ const diePower=Object.values(power).reduce((a,b)=>a+b,0),mcPower=cubes*(TECH.mcBaseW+x.mcGBs*TECH.mcUtil*8/1000*TECH.mcPjPerBit);
+ const cardPower=D*diePower+mcPower+80,packageArea=D*dieArea+cubes*LIMITS.mcArea;
  const shoreline=4*x.ucieLanes/TECH.ucieLanesPerMm+x.rdmaLanes*TECH.rdmaLaneMm,edgeBudget=4*Math.sqrt(dieArea)*TECH.phyEdgeFraction;
  const reasons=[];
  if(dieArea>LIMITS.dieArea)reasons.push('die area');if(diePower>LIMITS.diePower)reasons.push('die power');if(cardPower>LIMITS.cardPower)reasons.push('card power');if(packageArea>LIMITS.packageArea*LIMITS.packageUtil)reasons.push('package area');if(shoreline>edgeBudget)reasons.push('PHY shoreline');

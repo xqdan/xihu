@@ -306,9 +306,9 @@ if (backflowAt >= 0) {
     runId: RUN_ID,
     verdict: reviews[backflowAt].verdict,
     reason: `${by} 报方向回退：${reviews[backflowAt].note || ''}`,
-    routeTo: 'design.direction',
+    routeTo: 'design.arch.direction',
     reviews,
-    nextActions: [`把 ${by} 的方向级发现交给 design.direction 重定方向；本格不落盘合同`],
+    nextActions: [`把 ${by} 的方向级发现交给 design.arch.direction 重定方向；本格不落盘合同`],
     files: [],
   }
 }
@@ -442,13 +442,13 @@ if (!selection || selection.verdict !== 'ARCH_FREEZE') {
     runId: RUN_ID,
     verdict: selection ? selection.verdict : 'BLOCKED_CONFIG',
     reason: selection ? `architect 判方向回退：${selection.reason}` : 'architect 未交回选择',
-    routeTo: selection ? 'design.direction' : undefined,
+    routeTo: selection ? 'design.arch.direction' : undefined,
     selection: selection || null,
     ruledOut,
     reviews,
     ledgerPatch: { ...ledgerBase, strategyVersions: Object.fromEntries([...owners, 'architect'].map((id) => [id, '1.0'])), openBlockers: [] },
     nextActions: selection
-      ? ['把 architect 的方向级发现与被否切分交给 design.direction 重定方向；本格不落盘合同']
+      ? ['把 architect 的方向级发现与被否切分交给 design.arch.direction 重定方向；本格不落盘合同']
       : ['重跑本格的 Selection 步'],
     files: [],
   }

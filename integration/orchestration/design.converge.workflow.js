@@ -1,7 +1,7 @@
 export const meta = {
   name: 'design-converge',
   description: 'K3 设计 A0 收敛（design.converge）：相关专家回报残余缺口，framing-critic 审视收敛问题本身立得住，gate-keeper 汇总证据完备性，architect 给出 ARCH_FREEZE / DIRECTION_BACKFLOW / D_GATE_PROPOSAL 裁决，invariant-checker 检点后落盘为**提案**（门控结论由 evaluate_gates.js 计算，不由本 workflow 给出）',
-  whenToUse: 'D 组收官格，也是 A0 的扩权节点。需要 args.brief（stage=converge 的 DesignBrief）、args.detailArtifacts（D 组各格落盘产物路径的清单，至少含 detail.integrate 的产物）、args.designPoint（主循环由 design_point.js 解析的设计点；它与基线不是同一个点时本格不召集 agent，返回 BLOCKED_CONFIG）与可选 args.priorVerdicts（上游各格的裁决汇总）。本 workflow 不跑 stage_b.js、不写既有产物、不改候选寄存器。',
+  whenToUse: 'D 组收官格，也是 A0 的扩权节点。需要 args.brief（stage=converge 的 DesignBrief）、args.detailArtifacts（D 组各格落盘产物路径的清单，至少含 design.integrate 的产物 out/detailed/detail_integrate.json）、args.designPoint（主循环由 design_point.js 解析的设计点；它与基线不是同一个点时本格不召集 agent，返回 BLOCKED_CONFIG）、args.convergeCriteria（主循环从 out/governance/gate_status.json 取 evaluate_gates.js 算好的三条收敛判据）与可选 args.priorVerdicts（上游各格的裁决汇总）。本 workflow 不跑 stage_b.js、不写既有产物、不改候选寄存器。',
   phases: [
     { title: 'Backflow intake', detail: '相关专家各自回报本域残余缺口，互不可见；拒不归因的残留被显式登记' },
     { title: 'Framing review', detail: 'framing-critic 审视收敛问题本身：问的是不是该问的' },
@@ -14,12 +14,12 @@ export const meta = {
 // ---------------------------------------------------------------------------
 // A0 收敛（19 号文档 §8，B5 的 Q-Gate 9 条最低条件）。
 //
-// 这一格与 D 组前五格的根本区别：前五格都有一份确定的输入要处理，
-// 而这一格处理的是**它们全部**——18 个观察位、五份产物、以及一路上
-// 每一格登记的 openBlockers。它的产物不是数据，是一份**裁决提案**。
+// 这一格与 D 组的 design.integrate 的根本区别：integrate 有一份确定的输入要处理，
+// 而这一格处理的是**它的全部结论**——18 个观察位、冻结清单、事件流、执行账本、
+// 以及一路上登记的 openBlockers。它的产物不是数据，是一份**裁决提案**。
 //
-// 为什么这一步需要"扩权"：D 组各格的自检是分域的，每一格只看本域。
-// 一个缺口完全可以做到"每一格都合规，合起来不成立"——例如 B2 说事件流
+// 为什么这一步需要"扩权"：integrate 内部各块（B0/B2/B3/B4）的自检是分域的，每一块只看本域。
+// 一个缺口完全可以做到"每一块都合规，合起来不成立"——例如 B2 说事件流
 // 自洽（它确实自洽），B3 说 PPA 在容差内（它确实在），但两者用的
 // 卡功耗口径不同，合起来那个裕量是假的。收敛格存在的理由就是看这种缺口。
 //
@@ -57,8 +57,12 @@ if (BRIEF.stage !== STAGE) {
 
 // D 组必须到齐的格子。收敛格看的就是"合起来成不成立"，
 // 少一格就等于少看一个切面，而缺口正好可能藏在没到的那一格。
+// D 组原先五格（freeze / workload / events / execute / integrate），L5-a 之后只剩
+// design.integrate 一格：B1 前移为 L1-a 的 design.req.workload，其余四块合进
+// design.integrate 的内部 phase，冻结清单、事件流、执行账本与 18 位合并同在
+// out/detailed/detail_integrate.json 一份产物里。
 const REQUIRED_STAGES = [
-  'detail.freeze', 'detail.workload', 'detail.events', 'detail.execute', 'detail.integrate',
+  'integrate',
 ]
 const missingStages = REQUIRED_STAGES.filter(
   (s) => !DETAIL_ARTIFACTS.some((p) => String(p).includes(s.replace('.', '_'))))
@@ -102,7 +106,7 @@ if (DESIGN_POINT.departsFromPublished) {
       + `（${fields.join(', ')}）；D 组产物由 stage_b.js 在基线上算出，审的不是这个点，收敛格不得在它上面给出裁决`,
     nextActions: [
       '以 ADR 把联合点并入基线（x、OPT 补丁与模型补丁：计算域的 unpack / softmax、通信域的控制路径），经 npm run baseline:sync 同步，不手改基线',
-      '基线同步后重跑 npm run model:planning（stage_b.js）与 D 组 design.detail.freeze → design.detail.integrate',
+      '基线同步后重跑 npm run model:planning（stage_b.js）与 D 组 design.integrate',
       '再跑本格；args.designPoint 的 departsFromPublished 为 false 之前本格不会召集任何 agent',
     ],
     designPoint: POINT_RECORD,
@@ -110,6 +114,19 @@ if (DESIGN_POINT.departsFromPublished) {
     files: [],
   }
 }
+
+// 收敛判据（23 号文档 §4 L5-b）：联合悲观 TPS ≥ 目标、每个承重参数都有 owner / 证据等级 /
+// 回标计划、18 槽位都有值或终止性 blocker。三条由 evaluate_gates.js#evaluateQuantificationGate
+// 从 L4 灵敏度卡与观察矩阵算出，主循环从 out/governance/gate_status.json 原样注入。
+// agent 只能引用它们，不能重判；判据不成立时脚本拒绝 ARCH_FREEZE。
+const CRITERIA = args.convergeCriteria
+const CRITERIA_KEYS = ['jointPessimisticMeetsTarget', 'loadBearingAccounted', 'observationMatrixCompleteOrBlocked']
+if (!CRITERIA || CRITERIA_KEYS.some((k) => typeof CRITERIA[k] !== 'boolean')) {
+  throw new Error('design.converge 需要 args.convergeCriteria（主循环从 out/governance/gate_status.json 的 quantificationGate 取 '
+    + `${CRITERIA_KEYS.join(' / ')}，由 integration/governance/evaluate_gates.js 计算）`)
+}
+const criteriaFailed = CRITERIA_KEYS.filter((k) => !CRITERIA[k])
+const CRITERIA_JSON = JSON.stringify(CRITERIA, null, 2)
 
 const HEAD = [
   `仓库根目录：${REPO}`,
@@ -239,7 +256,7 @@ const CONVERGENCE_SCHEMA = {
   properties: {
     assessment: {
       type: 'array',
-      description: '对 D 组五格合起来是否成立的判断，逐条带出处',
+      description: '对 D 组 integrate 内部各块（冻结 / 事件 / 执行账本 / 18 位合并）合起来是否成立的判断，逐条带出处',
       items: {
         type: 'object',
         additionalProperties: false,
@@ -335,8 +352,8 @@ if (residuals.length < RELEVANT_EXPERTS.length) {
   }
 }
 
-// D 组的五格必须到齐。少一格，收敛格看的就是一个残缺的切面——
-// 而"每一格都合规、合起来不成立"的缺口，正好可能藏在没到的那一格。
+// D 组必须到齐。少一格，收敛格看的就是一个残缺的切面——
+// 而"每一块都合规、合起来不成立"的缺口，正好可能藏在没到的那一格。
 if (missingStages.length) {
   return {
     stage: STAGE, runId: RUN_ID, verdict: 'BLOCKED_CONFIG',
@@ -416,9 +433,13 @@ const gate = await agent(
   + `上游各格的裁决（只读）：\n${JSON.stringify(PRIOR_VERDICTS, null, 2)}\n\n`
   + `各域残余缺口：\n${JSON.stringify(residuals, null, 2)}\n`
   + `framing 的结论：\n${JSON.stringify(framing, null, 2)}\n\n`
+  + `收敛判据（只读，由 integration/governance/evaluate_gates.js#evaluateQuantificationGate 算出，`
+  + `出处 out/governance/gate_status.json 的 quantificationGate）：\n${CRITERIA_JSON}\n\n`
   + `任务：对 Q-Gate 的最低条件逐条给出**证据状态**。规则：\n`
   + `1. 每一条给 complete 或 blocked，并给出证据出处。`
   + `   证据引用不到就写 blocked——"应该有"不是证据。\n`
+  + `   联合悲观 TPS ≥ 目标、承重参数有 owner / 证据等级 / 回标计划、18 槽位有值或终止性 blocker`
+  + `   这三条**不由你判**：照抄上面的脚本结论（true 记 complete，false 记 blocked），出处写 gate_status.json。\n`
   + `2. 你的枚举说的是**证据完备性**：GATE_EVIDENCE_COMPLETE 意思是`
   + `   "可以送评审了"，**不是**"评审会通过"。`
   + `   你不得输出 PASS / D_GATE_PASSED——它们只由 integration/governance/evaluate_gates.js 计算。\n`
@@ -445,15 +466,18 @@ const convergence = await agent(
   + `上游各格的裁决（只读）：\n${JSON.stringify(PRIOR_VERDICTS, null, 2)}\n\n`
   + `各域残余缺口：\n${JSON.stringify(residuals, null, 2)}\n`
   + `framing 的结论：\n${JSON.stringify(framing, null, 2)}\n`
-  + `证据完备性：\n${JSON.stringify(gate, null, 2)}\n\n`
+  + `证据完备性：\n${JSON.stringify(gate, null, 2)}\n`
+  + `收敛判据（只读，evaluate_gates.js 算出）：\n${CRITERIA_JSON}\n\n`
   + `任务：给出本轮的收敛裁决。规则：\n`
-  + `1. 逐条判断 D 组五格**合起来**是否成立，每条带出处。`
+  + `1. 逐条判断 D 组 integrate 内部各块（冻结 / 事件 / 执行账本 / 18 位合并）**合起来**是否成立，每条带出处。`
   + `   单格成立不等于合起来成立——跨格口径不一致（功耗、manifest hash、`
   + `   硬件规格）是这一格最需要抓的东西。\n`
   + `2. openItems 列出收敛后仍然开着的项；**判 ARCH_FREEZE 时它必须为空**——`
   + `   "冻结了但还有点东西开着"不是冻结。\n`
   + `3. 不得把"证据齐备"读成"通过评审"。门控结论由 evaluate_gates.js 计算，`
   + `   你的 D_GATE_PROPOSAL 只是一个**提案**。\n`
+  + `4. 上面三条收敛判据是脚本结论，引用它们，不得重判；任一为 false 时不得判 ARCH_FREEZE`
+  + `   （脚本会拒收）。不满足的判据各自写进 openItems，写明谁来解除。\n`
   + `本格裁决（roster 里你的三个取值，各自对应一种结局）：\n`
   + `  ARCH_FREEZE：本轮细化结论到此冻结。要求 openItems 为空、`
   + `    证据完备、framing 立得住、无方向级发现。\n`
@@ -492,6 +516,9 @@ if (!route) {
   }
   if (convergence.verdict === 'ARCH_FREEZE' && !okFraming) {
     routeContradictions.push('判 ARCH_FREEZE 但 framing 判了 FRAMING_INSUFFICIENT——问题本身立不住时不得冻结')
+  }
+  if (convergence.verdict === 'ARCH_FREEZE' && criteriaFailed.length) {
+    routeContradictions.push(`判 ARCH_FREEZE 但 evaluate_gates.js 的收敛判据不成立：${criteriaFailed.join(', ')}`)
   }
   if (route.requiresEvidence && !okGate) {
     routeContradictions.push(`判 ${convergence.verdict} 但证据不完备（GATE_BLOCKED）`)
@@ -537,16 +564,18 @@ const check = await agent(
   + `各域残余缺口：\n${JSON.stringify(residuals, null, 2)}\n`
   + `framing 的结论：\n${JSON.stringify(framing, null, 2)}\n`
   + `证据完备性：\n${JSON.stringify(gate, null, 2)}\n`
-  + `architect 的收敛裁决：\n${JSON.stringify(convergence, null, 2)}\n\n`
+  + `architect 的收敛裁决：\n${JSON.stringify(convergence, null, 2)}\n`
+  + `收敛判据（只读，evaluate_gates.js 算出）：\n${CRITERIA_JSON}\n\n`
   + `任务：对这份收敛提案做全局不变量检点，逐条给出 pass/fail 与裸值：\n`
   + `7-reticle 面积守恒、单一硬件规格（ADR-0021）、MC320/MC640 分离、peak 与 sustained 分离、`
-  + `单位一致、证据等级齐全。收敛格还要专门核这四条跨格不变量：\n`
-  + `  (a) D 组五格是否真的到齐（${REQUIRED_STAGES.join('、')}）；\n`
+  + `单位一致、证据等级齐全。收敛格还要专门核这五条跨格不变量：\n`
+  + `  (a) D 组是否真的到齐（${REQUIRED_STAGES.join('、')}），且其产物内冻结 / 事件 / 执行账本 / 18 位四块俱在；\n`
   + `  (b) 跨格口径一致：尤其是卡功耗口径——memory 域是 8×die + MC + 固定 80 W、**不计**共享端口项，`
   + `      physical 域计它，两者相差 21.915648 W。同一次比较里混用即违规；\n`
   + `  (c) 跨格 manifest hash 一致：B2 的事件流与 B1 的算子账本必须来自同一份 manifest；\n`
   + `  (d) architect 的裁决与它的材料自洽——判 ARCH_FREEZE 却留着 openItems、`
-  + `      或判 D_GATE_PROPOSAL 却证据不完备，这两件事不能同时成立。\n`
+  + `      或判 D_GATE_PROPOSAL 却证据不完备，这两件事不能同时成立；\n`
+  + `  (e) 提案与 gate-keeper 对三条收敛判据的陈述与上面的脚本结论一致，没有一条被重判或改写。\n`
   + `另外核一条：提案里有没有把"证据齐备"写成"通过"——`
   + `门控结论只能是 evaluate_gates.js 的产出。\n`
   + `违规项必须给出违反的具体文件与字段。\n`
@@ -597,6 +626,8 @@ const runRecord = {
   designPoint: POINT_RECORD,
   stageCommand: STAGE_COMMAND_FOR_RECORD,
   requiredStages: REQUIRED_STAGES,
+  convergeCriteria: CRITERIA,
+  criteriaFailed,
   relevantExperts: RELEVANT_EXPERTS.slice().sort(),
   architectVerdict: convergence.verdict,
   framingVerdict: framing ? framing.verdict : 'UNVERIFIED',
@@ -657,6 +688,7 @@ return {
         },
         framing,
         gate,
+        convergeCriteria: CRITERIA,
         residuals,
         blockingResiduals,
         // 明写这不是门控结论。

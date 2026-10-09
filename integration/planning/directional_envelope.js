@@ -20,7 +20,7 @@ function build({runId}) {
   return {
     schemaVersion: 'directional-resource-envelope-v0.1',
     runId,
-    stage: 'direction', agentId: 'D1-D6', candidateId: 'direction-input-envelope',
+    stage: 'arch.direction', agentId: 'D1-D6', candidateId: 'direction-input-envelope',
     targetTpsPerUser: target, engineeringMargin: margin,
     confidence: 'E0', status: 'DIRECTIONAL_ESTIMATE',
     models: models.profiles.map(m => ({

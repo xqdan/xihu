@@ -31,10 +31,11 @@
     "workflow:citations": "node integration/pipelines/check_citations.js",
     "dashboard": "node integration/pipelines/generate_direction_feedback.js && node integration/pipelines/generate_global_dashboard.js",
     "workload:planning": "node integration/pipelines/generate_planning_operator_workload.js",
+    "workload:requirements": "node integration/pipelines/generate_workload_requirements.js",
     "contracts": "node integration/pipelines/generate_team_contracts.js",
     "feedback": "node integration/pipelines/generate_direction_feedback.js",
     "review:ledger": "node integration/pipelines/generate_review_ledger.js",
-    "model:planning": "node integration/pipelines/generate_planning_operator_workload.js && node integration/pipelines/stage_a.js && node integration/pipelines/stage_b.js && node integration/pipelines/generate_team_contracts.js && node integration/pipelines/generate_direction_feedback.js && node integration/pipelines/generate_global_dashboard.js"
+    "model:planning": "node integration/pipelines/generate_planning_operator_workload.js && node integration/pipelines/generate_workload_requirements.js && node integration/pipelines/stage_a.js && node integration/pipelines/stage_b.js && node integration/pipelines/generate_team_contracts.js && node integration/pipelines/generate_direction_feedback.js && node integration/pipelines/generate_global_dashboard.js"
   },
   "engines": {
     "node": ">=18"

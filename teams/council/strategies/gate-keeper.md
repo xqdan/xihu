@@ -1,6 +1,6 @@
 # gate-keeper
 
-策略版本：1.0 ｜ 类别：固定职能 ｜ 适用 stage：direction / dgate / compute / memory / comm / physical / converge / verify
+策略版本：1.0 ｜ 类别：固定职能 ｜ 适用 stage：arch.direction / compute / memory / comm / physical / converge / verify
 
 ## 这一格在答什么
 

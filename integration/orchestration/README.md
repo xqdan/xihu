@@ -18,7 +18,7 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 第二种由 [`runtime/`](runtime/)（注入 `args` / `agent` / `parallel` / `phase` / `log`）加
 [`../pipelines/run_workflow.js`](../pipelines/run_workflow.js)（主循环）实现。`runtime/` 不读写仓库文件，主循环做三件事：
 
-1. **前置**：C 组先跑 `search_brief.js`，把核验过的候选集作为 `args.searchBrief` 注入；`attribution` 读灵敏度卡、`req.budget` 读预算前沿，各自核对输入指纹（灵敏度卡还要核对设计点），过期即拒收（退出码 1）；`converge` 注入 `design_point.js` 解析的 `args.designPoint`；预算合同的下游（`direction` / `compute` / `sram` / `mc` / `comm` / `physical`）的 `args.brief` 由 [`../pipelines/make_brief.js`](../pipelines/make_brief.js) 从合同现派生而不是读一份手写文件（`--brief` 仍可覆盖）；`args.ledger` 由 [`../pipelines/design_ledger.js`](../pipelines/design_ledger.js) 读 `out/governance/design_ledger.json` 注入——这是跨 stage 的唯一通道，前面各格的被否方案、未决阻塞与证据索引都在里面；
+1. **前置**：C 组先跑 `search_brief.js`，把核验过的候选集作为 `args.searchBrief` 注入；`attribution` 读灵敏度卡、`req.budget` 读预算前沿、`req.workload` 读工作量汇总，各自核对输入指纹（灵敏度卡还要核对设计点），过期即拒收（退出码 1）；`converge` 注入 `design_point.js` 解析的 `args.designPoint` 与 `gate_status.json` 的三条收敛判据 `args.convergeCriteria`；`arch.direction` 注入打分卡 `morphology.rows` 作为 `args.candidates`；预算合同的下游（`arch.direction` / `compute` / `sram` / `mc` / `comm` / `physical`）的 `args.brief` 由 [`../pipelines/make_brief.js`](../pipelines/make_brief.js) 从合同现派生而不是读一份手写文件（`--brief` 仍可覆盖）；`args.ledger` 由 [`../pipelines/design_ledger.js`](../pipelines/design_ledger.js) 读 `out/governance/design_ledger.json` 注入——这是跨 stage 的唯一通道，前面各格的被否方案、未决阻塞与证据索引都在里面；
 2. **执行**：运行前后各取一次工作区快照（`runtime/guard.js`），agent 若改动了任何文件，本次不落盘（退出码 3）；
 3. **后置**：C 组 winner 先与候选产物逐字段核对（不一致退出码 5，不落盘；`req.budget` 的合同同样要与前沿里所选切分逐字段一致）；返回值里每个 `文件:行号` 引用都由 `../pipelines/check_citations.js` 机械核对——文件不存在、越界或所引行没有文字（空行、表格边框、代码围栏）即不落盘（退出码 7；`attribution` 与 `req.budget` 还要求专家 `plausibleRange` 里的卡外（前沿外）数字出现在其 `rangeEvidence` 所引的行上，不符同样退出码 7；行内容是否支持论断仍由 `invariant-checker` 判断）；再经 `runtime/land.js` 的路径与内容闸门落盘（拒绝退出码 4）；文件全部落盘后，本格返回的 `ledgerPatch`（`design.intake` 为 `ledgerSeed`）并入 ledger 并写回（并入后不合 schema 则退出码 8，文件已落、ledger 未动）。落盘是**可选的**：不加 `--land` 就是 dry run，闸门全跑、不写任何文件，ledger 也不写。
    一次运行若没有返回任何文件（旁证回退、输入不足），主循环改为落一份结果记录 `out/<域>/<workflow>_outcome.json`（按维度跑的 `attribution` 为 `attribution_<维度>_outcome.json`；`runtime/outcome.js`；候选明细折叠成 id 列表），让“谁在什么约束上停了这次运行”留在磁盘上而不只在终端里；这时引用核对的结果写进记录的 `citations`，不阻止落记录。`--result-file <path>` 另存完整返回值。
@@ -45,7 +45,7 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 | `k3_external_references.workflow.js` | → `design.audit` 的一个可选阶段（传 `args.premises` 时启用），产物落 `references/external/` |
 | `k3_agent_learning.workflow.js` | → `design.learn`（仍是一次性脚本），产物落 `references/sota/`，并按领域登记了注入点 |
 
-## 23 个脚本
+## 19 个脚本
 
 每个 workflow 对应的业务环节、产出和结局，见 [`WORKFLOWS.md`](WORKFLOWS.md)；下面按组列出契约与分工。
 
@@ -70,10 +70,17 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 | 脚本 | 回答 | 策略实例 |
 |---|---|---|
 | `design.intake.workflow.js` | 需求+约束能否变成可计算输入 | 6 专家 · `architect` · `framing-critic` · `invariant-checker` |
-| `design.direction.workflow.js` | 走哪条路线 | `architect` · `integrator` · 6–12 候选各一 agent · `framing-critic` · `invariant-checker` · `gate-keeper` |
-| `design.dgate.workflow.js` | 候选能否进细化 | 8 条门槛各一独立 `gate-keeper` · `invariant-checker` · `architect`；结论由脚本算 |
+| `design.req.workload.workflow.js` | 每 token 的工作量是多少（FLOP/byte 按 core class、算术强度、集合通信） | `compute-expert` ∥ `memory-expert` ∥ `comm-expert` · `architect` · `integrator` · `invariant-checker` |
+| `design.req.budget.workflow.js` | 资源往哪切 | `architect` · 6 专家 · `physical-expert` · `integrator` · `invariant-checker` |
+| `design.arch.direction.workflow.js` | 走哪条路线 & 它能不能进细化 | `architect` · `integrator` · 形态候选各一 agent · `framing-critic` · `gate-keeper`×1 · `invariant-checker`；结论由脚本算 |
 
-`design.dgate` 是最容易写歪的一格：它做的是**把 8 条门槛的证据凑齐**，不是判门。判门是 `evaluate_gates.js` 的事，脚本对它的结论原样转述。
+`design.arch.direction` 是最容易写歪的一格：它做的是**把 8 条门槛的证据凑齐**，不是判门。判门是 `evaluate_gates.js` 的事，脚本对它的结论原样转述。
+
+它由旧的 `design.direction` 与 `design.dgate` 合并而来。拆两格曾经的理由是"路线选择"与"门控放行"是两件事，但两格读的是同一份打分卡、同一份包络，第二格除了把第一格刚核过的门槛再核一遍之外没有新输入——于是"两格"只是把同一批证据分两次走一遍，还要靠 brief 的 `stage` 字段把它们接起来。合并之后路线与门控在一格里闭合，门槛证据只核一次。
+
+门槛核验也从 8 个独立 `gate-keeper` 实例收成 **1 个**，一次核完 8 条并**逐条**输出。8 条门槛读的是同一份打分卡与同一份包络，彼此之间没有信息屏障要维护（候选评估要互相看不见，是因为看得见就会对齐措辞；门槛核验没有这个问题）。开 8 个实例换来的不是独立性，是同一份产物被读 8 遍，以及"8 条之间的交叉引用没人负责"这个缺口。收成一个实例后交叉引用落在同一个实例里，而每条仍必须各自给 status / evidenceLevel / evidence / blocker，宽松不会从一条传染到另一条。
+
+候选空间也从"P1 × MC × TP"扩到**形态宏参数**：L/H 算力配比、片上 SRAM 总量与 local/shared 切分、MC 档位、die 数、TP。枚举与打分仍由 `integration/planning/morphology.js` + `stage_a.js` 在主循环侧确定性地跑完，候选集与 L2 预算骨架作为产物传进来。面积/功耗走 `k3_architecture_search.js#physical(x, dies)` 并按 `k3_physical_basis.js#resize()` 归到 SF4/liquid 基准，TPS 走 `token_time.js`，再对照 L1 合同（`out/requirements/budget_frontier.json` 的 `S-CMP` 切分）逐条标"满足 / 差多少"。L2 预算落 `out/budget/L2_budget.json`，把 L1 的 `B-SRAM-CAP` 细化成本地/共享两半，其余条目原样继承。
 
 ### C 组 · 五域设计空间（同构骨架）
 
@@ -108,20 +115,20 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 
 联合候选由 `coupling_search.js`（`npm run coupling:search`）回放，经 `search_brief.js brief coupling` 核验后注入；integrator 交回的联合点由脚本核对为可行、在 Pareto 集上、`values` 逐字等于产物行，之后才交检点。没有可行行时不调用任何 agent，回流 `design.req.budget`（doc 23 §6）。`tests/regression/test_coupling_workflow_behavior.js` 用 mock 运行时执行它。
 
-### D 组 · 细化（严格串行）
+### D 组 · 细化（一格四块）
 
 | 脚本 | 回答 |
 |---|---|
-| `design.detail.freeze.workflow.js` | 冻结 manifest 与 provenance（**无 integrator**，这一步只冻结不合并） |
-| `design.detail.workload.workflow.js` | 算术强度 / Roofline / sizing |
-| `design.detail.events.workflow.js` | tile / packet / kernel 事件（三路并行，共享 manifest hash） |
-| `design.detail.execute.workflow.js` | schedule / PPA |
-| `design.detail.integrate.workflow.js` | fine TPS + delta 归因 |
+| `design.integrate.workflow.js` | 原 `detail.freeze` / `events` / `execute` / `integrate` 四格合一（L5-a）：B0 冻结 manifest 与 provenance → B2 三路事件与五条守恒 → B3 schedule / PPA 执行账本 → B4 fine TPS + delta 归因 → verifier 独立验证 → 末尾一次检点；只落 `out/detailed/detail_integrate.json` |
 | `design.converge.workflow.js` | 架构定型 + ADR |
 
-D 组**不得并行化**：这五个环节是同一条链上的前后依赖，用 workflow 并行它们只会把串行链拆碎，不会更快。
+四块仍严格串行：任一块不成立就在那一块收场，不进下一块。原来每格一次的中间检点收成末尾一次，块与块之间的对账（manifest hash、守恒、口径）由脚本做；检点者看整份产物，找的正是"每块都合规、合起来不成立"的违规。块内调用 compute / memory / comm / software / physical / model 专家与 integrator / architect / verifier。
+
+原第五格 `design.detail.workload`（算术强度 / Roofline / sizing）已按 doc 23 §4 前移为 L1-a 的 `design.req.workload`，脚本一并删除。
 
 `design.converge` 需要主循环注入的 `args.designPoint`（`design_point.js`）。D 组产物由 `stage_b.js` 在基线上算出；设计点是与基线不同的联合点时，D 组审的是另一个点，本格不召集 agent 即返回 `BLOCKED_CONFIG`，出路是 ADR 加上 `npm run baseline:sync -- --point joint --adr <ADR 文件>` 把联合点搬进基线，再重跑 Stage B 与 D 组（doc 23 §8 "设计点接线"）。
+
+它还需要 `args.convergeCriteria`：`run_workflow.js` 从 `out/governance/gate_status.json#quantificationGate` 原样取三条收敛判据（`jointPessimisticMeetsTarget` / `loadBearingAccounted` / `observationMatrixCompleteOrBlocked`，doc 23 §4 L5-b，由 `evaluate_gates.js` 从灵敏度卡与观测矩阵算出）。agent 只引用不重判；任一条为 false 而 architect 判 `ARCH_FREEZE`，脚本记为路线矛盾并返回 `BLOCKED_CONFIG`、不落盘。`tests/regression/test_converge_design_point.js` 用 mock 运行时钉住这两道守卫。
 
 ### L4 组 · 维度归因（按维度参数化）
 
@@ -130,6 +137,16 @@ D 组**不得并行化**：这五个环节是同一条链上的前后依赖，�
 | `design.attribution.workflow.js` | 某个维度（`sram` / `comm` / `joint`）的每个参数怎么影响 TPS/usr、哪些承重 | 行 owner 专家（compute / memory / comm）∥ `software-expert` · `integrator` · `invariant-checker` |
 
 灵敏度卡由 `integration/detailed/tps_attribution.js` 生成（`npm run attribution:cards`），`run_workflow.js attribution --dimension <d>` 读入并核对基线指纹与设计点指纹后以 `args.card` 传入；设计点由 `integration/pipelines/design_point.js` 解析——`design.coupling` 落盘联合点之后是联合点（在 `coupling_search.withPoint` 的范围里回放，带它的 OPT 与模型补丁），之前是基线发布点，卡的 `inputs.point` 记下是哪个，与解析结果不符即拒收。agent 只按行名引用卡、给出物理可信区间与出处，不产生任何数。卡头的 `couplings` 是脚本算好的成对重放（各自单动、一起动、交互项 `interactionTps`），专家要问"两个参数一起动会怎样"时先查这里，不自己估联合效应。三个维度互相独立，可并行跑。设计见 `teams/council/docs/23_DESIGN_QUESTION_WORKFLOW_PROPOSAL.md` §4 L4。
+
+### L1-a · 工作量
+
+| 脚本 | 回答 | 策略实例 |
+|---|---|---|
+| `design.req.workload.workflow.js` | 每 token 在每类算子上做多少 FLOP、搬多少字节、做多少次集合通信；哪些算子吃算力、哪些吃带宽 | `model-expert` · `compute-expert` ∥ `memory-expert` ∥ `comm-expert` · `integrator` · `invariant-checker` |
+
+工作量汇总由 `integration/planning/requirement_workload.js` 生成（`npm run workload:requirements`，写 `out/requirements/workload_requirements.json`），`run_workflow.js req.workload` 读入、核对 `inputs.sourceArtifacts` 的指纹后以 `args.workloadRequirements` 传入（连同它读的 `out/workload/planning_operator_workload.json`）。**算术强度、Roofline 侧与三条 sizing 比一律由内核算好**，三位申报人只认领本域算子并逐字转抄——本格与任何 agent 都不产生这些数字。集合通信在这里是**并列的一域**（`comm-expert`），次数与字节按 `reference-393` / `repo-510` 两口径并列陈述（ADR-0004）。
+
+顺序上它排在 `design.intake` 之后、`design.req.budget` 之前：**工作量是预算切分的输入**，先定工作量再分预算，而不是等五域设计完了再回头算工作量。原先承担这个问题的 `design.detail.workload` 已随之删除并前移到这里。
 
 ### L1-b · 需求预算
 
@@ -248,7 +265,7 @@ npm run -s workflow:ledger-check                        # 校验磁盘上的 led
 
 **ledger 是跨格的唯一通道。** 每个 workflow 最后返回 `ledgerPatch`（`design.intake` 返回整份 `ledgerSeed`），主循环在文件全部落盘后并进 `out/governance/design_ledger.json`。合并规则：`currentStage` 覆盖；`strategyVersions`、`budgetBalance` 按键合并；`rejectedOptions`、`openBlockers`、`evidenceIndex` 按自然键合并且**只增不减**——被否过的方案不能因为下一格没提就被重跑重新发明，没人提起的阻塞也不等于阻塞已解；`frozenDecisions` 按 id 合并，同一个 ADR 给出不同结论是错误而不是合并结果（改 ADR，不改 ledger）。并完校验 `design_ledger.schema.json`，不合格就不写。
 
-ledger 不走 `land.js`：`out/governance/` 是 `design.dgate` 与 `design.backflow` 的落盘前缀，而 ledger 不是任何一格的产物，是主循环自己的记录。
+ledger 不走 `land.js`：`out/governance/` 是 `design.arch.direction` 与 `design.backflow` 的落盘前缀，而 ledger 不是任何一格的产物，是主循环自己的记录。
 
 `tests/regression/test_brief_and_ledger.js` 覆盖这两条：每个 stage 派生出的 brief 合 schema、每条约束的 `source` 解出来的值等于它自己写的值、绑定不随合同点漂移；ledger 的累积、幂等、冻结冲突与写入失败不留半截文件。
 
