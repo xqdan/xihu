@@ -61,7 +61,7 @@ assert.throws(() => extractJson('no json here'), /not valid JSON/);
 
 // ---- every workflow compiles ----------------------------------------------
 const names = listWorkflows(root);
-assert.strictEqual(names.length, 21, `expected 21 workflows, found ${names.length}`);
+assert.strictEqual(names.length, 22, `expected 22 workflows, found ${names.length}`);
 for (const name of names) assert.strictEqual(typeof compileWorkflow(root, name), 'function', name);
 assert.throws(() => compileWorkflow(root, 'nope'), /no such workflow/);
 
@@ -103,7 +103,7 @@ assert.throws(() => compileWorkflow(root, 'nope'), /no such workflow/);
   const reject = (workflow, files) => landFiles({root: tmp, workflow, files}).rejected.map((r) => r.reason).join(' | ');
   assert(/escapes the repository/.test(reject('compute', [{path: '../evil.json', content: '{}'}])));
   assert(/escapes the repository/.test(reject('compute', [{path: path.join(os.tmpdir(), 'evil.json'), content: '{}'}])));
-  assert(/outside what compute may land/.test(reject('compute', [{path: 'out/memory/x.json', content: '{}'}])));
+  assert(/outside what compute may land/.test(reject('compute', [{path: 'out/mc/x.json', content: '{}'}])));
   assert(/outside what explore may land/.test(reject('explore', [{path: 'out/x.md', content: 'hi'}])), 'explore may only write scratch/');
   assert.strictEqual(reject('explore', [{path: 'scratch/explore_1.md', content: 'hi'}]), '');
   assert(/gate literal/.test(reject('dgate', [{path: 'out/governance/e.json', content: '{\n  "decision": "PASS"\n}'}])));

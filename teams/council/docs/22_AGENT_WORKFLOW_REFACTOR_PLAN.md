@@ -212,7 +212,7 @@ C 组四域读取产物这一步同样**不由 agent 做**：agent 转写候选�
 | B | `design.direction` | 走哪条路线 | 6–12 候选各一 agent | 排序+敏感性 → 只留 winner | `stage_a.js`、`directional_envelope.js` |
 | B | `design.dgate` | 候选能否进细化 | 8 条门槛各一独立 agent | **脚本**算门控 | `evaluate_gates.js` |
 | C | `design.compute` | AI Core 设计空间 | N 个选项各一 agent | 收敛到 winner | `generate_matrix_vector_design.js` |
-| C | `design.memory` | SRAM/MC/TMA 设计空间 | N | 同上 | `k3_mc_baseline.json` |
+| C | `design.memory`（已按 doc 23 P4 拆为 `design.sram` / `design.mc`） | SRAM/MC/TMA 设计空间 | N | 同上 | `k3_mc_baseline.json` |
 | C | `design.comm` | NoC/collective 设计空间 | N | 同上 | `generate_comm_core_design.js` |
 | C | `design.physical` | 封装/面积/功耗/热 | N | 同上 | 7R baseline |
 | D | `design.detail.freeze` | 冻结 manifest 与 provenance | — | 串行 | `stage_b.js` 的 B0 |
@@ -236,7 +236,7 @@ C 组四域读取产物这一步同样**不由 agent 做**：agent 转写候选�
 | `design.direction` | `architect`×1 · 候选评估×6–12（同一 `architect` 策略、各看一个候选，互相看不见）· `integrator`×1 · `framing-critic`×1 · `gate-keeper`×1 · `invariant-checker`×1 |
 | `design.dgate` | `gate-keeper`×8（独立实例）· `invariant-checker`×1 · `architect`×1 |
 | `design.compute` | `compute-expert`×N · 旁证 `memory-expert`/`physical-expert`×各1 · `integrator`×1 · `invariant-checker`×1（无 `gate-keeper`：门控由脚本算） |
-| `design.memory` | `memory-expert`×N · 旁证 `compute-expert`/`software-expert`×各1 · `integrator`×1 · `invariant-checker`×1 |
+| `design.memory`（已拆为 `design.sram` / `design.mc`，旁证见 doc 23 §4） | `memory-expert`×N · 旁证 `compute-expert`/`software-expert`×各1 · `integrator`×1 · `invariant-checker`×1 |
 | `design.comm` | `comm-expert`×N · 旁证 `memory-expert`/`physical-expert`×各1 · `integrator`×1 · `invariant-checker`×1 |
 | `design.physical` | `physical-expert`×N · 旁证 `compute`/`memory`/`comm`×各1 · `integrator`×1 · `invariant-checker`×1 |
 | `design.detail.freeze` | `model-expert`×1 · `memory-expert`×1 · `invariant-checker`×1（**无 integrator**） |

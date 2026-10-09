@@ -1,6 +1,6 @@
 'use strict';
 
-/* The deterministic half of the C-group design workflows (design.compute / memory /
+/* The deterministic half of the C-group design workflows (design.compute / sram / mc /
  * comm / physical).
  *
  * A workflow has no filesystem and its agents are read-only, so the search
@@ -21,7 +21,7 @@
  * Usage:
  *   node integration/pipelines/search_brief.js brief  <domain> [--max N] [--no-recompute]
  *   node integration/pipelines/search_brief.js verify <domain>
- *   domain: compute | memory | comm | physical
+ *   domain: compute | sram | mc | comm | physical
  */
 
 const crypto = require('crypto');
@@ -29,6 +29,7 @@ const fs = require('fs');
 const path = require('path');
 const {isDeepStrictEqual} = require('util');
 const computeSearch = require('../detailed/matrix_vector_search.js');
+const sramSearch = require('../detailed/sram_search.js');
 const memorySearch = require('../detailed/memory_search.js');
 const commSearch = require('../detailed/comm_core_search.js');
 const physicalSearch = require('../detailed/physical_search.js');
@@ -45,7 +46,14 @@ const DOMAINS = {
     search: computeSearch,
     caliberUnverified: {areaIncludesPortCost: 'UNVERIFIED', powerScope: 'UNVERIFIED'}
   },
-  memory: {
+  sram: {
+    artifact: 'out/detailed/sram_candidates.json',
+    search: sramSearch,
+    caliberUnverified: {areaIncludesPortCost: 'UNVERIFIED', powerScope: 'UNVERIFIED', sharedMiBCaliber: 'UNVERIFIED'}
+  },
+  // The MC domain keeps the memory_* file names of its search (memory_search.js,
+  // memory_candidates.json); only the stage is called mc.
+  mc: {
     artifact: 'out/detailed/memory_candidates.json',
     search: memorySearch,
     caliberUnverified: {mcGBsCaliber: 'UNVERIFIED', capacityGBPerCubeCaliber: 'UNVERIFIED'}
@@ -186,7 +194,7 @@ function verifyLandedWinner(domain, winner, runRecord, {artifact} = {}) {
 function main(argv) {
   const [command, domain, ...flags] = argv;
   if (!['brief', 'verify'].includes(command) || !Object.hasOwn(DOMAINS, domain)) {
-    console.error('usage: search_brief.js brief|verify <compute|memory|comm|physical> [--max N] [--no-recompute]');
+    console.error('usage: search_brief.js brief|verify <compute|sram|mc|comm|physical> [--max N] [--no-recompute]');
     return 2;
   }
   if (command === 'brief') {

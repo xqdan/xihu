@@ -18,7 +18,7 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 第二种由 [`runtime/`](runtime/)（注入 `args` / `agent` / `parallel` / `phase` / `log`）加
 [`../pipelines/run_workflow.js`](../pipelines/run_workflow.js)（主循环）实现。`runtime/` 不读写仓库文件，主循环做三件事：
 
-1. **前置**：C 组先跑 `search_brief.js`，把核验过的候选集作为 `args.searchBrief` 注入；`attribution` 读灵敏度卡、`req.budget` 读预算前沿，各自核对输入指纹，过期即拒收（退出码 1）；预算合同的下游（`direction` / `compute` / `memory` / `comm` / `physical`）的 `args.brief` 由 [`../pipelines/make_brief.js`](../pipelines/make_brief.js) 从合同现派生而不是读一份手写文件（`--brief` 仍可覆盖）；`args.ledger` 由 [`../pipelines/design_ledger.js`](../pipelines/design_ledger.js) 读 `out/governance/design_ledger.json` 注入——这是跨 stage 的唯一通道，前面各格的被否方案、未决阻塞与证据索引都在里面；
+1. **前置**：C 组先跑 `search_brief.js`，把核验过的候选集作为 `args.searchBrief` 注入；`attribution` 读灵敏度卡、`req.budget` 读预算前沿，各自核对输入指纹，过期即拒收（退出码 1）；预算合同的下游（`direction` / `compute` / `sram` / `mc` / `comm` / `physical`）的 `args.brief` 由 [`../pipelines/make_brief.js`](../pipelines/make_brief.js) 从合同现派生而不是读一份手写文件（`--brief` 仍可覆盖）；`args.ledger` 由 [`../pipelines/design_ledger.js`](../pipelines/design_ledger.js) 读 `out/governance/design_ledger.json` 注入——这是跨 stage 的唯一通道，前面各格的被否方案、未决阻塞与证据索引都在里面；
 2. **执行**：运行前后各取一次工作区快照（`runtime/guard.js`），agent 若改动了任何文件，本次不落盘（退出码 3）；
 3. **后置**：C 组 winner 先与候选产物逐字段核对（不一致退出码 5，不落盘；`req.budget` 的合同同样要与前沿里所选切分逐字段一致）；返回值里每个 `文件:行号` 引用都由 `../pipelines/check_citations.js` 机械核对——文件不存在、越界或所引行没有文字（空行、表格边框、代码围栏）即不落盘（退出码 7；`attribution` 与 `req.budget` 还要求专家 `plausibleRange` 里的卡外（前沿外）数字出现在其 `rangeEvidence` 所引的行上，不符同样退出码 7；行内容是否支持论断仍由 `invariant-checker` 判断）；再经 `runtime/land.js` 的路径与内容闸门落盘（拒绝退出码 4）；文件全部落盘后，本格返回的 `ledgerPatch`（`design.intake` 为 `ledgerSeed`）并入 ledger 并写回（并入后不合 schema 则退出码 8，文件已落、ledger 未动）。落盘是**可选的**：不加 `--land` 就是 dry run，闸门全跑、不写任何文件，ledger 也不写。
    一次运行若没有返回任何文件（旁证回退、输入不足），主循环改为落一份结果记录 `out/<域>/<workflow>_outcome.json`（按维度跑的 `attribution` 为 `attribution_<维度>_outcome.json`；`runtime/outcome.js`；候选明细折叠成 id 列表），让“谁在什么约束上停了这次运行”留在磁盘上而不只在终端里；这时引用核对的结果写进记录的 `citations`，不阻止落记录。`--result-file <path>` 另存完整返回值。
@@ -75,16 +75,27 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 
 `design.dgate` 是最容易写歪的一格：它做的是**把 8 条门槛的证据凑齐**，不是判门。判门是 `evaluate_gates.js` 的事，脚本对它的结论原样转述。
 
-### C 组 · 四域设计空间（同构骨架）
+### C 组 · 五域设计空间（同构骨架）
 
 | 脚本 | 域 | 主策略 |
 |---|---|---|
 | `design.compute.workflow.js` | AI Core | `compute-expert` |
-| `design.memory.workflow.js` | SRAM/MC/TMA | `memory-expert` |
+| `design.sram.workflow.js` | SRAM（shared 容量 / bank / slice / 端口） | `memory-expert`（SRAM 席位） |
+| `design.mc.workflow.js` | MC/HBM/TMA | `memory-expert`（MC 席位） |
 | `design.comm.workflow.js` | NoC/collective | `comm-expert` |
 | `design.physical.workflow.js` | 封装/面积/功耗/热 | `physical-expert` |
 
-四域共用一套骨架（`design.compute` 是样板，其余三格只换主策略与设计空间）与同一份 `design_ledger`。骨架的六步闭环与脚本 API 强制的三处出入，见计划文档 §4.3。
+五域共用一套骨架（`design.compute` 是样板，其余四格只换主策略与设计空间）与同一份 `design_ledger`。原 `design.memory` 按 doc 23 §4 拆成 `design.sram` 与 `design.mc`：两格的主策略都是 `memory-expert`，分坐 SRAM / MC 两个席位；它作为旁证出现时在 `absentLateral` 里记作 `memory-expert/sram` 或 `memory-expert/mc`。
+
+各域的旁证专家（doc 23 §4）：
+
+| 域 | 旁证 |
+|---|---|
+| compute | memory、physical |
+| sram | compute、mc、software |
+| mc | sram、comm、physical |
+| comm | mc、compute、physical |
+| physical | compute、sram、mc、comm |骨架的六步闭环与脚本 API 强制的三处出入，见计划文档 §4.3。
 
 **顺序上有一处刻意的安排**：旁证约束串在**确定性搜索之后**，不是串在"初稿"之后。约束针对的是具体候选——见不到候选就提不出可执行的约束（"说不出否掉谁的约束不要提"）。
 
@@ -194,7 +205,7 @@ Workflow({scriptPath: '.../design.audit.workflow.js', args: {brief, artifacts, p
 
 ## C 组的取数与落盘核对
 
-C 组四域读搜索产物这一步没有 agent：转写候选数值的若是 LLM，就没有任何东西核对"转写 = 原文"，而这些数值是合并、旁证、检点全部裁决的唯一数字来源。主循环的调用顺序：
+C 组五域读搜索产物这一步没有 agent：转写候选数值的若是 LLM，就没有任何东西核对"转写 = 原文"，而这些数值是合并、旁证、检点全部裁决的唯一数字来源。主循环的调用顺序：
 
 ```sh
 npm run aicore:search                       # 先跑确定性搜索（compute；其余域见 integration/pipelines/README.md）
@@ -203,18 +214,18 @@ npm run -s workflow:brief -- compute > /tmp/compute.brief.json   # 读产物、�
 npm run -s workflow:verify-landed -- compute                     # 落盘后：winner 必须是产物里的一行
 ```
 
-`brief` 在产物过期、指纹对不上、缺候选明细时给出 `ok:false`，workflow 据此退回 `BLOCKED_CONFIG`。`verify` 检查 winner 逐字段等于产物那一行、可行、run record 的指纹一致、被排除的 optionId 都在产物里；任何一项不成立都以非零退出。产物没有声明字段口径（目前只有 comm 的 `fieldCaliber` 声明了）时，`brief` 把口径字段一律记为 `UNVERIFIED`，不替产物推断。
+`brief` 在产物过期、指纹对不上、缺候选明细时给出 `ok:false`，workflow 据此退回 `BLOCKED_CONFIG`。`verify` 检查 winner 逐字段等于产物那一行、可行、run record 的指纹一致、被排除的 optionId 都在产物里；任何一项不成立都以非零退出。产物没有声明字段口径（目前 comm 与 sram 的产物声明了 `fieldCaliber`）时，`brief` 把口径字段一律记为 `UNVERIFIED`，不替产物推断。
 
 另一条同类规则：旁证阶段（`constraint:*`）任何一路专家调用失败，workflow 退回 `BLOCKED_CONFIG` 并在 `absentLateral` 里点名——缺席的一侧不能当作"没有意见"。
 
-`tests/regression/test_c_group_workflow_behavior.js` 用 mock 运行时真正执行这四个脚本，覆盖上述两条。
+`tests/regression/test_c_group_workflow_behavior.js` 用 mock 运行时真正执行这五个脚本，覆盖上述两条。
 
 ## brief 与 ledger：跨格的两条通道
 
 一格要知道的东西只有两类：架构师给它的题（brief），与前面各格已经定下的事（ledger）。两者都由主循环注入，脚本不读文件。
 
 ```sh
-npm run -s workflow:design-brief -- memory              # 从预算合同派生这一格的 brief（--provenance 附来源）
+npm run -s workflow:design-brief -- mc                  # 从预算合同派生这一格的 brief（--provenance 附来源）
 npm run -s workflow:design-brief -- --list              # 覆盖哪些 stage
 npm run -s workflow:ledger                              # 当前 ledger（文件不存在时打印空 ledger）
 npm run -s workflow:ledger-check                        # 校验磁盘上的 ledger

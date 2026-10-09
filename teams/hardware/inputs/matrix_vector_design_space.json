@@ -12,8 +12,8 @@
     "modelsReason": "the repository serves three models; the K3-only requirement is shown as a variant in the document",
     "hiddenCoreClasses": ["H"],
     "hiddenReason": "every H-core kernel (attention, DSA indexer, KDA state) of the required models must hide its vector work under its matrix work. The L-core GEMV unpack at B=1 has a bound of about 3:1 (about 666 lanes per L core); it is reported, not required, and its time is charged in the K3 system replay",
-    "tpsTolerance": 0.001,
-    "tpsReason": "the K3 system replay keeps the published TPS/usr within 0.1%",
+    "contractEntry": "B-SERIAL-CMP",
+    "contractReason": "the L1 budget contract (integration/detailed/design_contract.js) owns the system requirement: the compute domain answers for B-SERIAL-CMP, and since this space has no computeScale dimension the entry is tested through the target it was derived from (K3 replay TPS/usr >= contract target.tpsPerUser). Holding the replay to the published point instead made the shipped design its own requirement",
     "packageFit": {
       "keepOutFraction": 0.1254,
       "keepOutReason": "the observed keep-out of the published point, 658.29 / 5248 (teams/hardware/inputs/physical_design_space.json, reserveFraction option 0.1254: recorded as observed, not chosen). A tighter reserve is an unverified ASSUMPTION there and is deliberately not used here to admit a candidate",
@@ -29,7 +29,7 @@
   },
   "constraints": [
     "every H-core kernel of the required models hides its vector work (kernel bound >= core MACs:lanes)",
-    "K3 detailed replay at the published point with only vectorLanes (and, for native input, the unpack) changed keeps TPS/usr within tpsTolerance of the published point",
+    "K3 detailed replay at the published point with only vectorLanes (and, for native input, the unpack) changed reaches the contract target of requirements.contractEntry",
     "the die, with the shared-port charge and the option overheads, stays within its area and power limits (O.evaluate feasibility, then the die-area limit on the figure that includes both)",
     "8 dies at that area plus the memory cubes fit the placement window less the observed keep-out (requirements.packageFit)"
   ],

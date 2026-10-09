@@ -1,11 +1,11 @@
 export const meta = {
   name: 'design-comm',
   description: 'K3 设计 comm 域：专家提搜索策略与守恒判据，确定性脚本枚举打分，integrator 合并，invariant-checker 检点后落盘',
-  whenToUse: 'C 组四域的标准骨架。需要 args.brief（intake 产出的 DesignBrief）args.searchArtifact（主循环已生成好的搜索结果路径，仅作记录）与 args.searchBrief（search_brief.js 核验过的候选集）。本 workflow 不执行搜索、不写文件。',
+  whenToUse: 'C 组五域的标准骨架。需要 args.brief（intake 产出的 DesignBrief）args.searchArtifact（主循环已生成好的搜索结果路径，仅作记录）与 args.searchBrief（search_brief.js 核验过的候选集）。本 workflow 不执行搜索、不写文件。',
   phases: [
     { title: 'Search policy', detail: 'comm-expert 按搜索策略线程分头提搜哪些维度、哪些必须排除、按什么排序' },
     { title: 'Deterministic search', detail: '由脚本枚举并打分，并由 search_brief.js 读取核验；workflow 内没有 agent 参与取数' },
-    { title: 'Constraint recall', detail: 'memory / physical 专家对候选集给出侧向约束' },
+    { title: 'Constraint recall', detail: 'mc / compute / physical 专家对候选集给出侧向约束' },
     { title: 'Merge', detail: 'integrator 合并候选，记录冲突与排除依据' },
     { title: 'Invariant check', detail: 'invariant-checker 强制检点；不通过则不落盘' },
   ],
@@ -23,8 +23,8 @@ export const meta = {
 //    合并者对自己拼出的结果有结构性偏好，让它兼任检点，违规项会被解释掉。
 //
 // 本文件是 design.compute 的 comm 域副本。骨架部分逐字保留：workflow 脚本没有文件系统
-// 权限、不能 require，仓库里刻意不为骨架提供共享模块——四个域各持一份完整骨架，
-// 这样任何一个域要改判据都不必先动另外三个域。改动只允许发生在域相关的常量与 prompt 正文。
+// 权限、不能 require，仓库里刻意不为骨架提供共享模块——五个域各持一份完整骨架，
+// 这样任何一个域要改判据都不必先动另外四个域。改动只允许发生在域相关的常量与 prompt 正文。
 // ---------------------------------------------------------------------------
 
 const REPO = args.repo || '.'
@@ -70,6 +70,7 @@ const HEAD = [
 const KNOWLEDGE = {
   'comm-expert': 'references/sota/interconnect-collective.md',
   'memory-expert': 'references/sota/memory-subsystem.md',
+  'compute-expert': 'references/sota/compute-core.md',
   'physical-expert': 'references/sota/package-ppa.md',
 }
 const knowledgeHead = (agentId) => {
@@ -86,7 +87,7 @@ const head = (agentId) => [HEAD.replace('__AGENT__', agentId), ...knowledgeHead(
 
 const BRIEF_JSON = JSON.stringify(BRIEF, null, 2)
 
-// 旁证约束的标准契约。四个域共用同一形状，这样一条约束在不同域之间传递时
+// 旁证约束的标准契约。五个域共用同一形状，这样一条约束在不同域之间传递时
 // 不需要翻译，也不会因为字段名不同而被当成两回事。
 // 关键点是 constraintId 必须引用 brief 里已有的硬约束——旁证是**转述约束**，
 // 不是发明约束；发明出来的约束没有出处，下游无法复核也就无法执行。
@@ -357,14 +358,15 @@ phase('Constraint recall')
 
 // 第三步：旁证给约束，串在候选集之后而不是与候选并行。
 // 顺序是刻意的——约束针对的是具体候选，见不到候选就提不出可执行的约束。
-// 旁证取 memory-expert 与 physical-expert：comm-expert 是本域主策略，不是旁证；
-// 本域的候选集能不能落地，取决于内存侧接不接得住图存储与 commit 计数、
-// 物理侧接不接得住 PHY 岸线、管理核面积与 die 级功耗（roster 的 consumers 已载明
-// design.comm 由这两个策略共担）。
-const [memC, physC] = await parallel([
+// 旁证按 doc 23 第 4 节取 mc、compute、physical：comm-expert 是本域主策略，不是旁证；
+// 本域的候选集能不能落地，取决于 MC 侧接不接得住图存储与 commit 计数、
+// 算力侧接不接得住 Reduce 与 kernel 边界的交接、物理侧接不接得住 PHY 岸线、管理核面积与 die 级功耗。
+// MC 侧由 memory-expert 坐 MC 席发言（它同时是 sram 域的主策略，所以按席位记名）。
+const [mcC, computeC, physC] = await parallel([
   () =>
     agent(
       `${head('memory-expert')}
+你坐 MC 席（memory-expert/mc）：替 L1 合同的 B-MEM-BW 一侧说话；片上 SRAM 的取舍是 design.sram 的问题，不在这里回答。
 
 brief：
 ${BRIEF_JSON}
@@ -372,12 +374,31 @@ ${BRIEF_JSON}
 comm 域已选出的候选集（来自确定性搜索）：
 ${JSON.stringify(candidateBrief, null, 2)}
 
-任务：对这批候选给出**内存侧的约束**。只回答内存侧接不接得住，不要评价候选好坏、不要重算候选数值。
+任务：对这批候选给出**MC 侧的约束**。只回答 MC 侧接不接得住，不要评价候选好坏、不要重算候选数值。
 - 逐条给出：这条约束否掉哪个 candidateId 或哪种取值，依据是什么。
 - 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
-- 若内存侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
-- 若内存侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
-      { label: 'constraint:memory', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+- 若 MC 侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
+- 若 MC 侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
+      { label: 'constraint:mc', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+    ),
+  () =>
+    agent(
+      `${head('compute-expert')}
+
+brief：
+${BRIEF_JSON}
+
+comm 域已选出的候选集（来自确定性搜索）：
+${JSON.stringify(candidateBrief, null, 2)}
+
+任务：对这批候选给出**算力侧的约束**。只回答 AI Core 一侧接不接得住（Reduce 引擎、kernel 与集合通信的交接），
+不要评价候选好坏、不要重算候选数值。
+- 逐条给出：这条约束否掉哪个 candidateId 或哪种取值，依据是什么。
+- 数学 peak、effective peak、measured peak 必须分开陈述，不得互相替代；τ 不得被当成算力侧可以吸收的常数。
+- 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
+- 若算力侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
+- 若算力侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
+      { label: 'constraint:compute', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
     ),
   () =>
     agent(
@@ -403,7 +424,8 @@ ${JSON.stringify(candidateBrief, null, 2)}
 // 旁证缺席不是"没有意见"：某一路侧向专家调用失败（返回空），它的约束就不存在，
 // 而合并者会把"没人反对"当成通过。缺任何一路都退回，不合并、不落盘。
 const lateral = [
-  ['memory-expert', memC],
+  ['memory-expert/mc', mcC],
+  ['compute-expert', computeC],
   ['physical-expert', physC],
 ]
 const absentLateral = lateral.filter(([, c]) => !c).map(([agentId]) => agentId)
@@ -603,6 +625,7 @@ const ledgerPatch = {
   strategyVersions: {
     'comm-expert': '1.0',
     'memory-expert': '1.0',
+    'compute-expert': '1.0',
     'physical-expert': '1.0',
     integrator: '1.0',
     'invariant-checker': '1.0',

@@ -1,6 +1,6 @@
 'use strict';
 
-// The four `design.<domain>` workflows are inline copies of one C-group
+// The five `design.<domain>` workflows are inline copies of one C-group
 // skeleton. The copies are deliberate -- a workflow cannot `require` and the
 // repository does not share a module for the skeleton -- but a copy that drifts
 // is worse than no copy: a reader who learns the contract from one domain then
@@ -34,9 +34,9 @@ const read = f => fs.readFileSync(path.join(dir, f), 'utf8');
 
 // `intake` is the pipeline's first stage and is deliberately NOT a C-group
 // copy -- it has different args and a different phase list. The skeleton test
-// covers the four domain workflows that share the search -> merge -> check
-// shape.
-const DOMAINS = ['compute', 'memory', 'comm', 'physical'];
+// covers the five domain workflows that share the search -> merge -> check
+// shape (doc 23 section 4 split design.memory into design.sram and design.mc).
+const DOMAINS = ['compute', 'sram', 'mc', 'comm', 'physical'];
 const missing = DOMAINS.filter(d => !files.includes(`design.${d}.workflow.js`));
 assert.deepStrictEqual(missing, [], `missing design workflows: ${missing.join(', ')}`);
 
@@ -124,7 +124,7 @@ for (const [name, label] of SHARED) {
 }
 
 // The policy schema is the session's decisive input shape, so it is compared
-// separately: comm and physical hoist it to fan out per thread, memory and
+// separately: comm and physical hoist it to fan out per thread, sram, mc and
 // compute inline it in the single policy call.
 const POLICY_LABEL = "label: 'search-policy'";
 const policyRef = schemaAt(text.compute, 'POLICY_SCHEMA', POLICY_LABEL);

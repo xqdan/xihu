@@ -75,7 +75,15 @@ if (hasDesign) {
   for (const k of stored.kernels.filter(q => q.required)) assert(k.hidden && k.coreRatio <= k.maxCoreRatio + 1e-9, `${k.model} ${k.kernel} must hide`);
   assert(lanes >= stored.binding.minLanesPerCore, 'lanes cover the binding kernel');
   assert.strictEqual(stored.binding.minLanesPerCore, Math.max(...stored.kernels.filter(q => q.required).map(q => q.minLanesPerCore)));
-  assert(ev.k3System.tpsPerUser >= ev.k3System.publishedTpsPerUser * (1 - stored.requirements.tpsTolerance), 'K3 TPS within tolerance');
+  // The winner clears the contract's system target. Not the published point: the artifact
+  // still reports it (publishedTpsPerUser) because that is what the design shipped at, but
+  // the test it has to pass is the contract's -- holding it to 1101.77 would make the
+  // shipped design its own requirement, and a cheaper die that reaches 1000 would fail for
+  // being cheaper. The contract the winner was scored against is named in stored.contract.
+  assert(ev.k3System.tpsPerUser >= ev.k3System.contractTargetTpsPerUser - 1e-9,
+    `K3 TPS ${ev.k3System.tpsPerUser} is below the contract target ${ev.k3System.contractTargetTpsPerUser}`);
+  assert.strictEqual(ev.k3System.contractTargetTpsPerUser, stored.contract.target.tpsPerUser, 'the target tested is the contract\'s own');
+  assert.strictEqual(stored.clause.id, 'B-SERIAL-CMP', 'the compute domain answers for the serial compute entry');
   assert(ev.areaMm2 <= ev.dieAreaLimitMm2);
   assert(ev.packageReserveMm2 >= 0, 'the winner fits the package');
   close(ev.areaMm2, Object.values(ev.area).reduce((a, v) => a + v, 0), 'area adds up');

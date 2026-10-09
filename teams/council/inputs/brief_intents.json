@@ -48,7 +48,11 @@
           "description": "teams/hardware/inputs/matrix_vector_design_space.json"
         },
         {
-          "optionId": "memory",
+          "optionId": "sram",
+          "description": "teams/hardware/inputs/sram_design_space.json"
+        },
+        {
+          "optionId": "mc",
           "description": "teams/hardware/inputs/memory_design_space.json"
         },
         {
@@ -80,7 +84,26 @@
       ],
       "allowedDesignSpace": "teams/hardware/inputs/matrix_vector_design_space.json"
     },
-    "memory": {
+    "sram": {
+      "objective": "片上 SRAM/TMA 取哪一组（每 die Shared 窗口 × L/H Local bank 数 × Shared slice 数 × 每核 TMA 引擎数 × 是否建 Shared 端口放大），使每 die Shared 窗口满足 L1 合同的 B-SRAM-CAP 下限、K3 详细回放达到合同的目标 TPS/usr，且含端口计费的 die 面积与功耗不超 B-AREA 包络",
+      "shapeIntent": "先在确定性搜索里把 SRAM 维度的乘积枚举完，只在可行集里做取舍；发布点是结果，不是需求——不得以保持发布点的 TPS/usr 为由否掉更便宜的可行组合。窗口下限按合同裁决，不按本域的回放裁决；本地容量由 local tile 是否放得下决定，不进搜索维度。",
+      "forbidden": [
+        "不得给出 TPS/usr 或任何整机级性能数字（本 stage 只报 SRAM 侧取值与时间账）",
+        "不得手工填写面积或功耗；必须取自规格文件或搜索脚本产物，且面积必须含 Shared 端口计费",
+        "不得把每卡窗口、每核 Local 容量与合同的每 die Shared 窗口当作同一个量比较",
+        "不得因本域回放在发布点计算侧能达标而放行低于 B-SRAM-CAP 下限的窗口；下调窗口必须回到 L1 重新拆分",
+        "不得输出 PASS / D_GATE_PASSED 字面量"
+      ],
+      "exitCriteria": [
+        "winner 的每个数值字段都能指回确定性搜索产物，窗口、bank、slice、TMA 的口径分别标明",
+        "每 die Shared 窗口不低于 B-SRAM-CAP 下限；K3 回放达到合同目标，其他模型对本条款 UNCORROBORATED 的事实如实陈述",
+        "端口放大计费是否计入面积与功耗逐条陈述",
+        "die 面积与功耗在 L1 合同给定的边界内",
+        "integrated winner 通过 invariant-checker 的全部检点项"
+      ],
+      "allowedDesignSpace": "teams/hardware/inputs/sram_design_space.json"
+    },
+    "mc": {
       "objective": "存储子系统取哪一组（每 cube 链路带宽 × cube 容量 × 卡上组合），使三模型全部落到 L1 合同要求的目标 TPS/usr 之上，且 SMIC 28 HKE+ 的 cube 侧口径与 UCIe 1.1 接口不被打穿",
       "shapeIntent": "先在确定性搜索里把 cube 档位与容量组合枚举完，只在可行集里做取舍；倾向于保留参考件的 320 GB/s 兼容点作为下限参照，往上的每一档都要说明它换来的 TPS/usr 是必需的还是裕量。容量口径与链路口径必须分开陈述，不得用容量数字掩盖带宽缺口。",
       "forbidden": [

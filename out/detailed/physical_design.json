@@ -4,7 +4,7 @@
   "document": "teams/hardware/docs/09_PACKAGE_POWER_RAS.md",
   "designSpace": {
     "file": "teams/hardware/inputs/physical_design_space.json",
-    "sha256": "2237dc86c1ea725465c8559838075c1ee8a2c0b71742cb3cd9963156aa658d9e",
+    "sha256": "3f5c6046eca584bae6ebc544e4bb66184020bd66e514d2a388ff00479bad1955",
     "dimensions": [
       "process",
       "matrixTFPerMm2",
@@ -18,7 +18,7 @@
       "card power <= 2800 W (the MC term and the fixed overhead are charged, not assumed away)",
       "package area (dies + cubes) + reserve <= the 5248 mm2 placement window",
       "PHY shoreline <= the die edge budget (4 x sqrt(dieArea) x phyEdgeFraction); the published point sits at 24.21 / 52.95 mm and this constraint is what a naive lane increase breaks first",
-      "the K3 detailed replay at the published point keeps TPS/usr within tpsTolerance",
+      "the K3 detailed replay at the candidate reaches the contract target of requirements.contractEntry",
       "every area term must be classifiable as logic, SRAM or PHY: k3_physical_basis.resize throws on an unclassified term, and that must stay true"
     ],
     "objective": [
@@ -36,11 +36,36 @@
       "GLM-5.2",
       "DeepSeek-V4-Pro"
     ],
-    "tpsTolerance": 0.001,
+    "contractEntry": "B-AREA",
     "dieAreaLimitMm2": 400,
     "diePowerLimitW": 300,
     "cardPowerLimitW": 2800,
     "placementWindowMm2": 5248
+  },
+  "contract": {
+    "path": "out/requirements/budget_frontier.json",
+    "splitId": "S-CMP",
+    "origin": "frontier split",
+    "sha256": "713b98cd40576ce5d5150ca01d0ed07a2db03289217f8b1889b8f3ce5c066a71",
+    "target": {
+      "tpsPerUser": 1000,
+      "architectureGate": 1050,
+      "rawBudgetUs": 854.7008547008547,
+      "engineeringMargin": 1.17
+    },
+    "point": {
+      "tauUs": 1.15,
+      "computeScale": 0.7444854736328125,
+      "mcGBs": 640
+    }
+  },
+  "clause": {
+    "id": "B-AREA",
+    "quantity": "dieAreaMm2",
+    "owner": "physical",
+    "ownerAgent": "physical-expert",
+    "max": 400,
+    "source": "out/requirements/budget_frontier.json#B-AREA"
   },
   "caliber": {
     "dieArea": "per compute die, mm2, on the searched process basis, including the charged shared-port scaling cost",
@@ -146,7 +171,8 @@
     "k3System": {
       "publishedTpsPerUser": 1101.771070241925,
       "tpsPerUser": 1101.771070241925,
-      "rawLatencyUs": 775.7517671190814
+      "rawLatencyUs": 775.7517671190814,
+      "contractTargetTpsPerUser": 1000
     },
     "process": "SF4",
     "matrixTFPerMm2": 3.2,

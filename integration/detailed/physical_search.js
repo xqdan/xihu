@@ -46,6 +46,7 @@ const path = require('path');
 const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const P = require('./k3_physical_basis.js');
+const CONTRACT = require('./design_contract.js');
 
 const root = path.resolve(__dirname, '../..');
 const SPACE_FILE = 'teams/hardware/inputs/physical_design_space.json';
@@ -127,6 +128,7 @@ function replay(ctx, process, matrixTFPerMm2, cooling) {
 
 function context() {
   const space = read(SPACE_FILE);
+  CONTRACT.declared(space, 'physical', SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
   const x = spec.tpsDesign.hardware.x;
   // The shared-port bandwidth charge physical() does not carry, read from the model's
@@ -134,7 +136,14 @@ function context() {
   // shared-SRAM bandwidth the plan asks for beyond what physical() sized, one entry per
   // die. Re-deriving it by hand got the card/die split wrong (57.87 vs 7.586 TB/s).
   const port = O.evaluate(x).p.sharedPortCost;
+  // The clause this domain answers for (23 section 4, L3): B-AREA, the die area and the
+  // die/card power limits behind it. The published point stays in ctx -- the replay runs on
+  // it and the artifacts report against it -- but it is no longer the feasibility test.
+  const contract = CONTRACT.load();
+  const area = CONTRACT.ownedBy(contract.contract, 'physical');
   return {space, spec, x, point: spec.tpsDesign.point, replays: {},
+    contract, clause: CONTRACT.clause(contract, 'physical'), target: contract.contract.target,
+    limits: {dieAreaMm2: area.max, diePowerW: area.limits.diePowerW, cardPowerW: area.limits.cardPowerW},
     dies: A.LIMITS.dies,
     cubes: spec.card.memoryCubes,
     cubeAreaMm2: spec.package.memoryCubeAreaMm2Planning,
@@ -164,17 +173,25 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   const usableMm2 = req.placementWindowMm2 * (1 - reserve);
   const reserveMm2 = usableMm2 - placedMm2;
   if (reserveMm2 < -EPS) violations.push('packageArea');
-  // 2. The per-unit limits on the searched cooling basis.
-  if (sys.dieAreaMm2 > req.dieAreaLimitMm2 + EPS) violations.push('dieArea');
+  // 2. The per-unit limits. The die area ceiling is B-AREA's own max -- that is the clause
+  // this domain answers for, and reading it from the contract is what makes a different
+  // split able to move it. The power ceilings stay the searched cooling option's: the
+  // contract's limits are stated on the liquid basis (B-AREA.basis), so an air-cooled
+  // candidate has to be held to air's stricter pair or the sensitivity would score itself
+  // against a premise it does not run on.
+  if (sys.dieAreaMm2 > ctx.limits.dieAreaMm2 + EPS) violations.push('dieArea');
   if (sys.diePowerW > cooling.diePowerLimitW + EPS) violations.push('diePower');
   if (sys.cardPowerW > cooling.cardPowerLimitW + EPS) violations.push('cardPower');
 
   // 3. PHY shoreline against the die edge budget.
   if (sys.shorelineMm > sys.edgeBudgetMm + EPS) violations.push('phyShoreline');
 
-  // 4. The K3 replay must keep the published point.
+  // 4. The replay must clear the contract's system target -- not reproduce the published
+  // point. A package that reaches 1000 TPS/usr more cheaply satisfies the contract; the
+  // published 1101.77 is the design that was shipped, not the requirement it was shipped
+  // against, and anchoring to it made the published point its own acceptance test.
   if (!sys.feasible) violations.push('systemInfeasible');
-  else if (sys.tpsPerUser < ctx.point.tpsPerUser * (1 - req.tpsTolerance)) violations.push('k3Tps');
+  else if (sys.tpsPerUser < ctx.target.tpsPerUser - EPS) violations.push('belowContractTarget');
   // 5. Options the space carries but the search may not choose. Reported as a
   // violation so a held-out option cannot win; the sensitivity is in analysis().
   for (const [d, opts] of Object.entries(HELD_OUT_OPTIONS)) if (pick[d] in opts) violations.push(`optionHeldOut:${d}=${pick[d]}`);
@@ -324,8 +341,10 @@ function candidates(result = search()) {
   return {
     status: 'MODEL (search over the physical design space; the candidate set behind out/detailed/physical_design.json, not FROZEN)',
     designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(ctx.space.dimensions)},
-    requirements: {models: req.models, tpsTolerance: req.tpsTolerance, dieAreaLimitMm2: req.dieAreaLimitMm2,
-      diePowerLimitW: req.diePowerLimitW, cardPowerLimitW: req.cardPowerLimitW, placementWindowMm2: req.placementWindowMm2},
+    requirements: {models: req.models, contractEntry: req.contractEntry, dieAreaLimitMm2: ctx.limits.dieAreaMm2,
+      diePowerLimitW: ctx.limits.diePowerW, cardPowerLimitW: ctx.limits.cardPowerW, placementWindowMm2: req.placementWindowMm2},
+    contract: CONTRACT.provenance(ctx.contract),
+    clause: ctx.clause,
     ranking: 'feasible first, then most conservative keep-out premise, then largest placement reserve within that premise, then largest die power margin, then lowest process risk, then pick',
     totalCandidates: counts.candidates,
     feasibleCandidates: counts.feasible,
@@ -383,8 +402,10 @@ function build(result = search()) {
     designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(D), candidates: counts.candidates, feasible: counts.feasible,
       constraints: space.constraints, objective: space.objective,
       note: 'only the winning design is written here; the alternatives stay in the design space and in the document'},
-    requirements: {models: req.models, tpsTolerance: req.tpsTolerance, dieAreaLimitMm2: req.dieAreaLimitMm2,
-      diePowerLimitW: req.diePowerLimitW, cardPowerLimitW: req.cardPowerLimitW, placementWindowMm2: req.placementWindowMm2},
+    requirements: {models: req.models, contractEntry: req.contractEntry, dieAreaLimitMm2: ctx.limits.dieAreaMm2,
+      diePowerLimitW: ctx.limits.diePowerW, cardPowerLimitW: ctx.limits.cardPowerW, placementWindowMm2: req.placementWindowMm2},
+    contract: CONTRACT.provenance(ctx.contract),
+    clause: ctx.clause,
     caliber: space.caliber,
     assumptions: {dies: ctx.dies, memoryCubes: ctx.cubes, cubeAreaMm2Planning: ctx.cubeAreaMm2,
       cardFixedOverheadW: CARD_FIXED_W, cooling: best.cooling, coolingNote: 'ASSUMPTION (O-015): the repository has no thermal model; cooling selects which ceiling applies, it does not derive one',
@@ -394,7 +415,8 @@ function build(result = search()) {
     design,
     ruled: Object.fromEntries(Object.entries(space.ruled).map(([k, v]) => [k, {chosen: v.chosen, reason: v.reason}])),
     evaluation: {
-      k3System: {publishedTpsPerUser: point.tpsPerUser, tpsPerUser: best.tpsPerUser, rawLatencyUs: best.rawLatencyUs},
+      k3System: {publishedTpsPerUser: point.tpsPerUser, tpsPerUser: best.tpsPerUser, rawLatencyUs: best.rawLatencyUs,
+        contractTargetTpsPerUser: ctx.target.tpsPerUser},
       process: best.process, matrixTFPerMm2: best.matrixTFPerMm2,
       dieAreaMm2: best.dieAreaMm2, diePowerW: best.diePowerW, diePowerLimitW: D.cooling.options[best.pick.cooling].diePowerLimitW,
       cardPowerW: best.cardPowerW, cardPowerLimitW: D.cooling.options[best.pick.cooling].cardPowerLimitW,

@@ -5,7 +5,7 @@
 - 语义：对外提供内存语义（按地址 put/get/atomic，第 6 节），不提供 send/recv 消息语义
 - 数字口径：当前 P1 发布点（1101.77 TPS/usr，raw 775.75 µs，raw 预算 854.70 µs，393 次集合通信/token，τ = 1.15 µs 下限）
 - 设计空间与方案产物分开存放：
-  - 全部备选方案在 HW-07 的设计空间 `teams/hardware/inputs/comm_core_design_space.json`（设计空间哈希 `cc324fd56995`）；
+  - 全部备选方案在 HW-07 的设计空间 `teams/hardware/inputs/comm_core_design_space.json`（设计空间哈希 `159124176e27`）；
   - 搜索脚本是 `integration/detailed/comm_core_search.js`，由 `npm run commcore:search` 运行；
   - `out/detailed/comm_core_design.json` 只存搜索选出的最终方案；
   - 各备选方案为什么落选，只写在本文第 7 节；
@@ -234,7 +234,7 @@ AI Core 远端 load 的下限 = 2 × one-way（`OPT.oneWayUs`）+ 往返两段 D
 
 **可行的约束。** 三条都满足才算可行：
 
-- 每类集合通信时延 ≤ spec τ（1.15 µs），这样发布点不变。TPS 不随 τ 上升，所以 raw 也自动在预算内；
+- 每类集合通信时延 ≤ L1 合同 `B-TAU` 的上限（1.15 µs，即 spec τ；搜索从 `out/requirements/budget_frontier.json` 读取，不再读本地 `OPT.tauUs`；违规名 `aboveContractTau`），这样发布点不变。TPS 不随 τ 上升，所以 raw 也自动在预算内；
 - 本地存 graph 时，双缓冲放得下；
 - Comm Core 每 token 忙碌时间 ≤ raw 的 50%。
 

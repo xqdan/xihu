@@ -33,6 +33,7 @@ const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const P = require('./k3_physical_basis.js');
 const R = require('./k3_sram_memory_rdma_model.js');
+const CONTRACT = require('./design_contract.js');
 
 const root = path.resolve(__dirname, '../..');
 const SPACE_FILE = 'teams/hardware/inputs/comm_core_design_space.json';
@@ -107,6 +108,7 @@ function protocolClasses(x, opt) {
 
 function context() {
   const space = read(SPACE_FILE);
+  CONTRACT.declared(space, 'comm', SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
   const x = spec.tpsDesign.hardware.x, point = spec.tpsDesign.point;
   const signals = {};
@@ -115,7 +117,15 @@ function context() {
     signals[name] = {opt, ...protocolClasses(x, opt), issueCycles: {...R.MEM, ...O.OPT, ...opt}.issueCycles};
   }
   const p = signals.putWithSignal.p;
+  // The clause this domain answers for (23 section 4, L3): B-TAU, the time one collective
+  // may take. This search was already a tau search -- it just read the ceiling off the
+  // tuned model's own OPT.tauUs, which is the published design. Reading it from the
+  // contract is what makes a different split able to move it: S-TAU widens tau and this
+  // search widens with it, without an edit here.
+  const contract = CONTRACT.load();
+  const tau = CONTRACT.ownedBy(contract.contract, 'comm');
   return {space, x, point, p, signals, f: x.ghz * 1000, hop: A.TECH.routerCycles,
+    contract, clause: CONTRACT.clause(contract, 'comm'), target: contract.contract.target, tauUsMax: tau.max,
     sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(root, SPACE_FILE))).digest('hex')};
 }
 
@@ -156,7 +166,7 @@ function evaluate(ctx, pick) {
     const controlUs = Object.values(steps).reduce((a, v) => a + v, 0) / f;
     return {name: k.name, count: k.count, requests: k.requests, activeNICs: k.activeNICs, reduce: k.reduce,
       protocolUs: k.protocolUs, steps: Object.fromEntries(Object.entries(steps).map(([s, v]) => [s, v / f])), controlUs,
-      latencyUs: k.protocolUs + controlUs, slackUs: O.OPT.tauUs - k.protocolUs - controlUs};
+      latencyUs: k.protocolUs + controlUs, slackUs: ctx.tauUsMax - k.protocolUs - controlUs};
   });
   const slowest = perClass.reduce((a, k) => (k.latencyUs > a.latencyUs ? k : a));
   const collectives = classes.reduce((a, k) => a + k.count, 0), wqes = classes.reduce((a, k) => a + k.count * k.requests, 0);
@@ -174,7 +184,7 @@ function evaluate(ctx, pick) {
   const areaMm2 = Object.values(area).reduce((a, v) => a + v, 0);
 
   const violations = [];
-  if (slowest.slackUs < -EPS) violations.push('specTau');
+  if (slowest.slackUs < -EPS) violations.push('aboveContractTau');
   if (local ? graphBytes * Q.graphBuffers > o.localSramKiB.kib * 1024 : false) violations.push('sramCapacity');
   if (utilization > Q.maxUtilization) violations.push('utilization');
   return {pick, feasible: !violations.length, violations, aiCoreUsPerToken, specSlackUs: slowest.slackUs, areaMm2, area,
@@ -341,7 +351,9 @@ function candidates(result = search()) {
     requirements: {graphBuffers: space.requirements.graphBuffers, maxUtilization: space.requirements.maxUtilization,
       wqeBytes: space.requirements.wqeBytes, patchEntryBytes: space.requirements.patchEntryBytes,
       descriptorBytes: space.requirements.descriptorBytes, peerEntryBytes: space.requirements.peerEntryBytes,
-      specTauUs: O.OPT.tauUs},
+      specTauUs: ctx.tauUsMax},
+    contract: CONTRACT.provenance(ctx.contract),
+    clause: ctx.clause,
     // The caliber the consumer compares against the spec. Same reason as the
     // siblings: without it, "the internal identity holds" gets read as "the
     // area meets the spec". Cycle counts and areas are ASSUMPTIONs (O-018).
@@ -382,8 +394,10 @@ function build(result = search()) {
       feasible: counts.feasible, constraints: space.constraints, objective: space.objective,
       note: 'only the winning design is written here; the alternatives stay in the design space and in the document, section 7'},
     hardware: {x: {...x}, ghz: x.ghz, meshSide: ctx.p.meshSide, routerCyclesPerHop: ctx.hop},
-    published: {tpsPerUser: point.tpsPerUser, rawLatencyUs: point.rawLatencyUs, rawBudgetUs: point.rawBudgetUs, specTauUs: O.OPT.tauUs,
+    published: {tpsPerUser: point.tpsPerUser, rawLatencyUs: point.rawLatencyUs, rawBudgetUs: point.rawBudgetUs, specTauUs: ctx.tauUsMax,
       collectivesPerToken: best.load.collectivesPerToken},
+    contract: CONTRACT.provenance(ctx.contract),
+    clause: ctx.clause,
     design,
     ruled: Object.fromEntries(Object.entries(space.ruled).map(([k, v]) => [k, {chosen: v.chosen, reason: v.reason}])),
     controlPath: {floorplan: best.floorplan, classes: best.classes, slowest: best.slowest, specSlackUs: best.specSlackUs,

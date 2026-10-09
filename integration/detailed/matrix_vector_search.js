@@ -47,6 +47,7 @@ const path = require('path');
 const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const P = require('./k3_physical_basis.js');
+const CONTRACT = require('./design_contract.js');
 const E = require('../../teams/model/src/design_engine.js');
 const W = require('../../teams/model/src/workload_derivation.js');
 
@@ -169,13 +170,19 @@ function replay(ctx, lanes, native, softmaxOps) {
 
 function context() {
   const space = read(SPACE_FILE);
+  CONTRACT.declared(space, 'compute', SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
   const x = spec.tpsDesign.hardware.x, tp = read('out/rdma/k3_rdma_final_tuning_results.json').tp;
+  // The clause this domain answers for (23 section 4, L3): B-SERIAL-CMP, the serial compute
+  // lane. The published point is still read -- it is the basis the replay runs on and the
+  // number the artifacts report against -- but it is no longer the feasibility test.
+  const contract = CONTRACT.load();
   // The package the dies must fit: window, memory cubes and the observed keep-out all
   // come from the repository's own files, not from this module.
   const pkg = {dies: A.LIMITS.dies, windowMm2: spec.package.placementWindowMm2, cubes: spec.card.memoryCubes,
     cubeAreaMm2: spec.package.memoryCubeAreaMm2Planning, keepOutFraction: space.requirements.packageFit.keepOutFraction};
   const ctx = {space, x, tp, pkg, point: spec.tpsDesign.point, hw: hardware(x), shapes: shapes(), replays: {}, bounds: {},
+    contract, clause: CONTRACT.clause(contract, 'compute'), target: contract.contract.target,
     sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(root, SPACE_FILE))).digest('hex')};
   ctx.kernels = (native, softmaxOps) => ctx.bounds[`${native}|${softmaxOps}`] || (ctx.bounds[`${native}|${softmaxOps}`] = kernelBounds(ctx, native, softmaxOps));
   return ctx;
@@ -203,7 +210,15 @@ function evaluate(ctx, pick, req = ctx.space.requirements) {
   const violations = [];
   if (required.some(k => !k.hidden)) violations.push('hKernelExposed');
   if (!sys.feasible) violations.push('systemInfeasible');
-  else if (sys.tpsPerUser < ctx.point.tpsPerUser * (1 - req.tpsTolerance)) violations.push('k3Tps');
+  // The contract's clause, not the published point. B-SERIAL-CMP prices the serial compute
+  // lane at the split's own tau and MC tier, and the raw latency that buys is exactly the
+  // contract's rawBudgetUs -- so "this candidate's compute meets B-SERIAL-CMP" and "the
+  // replay clears the contract target" are the same statement, and the replay is the one of
+  // the two this search can measure (its dimensions are lanes, unpack and the exp unit; it
+  // never produces a computeScale to compare). Scoring against the published 1101.77
+  // instead rejected candidates for being cheaper than a design that was never the
+  // requirement; the requirement is the target, 1000.
+  else if (sys.tpsPerUser < ctx.target.tpsPerUser - EPS) violations.push('belowContractTarget');
   if (areaMm2 > P.BASIS.limits.dieArea) violations.push('dieArea');
   if (packageReserveMm2 < -EPS) violations.push('packageArea');
   return {pick, feasible: !violations.length, violations, lanes, ratio: r, kernels,
@@ -307,7 +322,9 @@ function candidates(result = search()) {
   return {
     status: 'MODEL (search over the HW-02 design space; the candidate set behind out/detailed/matrix_vector_design.json, not FROZEN)',
     designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(ctx.space.dimensions)},
-    requirements: {models: req.models, hiddenCoreClasses: req.hiddenCoreClasses, tpsTolerance: req.tpsTolerance, packageFit: req.packageFit},
+    requirements: {models: req.models, hiddenCoreClasses: req.hiddenCoreClasses, contractEntry: req.contractEntry, packageFit: req.packageFit},
+    contract: CONTRACT.provenance(ctx.contract),
+    clause: ctx.clause,
     // The caliber of areaMm2 and diePowerW, stated by the producer. A consumer that has to
     // reverse-engineer it (357.565 + 7.776 = 365.341) will, sooner or later, compare a
     // figure with the package window on the wrong basis.
@@ -402,7 +419,9 @@ function build(result = search()) {
     document: space.document,
     designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(D), candidates: counts.candidates, feasible: counts.feasible,
       constraints: space.constraints, objective: space.objective},
-    requirements: {models: req.models, hiddenCoreClasses: req.hiddenCoreClasses, tpsTolerance: req.tpsTolerance, packageFit: req.packageFit},
+    requirements: {models: req.models, hiddenCoreClasses: req.hiddenCoreClasses, contractEntry: req.contractEntry, packageFit: req.packageFit},
+    contract: CONTRACT.provenance(ctx.contract),
+    clause: ctx.clause,
   };
   const hardware = {publishedX: {...x}, lMacsPerCore: ctx.hw.lMacsPerCore, hMacsPerCore: ctx.hw.hMacsPerCore, publishedLanesPerCore: x.vectorLanes,
     publishedRatio: ratios(ctx.hw, x.vectorLanes)};
@@ -446,7 +465,8 @@ function build(result = search()) {
       coreRatio: k.coreRatio, hidden: k.hidden, required: k.required, basis: k.basis})),
     binding: best.binding,
     evaluation: {
-      k3System: {publishedTpsPerUser: point.tpsPerUser, tpsPerUser: best.system.tpsPerUser, rawLatencyUs: best.system.rawLatencyUs},
+      k3System: {publishedTpsPerUser: point.tpsPerUser, tpsPerUser: best.system.tpsPerUser, rawLatencyUs: best.system.rawLatencyUs,
+        contractTargetTpsPerUser: ctx.target.tpsPerUser},
       areaMm2: best.areaMm2, area: best.area, diePowerW: best.diePowerW, dieAreaLimitMm2: P.BASIS.limits.dieArea,
       packagePlacedMm2: best.packagePlacedMm2, packageReserveMm2: best.packageReserveMm2
     },

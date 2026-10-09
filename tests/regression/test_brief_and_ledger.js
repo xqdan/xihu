@@ -33,7 +33,7 @@ const root = path.resolve(__dirname, '../..');
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 
 const stages = MB.coveredStages();
-assert.deepStrictEqual(stages, ['direction', 'compute', 'memory', 'comm', 'physical'], 'the covered stages are the L1 contract\'s consumers');
+assert.deepStrictEqual(stages, ['direction', 'compute', 'sram', 'mc', 'comm', 'physical'], 'the covered stages are the L1 contract\'s consumers');
 
 // --- the brief is a view of the contract ------------------------------------------------
 

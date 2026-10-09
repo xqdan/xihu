@@ -150,7 +150,13 @@ for (let i = 1; i < cands.length; i++) {
 assert(cand.infeasibleByCause && Object.keys(cand.infeasibleByCause).length > 0, 'infeasible candidates must be counted by cause');
 assert.strictEqual(Object.values(cand.infeasibleByCause).reduce((a, v) => a + v, 0), storedCand.validCandidates - storedCand.feasibleCandidates,
   'the exclusion histogram must cover every infeasible scored candidate');
-assert(cand.infeasibleByCause.specTau > 0, 'the binding constraint of this space must appear in the histogram');
+// The clause this domain answers for is B-TAU, so the cause that must appear is
+// the contract's own: `aboveContractTau` is the slowest class missing the
+// contract's per-collective floor (ctx.tauUsMax), which since ADR-0024 is read
+// from the contract instead of a local OPT constant.
+assert(cand.infeasibleByCause.aboveContractTau > 0, 'the contract clause this space is bound by must appear in the histogram');
+assert.strictEqual(stored.clause.id, JSON.parse(fs.readFileSync('teams/hardware/inputs/comm_core_design_space.json', 'utf8')).requirements.contractEntry,
+  'the clause scored is the one the space declares');
 
 // The fingerprint is over the whole scored set and must not depend on
 // enumeration order: rebuilding it from a reversed copy must give the same

@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "sram-design-space-v0.1",
+  "owner": "HW-03 SRAM/TMA (co-sign HW-04 MC subsystem, SW-02 scheduling, SW-03 kernels)",
+  "status": "UNVERIFIED",
+  "document": "teams/hardware/docs/03_TMA_AND_SRAM.md",
+  "scope": "Every alternative the SRAM domain considers for one compute die: the shared SRAM window, how many banks feed the L and H local SRAMs, how many shared slices serve the die, how many TMA engines each core has, and whether the shared-SRAM port scaling (and the dedicated TMA port) is built. integration/detailed/sram_search.js enumerates the product, replays K3 at the published point with only these dimensions changed, scores every candidate against the contract entry this domain owns, and writes only the winner to out/detailed/sram_design.json. The per-option comparison is quoted in the document.",
+  "evidence": "UNVERIFIED: this file was drafted from the repository documents and the published baseline by an agent, not derived by the SRAM domain owner. The option values are taken from the architecture search space (integration/detailed/k3_architecture_search.js SPACE) except sharedMiB 12, which is there to put one option below the contract's B-SRAM-CAP floor. The port-scaling coefficients are MODEL (O-007) and must be replaced by a bank-cycle simulation (03 section 7). Anything labelled ASSUMPTION is a placeholder the domain owner must calibrate or delete.",
+  "caliber": {
+    "sharedMiB": "per compute die, MiB of shared SRAM data capacity (ECC, parity and spare not included); the contract's sharedMiBPerDie",
+    "banks": "per core, local SRAM banks of bankBytes (64 B) each; a bank count is a read/write bandwidth, not a capacity",
+    "sharedSlices": "per compute die; each slice is 512 B/cycle and costs 32 bank areas",
+    "dieArea": "per compute die, mm2, SF4 basis, including the charged shared-port scaling cost (O.chargeSharedPortCost)",
+    "reason": "the contract prices the shared window per die and the area per die; a per-card or per-core figure compared against either would be a different quantity"
+  },
+  "requirements": {
+    "models": ["Kimi K3"],
+    "modelsReason": "B-SRAM-CAP is scoped to the detailed K3 TP32 model (the planning model has no SRAM term); the other models are UNCORROBORATED for this entry, as the contract itself states",
+    "publishedPoint": "tpsDesign.hardware",
+    "contractEntry": "B-SRAM-CAP",
+    "contractReason": "the L1 budget contract (integration/detailed/design_contract.js) owns the system requirement: the sram domain answers for B-SRAM-CAP, tested directly on the sharedMiB dimension, and the K3 replay is held to the contract target.tpsPerUser. The die area and power limits are B-AREA's (physical's entry), read as the shared envelope, not as this domain's clause"
+  },
+  "constraints": [
+    "the shared SRAM window per die is at least the contract's B-SRAM-CAP floor (requirements.contractEntry); a candidate below it is not replayed",
+    "the K3 detailed replay at the published point with only these dimensions changed is feasible (local tiles fit, the shared window holds the plan) and reaches the contract target",
+    "the die, with the shared-port charge, stays within B-AREA's die area and die / card power limits"
+  ],
+  "objective": [
+    "feasible first",
+    "least die area including the shared-port charge (SRAM and its ports are area the matrix and the PHYs compete for)",
+    "least die power"
+  ],
+  "dimensions": {
+    "sharedMiB": {
+      "question": "Shared SRAM window per compute die",
+      "options": {
+        "12": {"sharedMiB": 12, "evidence": "below the contract floor on purpose: requirement_frontier.js finds 12 MiB does not hold the S-CMP split point (holdsBySharedMiB), so this option shows the clause binding"},
+        "16": {"sharedMiB": 16, "evidence": "A.SPACE.sharedMiB; the published point (16 slices x 1 MiB) and the contract floor"},
+        "24": {"sharedMiB": 24, "evidence": "A.SPACE.sharedMiB"}
+      }
+    },
+    "lBanks": {
+      "question": "Local SRAM banks per L core",
+      "options": {
+        "16": {"lBanks": 16, "evidence": "A.SPACE.lBanks"},
+        "32": {"lBanks": 32, "evidence": "A.SPACE.lBanks"},
+        "64": {"lBanks": 64, "evidence": "A.SPACE.lBanks; the published point"}
+      }
+    },
+    "hBanks": {
+      "question": "Local SRAM banks per H core",
+      "options": {
+        "16": {"hBanks": 16, "evidence": "A.SPACE.hBanks"},
+        "32": {"hBanks": 32, "evidence": "A.SPACE.hBanks"},
+        "64": {"hBanks": 64, "evidence": "A.SPACE.hBanks; the published point"}
+      }
+    },
+    "sharedSlices": {
+      "question": "Shared SRAM slices per compute die (shared read/write bandwidth)",
+      "options": {
+        "8": {"sharedSlices": 8, "evidence": "A.SPACE.sharedSlices"},
+        "16": {"sharedSlices": 16, "evidence": "A.SPACE.sharedSlices; the published point"},
+        "32": {"sharedSlices": 32, "evidence": "A.SPACE.sharedSlices"}
+      }
+    },
+    "tmaEngines": {
+      "question": "TMA engines per core (shared -> local fill bandwidth)",
+      "options": {
+        "1": {"tmaEngines": 1, "evidence": "A.SPACE.tmaEngines"},
+        "2": {"tmaEngines": 2, "evidence": "A.SPACE.tmaEngines"},
+        "4": {"tmaEngines": 4, "evidence": "A.SPACE.tmaEngines; the published point"}
+      }
+    },
+    "sharedPortScaling": {
+      "question": "Whether the shared-SRAM port scaling and the dedicated TMA port are built (03 section 3.1)",
+      "options": {
+        "published": {"patch": {}, "evidence": "the published O.OPT: tmaDedicatedPort with write scale 1.55, sharedReadScale 1.18, sharedReadPerWrite 0.18, localWriteRatio 1 (ADR-0023); charged as bank area and port power. MODEL (O-007)"},
+        "off": {"patch": {"localWriteRatio": 1, "tmaDedicatedPort": false, "sharedReadScale": 1, "sharedReadPerWrite": 0}, "evidence": "k3_tps_design_baseline.js SHARED_PORT_UNSCALED: no port scaling and no dedicated TMA port, nothing charged. 03 section 3.1 and 21 section 5 report it costs 0.06 TPS at the published point"}
+      }
+    }
+  },
+  "ruled": {
+    "localCapacity": {
+      "chosen": "lMiB 1 / hMiB 4 per core (the published point)",
+      "alternatives": ["lMiB 2, 4, 8", "hMiB 1, 2, 8"],
+      "reason": "the local SRAM size is set by the local tile fit, which no other dimension of this space moves: hMiB 1 and 2 fail the H local tile and lMiB 1 is the smallest option that exists. Larger sizes are area at the same TPS/usr. sram_search.js analysis() replays every alternative at the winner (localSweep) so the claim is a number, not an argument; searching them would triple the replays for a dimension that cannot win"
+    },
+    "bankBytes": {
+      "chosen": "64 B banks",
+      "alternatives": ["32 B banks"],
+      "reason": "bank width and bank count trade the same bandwidth; the count is searched, the width is the SRAM compiler's (03 section 9 freeze deliverable)"
+    },
+    "prefetchDepth": {
+      "chosen": "depth 4 (the published point, and the depth B-SRAM-CAP was derived at)",
+      "alternatives": ["depth 1, 2"],
+      "reason": "prefetch depth is a scheduler knob that trades the shared window against MC bandwidth; that trade belongs to the L3 coupling step (SRAM x depth x MC), not to one domain"
+    },
+    "tmaBytes": {
+      "chosen": "512 B per TMA engine",
+      "alternatives": ["128 B", "256 B"],
+      "reason": "engine width and engine count trade the same fill bandwidth; the count is searched"
+    }
+  }
+}

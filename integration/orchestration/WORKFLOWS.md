@@ -18,7 +18,7 @@ flowchart TB
   RB -->|"所有切分都不可达"| IN
   CT --> DIR["direction<br/>走哪条架构路线"]
   DIR --> DG["dgate<br/>候选能否进细化（凑证据，不判门）"]
-  DG --> C["compute / memory / comm / physical<br/>四个硬件域各选出具体设计点"]
+  DG --> C["compute / sram / mc / comm / physical<br/>五个硬件域各选出具体设计点"]
   C --> D0["detail.freeze → workload → events → execute → integrate<br/>细化：冻结、算账、事件、执行/PPA、粗细估对账"]
   D0 --> CV["converge<br/>架构定型 / 回流 / 送评审"]
   AT["attribution（sram / comm / joint）<br/>每个参数怎么影响 TPS/usr、谁承重"] -.->|"灵敏度卡 + 承重项"| CV
@@ -36,7 +36,7 @@ flowchart TB
 | 立项与接口 | `intake`、`contract` | 把需求变成可计算输入；各域对外承诺什么接口 |
 | 需求预算（L1-b） | `req.budget` | 达到目标 TPS/usr，算力、带宽、τ 各给多少，切成一份可下发的预算合同 |
 | 方向级探索（Stage A） | `direction`、`dgate` | 在资源包络内比较架构路线，并凑齐"能否进细化"的证据 |
-| 域内设计 | `compute`、`memory`、`comm`、`physical` | 方向定了之后，每个硬件域在设计空间里选出一个具体设计点 |
+| 域内设计 | `compute`、`sram`、`mc`、`comm`、`physical` | 方向定了之后，每个硬件域在设计空间里选出一个具体设计点 |
 | 参数级细化（Stage B） | `detail.freeze` → `workload` → `events` → `execute` → `integrate` | 逐层把粗估变细估，并对账 |
 | 维度归因 | `attribution` | 每个设计维度的参数动一步，TPS/usr 变多少、代价多少、哪些承重 |
 | 收敛 | `converge` | 这一轮到此为止、回流重来，还是送评审 |
@@ -90,17 +90,18 @@ flowchart TB
 - **产出**：`out/governance/dgate_evidence_package.json`。
 - **不负责**：**不判门**。结论由脚本给出，本格只转述；它是最容易写歪的一格。
 
-### 域内设计（C 组，四格同构）
+### 域内设计（C 组，五格同构）
 
-四格共用一套骨架：**专家提搜索策略 → 确定性脚本枚举打分 → 旁证专家对候选提侧向约束 → integrator 合并 → invariant-checker 检点后落盘**。
+五格共用一套骨架：**专家提搜索策略 → 确定性脚本枚举打分 → 旁证专家对候选提侧向约束 → integrator 合并 → invariant-checker 检点后落盘**。
 区别只在主策略、设计空间和旁证专家。候选数值由 `search_brief.js` 读取并核验后注入，agent 不转写数字；落盘后再用 `search_brief.js verify` 核对 winner 是产物里的一行。
 
 | workflow | 业务问题 | 设计空间 | 旁证专家 | 产出 |
 |---|---|---|---|---|
 | `design.compute` | AI Core 里 L/H/Vector/Indexer/Reduce 怎么配比、算力落在 roofline 哪一侧 | matrix:vector 设计搜索（HW-02） | memory、physical | `out/compute/compute_winner.json` |
-| `design.memory` | SRAM 层级、MC、TMA 的容量与带宽怎么定 | 内存设计搜索 | compute、software | `out/memory/memory_winner.json` |
-| `design.comm` | NoC、集合通信、Comm Core 怎么定 | Comm Core 设计搜索（HW-07） | memory、physical | `out/comm/comm_winner.json` |
-| `design.physical` | 封装、面积、功耗、热能不能放下前三者的选择 | 物理设计搜索 | compute、memory、comm | `out/physical/physical_winner.json` |
+| `design.sram` | shared SRAM 容量、L/H bank、shared slice、TMA 引擎与端口扩展怎么定，满足 B-SRAM-CAP | SRAM 设计搜索（`sram_design_space.json`） | compute、mc、software | `out/sram/sram_winner.json` |
+| `design.mc` | MC、HBM、TMA 的带宽怎么定，满足 B-MEM-BW | MC 设计搜索（`memory_design_space.json`） | sram、comm、physical | `out/mc/mc_winner.json` |
+| `design.comm` | NoC、集合通信、Comm Core 怎么定 | Comm Core 设计搜索（HW-07） | mc、compute、physical | `out/comm/comm_winner.json` |
+| `design.physical` | 封装、面积、功耗、热能不能放下前四者的选择 | 物理设计搜索 | compute、sram、mc、comm | `out/physical/physical_winner.json` |
 
 - **什么时候跑**：方向确定后，对应的 `*:search` 已经生成候选。
 - **结局**：检点通过则落盘 winner；搜索产物缺失、旁证专家缺席或检点不通过时返回 `BLOCKED_CONFIG`，**不写 winner**。
@@ -188,7 +189,7 @@ D 组是同一条链上的前后依赖，不得并行：每一格消费上一格
 | 达到目标要多少带宽、多少算力、τ 最多多大，选一份预算切分 | `npm run budget:frontier`，再 `req.budget` |
 | 域间接口要改 | `contract` |
 | 要重新比较架构路线 | `direction`，然后 `dgate` |
-| 想看某个硬件域的设计点怎么选 | 对应的 `compute` / `memory` / `comm` / `physical` |
+| 想看某个硬件域的设计点怎么选 | 对应的 `compute` / `sram` / `mc` / `comm` / `physical` |
 | SRAM、集合通信等某个维度怎么影响 TPS/usr，哪些参数承重 | `npm run attribution:cards`，再 `attribution --dimension sram`（或 `comm` / `joint`） |
 | 方向已定，想验证细估能不能站住 | D 组从 `detail.freeze` 起依次跑到 `integrate`，再 `converge` |
 | 细估和粗估对不上 | 先 `integrate` 的 delta 归因，再 `backflow` |

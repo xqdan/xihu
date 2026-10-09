@@ -40,8 +40,8 @@
  *        [--args file.json] [--brief file.json] [--split S-CMP] [--run-id id] [--max N] [--dimension d]
  *        [--model name] [--concurrency N] [--timeout ms] [--exchange-dir dir]
  *        [--result-file file.json] [--land]
- *   <workflow>: compute | memory | comm | physical | intake | detail.events | ... (see --list)
- *   direction, compute, memory, comm and physical derive their brief from the budget contract;
+ *   <workflow>: compute | sram | mc | comm | physical | intake | detail.events | ... (see --list)
+ *   direction, compute, sram, mc, comm and physical derive their brief from the budget contract;
  *   --brief overrides that, and every other stage still needs it.
  *   attribution reads out/attribution/<d>_card.json (d = sram | comm | joint) and refuses a stale card.
  *   req.budget reads out/requirements/budget_frontier.json and refuses a stale frontier.

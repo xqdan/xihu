@@ -33,7 +33,8 @@ const LANDING_POLICY = {
   direction: ['out/direction/'],
   dgate: ['out/governance/'],
   compute: ['out/compute/'],
-  memory: ['out/memory/'],
+  sram: ['out/sram/'],
+  mc: ['out/mc/'],
   comm: ['out/comm/'],
   physical: ['out/physical/'],
   // Reviews only: the cards in out/attribution/ are generator output and stay out of reach.

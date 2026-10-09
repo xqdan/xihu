@@ -67,17 +67,17 @@ async function run(argv, deps) {
   assert.strictEqual((await run(['compute', '--backend', 'nonsense'])).code, 1);
   // A stage outside the budget contract's consumers still has to be handed a brief.
   assert.strictEqual((await run(['contract', '--backend', 'mock'])).code, 1, 'design.contract has no derivable brief');
-  // The contract's consumers derive theirs instead -- memory has no committed brief file and
+  // The contract's consumers derive theirs instead -- mc has no committed brief file and
   // still gets past prepareArgs, which is the whole point of make_brief.js.
-  const derived = await run(['memory', '--backend', 'mock']);
-  assert.notStrictEqual(derived.code, 1, `memory must derive its brief from the budget contract: ${derived.text}`);
-  const builtBrief = briefFor('memory').brief;
-  assert.strictEqual(builtBrief.stage, 'memory');
+  const derived = await run(['mc', '--backend', 'mock']);
+  assert.notStrictEqual(derived.code, 1, `mc must derive its brief from the budget contract: ${derived.text}`);
+  const builtBrief = briefFor('mc').brief;
+  assert.strictEqual(builtBrief.stage, 'mc');
   assert.strictEqual(builtBrief.profileBinding.mcProfile, 'MC320', 'the manufacturable binding is hand-authored, never read off the contract point (ADR-0021)');
   assert(builtBrief.hardConstraints.every((c) => c.source && c.source !== 'TBD'), 'every derived constraint names where its number came from');
   const listed = await run(['--list']);
   assert.strictEqual(listed.code, 0);
-  assert.strictEqual(listed.text.split('\n').length, 21);
+  assert.strictEqual(listed.text.split('\n').length, 22);
 
   // The mock backend invents a winner; the artifact check must reject it before landing.
   const invented = await run(['compute', '--backend', 'mock'], {backend: createMockBackend({reply: (call) => withDims(call)})});

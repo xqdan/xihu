@@ -4,17 +4,17 @@
   "document": "teams/hardware/docs/02_AI_CORE.md#25-matrixvector-配比hw-02-决策",
   "designSpace": {
     "file": "teams/hardware/inputs/matrix_vector_design_space.json",
-    "sha256": "caf143d1c2d4ed126e56fd37d5f259b68a13a15b6b33982d236eb063f2919ac7",
+    "sha256": "3d160226761c063b1396212a2de87558ca7db23daf5816b39828632b8ecd6296",
     "dimensions": [
       "vectorLanes",
       "lowPrecisionInput",
       "expUnit"
     ],
     "candidates": 52,
-    "feasible": 3,
+    "feasible": 5,
     "constraints": [
       "every H-core kernel of the required models hides its vector work (kernel bound >= core MACs:lanes)",
-      "K3 detailed replay at the published point with only vectorLanes (and, for native input, the unpack) changed keeps TPS/usr within tpsTolerance of the published point",
+      "K3 detailed replay at the published point with only vectorLanes (and, for native input, the unpack) changed reaches the contract target of requirements.contractEntry",
       "the die, with the shared-port charge and the option overheads, stays within its area and power limits (O.evaluate feasibility, then the die-area limit on the figure that includes both)",
       "8 dies at that area plus the memory cubes fit the placement window less the observed keep-out (requirements.packageFit)"
     ],
@@ -34,12 +34,37 @@
     "hiddenCoreClasses": [
       "H"
     ],
-    "tpsTolerance": 0.001,
+    "contractEntry": "B-SERIAL-CMP",
     "packageFit": {
       "keepOutFraction": 0.1254,
       "keepOutReason": "the observed keep-out of the published point, 658.29 / 5248 (teams/hardware/inputs/physical_design_space.json, reserveFraction option 0.1254: recorded as observed, not chosen). A tighter reserve is an unverified ASSUMPTION there and is deliberately not used here to admit a candidate",
       "reason": "8 compute dies at the candidate's die area (shared-port charge included) plus the memory cubes must fit the placement window less the keep-out. The published point leaves 67.17 mm2 (09_PACKAGE_POWER_RAS.md; it left 0.189 mm2 before the shared-port reclaim of ADR-0023), so an option may add at most that room divided by the 8 dies to the die area"
     }
+  },
+  "contract": {
+    "path": "out/requirements/budget_frontier.json",
+    "splitId": "S-CMP",
+    "origin": "frontier split",
+    "sha256": "713b98cd40576ce5d5150ca01d0ed07a2db03289217f8b1889b8f3ce5c066a71",
+    "target": {
+      "tpsPerUser": 1000,
+      "architectureGate": 1050,
+      "rawBudgetUs": 854.7008547008547,
+      "engineeringMargin": 1.17
+    },
+    "point": {
+      "tauUs": 1.15,
+      "computeScale": 0.7444854736328125,
+      "mcGBs": 640
+    }
+  },
+  "clause": {
+    "id": "B-SERIAL-CMP",
+    "quantity": "computeScale",
+    "owner": "compute",
+    "ownerAgent": "compute-expert",
+    "min": 0.7444854736328125,
+    "source": "out/requirements/budget_frontier.json#B-SERIAL-CMP"
   },
   "assumptions": {
     "matrixUtil": 0.65,
@@ -51,7 +76,7 @@
       "kdaOpsPerStateElement": 2,
       "kdaMatrixFlopsPerStateElement": 7,
       "evidence": "ASSUMPTION (O-006): indexer ReLU + weighted FMA across index heads; threshold/radix top-k select over the scored context; KDA per-channel decay + delta update; KDA matrix FLOPs as k3_operator_sram_sim (7 x B x heads x 128 x 128). Softmax ops per score belong to the expUnit dimension",
-      "softmaxOpsPerScore": 8
+      "softmaxOpsPerScore": 18
     },
     "tp": 32,
     "context": 1048576
@@ -111,10 +136,10 @@
       "evidence": "P1 published point: BF16-only tensor engines; every sub-BF16 operand is dequantized on the vector lanes at TECH.unpackParamsPerLaneCycle"
     },
     "expUnit": {
-      "option": "sfu",
-      "softmaxOpsPerScore": 8,
-      "vectorAreaOverhead": 0.1,
-      "evidence": "ASSUMPTION (O-006): an exp/reciprocal special-function unit shared by the lanes; softmax costs max, sub, exp, sum, rescale = 8 ops per score (k3_operator_sram_sim: 8 x B x nh x len); the SFU costs 10% of the vector area (TECH.vectorLaneArea is taken as ALU only)"
+      "option": "polynomial",
+      "softmaxOpsPerScore": 18,
+      "vectorAreaOverhead": 0,
+      "evidence": "ASSUMPTION (O-006): exp as a range reduction plus polynomial on the ALU lanes, 18 ops per score; no SFU area"
     }
   },
   "ratio": {
@@ -196,8 +221,8 @@
       "model": "Kimi K3",
       "kernel": "MLA",
       "core": "H",
-      "maxCoreRatio": 99.86013986013985,
-      "minLanesPerCore": 307.6302521008404,
+      "maxCoreRatio": 53.91222274657858,
+      "minLanesPerCore": 569.8151260504201,
       "coreRatio": 43.63636363636363,
       "hidden": true,
       "required": true,
@@ -218,8 +243,8 @@
       "model": "GLM-5.2",
       "kernel": "MLA",
       "core": "H",
-      "maxCoreRatio": 8270.76923076923,
-      "minLanesPerCore": 3.7142857142857144,
+      "maxCoreRatio": 4766.205997392438,
+      "minLanesPerCore": 6.445378151260504,
       "coreRatio": 43.63636363636363,
       "hidden": true,
       "required": true,
@@ -240,8 +265,8 @@
       "model": "DeepSeek-V4-Pro",
       "kernel": "MLA",
       "core": "H",
-      "maxCoreRatio": 7811.282051282053,
-      "minLanesPerCore": 3.932773109243697,
+      "maxCoreRatio": 4055.8579881656806,
+      "minLanesPerCore": 7.57422969187675,
       "coreRatio": 43.63636363636363,
       "hidden": true,
       "required": true,
@@ -268,20 +293,21 @@
   "evaluation": {
     "k3System": {
       "publishedTpsPerUser": 1101.771070241925,
-      "tpsPerUser": 1101.7656334895737,
-      "rawLatencyUs": 775.7555951294273
+      "tpsPerUser": 1087.0239806476652,
+      "rawLatencyUs": 786.2759883104062,
+      "contractTargetTpsPerUser": 1000
     },
-    "areaMm2": 371.3740342288027,
+    "areaMm2": 369.75542582544136,
     "area": {
       "die": 361.9795656573741,
       "sharedPorts": 7.775860168067228,
       "matrixOverhead": 0,
-      "vectorOverhead": 1.6186084033613444
+      "vectorOverhead": 0
     },
     "diePowerW": 286.2645760000001,
     "dieAreaLimitMm2": 400,
-    "packagePlacedMm2": 4570.992273830421,
-    "packageReserveMm2": 18.90852616957909
+    "packagePlacedMm2": 4558.0434066035305,
+    "packageReserveMm2": 31.857393396469888
   },
   "regenerate": "node integration/pipelines/generate_matrix_vector_design.js (npm run aicore:search); enforced by tests/regression/test_matrix_vector_design.js"
 }
