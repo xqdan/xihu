@@ -35,6 +35,7 @@ const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const B = require('./k3_tps_design_baseline.js');
 const C = require('./coupling_search.js');
+const BP = require('./baseline_point.js');
 
 const root = path.resolve(__dirname, '../..');
 const BASELINE_FILE = 'teams/hardware/inputs/k3_mc_baseline.json';
@@ -354,7 +355,7 @@ function context(options = {}) {
   const text = options.text || fs.readFileSync(path.join(root, BASELINE_FILE), 'utf8');
   const spec = JSON.parse(text);
   const point = options.point || null;
-  const x = point ? point.x : options.x || spec.tpsDesign.hardware.x;
+  const x = point ? point.x : options.x || BP.publishedX(spec, 'generate_tps_attribution.js');
   return atPoint(point, () => {
     const r = O.evaluate(x);
     if (!r.feasible) throw new Error(`design point is infeasible: ${(r.reasons || []).join(', ')}`);

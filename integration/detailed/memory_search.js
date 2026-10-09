@@ -54,6 +54,7 @@ const O = require('./k3_rdma_final_tuning_model.js');
 const P = require('./k3_physical_basis.js');
 const E = require('../../teams/model/src/design_engine.js');
 const CONTRACT = require('./design_contract.js');
+const BP = require('./baseline_point.js');
 
 const root = path.resolve(__dirname, '../..');
 const SPACE_FILE = 'teams/hardware/inputs/memory_design_space.json';
@@ -163,7 +164,7 @@ function context() {
   const space = read(SPACE_FILE);
   CONTRACT.declared(space, 'mc', SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
-  const x = spec.tpsDesign.hardware.x;
+  const x = BP.publishedX(spec, 'generate_memory_design.js');
   // The clause this domain answers for (23 section 4, L3): B-MEM-BW, the sustained payload
   // one memory cube must deliver. The published point stays in ctx -- the replay runs on it
   // and the artifacts report against it -- but it is no longer the feasibility test.

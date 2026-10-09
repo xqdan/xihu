@@ -25,6 +25,7 @@ const fs = require('fs');
 const path = require('path');
 const O = require('./k3_rdma_final_tuning_model.js');
 const B = require('./k3_tps_design_baseline.js');
+const BP = require('./baseline_point.js');
 
 const root = path.resolve(__dirname, '../..');
 const BASELINE_FILE = 'teams/hardware/inputs/k3_mc_baseline.json';
@@ -109,7 +110,7 @@ function climb(x0, floor) {
 
 function build() {
   const text = fs.readFileSync(path.join(root, BASELINE_FILE), 'utf8');
-  const spec = JSON.parse(text), x0 = spec.tpsDesign.hardware.x;
+  const spec = JSON.parse(text), x0 = BP.publishedX(spec, 'generate_die_area_reallocation.js');
   const goal = JSON.parse(fs.readFileSync(path.join(root, SPACE_FILE), 'utf8')).requirements.minTpsPerUser;
   const base = score(x0);
   const limits = spec.tpsDesign.hardware.limits;

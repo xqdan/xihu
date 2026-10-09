@@ -42,6 +42,7 @@ const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const P = require('./k3_physical_basis.js');
 const CONTRACT = require('./design_contract.js');
+const BP = require('./baseline_point.js');
 
 const root = path.resolve(__dirname, '../..');
 const SPACE_FILE = 'teams/hardware/inputs/sram_design_space.json';
@@ -99,7 +100,7 @@ function context() {
   const space = read(SPACE_FILE);
   CONTRACT.declared(space, 'sram', SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
-  const x = spec.tpsDesign.hardware.x;
+  const x = BP.publishedX(spec, 'generate_sram_design.js');
   // The clause this domain answers for (23 section 4, L3): B-SRAM-CAP, the shared window
   // per die. The published point stays in ctx -- the replay runs on it and the artifacts
   // report against it -- but it is not the feasibility test.

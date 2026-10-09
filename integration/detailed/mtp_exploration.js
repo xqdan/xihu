@@ -28,6 +28,7 @@ const path = require('path');
 const crypto = require('crypto');
 const O = require('./k3_rdma_final_tuning_model.js');
 const E = require('../../teams/model/src/design_engine.js');
+const BP = require('./baseline_point.js');
 
 const root = path.resolve(__dirname, '../..');
 const BASELINE_FILE = 'teams/hardware/inputs/k3_mc_baseline.json';
@@ -49,7 +50,7 @@ const readBaseline = () => {
   const file = path.join(root, BASELINE_FILE), text = fs.readFileSync(file, 'utf8');
   const spec = JSON.parse(text);
   const goal = JSON.parse(fs.readFileSync(path.join(root, SPACE_FILE), 'utf8')).requirements.minTpsPerUser;
-  return {x: spec.tpsDesign.hardware.x, point: spec.tpsDesign.point, goal,
+  return {x: BP.publishedX(spec, 'generate_mtp_exploration.js'), point: spec.tpsDesign.point, goal,
     sha256: crypto.createHash('sha256').update(text).digest('hex')};
 };
 

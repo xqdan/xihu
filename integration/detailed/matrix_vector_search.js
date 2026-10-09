@@ -50,6 +50,7 @@ const P = require('./k3_physical_basis.js');
 const CONTRACT = require('./design_contract.js');
 const E = require('../../teams/model/src/design_engine.js');
 const W = require('../../teams/model/src/workload_derivation.js');
+const BP = require('./baseline_point.js');
 
 const root = path.resolve(__dirname, '../..');
 const SPACE_FILE = 'teams/hardware/inputs/matrix_vector_design_space.json';
@@ -172,7 +173,7 @@ function context() {
   const space = read(SPACE_FILE);
   CONTRACT.declared(space, 'compute', SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
-  const x = spec.tpsDesign.hardware.x, tp = read('out/rdma/k3_rdma_final_tuning_results.json').tp;
+  const x = BP.publishedX(spec, 'generate_matrix_vector_design.js'), tp = read('out/rdma/k3_rdma_final_tuning_results.json').tp;
   // The clause this domain answers for (23 section 4, L3): B-SERIAL-CMP, the serial compute
   // lane. The published point is still read -- it is the basis the replay runs on and the
   // number the artifacts report against -- but it is no longer the feasibility test.
