@@ -474,4 +474,7 @@ function build(result = search()) {
   };
 }
 
-module.exports = {SPACE_FILE, context, evaluate, search, candidates, alternatives, analysis, build, replay};
+// withModel, kernelBounds, hardware, ratios and shapes are also what design.coupling's joint
+// replay (coupling_search.js) needs to hold the compute winner to its own kernel check.
+module.exports = {SPACE_FILE, context, evaluate, search, candidates, alternatives, analysis, build, replay,
+  withModel, kernelBounds, hardware, ratios, shapes, NATIVE_TECH};

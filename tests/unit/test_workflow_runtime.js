@@ -61,7 +61,7 @@ assert.throws(() => extractJson('no json here'), /not valid JSON/);
 
 // ---- every workflow compiles ----------------------------------------------
 const names = listWorkflows(root);
-assert.strictEqual(names.length, 22, `expected 22 workflows, found ${names.length}`);
+assert.strictEqual(names.length, 23, `expected 23 workflows, found ${names.length}`);
 for (const name of names) assert.strictEqual(typeof compileWorkflow(root, name), 'function', name);
 assert.throws(() => compileWorkflow(root, 'nope'), /no such workflow/);
 

@@ -37,6 +37,8 @@ const LANDING_POLICY = {
   mc: ['out/mc/'],
   comm: ['out/comm/'],
   physical: ['out/physical/'],
+  // The joint point and its run record; the candidate grid in out/detailed/ is generator output.
+  coupling: ['out/coupling/'],
   // Reviews only: the cards in out/attribution/ are generator output and stay out of reach.
   attribution: ['out/attribution/reviews/'],
   'detail.freeze': ['out/detailed/'],

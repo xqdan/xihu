@@ -1,4 +1,4 @@
-# 21 个 workflow 的业务含义
+# 23 个 workflow 的业务含义
 
 本文回答一个问题：**每个 workflow 在芯片架构设计这件事里，对应哪一个业务环节？**
 它不重复实现细节（见各脚本的 `meta` 与 [`README.md`](README.md)），也不重复方法论（见
@@ -105,7 +105,17 @@ flowchart TB
 
 - **什么时候跑**：方向确定后，对应的 `*:search` 已经生成候选。
 - **结局**：检点通过则落盘 winner；搜索产物缺失、旁证专家缺席或检点不通过时返回 `BLOCKED_CONFIG`，**不写 winner**。
-- **不负责**：不枚举候选、不算分、不给全局 TPS；一个域的 winner 不等于全局最优，要等 `physical` 与其他域对账。
+- **不负责**：不枚举候选、不算分、不给全局 TPS；一个域的 winner 不等于全局最优，要等 `design.coupling` 把五个 winner 放在一起回放。
+
+### 跨域联合（L3 `design.coupling`）
+
+#### `design.coupling` — 五个域的 winner 放在一起，合同还成立吗；沿耦合维度有没有更好的组合
+
+- **什么时候跑**：五个 C 组域都已有 winner，`npm run coupling:search` 已生成 `out/detailed/coupling_candidates.json`。
+- **谁参与**：耦合两侧的域专家五席并行审行（`compute-expert`、`memory-expert/sram`、`memory-expert/mc`、`comm-expert`、`physical-expert`，与 `coupling_design_space.json` 的 `couplings.*.seats` 一致）→ `integrator` 在可行的 Pareto 行里取联合点 → 脚本机械核对它是产物原行 → `invariant-checker`。
+- **设计空间**：三组耦合的小网格，全部回放，没有搜索策略一步：SRAM 窗口 × 预取深度 × MC 带宽；向量 lanes × commOverlap（τ 按 `B-TAU` 上限，扫描只作灵敏度）；SRAM ↔ 矩阵 ↔ Reduce/TMA/RDMA 的面积再分配。
+- **结局**：通过则落盘 `out/coupling/joint_point.json`（唯一全局设计点，带 `x` / `opt` / `model`）与 run record；没有可行行时返回 `DIRECTION_BACKFLOW`、回流 `design.req.budget`，原样转交产物的缺口与各域最好点，不调用任何 agent。
+- **不负责**：不回放、不改五个域的 winner、不放宽任何合同条目来凑出联合点。
 
 ### 参数级细化（Stage B，D 组严格串行）
 
@@ -201,5 +211,5 @@ D 组是同一条链上的前后依赖，不得并行：每一格消费上一格
 在 Claude Code 里原生运行；在 Cursor 或终端里用 `npm run workflow:run -- <workflow> --backend claude|cursor|mock`（默认 dry run，加 `--land` 才落盘），
 详见 [`README.md`](README.md) 的“在哪里运行”。
 
-这 21 个 workflow 目前经过结构测试、C 组的 mock runtime 行为测试，以及运行时与驱动器的单元/回归测试（后端用假 CLI、假 SDK）；
+这 23 个 workflow 目前经过结构测试、C 组与 `design.coupling` 的 mock runtime 行为测试，以及运行时与驱动器的单元/回归测试（后端用假 CLI、假 SDK）；
 **尚未用真实模型端到端运行过**。产出路径以脚本里的 `path:` 为准；本文与脚本冲突时以脚本为准。

@@ -159,6 +159,25 @@
         "integrated winner 通过 invariant-checker 的全部检点项"
       ],
       "allowedDesignSpace": "teams/hardware/inputs/physical_design_space.json"
+    },
+    "coupling": {
+      "objective": "五个域各自的 winner 放在一起时，L1 合同的五个条目（B-MEM-BW、B-SERIAL-CMP、B-TAU、B-SRAM-CAP、B-AREA）与目标 TPS/usr 是否仍同时成立；若不成立或有更好的组合，沿三条耦合（SRAM 窗口 × 预取深度 × MC 带宽；τ × commOverlap × 向量 lanes；SRAM ↔ 矩阵 ↔ Reduce/TMA/RDMA 的面积再分配）取哪一个联合设计点作为 L4/L5 读的唯一全局点 x",
+      "shapeIntent": "先用确定性联合回放（coupling_search.js）把五个 winner 合成的点和三条耦合上的小网格全部回放完，只在可行且位于 Pareto 集（TPS/usr 高、die 面积小、整卡功耗小）上的行里做取舍；合成点本身是参照，不是默认答案。τ 按 B-TAU 上限回放，不是自由度；每条耦合两侧的域专家各自说明本域字段的改动能否接受，被否组合按条款登记。没有任何可行行时回流 L1-b，带上缺口与各域的最好点。",
+      "forbidden": [
+        "不得手工填写或改写任何数值；联合点的 x / opt / model 与回放结果必须是候选产物的原行",
+        "不得把 τ 当作可以放宽的变量——它由 L1 合同给上限，τ 扫描只是灵敏度",
+        "不得因联合点在 K3 回放上达标而放行低于任一合同条目的行；突破条目必须回到 L1-b 重新拆分",
+        "不得在某个域的设计空间之外取值；每个改动字段都必须是其所属域设计空间或 die_area_reallocation.js MOVES 的选项",
+        "不得输出 PASS / D_GATE_PASSED 字面量"
+      ],
+      "exitCriteria": [
+        "joint point 是候选产物中可行且在 Pareto 集上的一行，逐字落盘",
+        "五个合同条目在该点逐条成立，K3 回放达到合同目标；其他两个模型只由 compute winner 的 kernel 检查覆盖的事实如实陈述",
+        "合成点（五个 winner 原样拼合）的结果与差距如实陈述，相对合成点改动的字段按所属域列出",
+        "被否的组合按违反的条款登记，Pareto 集中未选的行给出落选理由",
+        "integrated joint point 通过 invariant-checker 的全部检点项"
+      ],
+      "allowedDesignSpace": "teams/hardware/inputs/coupling_design_space.json"
     }
   }
 }

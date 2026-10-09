@@ -1,0 +1,74 @@
+{
+  "schemaVersion": "coupling-design-space-v0.1",
+  "owner": "Council (system integration); co-sign HW-02 AI Core, HW-03 SRAM/TMA, HW-04 MC, HW-07 Comm Core, package / power",
+  "status": "UNVERIFIED",
+  "document": "teams/council/docs/23_DESIGN_QUESTION_WORKFLOW_PROPOSAL.md#l3-designcoupling--跨域联合",
+  "scope": "The joint question L3 leaves open: each domain search (compute, sram, mc, comm, physical) chose its winner with every other domain held at the published point, so the five winners were never replayed together. integration/detailed/coupling_search.js composes them into one design point, replays it, and replays a small grid around it on three fixed couplings. The candidate set goes to out/detailed/coupling_candidates.json, the best joint point to out/detailed/coupling_design.json; design.coupling lands the chosen one as out/coupling/joint_point.json, the single global design point L4 and L5 read.",
+  "evidence": "UNVERIFIED: drafted by an agent from the domain design spaces and doc 23 section 4, not by a domain owner. Every grid value is an option of the owning domain's own design space or of integration/detailed/die_area_reallocation.js MOVES; nothing here invents a hardware value. The replay is the K3 detailed model (MODEL); the comm core area is added as its own term because A.physical() does not size it, and its power is not modelled.",
+  "requirements": {
+    "models": ["Kimi K3"],
+    "modelsReason": "the joint replay is the detailed K3 TP32 model; the compute winner's kernel check still covers every model its own space requires (matrix_vector_design_space.json requirements.models)",
+    "contractEntries": ["B-MEM-BW", "B-SERIAL-CMP", "B-TAU", "B-SRAM-CAP", "B-AREA"],
+    "contractReason": "coupling owns no entry: it is the one step that has to hold all five at once, because it is the first place the five winners meet. B-SERIAL-CMP is tested through the contract target it was derived from (no searched dimension produces a computeScale), B-TAU on the slowest collective of the comm winner's control path at this point, the others on their own quantity",
+    "winners": {
+      "compute": {"design": "out/detailed/matrix_vector_design.json", "candidates": "out/detailed/matrix_vector_candidates.json", "landed": "out/compute/compute_winner.json"},
+      "sram": {"design": "out/detailed/sram_design.json", "candidates": "out/detailed/sram_candidates.json", "landed": "out/sram/sram_winner.json"},
+      "mc": {"design": "out/detailed/memory_design.json", "candidates": "out/detailed/memory_candidates.json", "landed": "out/mc/mc_winner.json"},
+      "comm": {"design": "out/detailed/comm_core_design.json", "candidates": "out/detailed/comm_candidates.json", "landed": "out/comm/comm_winner.json"},
+      "physical": {"design": "out/detailed/physical_design.json", "candidates": "out/detailed/physical_candidates.json", "landed": "out/physical/physical_winner.json"}
+    },
+    "winnersReason": "the composition reads each domain's design artifact (the hardware values it chose) and checks it against the candidate set it came from; a landed winner that names another option than the search winner stops the run instead of being silently replaced",
+    "tauPolicy": "every row replays at tau = B-TAU max. tau is not a degree of freedom here: the contract allows any collective up to that ceiling, and a row that assumed a smaller one would be claiming slack the comm winner has not been asked to give. tauOverlapCompute rows carry a tau sweep and the slack of the slowest collective as a sensitivity"
+  },
+  "couplings": {
+    "sramDepthMc": {
+      "question": "can MC bandwidth be traded for shared SRAM and prefetch depth (doc 23 section 4: SRAM capacity x prefetch depth x MC bandwidth)?",
+      "seats": ["memory-expert/sram", "memory-expert/mc"],
+      "fields": {
+        "sharedMiB": [12, 16, 24],
+        "depth": [0, 1, 2, 4],
+        "mcGBs": [480, 560, 640]
+      },
+      "evidence": "sharedMiB: sram_design_space.json options; depth: A.SPACE.depth (the prefetch depth the sram search left to coupling); mcGBs: memory_design_space.json options around the winner. Rows below B-SRAM-CAP or B-MEM-BW are replayed anyway and kept as rejected combinations with the clause named: they are the numbers an L1-b re-split would need"
+    },
+    "tauOverlapCompute": {
+      "question": "can collective time be hidden under compute (doc 23 section 4: tau x commOverlap x compute)?",
+      "seats": ["comm-expert", "compute-expert"],
+      "fields": {
+        "vectorLanes": [640, 704, 768, 832],
+        "commOverlap": [true, false]
+      },
+      "optFields": ["commOverlap"],
+      "tauSweepUs": [1.0, 1.15, 1.3, 1.5],
+      "evidence": "vectorLanes: matrix_vector_design_space.json options around the compute winner (640 is below its binding kernel and stays as the rejected neighbour); commOverlap: the tuned model's O.OPT switch; tau: see requirements.tauPolicy"
+    },
+    "areaReallocation": {
+      "question": "is there a better use of the die area the domain winners left, moving it between SRAM, the matrix and Reduce/TMA/RDMA (doc 23 section 4, reusing die_area_reallocation.js)?",
+      "seats": ["memory-expert/sram", "compute-expert", "comm-expert", "physical-expert"],
+      "groups": {
+        "sram": ["lBanks", "hBanks", "sharedSlices"],
+        "matrix": ["hRows", "hEngines", "lCols"],
+        "io": ["reduceLanes", "tmaEngines", "rdmaLanes"]
+      },
+      "moves": "from the composed point: every single one-step move of every field, and every pair of one step down in one group with one step up in another. The steps are die_area_reallocation.js MOVES with the composed value inserted when the list does not carry it",
+      "evidence": "the step lists are die_area_reallocation.js MOVES (the same grid the area exploration climbs); the groups are doc 23's three area owners"
+    }
+  },
+  "fieldOwners": {
+    "sharedMiB": "sram", "lBanks": "sram", "hBanks": "sram", "sharedSlices": "sram", "tmaEngines": "sram", "depth": "sram",
+    "mcGBs": "mc",
+    "vectorLanes": "compute", "hRows": "compute", "hEngines": "compute", "lCols": "compute",
+    "reduceLanes": "comm", "rdmaLanes": "comm", "commOverlap": "comm"
+  },
+  "constraints": [
+    "every contract entry holds at the row: B-SRAM-CAP on sharedMiB, B-MEM-BW on mcGBs, B-TAU on the slowest collective (protocol + the comm winner's control path), B-SERIAL-CMP through the contract target, B-AREA on die area (shared-port charge, option overheads and the comm core included) and its die / card power limits",
+    "the K3 detailed replay at the row is feasible and reaches the contract target",
+    "every required H-core kernel of the compute winner still hides its vector work at the row's lanes and matrix shape",
+    "the package fits: dies x die area + cubes x cube area within the placement window less the physical winner's reserve, and the PHY shoreline within the die edge budget"
+  ],
+  "objective": [
+    "feasible first",
+    "on the Pareto set of (TPS/usr up, die area down, card power down)",
+    "least die area, then least card power"
+  ]
+}
