@@ -1,0 +1,219 @@
+# 执行 Trace 导出与 Charon 方法借鉴（建议稿）
+
+版本：2026-10-09
+状态：`PROPOSAL`，未实现；不改动已落地的任何机制，也不改变发布点 1101.77 TPS/usr
+
+前置文档：[`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md)、
+[`10_TILE_SIMULATION.md`](../../../docs/architecture/10_TILE_SIMULATION.md)、
+[`OPEN_ISSUES.md`](../../../docs/architecture/OPEN_ISSUES.md)、
+[`03_Q3_TILE_MEMORY_EVENT_SPEC.md`](detailed/03_Q3_TILE_MEMORY_EVENT_SPEC.md)、
+[`04_Q4_NOC_COLLECTIVE_EVENT_SPEC.md`](detailed/04_Q4_NOC_COLLECTIVE_EVENT_SPEC.md)
+
+外部参考：Charon（MLSys 2026 Oral，arXiv:2605.17164），分析见
+[`references/Charon_论文分析.html`](../../../references/Charon_论文分析.html)。该参考**不是证据**，
+只提供方法；任何数字都不得从它进入本仓库的基线。
+
+## 0. 要解决的问题
+
+1. **时间线看不见。** 详细模拟器（`integration/detailed/k3_operator_sram_sim.js#simulate`）早已能输出事件流：
+   `{trace:true}` 时返回 `events` 和 `occupancy`。但没有任何 pipeline 打开它，`out/` 里也没有时间线文件。
+   发布点的 775.75 µs 只能以汇总形式出现在时间账里，没有人能看到哪一段 DMA 卡住了哪个算子。
+   `out/detailed/formal_event_replay.json` 是规划模型合成的 360 条事件，状态是 `SYNTHETIC_PLANNING_EVENTS_NOT_TIMING_REPLAY`，不是时间线。
+2. **通信是最大也最虚的一项。** 393 × τ = 451.95 µs，占 raw 预算的 53%。τ = 1.15 µs 却没有物理推导（B-008）；
+   卡内和 TP32 拓扑都没签核（B-004、B-005）。
+3. **重叠只记收益，不记代价。** 前台算子和集合通信在发起时就定死了结束时间（`end = t + duration`），
+   只有后台 DMA/TMA 让带宽（`fillSpeeds()`、`dmaRate()`）。shared 专家和集合通信重叠时，
+   两者对共享 SRAM 读端口和 fabric 的总需求可能超过上限，但哪一方都不会变慢。
+   这与 `GAIN` 一律取 1 的纪律方向不一致：收益计入了，代价没有。
+4. **研发阶段的回标没有落点。** 每个算子的时长都来自解析式（`mappedPlan`）。将来拿到 Palladium 或 RTL 周期数后，
+   没有接口能逐算子替换，也没有指标说明"raw 里有多少比例有实测支撑"。
+
+Charon 在第 2–4 点上各有现成方法：按链路分层的通信模型、带宽感知的拥塞模型、
+实测 → 预测 → 解析的引擎回退链。它在第 1 点上的产物形态是 PyTorch Profiler 风格的 trace，也可以直接借鉴。
+
+## 1. 原则与非目标
+
+**原则**
+
+- **先看见，再改模型。** 阶段一只做导出，数值零变化；之后每次模型变化都要能在 trace 上对比前后差异。
+- **新机制默认关闭。** 改变数值的机制以选项进入，默认值复现发布点。只报告与发布点的差值，是否采纳由 ADR 决定。
+- **不引入经验因子。** Charon 用实测标定降速因子，本项目没有硅片，标定出来只能是 `ASSUMPTION`。
+  因此争用必须由资源模型推导（按带宽需求比例分配），不能填系数。
+- **证据等级跟着每个算子走。** trace 和报告里的每个时长都带证据等级，不能只在汇总处标一次。
+
+**非目标**
+
+- 不做 Charon 的单 block 抽取：跨层 KV 预取和 SRAM 驻留状态必须全 93 层模拟。
+- 不做训练、反向图、liveness 显存分析：本项目只做 decode 推理，片上 SRAM 已由事件模拟精确记账。
+- trace 不改变任何 Gate 结论。它的证据等级是 `MODEL`，不能当作 `VALIDATED_EVENT_TIMING`
+  （`evaluate_gates.js` 中 `validatedEventTiming` 的判据）。
+
+## 2. 工作包
+
+编号遵守 AGENTS.md 的规定，使用 `HW-*`/`SW-*`/`MODEL-*`/`ARCH-*`/`VV-*` 前缀。
+为避免和评审台账里已有的序号冲突，统一加 `TR`（trace）或 `CH`（Charon）中缀。
+
+### ARCH-TR-01 发布点单 rank 时间线导出
+
+| 项 | 内容 |
+|---|---|
+| 要回答的问题 | 发布点的 775.75 µs 在时间轴上怎么排布？哪里是等待，哪里被掩盖？ |
+| 做法 | 新增 `integration/pipelines/generate_execution_trace.js`（`npm run trace:published`）：用 `baseline_point.publishedX` 取发布点，跑 `F.mapped` 和 `simulate(..., {trace:true})`，转成 Chrome Trace Event JSON，可用 Perfetto 或 `chrome://tracing` 打开 |
+| 轨道 | 计算槽（unit ≠ COMM 的算子）、集合通信、DMA（含 park/resume）、TMA-L、TMA-H、SRAM 占用（allocated/live 两条 counter 轨道）、逐层标记 |
+| 每个切片的 args | layer、unit、flops、read/write bytes、`timing` 拆解（kernel/launch/tmaFill/tauFloor…）、证据等级、detail（如 weight tile 3/8） |
+| 元数据 | `sourceCommit`、规格文件 hash、`OPT` 摘要、x 指纹、`evidenceClass: MODEL`；格式与现有产物的 provenance 字段一致 |
+| 模拟器改动 | 只扩充 `trace` 分支的事件内容：补上算子的 unit、timing，以及 COMM 的起点。不改任何计时路径 |
+| 产物 | `out/trace/k3_published_point.trace.json`，加上 `out/trace/README.md` |
+| 规模 | 实测：模拟约 77 ms；原始事件 9079 条加占用曲线 7151 点，约 1.6 MB。Chrome 格式预计 2–3 MB（见决策点 D1） |
+| 验收 | 各轨道切片时长之和与 `computeUs`/`commUs`/`waitUs`/`overlapUs`/`tmaHiddenUs` 逐项对账，误差 < 1e-6 µs；时间线结束时刻等于 `rawUs`；发布点数值不变 |
+
+### VV-TR-01 Trace 契约与守恒测试
+
+| 项 | 内容 |
+|---|---|
+| 做法 | 新增 `docs/architecture/contracts/EXECUTION_TRACE.md`：定义轨道、事件类型、必填 args 和单位。该契约就是 `TILE_IR.md` 第 33 行提到的"golden trace 格式"的模型侧版本 |
+| 测试 | `tests/regression/test_execution_trace.js`，检查四项：(1) 守恒对账；(2) 事件全部绑定 `operator_id` / `layer`；(3) sha256 钉住产物；(4) 加入 `test_regeneration_reproducible.js` 的 `REGENERATE_SCRIPTS`（耗时短，可以纳入） |
+| 依赖 | ARCH-TR-01 |
+
+### ARCH-TR-02 Trace 对比与逐项回退可视化
+
+| 项 | 内容 |
+|---|---|
+| 要回答的问题 | 21 号文档 §5 的逐项回退里，"关掉 `tmaLane` 损失 X µs"具体损失在哪几层、哪几个算子？ |
+| 做法 | `generate_execution_trace.js --diff <OPT 补丁>`：同一 x 下跑两次，按 `operator_id` 对齐，输出逐算子的开始时刻偏移和时长差，并可生成两份 trace 并排查看 |
+| 产物 | 默认写到 `scratch/`。只有被 ADR 或 attribution 卡引用时，才由 pipeline 落进 `out/trace/` |
+| 依赖 | ARCH-TR-01 |
+
+### HW-TR-01 集合通信内部协议 trace
+
+| 项 | 内容 |
+|---|---|
+| 要回答的问题 | 一次集合通信的 1.15 µs 里，发射、上线、可见、ACK 各占多少？五类协议时间为什么都低于 τ？ |
+| 做法 | `k3_sram_memory_rdma_model.js#phase` 已支持 `{trace}`，会逐 peer 输出 issue/sendStart/sendEnd/visible/ack。对每类集合通信抽样一层，作为嵌套切片挂在对应 COMM 切片下，并单独画出 `tauFloor` 补齐的那一段 |
+| 产物 | 并入 `k3_published_point.trace.json` 的子轨道 |
+| 依赖 | ARCH-TR-01；为 HW-CH-01 提供基线视图 |
+
+### HW-CH-01 链路分层的 τ 推导（借鉴 Charon §5，对应 B-008 / B-004 / B-005 / O-018）
+
+| 项 | 内容 |
+|---|---|
+| 要回答的问题 | 在给定的卡内拓扑和 TP32 scale-out 拓扑下，一次集合通信的物理下限是多少？τ = 1.15 µs 成立的条件是什么？ |
+| 做法 | 新增 `integration/detailed/collective_topology.js`，把一次集合通信拆成链路级传输，按"每跳延迟 × 跳数 + 字节数 / 有效带宽 + 同步开销"计算。拓扑：卡内 8 Die 环（与 `dieCutGB` 口径一致）；scale-out 至少三种候选：直连全互联、单层交换、环。算法：ring、tree、one-shot direct（与现有 31-peer 写入模型一致）。控制路径接 Comm Core 周期模型（`comm_core_design.json`） |
+| 参数来源 | 每跳延迟、SerDes/PHY、交换机延迟逐项标证据等级；没有出处的一律记 `ASSUMPTION` 并给出敏感区间 |
+| 产物 | `out/detailed/tau_derivation.json`：拓扑 × 算法 × 集合通信类别的 τ 拆解表，以及每个格子的 TPS/usr。后者复用规划链路已有的 τ 敏感度列 |
+| 不做 | 不改 `OPT.tauUs`。若推导结果支持更换 τ 口径，走 ADR 修订 ADR-0004 |
+| 依赖 | 需要硬件团队给出 B-005 的候选拓扑；HW-TR-01 先行能大幅降低核对成本 |
+
+### ARCH-CH-01 重叠争用模型（借鉴 Charon §6）
+
+| 项 | 内容 |
+|---|---|
+| 要回答的问题 | shared 专家和集合通信重叠时，前台两方对共享 SRAM 读端口和 fabric 的总需求是否超限？超限会吃掉多少 `commOverlap` 收益？ |
+| 做法 | `simulate` 增加选项 `contention: 'none' \| 'proportional'`，默认 `'none'`，复现发布点。`'proportional'` 时把前台算子和集合通信也改成"剩余工作量 + 速率"推进：总需求超过端口或 fabric 上限时，按各自的请求带宽比例分配，这是 Charon 带宽重分配的资源模型版本，不含标定因子。被拉长的时间单独记为一项服务 `contention`，保持 `raw = compute − tmaHidden + comm + wait − overlap + contention` 的守恒检查 |
+| 规模预估 | 发布点的 `commOverlap` 收益为 26.27 µs，有 552 个算子标记了 `overlapComm`，争用损失的上界是这 26.27 µs。实际值以实现后的报告为准 |
+| 产物 | `out/detailed/contention_delta.json`：发布点和各域联合点在两种模式下的 TPS/usr 差值，逐层列出 |
+| 采纳 | 差值不为零时，由 ADR 决定是否把默认值改成 `'proportional'`，并同步 21 号文档的时间账 |
+| 依赖 | ARCH-TR-01（用 trace 核对重叠段）；`simulate` 的事件循环改动较大，需要 VV 逐项审查守恒式 |
+
+### ARCH-CH-02 算子成本提供者与证据覆盖率（借鉴 Charon §5 的 fused engine）
+
+| 项 | 内容 |
+|---|---|
+| 要回答的问题 | 研发中拿到 Palladium 或 RTL 周期数后，如何逐算子替换解析值？raw 里有多少比例有实测支撑？ |
+| 做法 | 在 `mappedPlan` 给算子定时长的位置加一层"成本提供者"，按优先级查找：(1) 实测表，键为算子类型 + shape + 硬件点指纹，证据等级 `SILICON_OBSERVED`、`EMULATION_OBSERVED` 等；(2) 拟合预测器，只在实测样本覆盖的 shape 区间内插值，越界即回退；(3) 解析式，即现状。每个算子带 `costSource` 和证据等级 |
+| 当前效果 | 实测表为空，所有算子走解析式，数值不变。交付物是接口、空表的 schema、trace 中的证据着色，以及"raw 按证据等级分解"的报告行 |
+| 回标顺序 | 先 attention 路径（MLA QK/PV、online softmax、FP8 解量化、LSE merge），再 Linear 和 Expert。理由：Charon 的消融实验中，解析模型在 Linear/RMSNorm 上误差约 6%，在 FlashAttention-3 上达 31.84%（外部数字，仅作排序依据） |
+| 依赖 | ARCH-TR-01；与 `10_TILE_SIMULATION.md` §8 的校准顺序对齐 |
+
+### MODEL-CH-01 工作负载追踪前端（借鉴 Charon §4）
+
+| 项 | 内容 |
+|---|---|
+| 要回答的问题 | GLM-5.2 和 DeepSeek-V4-Pro 能不能拥有与 K3 同级的详细 DAG，而不是只有规划行？K3 手写 DAG 的算子清单有没有遗漏？ |
+| 做法 | 写一个离线工具：用 `torch.fx` 或 meta device 在 HF 模型定义上追踪一个 decoder block，导出算子账本 JSON，内容包括算子、shape、dtype、FLOP、字节。Node 侧只读这份 JSON，并和 `design_engine.js` 以及规划行对账 |
+| 首个目标 | GLM-5.2（形状取自公开 HF `config.json`，ADR-0007）：用追踪出的账本与现有规划行逐项对账 |
+| 约束 | 仓库约定 Node.js、零第三方依赖，Python 工具因此只能作为离线生成器，产物按 `references/` 或 `teams/model/inputs/` 的规则入库（见决策点 D2） |
+| 依赖 | 独立于其他工作包，可以并行 |
+
+### SW-CH-01 优化开关改写为图变换规则（借鉴 Charon §4(b)）
+
+| 项 | 内容 |
+|---|---|
+| 要回答的问题 | `OPT` 里每个融合或调度开关的合法性前提是什么？能否被单独验证？ |
+| 做法 | 把 `attentionFusion`、`epilogueFusion`、`softmaxFusion`、`pvMerge`、`countBasis`（shared 专家合并）这类开关，从 mapper 内的分支改写成声明式规则：匹配模式、变换动作、合法性前提。合法性前提对应 contract 中的"fusion legality"，B-007 这类问题因此有固定落点 |
+| 验收 | 重构前后 `out/` 逐字节一致 |
+| 优先级 | 低。属于纯重构，风险集中在 mapper，收益是可审查性 |
+
+### ARCH-CH-03 负载形态扩展（可选）
+
+| 项 | 内容 |
+|---|---|
+| 内容 | (1) 用现有 `mapped(x, {tokens, seqs})` 扫出 TPS/usr 与 TPS/卡 的 Pareto 前沿，回答"为 B=1 优化的设计在 batch 场景下损失多少"；(2) 短上下文扫描（如 8K / 128K），回答 24 次 LSE 归约和按上下文切分在短序列下是否划算，对应 Charon 的动态 SP 案例 |
+| 约束 | 只作附加视角，不改 ADR-0009 的目标 |
+
+## 3. 阶段与顺序
+
+```mermaid
+flowchart LR
+  subgraph P1["阶段一：看见（数值零变化）"]
+    T1["ARCH-TR-01<br/>时间线导出"] --> V1["VV-TR-01<br/>契约+守恒测试"]
+    T1 --> T2["ARCH-TR-02<br/>trace 对比"]
+    T1 --> T3["HW-TR-01<br/>集合通信内部 trace"]
+  end
+  subgraph P2["阶段二：保真度（默认关闭，报差值）"]
+    C1["ARCH-CH-01<br/>重叠争用"]
+    C2["HW-CH-01<br/>链路级 τ 推导"]
+  end
+  subgraph P3["阶段三：回标基础设施"]
+    C3["ARCH-CH-02<br/>成本提供者+证据覆盖率"]
+  end
+  subgraph P4["阶段四：扩展（可并行/可选）"]
+    M1["MODEL-CH-01<br/>追踪前端"]
+    S1["SW-CH-01<br/>优化即规则"]
+    X1["ARCH-CH-03<br/>Pareto/短上下文"]
+  end
+  V1 --> C1
+  T3 --> C2
+  V1 --> C3
+  C1 -.->|"ADR 采纳后"| C3
+```
+
+| 阶段 | 工作包 | 规模 | 数值影响 | 需要 ADR | 退出条件 |
+|---|---|---|---|---|---|
+| 一 | ARCH-TR-01、VV-TR-01、ARCH-TR-02、HW-TR-01 | S–M | 无 | 否（新增产物和契约文档，由 Council 评审） | trace 可在 Perfetto 打开；守恒测试、再生成测试通过；发布点不变 |
+| 二 | ARCH-CH-01 | M–L | 可能下降，上界 26.27 µs | 改默认值时需要 | `contention_delta.json` 落盘并入评审 |
+| 二 | HW-CH-01 | L | 不改基线 | 改 τ 口径时需要（修订 ADR-0004） | `tau_derivation.json` 落盘；B-008 关闭证据栏可引用 |
+| 三 | ARCH-CH-02 | M | 无（实测表为空） | 否 | 算子带 `costSource`；报告给出 raw 按证据等级的分解 |
+| 四 | MODEL-CH-01 / SW-CH-01 / ARCH-CH-03 | M / M / S | 无或仅附加视角 | 视结论而定 | 各自的对账报告 |
+
+规模口径：S 约一个工作日以内，M 约数个工作日，L 需要跨团队输入（拓扑候选、Comm Core 周期）。
+
+## 4. 与现有治理的衔接
+
+- **产物**：新产物都放在 `out/trace/` 或 `out/detailed/`，由 npm 脚本生成，用 sha256 钉住，并纳入再生成测试；不手改。
+- **证据等级**：trace 的 metadata 和每个切片都标 `MODEL`；ARCH-CH-02 之后改为逐算子标注。
+- **Gate**：本计划的任何产物都不改变 D-Gate / Q-Gate 的结论。
+  若要让模型 trace 替代 `stage_b.js` 里 Q3/Q6 的 `SYNTHETIC_PLACEHOLDER`，需要 Council 另立 ADR，
+  而且只能作为 `MODEL` 等级的事件回放，不能满足 `validatedEventTiming`。
+- **文档同步**：阶段一完成后更新 `10_TILE_SIMULATION.md` §2（已有能力）和 `out/README.md`；
+  阶段二的结论进入 `OPEN_ISSUES.md` 的 B-008、B-004、B-005、O-018 证据栏。
+- **参考资料登记**：在 `references/README.md` 的清单中补上 Charon 分析页的来源与用途，注明"方法参考，不是证据"。
+
+## 5. 待决策点
+
+| 编号 | 问题 | 建议 |
+|---|---|---|
+| D1 | 时间线 trace（约 2–3 MB）是否提交进 `out/`？ | 提交发布点这一份，作为默认可视化；diff 和其他设计点的 trace 只写到 `scratch/`。若嫌体积大，可只提交 `.gz`，测试解压后核对 |
+| D2 | 是否允许离线 Python 工具（MODEL-CH-01）进入仓库？ | 允许，放在 `tools/`，不进 `npm test`；产物 JSON 入库后由 Node 侧对账 |
+| D3 | ARCH-CH-01 的差值若不为零，是否改默认值？ | 由 ADR 决定；在此之前 21 号文档的时间账注明"未计前台争用，上界 26.27 µs" |
+| D4 | HW-CH-01 的拓扑候选由谁提供？ | 硬件团队（Collective/RDMA、NoC 负责人）先给出 B-005 的 2–3 个候选，没有候选不开工 |
+
+## 6. 风险
+
+| 风险 | 缓解 |
+|---|---|
+| 扩充 trace 事件时误改计时路径，发布点漂移 | 只改 `if(trace)` 分支；`test_tps_design_baseline.js` 和 `test_k3_rdma_final_tuning.js` 兜底 |
+| 争用模型改写事件循环，引入守恒错误或死锁 | 选项默认关闭；新增守恒项单独记账；VV 审查；用 trace 逐段核对 |
+| τ 推导参数大多仍是 `ASSUMPTION`，结论看似更细、其实一样虚 | 每个参数标等级和敏感区间；报告给出"τ ≤ 1.35 µs 需要哪些参数同时成立"，而不是一个点值 |
+| trace 被当作实测证据引用 | metadata 写死 `evidenceClass: MODEL`；契约文档和 Gate 说明里明确它不构成 `VALIDATED_EVENT_TIMING` |
+| 借鉴外部论文的数字进入基线 | 本文和 `references/README.md` 均声明 Charon 只提供方法；`design.audit` / `design.verify` 的 intake 只接受 `out/` 下的路径，`references/` 下的内容进不了复核对象（`references/README.md` 的 `external/` 一节） |
