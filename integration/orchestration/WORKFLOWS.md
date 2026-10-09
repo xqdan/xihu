@@ -114,7 +114,7 @@ flowchart TB
 - **什么时候跑**：五个 C 组域都已有 winner，`npm run coupling:search` 已生成 `out/detailed/coupling_candidates.json`。
 - **谁参与**：耦合两侧的域专家五席并行审行（`compute-expert`、`memory-expert/sram`、`memory-expert/mc`、`comm-expert`、`physical-expert`，与 `coupling_design_space.json` 的 `couplings.*.seats` 一致）→ `integrator` 在可行的 Pareto 行里取联合点 → 脚本机械核对它是产物原行 → `invariant-checker`。
 - **设计空间**：三组耦合的小网格，全部回放，没有搜索策略一步：SRAM 窗口 × 预取深度 × MC 带宽；向量 lanes × commOverlap（τ 按 `B-TAU` 上限，扫描只作灵敏度）；SRAM ↔ 矩阵 ↔ Reduce/TMA/RDMA 的面积再分配。
-- **结局**：通过则落盘 `out/coupling/joint_point.json`（唯一全局设计点，带 `x` / `opt` / `model`）与 run record；没有可行行时返回 `DIRECTION_BACKFLOW`、回流 `design.req.budget`，原样转交产物的缺口与各域最好点，不调用任何 agent。
+- **结局**：通过则落盘 `out/coupling/joint_point.json`（唯一全局设计点，带 `x` / `opt` / `model`）与 run record；之后 `design_point.js` 解析出的设计点就是它——L4 的卡在它上面生成，`converge` 在它与基线不一致时拦下。没有可行行时返回 `DIRECTION_BACKFLOW`、回流 `design.req.budget`，原样转交产物的缺口与各域最好点，不调用任何 agent。
 - **不负责**：不回放、不改五个域的 winner、不放宽任何合同条目来凑出联合点。
 
 ### 参数级细化（Stage B，D 组严格串行）
@@ -137,8 +137,8 @@ D 组是同一条链上的前后依赖，不得并行：每一格消费上一格
 ### 维度归因（L4，按维度参数化）
 
 #### `design.attribution` — 这个维度的每个参数怎么影响 TPS/usr，谁承重
-- **业务问题**：在已发布设计点上，片上 SRAM（容量、bank、slice、TMA、KV tile、预取深度、端口扩展）、集合通信（τ、计数口径、RDMA/UCIe/NoC/Reduce、commOverlap、pvMerge）各自动一步，TPS/usr 变多少、面积功耗变多少、盈亏点在哪；未测参数一起取悲观端时缺口落在哪一维（`joint`）。
-- **什么时候跑**：`npm run attribution:cards` 生成灵敏度卡之后，每个维度跑一次（`--dimension sram | comm | joint`，互相独立，可并行）。基线变了卡即过期，`run_workflow.js` 拒收过期卡。
+- **业务问题**：在当前设计点上（`design.coupling` 落盘联合点之后是联合点，之前是已发布设计点；`design_point.js` 解析），片上 SRAM（容量、bank、slice、TMA、KV tile、预取深度、端口扩展）、集合通信（τ、计数口径、RDMA/UCIe/NoC/Reduce、commOverlap、pvMerge）各自动一步，TPS/usr 变多少、面积功耗变多少、盈亏点在哪；未测参数一起取悲观端时缺口落在哪一维（`joint`）。
+- **什么时候跑**：`npm run attribution:cards` 生成灵敏度卡之后，每个维度跑一次（`--dimension sram | comm | joint`，互相独立，可并行）。基线变了、或设计点变了（联合点落盘），卡即过期，`run_workflow.js` 拒收过期卡。
 - **做法**：数全部来自卡（`integration/detailed/tps_attribution.js` 在详细模型上逐项重放，分类是机械的）→ 每行的 owner 专家（compute / memory / comm / software）只审自己的行：同不同意分类、该参数物理上可信的区间与出处、盈亏点是否落在区间内、先测什么；`software-expert` 另判哪些承重结论依赖软件机制 → `integrator` 合并承重项、富余项、回标计划与冲突 → `invariant-checker` 检点（漏审行、漏列承重行、承重行缺回标计划由脚本机械比对，检点者不能解释掉）。
 - **产出**：`out/attribution/reviews/<dimension>_review.json` 与 run record。卡本身是生成物，本格不能落到卡旁边。返回值里任何 `文件:行号` 指向没有文字的行（空行、表格边框、代码围栏）或越界，或专家 `plausibleRange` 里的卡外数字不在其 `rangeEvidence` 所引的行上，主循环不落盘（退出码 7）。审读与合并里的卡外数字由 workflow 脚本比对，修正一次仍不合规即 `INVARIANT_VIOLATED`。
 - **结局**：检点通过则落盘审读；专家缺席或输入不足 `BLOCKED_CONFIG`；承重参数的可信区间整体落在预算外时 `DIRECTION_BACKFLOW`。
@@ -146,6 +146,7 @@ D 组是同一条链上的前后依赖，不得并行：每一格消费上一格
 
 #### `design.converge` — 这一轮怎么收场
 - **业务问题**：细化链走完后，架构是冻结、回到方向层重定，还是证据已够、送评审？
+- **前置守卫**：主循环注入 `args.designPoint`（`design_point.js`）。D 组产物是 `stage_b.js` 在基线上算的；设计点是与基线不同的联合点时，D 组审的不是这个点，本格不召集 agent，直接 `BLOCKED_CONFIG`，`nextActions` 指向 ADR + `baseline:sync` 与重跑 Stage B / D 组。
 - **做法**：相关专家（1–3 个，互不可见）回报本域残余缺口 → `framing-critic` 审查"收敛问的是不是该问的" → `gate-keeper` 汇总证据完备性 → `architect` 在 `ARCH_FREEZE` / `DIRECTION_BACKFLOW` / `D_GATE_PROPOSAL` 里裁决 → `invariant-checker` 检点。
 - **产出**：`out/detailed/converge_proposal.json`——是**提案**，不是门控结论。
 - **不负责**：不改候选寄存器、不写既有产物，门控由脚本算。

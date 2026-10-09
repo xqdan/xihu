@@ -3,16 +3,22 @@
 // The cards are rebuilt through the production model and must equal the stored ones; the numbers
 // they share with tpsDesign (published point, mechanism ablations, joint pessimistic replays,
 // break-evens, tau headroom) must agree with it, so a card can never drift into a second baseline.
+// The stored cards are rebuilt at the point design_point.js resolves; the tpsDesign checks run at
+// the published point, and a card at the coupling artifact's joint row must replay that row.
 const assert = require('assert');
 const crypto = require('crypto');
 const fs = require('fs');
 const T = require('../../integration/detailed/tps_attribution.js');
+const DP = require('../../integration/pipelines/design_point.js');
 
 const text = fs.readFileSync(T.BASELINE_FILE, 'utf8');
 const spec = JSON.parse(text);
 const td = spec.tpsDesign;
 const near = (a, b, what, tol = 1e-9) => assert(Math.abs(a - b) <= tol * Math.max(1, Math.abs(b)), `${what}: ${a} vs ${b}`);
-const ctx = T.context({text});
+const published = DP.resolve({point: 'published', baselineText: text});
+const ctx = T.context({text, point: published});
+const resolved = DP.resolve({point: 'auto', baselineText: text});
+const storedCtx = resolved.kind === 'published' ? ctx : T.context({text, point: resolved});
 
 near(ctx.base.tpsPerUser, td.point.tpsPerUser, 'published TPS');
 near(ctx.base.rawUs, td.point.rawLatencyUs, 'published raw');
@@ -25,8 +31,10 @@ for (const dim of T.DEFAULT_DIMENSIONS) {
   assert(fs.existsSync(file), `${file} is missing; run npm run attribution:cards`);
   const stored = JSON.parse(fs.readFileSync(file, 'utf8'));
   assert.strictEqual(stored.inputs.baselineSha256, crypto.createHash('sha256').update(text).digest('hex'), `${file} was built from a different baseline; run npm run attribution:cards`);
+  assert.strictEqual(stored.inputs.point.sha256, resolved.sha256, `${file} was built at another design point than ${resolved.source}; run npm run attribution:cards`);
   // Round-trip through JSON so the comparison sees what the generator wrote.
-  assert.deepStrictEqual(stored, JSON.parse(JSON.stringify(card)), `${file} is stale; run npm run attribution:cards`);
+  const rebuilt = storedCtx === ctx ? card : T.build(dim, {context: storedCtx});
+  assert.deepStrictEqual(stored, JSON.parse(JSON.stringify(rebuilt)), `${file} is stale; run npm run attribution:cards`);
   assert.strictEqual(card.dimension, dim);
   assert(/^MODEL/.test(card.status), `${dim}: card must declare its evidence level`);
   assert(!/\bPASS\b/.test(JSON.stringify(card)), `${dim}: a card may not carry a gate-like literal`);
@@ -141,10 +149,38 @@ assert(layout.breakEvenBy.reasons.some(r => /H local tile/.test(r)), 'layoutImba
 assert.strictEqual(tau.breakEvenBy.by, 'budget', 'tau break-even is the raw budget');
 for (const p of joint.parameters) if (p.breakEven && typeof p.breakEven.valueAtBudget === 'number') assert(p.breakEvenBy, `joint ${p.name}: breakEvenBy`);
 
+// At a joint point (design.coupling's landed row, doc 23 §7.3) the card replays that row exactly:
+// its x, OPT patch and model patch (compute unpack / softmax, comm control path), and the model
+// state is restored afterwards.
+const O = require('../../integration/detailed/k3_rdma_final_tuning_model.js');
+const coupling = JSON.parse(fs.readFileSync('out/detailed/coupling_candidates.json', 'utf8'));
+const row = coupling.candidates.find(c => c.feasible && c.pareto) || coupling.candidates.find(c => c.feasible);
+const landed = {optionId: row.optionId, values: JSON.stringify(row), provenance: 'test', x: row.x, opt: row.opt, model: row.model};
+const record = {candidateSetSha256: coupling.candidateSetSha256};
+const jp = DP.resolve({point: 'joint', baselineText: text, jointPoint: landed, runRecord: record, artifact: coupling});
+assert.strictEqual(jp.kind, 'joint');
+assert.strictEqual(DP.resolve({point: 'auto', baselineText: text, jointPoint: landed, runRecord: record, artifact: coupling}).kind, 'joint', 'auto takes a landed joint point');
+assert(jp.departsFromPublished, 'the joint point departs from the published point');
+assert(jp.departures.model.some(d => d.key === 'controlUs'), 'the comm control path is not in the published model');
+assert.deepStrictEqual(jp.departures.x.map(d => d.key).sort(), Object.keys(row.x).filter(k => row.x[k] !== td.hardware.x[k]).sort(), 'x departures');
+const optBefore = JSON.stringify(O.OPT);
+const jctx = T.context({text, point: jp});
+near(jctx.base.tpsPerUser, row.tpsPerUser, `${row.optionId}: TPS replays the coupling row`, 1e-12);
+near(jctx.base.rawUs, row.rawLatencyUs, `${row.optionId}: raw replays the coupling row`, 1e-12);
+assert.strictEqual(jctx.inputs.point.sha256, jp.sha256);
+assert.strictEqual(jctx.inputs.software.tauUs, row.opt.tauUs, 'software is read at the joint OPT');
+const jcard = T.build('joint', {context: jctx});
+near(jcard.published.nominal.tpsPerUser, row.tpsPerUser, 'joint card nominal', 1e-12);
+assert.strictEqual(JSON.stringify(O.OPT), optBefore, 'the OPT patch is restored after the card');
+// A landed joint point that does not verify is refused, never replaced by the published point.
+assert.throws(() => DP.resolve({point: 'auto', baselineText: text, jointPoint: {...landed, opt: {...row.opt, tauUs: 1.0}}, runRecord: record, artifact: coupling}), /does not verify/);
+assert.throws(() => DP.resolve({point: 'joint', baselineText: text, jointPoint: landed, runRecord: null, artifact: coupling}), /does not verify/);
+
 // No gate may depend on an attribution card.
 for (const f of fs.readdirSync('out/governance')) assert(!fs.readFileSync(`out/governance/${f}`, 'utf8').includes('out/attribution'), `${f}: no gate may depend on an attribution card`);
 
 const f1 = v => (typeof v === 'number' ? v.toFixed(1) : String(v));
 console.log(`PASS tps attribution: ${T.DEFAULT_DIMENSIONS.map(d => `${d} ${cards[d].parameters.length} rows`).join(', ')}; `
   + `loadBearing sram [${cards.sram.loadBearing.join(', ')}], comm [${cards.comm.loadBearing.join(', ')}]; `
-  + `all-unmeasured ${f1(joint.jointPessimistic.allUnmeasured.tpsPerUser)} -> route ${joint.jointPessimistic.routing.routeTo}`);
+  + `all-unmeasured ${f1(joint.jointPessimistic.allUnmeasured.tpsPerUser)} -> route ${joint.jointPessimistic.routing.routeTo}; `
+  + `joint point ${row.optionId} ${f1(jctx.base.tpsPerUser)} TPS/usr, all-unmeasured ${f1(jcard.jointPessimistic.allUnmeasured.tpsPerUser)} -> route ${jcard.jointPessimistic.routing.routeTo}`);

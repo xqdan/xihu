@@ -206,7 +206,14 @@
       "softmaxOpsPerScore": 18,
       "matrixAreaOverhead": 0,
       "vectorAreaOverhead": 0,
-      "commCoreAreaMm2": 0.10388586545729403
+      "commCoreAreaMm2": 0.10388586545729403,
+      "controlUs": {
+        "LSE merge / output reduce-scatter": 0.042,
+        "Attention output all-reduce": 0.042,
+        "Wdown + Router all-gather": 0.04,
+        "Routed latent merge": 0.042,
+        "Wup + Shared output all-reduce": 0.042
+      }
     }
   },
   "evaluation": {

@@ -215,7 +215,7 @@ flowchart TB
 
 实现在 `integration/detailed/tps_attribution.js`（内核）、`integration/pipelines/generate_tps_attribution.js`（`npm run attribution:cards`）、`integration/orchestration/design.attribution.workflow.js`，测试 `tests/regression/test_tps_attribution.js`。与上面设计稿不同的地方：
 
-1. **设计点**：P1 实现时 `joint_point.json` 还不存在（L3 `coupling` 未做），P1 用发布点 `out/rdma/k3_rdma_final_tuning_results.json` 的 `search.best.x`，卡的 `inputs.pointSource` 写明这一点。P5 之后 `design.coupling` 能落盘 `out/coupling/joint_point.json`（带 `x` / `opt` / `model`），但 L4 尚未改读它。
+1. **设计点**：P1 实现时 `joint_point.json` 还不存在（L3 `coupling` 未做），P1 用发布点 `out/rdma/k3_rdma_final_tuning_results.json` 的 `search.best.x`，卡的 `inputs.pointSource` 写明这一点。P5 之后 `design.coupling` 能落盘 `out/coupling/joint_point.json`（带 `x` / `opt` / `model`）；卡现在由 `design_point.js` 解析设计点，联合点落盘后即在联合点上生成，`inputs.point` 记下是哪个点（见 §8 的"设计点接线"）。
 2. **软件开关不随移动重调**：每一步只换一个量、其余（含 `OPT`）不变，是回放不是重搜。所以硬件行的 ΔTPS 是"软件不跟着调"时的上界损失；重调留到有 `coupling` 之后。
 3. **行结构**：每个参数一行，`moves[]` 列出每一步（`dTps`、`dRawUs`、`dDieAreaMm2`、`dDiePowerW`、`dTpsPerMm2`、`dTpsPerW`、`withinBudget`，以及联合悲观点上的同一步），外加 `breakEven`、`evidence`、`measurementNeeded`、`owner`。分类是机械的枚举：`loadBearing` / `graded` / `slack` / `insensitive` / `basis` / `untested`，判据写在卡的 `classes` 里；计数口径（`countBasis`）恒为 `basis`，不能记为性能收益或损失。承重行另带 `bearsBy`：`budget`（某个可行的不利移动超出 raw 预算）或 `feasibility`（只撞上硬约束）。映射变量（`kvTile`、`depth`、`headTile`）的不可行邻点、以及模型算不了的输入（报 `model error`）都不计入分类。卡的 `bindingConstraints` 按约束汇总所有不可行移动：同一条约束挡住多行，说明设计点正贴着这面墙。
 4. **关键路径占比**放在维度级 `criticalPath`（本维度服务项在时间账中的份额），不是逐参数字段；`joint` 卡没有这一项。
@@ -290,7 +290,7 @@ flowchart TB
 
 1. **brief 派生脚本** `integration/pipelines/make_brief.js <stage>`：从 intake brief + 上一层 `out/budget/*_budget.json` 确定性地生成本层 brief；`run_workflow.js` 默认调用它，不再只有 compute 有默认 brief。
 2. **ledger 注入**：`run_workflow.js` 读 `out/governance/design_ledger.json` 作为 `args.ledger` 注入；落盘时合并 `ledgerPatch`。
-3. **设计点单一来源**：L3 之后所有格读 `out/coupling/joint_point.json`，它和 `k3_mc_baseline.json` 不一致时需走 ADR 同步（沿用 `baseline:sync`）。
+3. **设计点单一来源**：L3 之后所有格读 `out/coupling/joint_point.json`，它和 `k3_mc_baseline.json` 不一致时需走 ADR 同步（沿用 `baseline:sync`）。（已接线：`design_point.js`，L4 读它、`converge` 在它与基线不一致时拦下，见 §8 的"设计点接线"。）
 
 ## 8. 实施顺序
 
@@ -340,7 +340,17 @@ flowchart TB
 7. **回流**：没有可行行时不进合并，返回 `DIRECTION_BACKFLOW`、`routeTo: design.req.budget`，原样转交产物的 `backflow`（差额、最接近的行、TPS 最高的行、各域单独的最好点），并在 ledger 记一条 `BACKFLOW-COUPLING-L1B` 阻塞。
 8. **接线**：`search_brief.js` 新增 `STAGES`（五个域加 coupling）与 `landedFiles()`（coupling 的落盘文件名是 `joint_point.json` / `coupling_run_record.json`），`run_workflow.js` 按它准备 `args.searchBrief` 并在落盘前核对；`land.js` 放行 `out/coupling/`；`brief_intents.json` 加 `coupling`，两份 schema 的 `stage` 枚举加 `coupling`，`make_brief.js` 因此覆盖七个 stage；`agent_roster.json` 的 `consumers` 补上 `design.coupling`。
 9. **模型覆盖**：联合回放只有 K3 TP32 详细模型；GLM-5.2 与 DeepSeek-V4-Pro 只经由 compute winner 的 kernel 检查覆盖（联合点上起约束作用的是 GLM-5.2 的 DSA indexer）。brief 的禁止项与退出条件要求如实陈述这一点。
-10. **还没接上的下游**：L4 `attribution` 仍按 P1 的约定读发布点（`inputs.pointSource`），L5 也还没有改读 `out/coupling/joint_point.json`；`joint_point.json` 要等真实跑一次 `design.coupling` 并 `--land` 后才存在。改读联合点不在 P5 的范围内，尚未排期。
+10. **下游接线**：P5 本身没有让 L4、L5 改读联合点，这一步随后单独做了，见下面的"设计点接线"。`joint_point.json` 要等真实跑一次 `design.coupling` 并 `--land` 后才存在。
+
+#### 设计点接线（§7 第 3 条，已实现，与上文的出入）
+
+`integration/pipelines/design_point.js`（`npm run workflow:design-point`）；回归测试 `tests/regression/test_tps_attribution.js`（联合点上的卡）、`tests/regression/test_converge_design_point.js`（收敛格的守卫）与 `tests/regression/test_workflow_driver.js`（主循环拒收旧卡）。
+
+1. **一个解析点，不是两份数**。`design_point.js resolve()` 在 `out/coupling/joint_point.json` 已落盘时取联合点，否则取基线发布点；联合点先经 `search_brief.verifyLandedWinner('coupling', …)` 与 `coupling_candidates.json` 核对，核不过即报错，不静默退回发布点。点的身份是它自己的 `{x, opt, model}` 的 sha256，与文件排版无关。
+2. **联合点带着它的整个回放范围**。`coupling_search.js` 的行 `model` 补上了 comm winner 的控制路径（`controlUs`，按集合通信名），并导出 `withPoint({opt, model}, fn)`——联合回放用的就是它。L4 的卡在同一个范围里重放，所以卡上的名义点与联合行逐位相同（当前 Pareto 首行：1004.0378 TPS/usr、raw 851.2637 µs）；范围结束后 `O.OPT` 与模型状态还原，由测试核对。
+3. **L4 读解析点**。`npm run attribution:cards` 默认 `--point auto`，卡的 `inputs.point` 记下点的种类、出处、`optionId`、sha256 与 OPT / 模型补丁；`run_workflow.js attribution` 除基线指纹外再核对这个 sha256，联合点落盘后旧卡被拒收（退出码 1），要重新生成。两处口径写进卡的 `caveats`：软件配置是该点的 OPT（发布 OPT 加联合点的补丁）；卡的 die 面积是详细模型的口径，不含 Comm Core 面积，而联合行的 die 面积含（差 `inputs.point.model.commCoreAreaMm2`，当前 0.104 mm²）。联合点的 `tmaEngines` 是 1，不在原来的步长表里，表里插入该值后再取相邻步。
+4. **L5 不偷换点，而是拦**。Stage B 与 D 组仍由 `stage_b.js` 在 `k3_mc_baseline.json` 上计算；把它们改成直接读联合点等于绕开基线另立一份，这是 ADR 的事，不是接线的事。所以 `design.converge` 现在必须拿到 `args.designPoint`（主循环注入），联合点与基线在任何字段上不同（`departures` 按 `x` / `opt` / `model` 列出，模型补丁对照的是发布回放的默认：向量解包、SFU 的 softmax 8 op、无选项面积、无控制路径）时，**不召集任何 agent** 即返回 `BLOCKED_CONFIG`，`nextActions` 指向 ADR + `baseline:sync`、重跑 `model:planning` 与 D 组。当前 Pareto 首行与基线差 x 6 项、opt 3 项、model 3 项，所以联合点一旦落盘，收敛格就会停在这里，直到基线同步。
+5. **还没做的**：`sync_baseline_spec.js` 只同步终调搜索派生的字段，不会把联合点的 OPT / 模型补丁写进基线——ADR 定下之后要扩它；D 组前五格本身没有加这道守卫，由收官的 `converge` 统一拦。
 
 成本：主链单轮约 L1 ≈ 12、L2 ≈ 6+N、L3 ≈ 5×(4+N) + 4、L4 ≈ 4×6、L5 ≈ 12 个策略实例；N 取 4 时约 110 个，低于现有全量的 300 多个。L4 各维度互相独立，可以并行跑。
 

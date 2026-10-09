@@ -1,7 +1,7 @@
 export const meta = {
   name: 'design-converge',
   description: 'K3 设计 A0 收敛（design.converge）：相关专家回报残余缺口，framing-critic 审视收敛问题本身立得住，gate-keeper 汇总证据完备性，architect 给出 ARCH_FREEZE / DIRECTION_BACKFLOW / D_GATE_PROPOSAL 裁决，invariant-checker 检点后落盘为**提案**（门控结论由 evaluate_gates.js 计算，不由本 workflow 给出）',
-  whenToUse: 'D 组收官格，也是 A0 的扩权节点。需要 args.brief（stage=converge 的 DesignBrief）、args.detailArtifacts（D 组各格落盘产物路径的清单，至少含 detail.integrate 的产物）与可选 args.priorVerdicts（上游各格的裁决汇总）。本 workflow 不跑 stage_b.js、不写既有产物、不改候选寄存器。',
+  whenToUse: 'D 组收官格，也是 A0 的扩权节点。需要 args.brief（stage=converge 的 DesignBrief）、args.detailArtifacts（D 组各格落盘产物路径的清单，至少含 detail.integrate 的产物）、args.designPoint（主循环由 design_point.js 解析的设计点；它与基线不是同一个点时本格不召集 agent，返回 BLOCKED_CONFIG）与可选 args.priorVerdicts（上游各格的裁决汇总）。本 workflow 不跑 stage_b.js、不写既有产物、不改候选寄存器。',
   phases: [
     { title: 'Backflow intake', detail: '相关专家各自回报本域残余缺口，互不可见；拒不归因的残留被显式登记' },
     { title: 'Framing review', detail: 'framing-critic 审视收敛问题本身：问的是不是该问的' },
@@ -78,6 +78,37 @@ if (!Array.isArray(RELEVANT_EXPERTS) || RELEVANT_EXPERTS.length < 1 || RELEVANT_
 const unknownExperts = RELEVANT_EXPERTS.filter((a) => !EXPERT_POOL.includes(a))
 if (unknownExperts.length) {
   throw new Error(`args.relevantExperts 含非专家角色：${unknownExperts.join(', ')}`)
+}
+
+// 设计点（23 号文档 §7.3）：L3 之后各格读联合点，而 D 组的产物是 stage_b.js 在基线
+// （k3_mc_baseline.json）上算的。两者不是同一个点时，D 组审的是另一个设计——
+// 在它上面给出的任何收敛裁决都不成立。这条由脚本拦，不交给 agent 判断；
+// 点由主循环（integration/pipelines/design_point.js）解析并核对后注入，脚本不读文件。
+const DESIGN_POINT = args.designPoint
+if (!DESIGN_POINT || !['published', 'joint'].includes(DESIGN_POINT.kind)) {
+  throw new Error('design.converge 需要 args.designPoint（主循环由 integration/pipelines/design_point.js 解析：'
+    + '联合点已落盘时为 out/coupling/joint_point.json，否则为基线发布点）')
+}
+const POINT_RECORD = {
+  kind: DESIGN_POINT.kind, source: DESIGN_POINT.source, optionId: DESIGN_POINT.optionId || null,
+  sha256: DESIGN_POINT.sha256 || 'UNVERIFIED', departsFromPublished: Boolean(DESIGN_POINT.departsFromPublished),
+}
+if (DESIGN_POINT.departsFromPublished) {
+  const d = DESIGN_POINT.departures || {}
+  const fields = ['x', 'opt', 'model'].flatMap((part) => (d[part] || []).map((f) => `${part}.${f.key}`))
+  return {
+    stage: STAGE, runId: RUN_ID, verdict: 'BLOCKED_CONFIG',
+    reason: `设计点是联合点 ${POINT_RECORD.optionId}（${POINT_RECORD.source}），与基线发布点在 ${fields.length} 个字段上不同`
+      + `（${fields.join(', ')}）；D 组产物由 stage_b.js 在基线上算出，审的不是这个点，收敛格不得在它上面给出裁决`,
+    nextActions: [
+      '以 ADR 把联合点并入基线（x、OPT 补丁与模型补丁：计算域的 unpack / softmax、通信域的控制路径），经 npm run baseline:sync 同步，不手改基线',
+      '基线同步后重跑 npm run model:planning（stage_b.js）与 D 组 design.detail.freeze → design.detail.integrate',
+      '再跑本格；args.designPoint 的 departsFromPublished 为 false 之前本格不会召集任何 agent',
+    ],
+    designPoint: POINT_RECORD,
+    departures: d,
+    files: [],
+  }
 }
 
 const HEAD = [
@@ -563,6 +594,7 @@ const runRecord = {
   runId: RUN_ID,
   sourceCommit: BRIEF.sourceCommit,
   detailArtifacts: DETAIL_ARTIFACTS,
+  designPoint: POINT_RECORD,
   stageCommand: STAGE_COMMAND_FOR_RECORD,
   requiredStages: REQUIRED_STAGES,
   relevantExperts: RELEVANT_EXPERTS.slice().sort(),

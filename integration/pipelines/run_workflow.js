@@ -44,7 +44,9 @@
  *   <workflow>: compute | sram | mc | comm | physical | intake | detail.events | ... (see --list)
  *   direction, compute, sram, mc, comm and physical derive their brief from the budget contract;
  *   --brief overrides that, and every other stage still needs it.
- *   attribution reads out/attribution/<d>_card.json (d = sram | comm | joint) and refuses a stale card.
+ *   attribution reads out/attribution/<d>_card.json (d = sram | comm | joint) and refuses a stale card,
+ *   or one built at another design point than design_point.js resolves (the joint point after L3).
+ *   converge gets args.designPoint (design_point.js) and stops when it is not the baseline's point.
  *   req.budget reads out/requirements/budget_frontier.json and refuses a stale frontier.
  *
  * Exit codes: 0 ran (the workflow's own verdict is in the summary), 1 usage or
@@ -73,6 +75,7 @@ const {checkCitations, checkRangeNumbers} = require('./check_citations');
 const MAKE_BRIEF = require('./make_brief');
 const LEDGER = require('./design_ledger');
 const ATTRIBUTION = require('../detailed/tps_attribution');
+const DESIGN_POINT = require('./design_point');
 const FRONTIER = require('../planning/requirement_frontier');
 
 const root = path.resolve(__dirname, '../..');
@@ -122,7 +125,8 @@ function makeBackend(name, flags) {
   }
 }
 
-function prepareArgs(workflow, flags) {
+// `designPoint` resolves the point the stages after L3 read (design_point.js); tests inject one.
+function prepareArgs(workflow, flags, {designPoint = () => DESIGN_POINT.resolve()} = {}) {
   const args = flags.args ? readJson(flags.args) : {};
   args.repo = args.repo || root;
   if (flags['run-id']) args.runId = flags['run-id'];
@@ -169,8 +173,17 @@ function prepareArgs(workflow, flags) {
     if (!card.inputs || card.inputs.baselineSha256 !== baselineSha256) {
       throw new Error(`${cardPath} is stale (built from another ${ATTRIBUTION.BASELINE_FILE}); run npm run attribution:cards`);
     }
+    // After L3 the card must be at the joint point: one built at the published point (or at an
+    // older joint point) answers a question about a design nobody is building any more.
+    const point = designPoint();
+    if (!card.inputs.point || card.inputs.point.sha256 !== point.sha256) {
+      throw new Error(`${cardPath} was built at another design point than ${point.source}; run npm run attribution:cards`);
+    }
     Object.assign(args, {dimension, card, cardPath, cardSha256: sha256(text)});
   }
+  // design.converge proposes on the D group's artifacts, which Stage B builds from the baseline.
+  // It gets the design point the stages after L3 read, and stops when the two are not the same point.
+  if (workflow === 'converge') args.designPoint = designPoint();
   // design.req.budget reads the budget frontier (npm run budget:frontier) the same way: whole,
   // and refused when any input it was built from has changed since.
   if (workflow === 'req.budget') {
@@ -264,7 +277,7 @@ async function main(argv, deps = {}) {
   let args;
   let backend;
   try {
-    args = prepareArgs(workflow, flags);
+    args = prepareArgs(workflow, flags, deps);
     backend = deps.backend || makeBackend(flags.backend, flags);
   } catch (error) {
     console.error(error.message);

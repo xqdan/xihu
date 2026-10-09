@@ -23,6 +23,7 @@
     "physical:search": "node integration/pipelines/generate_physical_design.js",
     "workflow:brief": "node integration/pipelines/search_brief.js brief",
     "workflow:design-brief": "node integration/pipelines/make_brief.js",
+    "workflow:design-point": "node integration/pipelines/design_point.js",
     "workflow:ledger": "node integration/pipelines/design_ledger.js --show",
     "workflow:ledger-check": "node integration/pipelines/design_ledger.js --check",
     "workflow:verify-landed": "node integration/pipelines/search_brief.js verify",
