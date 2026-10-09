@@ -1,6 +1,6 @@
 # Tests
 
-`npm test` runs every `test_*.js` in the groups below (`node tests/run_all.js [group ...]` runs a subset; `npm run test:<group>` for one group).
+`npm test` runs every `test_*.js` in the groups below (`node tests/run_all.js [group ...]` runs a subset; `npm run test:<group>` for one group). Test files run as separate processes, up to `min(8, cores - 1)` at a time; `--jobs=N` or `TEST_JOBS=N` changes that and `--jobs=1` restores the serial order. A file's output is printed when it finishes, and the first failure stops the run with that file's exit code. Tests must therefore write only to per-process temp paths (the one exception, the working-tree probe in `test_workflow_driver.js`, is ignored by the copy in `test_regeneration_reproducible.js`).
 
 | Group | Checks |
 |---|---|

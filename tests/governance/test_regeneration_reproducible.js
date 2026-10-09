@@ -23,6 +23,10 @@ const {spawnSync} = require('child_process');
 
 const root = path.resolve(__dirname, '../..');
 const COPY_EXCLUDE = new Set(['.git', 'archive', 'node_modules', 'scratch', 'coverage', '.tmp']);
+// test_workflow_driver.js writes this file into the working tree for a moment (and removes it)
+// to check that the driver notices. It is not part of the repository's content, and when the
+// test files run in parallel the copy below must not race its creation and removal.
+const COPY_EXCLUDE_FILES = new Set([path.join(root, 'tests/regression/__driver_write_probe.txt')]);
 const REGENERATE_SCRIPTS = ['workload:requirements', 'aicore:search', 'commcore:search', 'memory:search', 'sram:search', 'physical:search', 'coupling:search', 'model:planning'];
 
 const readJson = (base, relativePath) => JSON.parse(fs.readFileSync(path.join(base, relativePath), 'utf8'));
@@ -57,7 +61,7 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'k3-regen-'));
 try {
   fs.cpSync(root, tmp, {
     recursive: true,
-    filter: source => !COPY_EXCLUDE.has(path.basename(source)) || path.dirname(source) !== root
+    filter: source => !COPY_EXCLUDE_FILES.has(source) && (!COPY_EXCLUDE.has(path.basename(source)) || path.dirname(source) !== root)
   });
 
   for (const name of REGENERATE_SCRIPTS) {
