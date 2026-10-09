@@ -38,9 +38,17 @@ const TAU_SENSITIVITY_US = [TAU_US, 1.5, 2.0];
 
 // Uncalibrated lane times. model = {rows: [[operatorId, coreClass, globalFlops, globalBytes, bytesClass]], collectivesPerToken, layers}.
 // variation.tauUs overrides the collective floor (tau sensitivity); the other keys scale the lanes.
-function laneTimes(model, {tp, physicalProfile, mcProfile}, variation = NOMINAL) {
-  const peak = RES.coreProfiles[physicalProfile].peakByCore;
-  const mcBytesPerSecond = RES.mcProfiles[mcProfile].effectiveBytesPerSecond * variation.bandwidth;
+//
+// The slot names a hardware point in two ways (ADR-0021, L2 arch.direction):
+//   * by profile id -- {physicalProfile, mcProfile} look the point up in the single spec;
+//   * or by carrying the point -- {peakByCore, memoryBytesPerSecond} for a morphology the spec
+//     does not enumerate. A morphology is a shape the spec has no id for, and synthesizing a
+//     fake coreProfiles entry for it would put a non-manufacturable point into the profile
+//     table every other consumer reads. Carrying it on the slot keeps it local to one slot.
+// The carried form wins when both are present; a slot must supply one of the two.
+function laneTimes(model, {tp, physicalProfile, mcProfile, peakByCore, memoryBytesPerSecond}, variation = NOMINAL) {
+  const peak = peakByCore || RES.coreProfiles[physicalProfile].peakByCore;
+  const mcBytesPerSecond = (memoryBytesPerSecond || RES.mcProfiles[mcProfile].effectiveBytesPerSecond) * variation.bandwidth;
   const tauUs = variation.tauUs === undefined ? TAU_US : variation.tauUs;
   const computeUsByCore = {};
   let memoryUs = 0, expertMemoryUs = 0, memoryBytes = 0, collectiveBytes = 0;
@@ -249,11 +257,12 @@ function planningModel(workload, modelId, variant) {
   return {rows: v.rows, collectivesPerToken: v.collectivesPerToken, layers: v.layers};
 }
 
-// Operator that dominates the bounding lane of a slotTime() result.
-function boundingOperator(model, {physicalProfile}, result) {
+// Operator that dominates the bounding lane of a slotTime() result. Takes the same carried
+// peak as laneTimes(): a morphology slot has no coreProfiles entry to look up.
+function boundingOperator(model, {physicalProfile, peakByCore}, result) {
   const rows = model.rows.filter(r => (result.bound === 'collective') === (r[4] === 'collective'));
   if (result.bound === 'compute') {
-    const peak = RES.coreProfiles[physicalProfile].peakByCore;
+    const peak = peakByCore || RES.coreProfiles[physicalProfile].peakByCore;
     return rows.reduce((a, b) => b[2] / peak[b[1]] > a[2] / peak[a[1]] ? b : a)[0];
   }
   return rows.reduce((a, b) => b[3] > a[3] ? b : a)[0];

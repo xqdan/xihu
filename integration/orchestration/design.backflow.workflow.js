@@ -1,7 +1,7 @@
 export const meta = {
   name: 'design-backflow',
-  description: 'K3 设计 backflow 阶段（E 组）：把 detail.integrate 的 delta 归因变成方向级回流——integrator 归纳→被归因专家逐条认领→architect 判该不该回流→framing-critic 检回流框定是否成立；产物落 out/governance/',
-  whenToUse: 'E 组。需要 args.brief（stage=backflow）与 args.attribution（detail.integrate 的 delta 归因产物路径或对象）。attribution 为空时本格无事可做，直接返回 nextActions 而不是假装跑一轮。',
+  description: 'K3 设计 backflow 阶段（E 组）：把 design.integrate 的 delta 归因变成方向级回流——integrator 归纳→被归因专家逐条认领→architect 判该不该回流→framing-critic 检回流框定是否成立；产物落 out/governance/',
+  whenToUse: 'E 组。需要 args.brief（stage=backflow）与 args.attribution（design.integrate 的 delta 归因产物路径或对象）。attribution 为空时本格无事可做，直接返回 nextActions 而不是假装跑一轮。',
   phases: [
     { title: 'Attribution triage', detail: 'integrator 把 delta 归因归纳成可追责的条目；无归因即无回流' },
     { title: 'Expert claim', detail: '被归因专家逐条认领，1–3 个实例，只认属于自己的条目' },
@@ -23,11 +23,11 @@ export const meta = {
 // 它产出的是**方向级回流提案**，由人决定是否据此重跑 Stage A。
 // 把判断和计算混在一格里，两边都会退化。
 //
-// 触发条件来自上游：design.detail.integrate 的 DELTA_UNEXPLAINED，
+// 触发条件来自上游：design.integrate 的 DELTA_UNEXPLAINED，
 // 或 design.verify 的 architect 判 DIRECTION_BACKFLOW。两者都指向同一个问题——
 // "细化结果与方向级预期对不上"。对不上有两种可能：
 //   (a) 方向选错了 —— 要回流；
-//   (b) 细化本身错了 —— 该回 detail，不该动方向。
+//   (b) 细化本身错了 —— 该回 design.integrate，不该动方向。
 // 本格的职责就是分清这两种，并且**允许结论是"不用回流"**。
 // 一个只会说"要回流"的回流器，会把每个细化瑕疵都升级成方向重做。
 //
@@ -82,7 +82,7 @@ const ATTRIBUTION_JSON = typeof ATTRIBUTION === 'string'
 // ---------------------------------------------------------------------------
 // 归因条目的规范化。
 //
-// 上游 detail.integrate 的归因条目字段名在本仓里已存在（见 B4 的 delta 归因），
+// 上游 design.integrate 的归因条目字段名在本仓里已存在（见其 B4 块的 delta 归因），
 // 这里只做**读取容忍**，不重命名、不补默认值：缺字段就是缺字段，
 // 静默补一个 "unknown" 会让"这条归因没写清归谁"变成一个看起来正常的条目。
 // ---------------------------------------------------------------------------
@@ -213,7 +213,7 @@ const RULING_SCHEMA = {
         properties: {
           candidateId: { type: 'string' },
           assumption: { type: 'string', description: '要重做的那条假设' },
-          reworkFrom: { type: 'string', description: '从哪一格开始重做：direction / dgate / compute / memory / comm / physical' },
+          reworkFrom: { type: 'string', description: '从哪一格开始重做：arch.direction / compute / memory / comm / physical' },
         },
       },
     },

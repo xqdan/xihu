@@ -37,7 +37,7 @@
  * Usage:
  *   node integration/pipelines/make_brief.js <stage> [--contract f] [--split S-CMP] [--run-id id] [--provenance]
  *   node integration/pipelines/make_brief.js --list
- *   stage: direction | compute | sram | mc | comm | physical | coupling   (the L1 contract's consumers)
+ *   stage: req.workload | arch.direction | compute | sram | mc | comm | physical | coupling   (the L1 contract's consumers)
  * Exit codes: 0 the brief was built, 1 no contract and no committed brief, or the built brief
  * does not satisfy teams/council/inputs/design_brief.schema.json, 2 usage.
  */
@@ -270,7 +270,7 @@ function flagValue(flags, name) {
 function main(argv) {
   const [stage, ...flags] = argv;
   if (!stage || stage === '--help') {
-    console.error('usage: make_brief.js <direction|compute|sram|mc|comm|physical|coupling> [--contract f] [--split S-CMP] [--run-id id] [--provenance]');
+    console.error('usage: make_brief.js <req.workload|arch.direction|compute|sram|mc|comm|physical|coupling> [--contract f] [--split S-CMP] [--run-id id] [--provenance]');
     return 2;
   }
   try {

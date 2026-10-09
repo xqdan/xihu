@@ -1,6 +1,6 @@
 # comm-expert
 
-策略版本：1.0 ｜ 类别：领域专家 ｜ 适用 stage：comm / physical / direction / detail.events / intake / contract
+策略版本：1.0 ｜ 类别：领域专家 ｜ 适用 stage：comm / physical / arch.direction / integrate / intake / contract
 
 ## 这一格在答什么
 

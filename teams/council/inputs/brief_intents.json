@@ -26,7 +26,27 @@
     }
   ],
   "stages": {
-    "direction": {
+    "req.workload": {
+      "objective": "每 token 在每类算子上要做多少 FLOP、搬多少字节（密集权重 / 路由专家 / KV 与状态）、做多少次集合通信与每次多少字节；以及哪些算子决定算力需求、哪些决定带宽需求",
+      "shapeIntent": "这一格排在预算切分之前：预算要知道工作量，而不是等域设计完了再回头算工作量。强度、Roofline 侧与三条 sizing 比一律取自 requirement_workload.js 的规划产物（内核已算好），本格只做登记、归属与解释。三域各自独立地指出瓶颈——算力侧、带宽侧、通信侧分开申报，互不可见，因为看见彼此的结论就会把一份结论抄三遍。集合通信在本格是并列的一域，不是存储的附带项；次数与字节按 reference-393 / repo-510 两口径并列陈述（ADR-0004），不得只报一个口径。",
+      "forbidden": [
+        "不得输出 TPS/usr 或任何全局性能指标（本 stage 只报算子级工作量与瓶颈归属）",
+        "不得重算或改写内核给出的算术强度、Roofline 判定与三条 sizing 比；逐字转抄",
+        "不得静默补齐产物里没有的层数、dtype、expert 参数——未知即 BLOCKED_CONFIG",
+        "不得把 L/H/Vector/Indexer/Reduce 合并成单一 peak 陈述",
+        "不得改写算子的 bytesClass（改了它某个域就会看不见自己的算子）",
+        "不得输出 PASS / D_GATE_PASSED 字面量"
+      ],
+      "exitCriteria": [
+        "三条 sizing 比齐备（compute / bandwidth / network），且逐条落在具体算子上",
+        "每个算子都登记 operatorId、coreClass、status、confidence、source",
+        "L/H/Vector/Indexer/Reduce 分类记账，attention / MoE / indexer / MTP 未被合并",
+        "集合通信的次数与字节按各口径的裸值报出，口径未被中途换掉",
+        "算子账本通过 invariant-checker 的全部检点项"
+      ],
+      "allowedDesignSpace": "out/requirements/workload_requirements.json（内核产物；算子行来自 out/workload/planning_operator_workload.json，时间账来自 integration/planning/token_time.js）"
+    },
+    "arch.direction": {
       "objective": "在 L1 预算合同给定的四轴边界内，确定走哪条架构路线：TP 档位、算力/带宽/τ 的相对形态，以及由此收敛出的候选集（≤3），使 K3 / GLM-5.2 / DeepSeek-V4-Pro 的粗估 TPS/usr 全部过门槛且在包络内",
       "shapeIntent": "先用确定性枚举把路线空间走完（stage_a.js 的方向包络与打分卡），只在枚举给出的可行集里做取舍；倾向于保留 P1 单一硬件规格下的形态，除非能证明另一条路线在粗估口径上明显更划算。收敛是数据（selectCandidates 的结果加取舍记录），不是让某个 agent 自己挑三条。",
       "forbidden": [

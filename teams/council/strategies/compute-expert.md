@@ -1,6 +1,6 @@
 # compute-expert
 
-策略版本：1.0 ｜ 类别：领域专家 ｜ 适用 stage：compute / direction / detail.workload / detail.events / intake / contract
+策略版本：1.0 ｜ 类别：领域专家 ｜ 适用 stage：compute / arch.direction / req.workload / integrate / intake / contract
 
 ## 这一格在答什么
 

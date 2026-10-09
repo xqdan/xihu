@@ -35,6 +35,7 @@ const RES = require('../../teams/hardware/src/resource_profiles');
 const TT = require('../planning/token_time');
 const ENVELOPE = require('../planning/directional_envelope');
 const IDS = require('../planning/run_ids');
+const MORPH = require('../planning/morphology');
 
 const root = path.resolve(__dirname, '../..');
 const read = relativePath => JSON.parse(fs.readFileSync(path.join(root, relativePath), 'utf8').replace(/^﻿/, ''));
@@ -69,7 +70,12 @@ const sourceInputs = {
   envelope: hashFile('integration/planning/directional_envelope.js'),
   gateValidator: hashFile('integration/governance/evaluate_gates.js'),
   modelProfiles: hashFile('teams/model/inputs/model_profiles.json'),
-  mcSpec: hashFile('teams/hardware/inputs/k3_mc_baseline.json')
+  mcSpec: hashFile('teams/hardware/inputs/k3_mc_baseline.json'),
+  // The morphology table is scored entry by entry against this contract, so the table is a
+  // statement about a particular budget. Recording the hash makes "which contract was this
+  // table scored against" answerable without trusting the file's current contents.
+  l1Contract: hashFile('out/requirements/budget_frontier.json'),
+  morphologyModel: hashFile('integration/planning/morphology.js')
 };
 
 const {coreProfiles, mcProfiles} = RES;
@@ -178,6 +184,120 @@ for (const physicalProfile of RES.PHYSICAL_PROFILES) {
   }
 }
 
+// --- L2 (design.arch.direction): the morphology macro-parameters --------------------------
+//
+// The published grid above varies only MC tier and TP at the frozen P1 shape. L2 asks the
+// coarser question -- which SHAPE should the package be -- so the same token-time authority
+// is applied to the morphology space in integration/planning/morphology.js:
+//   * L/H 算力配比, 片上 SRAM 总量与 local/shared 切分, MC 档位, die 数, TP;
+//   * area / power from A.physical(x, dies) rescaled to the contract's SF4/liquid basis;
+//   * TPS/usr from TT.slotTime() with the shape's peaks and MC bandwidth carried on the slot;
+//   * the L1 contract (the default split) marked entry by entry: 满足 / 差多少.
+//
+// Two deliberate separations from the grid:
+//   * A morphology is scored against the CONTRACT, not folded into candidateSummaries.
+//     evaluateDirectionGate's candidateCountLe3 check counts formal selections, and folding
+//     25 more candidates into the ranking would let a shape the project has not committed to
+//     displace the published candidates on a planning estimate. The grid still decides the
+//     D-Gate; the morphology table informs the L2 decision and the L2 budget.
+//   * The contract is read, never recomputed. B-AREA's limits, B-SRAM-CAP's depth and the
+//     target all come from the split entry, so a contract change moves this table with it.
+const CONTRACT_FILE = 'out/requirements/budget_frontier.json';
+if (!fs.existsSync(path.join(root, CONTRACT_FILE))) {
+  throw new Error(`${CONTRACT_FILE} is missing; run npm run budget:frontier (the morphology table is scored against the default split)`);
+}
+const contractSplit = read(CONTRACT_FILE).splits.find(s => s.splitId === 'S-CMP');
+if (!contractSplit) throw new Error(`${CONTRACT_FILE} carries no S-CMP split; run npm run budget:frontier`);
+const l1Contract = contractSplit.contract;
+const morphologyModels = {};
+for (const model of manifest.models) {
+  const planning = TT.planningModel(workload, model.modelId);
+  if (planning) morphologyModels[model.modelId] = planning;
+}
+const morphology = MORPH.enumerate().map(item => MORPH.evaluate(item, {models: morphologyModels, calibration, contract: l1Contract}));
+const morphologyBySatisfied = morphology.slice().sort((a, b) =>
+  a.misses.length - b.misses.length || b.minTpsPerUser - a.minTpsPerUser || a.morphologyId.localeCompare(b.morphologyId));
+const morphologySummary = {
+  contract: {
+    splitId: contractSplit.splitId,
+    source: 'out/requirements/budget_frontier.json',
+    targetTpsPerUser: l1Contract.target.tpsPerUser,
+    architectureGateTpsPerUser: l1Contract.target.architectureGate,
+    entries: l1Contract.split.map(e => ({id: e.id, quantity: e.quantity, min: e.min === undefined ? null : e.min, max: e.max === undefined ? null : e.max, set: e.set || null}))
+  },
+  axes: {
+    lhRatios: MORPH.LH_RATIOS,
+    localSram: MORPH.LOCAL_SRAM,
+    sharedMiB: MORPH.SHARED_MIB,
+    mcTiers: MORPH.MC_TIERS,
+    dies: MORPH.DIES,
+    tps: MORPH.TPS
+  },
+  baseline: {source: `${MORPH.PUBLISHED_POINT_FILE}${MORPH.PUBLISHED_POINT}`, x: MORPH.BASELINE_X},
+  candidateCount: morphology.length,
+  satisfiesEveryEntry: morphology.filter(m => !m.misses.length).map(m => m.morphologyId),
+  meetsTarget: morphology.filter(m => m.meetsTarget).map(m => m.morphologyId),
+  meetsArchitectureGate: morphology.filter(m => m.meetsArchitectureGate).map(m => m.morphologyId),
+  bestByContract: morphologyBySatisfied.length ? morphologyBySatisfied[0].morphologyId : null,
+  rows: morphology
+};
+
+// L2_budget.json: the L2 layer's refinement of the L1 contract. L2 owns the SRAM split and the
+// package shape, so B-SRAM-CAP -- which L1 states as one number -- becomes two: the per-die
+// local total and the per-die shared window, with the window each morphology actually needs for
+// its expert working set. Same schema as L1, one layer down; L1's entries are carried as
+// inherited, not restated, so there is still exactly one copy of an L1 number.
+const sramCap = l1Contract.split.find(e => e.id === 'B-SRAM-CAP');
+const inherited = l1Contract.split.filter(e => e.id !== 'B-SRAM-CAP').map(e => ({
+  id: e.id,
+  layer: 'L1',
+  quantity: e.quantity,
+  min: e.min === undefined ? null : e.min,
+  max: e.max === undefined ? null : e.max,
+  set: e.set || null,
+  relationship: 'INHERITED'
+}));
+const l2Budget = {
+  schemaVersion: 'budget-contract-v0.1',
+  layer: 'L2',
+  splitId: contractSplit.splitId,
+  sourceContract: {layer: 'L1', splitId: contractSplit.splitId, path: 'out/requirements/budget_frontier.json'},
+  target: l1Contract.target,
+  // B-SRAM-CAP, refined. The window L1 requires per die is what L2 must place shared; the local
+  // half is the per-core SRAM the spec's core shapes already fix, reported so the split is total.
+  split: [
+    {
+      id: 'L2-SRAM-LOCAL',
+      quantity: 'on-chip local SRAM per die (L cores x lMiB + H cores x hMiB)',
+      layer: 'L2',
+      min: Math.min(...morphology.map(m => m.axes.localMiBPerDieTotal)),
+      basis: 'per-core local SRAM sizes the spec fixes (computeDieCandidate lCore/hCore localSramMiB), summed over the cores per die',
+      atBaseline: morphology.find(m => m.morphologyId === 'P1-compact-MC640-TP32').axes.localMiBPerDieTotal
+    },
+    {
+      id: 'L2-SRAM-SHARED',
+      quantity: 'shared SRAM window per die',
+      layer: 'L2',
+      min: sramCap.min,
+      max: null,
+      depth: sramCap.depth,
+      refines: 'B-SRAM-CAP',
+      basis: sramCap.basis || null,
+      note: 'L2 may choose the split; the floor is L1\'s B-SRAM-CAP and the window must still hold the expert working set at depth',
+      holdsBySharedMiB: sramCap.holdsBySharedMiB || null,
+      satisfiesFloor: morphology.filter(m => m.axes.sharedMiBPerDie >= sramCap.min).map(m => m.morphologyId),
+      missesFloor: morphology.filter(m => m.axes.sharedMiBPerDie < sramCap.min).map(m => ({morphologyId: m.morphologyId, shortfallMiB: sramCap.min - m.axes.sharedMiBPerDie}))
+    }
+  ],
+  inherited,
+  morphology: {
+    count: morphology.length,
+    satisfiesEveryEntry: morphologySummary.satisfiesEveryEntry,
+    bestByContract: morphologySummary.bestByContract,
+    table: 'out/direction/directional_tps_scorecard.json#/morphology'
+  }
+};
+
 const candidateIds = [...new Set(candidates.map(item => item.candidateId))];
 const candidateSummaries = candidateIds.map(candidateId => {
   const rows = candidates.filter(item => item.candidateId === candidateId);
@@ -275,7 +395,7 @@ const env = {
 const direction = {
   schemaVersion: 'directional-tps-scorecard-v0.5',
   runId,
-  stage: 'direction',
+  stage: 'arch.direction',
   agentId: 'D7',
   targetTpsPerUser: target,
   architectureGateTpsPerUser: architectureGate,
@@ -296,6 +416,9 @@ const direction = {
   candidateSummaries,
   comparisonRows,
   sensitivitySweep: sweepSummary,
+  // The morphology macro-parameter space, scored against the default L1 contract. This is the
+  // L2 decision's input; the D-Gate below still reads only the published grid.
+  morphology: morphologySummary,
   dGate: null,
   blockers: [],
   nextActions: ['Run formal Stage B event model for the selected candidates.', 'Close Q-Gate with shared manifest, event traces and provenance.']
@@ -350,6 +473,10 @@ const register = {
 direction.dGate = evaluateDirectionGate(env, direction, register);
 
 write('out/direction/directional_tps_scorecard.json', direction);
+// L2's own budget. It is emitted HERE, from the same run that scored the morphologies, because
+// L2_budget.json is a decision input for design.arch.direction's agents -- a budget a later agent
+// wrote would be an agent filling in its own constraint.
+write('out/budget/L2_budget.json', l2Budget);
 write('out/governance/candidate_register.json', register);
 write('out/governance/formal_manifest_binding.json', {
   schemaVersion: 'formal-manifest-binding-v0.1',
@@ -446,8 +573,26 @@ const report = [
   }) : ['- none (no candidate reaches the target for every model, or the D-Gate is blocked)']),
   ...(register.formalSelectedCandidates.length ? [] : ['', `Exploratory Stage B candidates (policy-ranked, not formally selected): ${selection.exploratory.map(id => `\`${id}\``).join(', ')}`]),
   ...selection.reference.map(r => `- Reference (not formal): \`${r.candidateId}\`, worst ${r.worstModel} ${r.minTpsPerUser.toFixed(2)} TPS/usr; misses: ${r.missesTargetModels.map(m => `${m.modelId} ${m.tpsPerUser.toFixed(1)} (${(m.fractionOfTarget * 100).toFixed(0)}%)`).join(', ')}.`),
+  '',
+  `## L2 morphology space (${morphology.length} shapes, scored against ${morphologySummary.contract.splitId})`,
+  '',
+  `Axes: L/H ratio ${MORPH.LH_RATIOS.map(r => `${r[0]}+${r[1]}`).join(' / ')}; local SRAM ${MORPH.LOCAL_SRAM.map(r => `${r[0]}/${r[1]} MiB`).join(' / ')} per L/H core; shared ${MORPH.SHARED_MIB.join(' / ')} MiB per die; MC ${MORPH.MC_TIERS.join(' / ')}; dies ${MORPH.DIES.join(' / ')}; TP ${MORPH.TPS.join(' / ')}. Everything else is the published point ${MORPH.PUBLISHED_POINT_FILE}${MORPH.PUBLISHED_POINT}.`,
+  '',
+  `Area and power from \`A.physical(x, dies)\` rescaled by \`k3_physical_basis.resize\`; TPS/usr from token time with the shape's peaks and MC bandwidth carried on the slot. Both are the SAME authorities the published grid uses, so a row here is comparable with a row above.`,
+  '',
+  '| Morphology | L/H | local/shared MiB per die | MC | dies | TP | die mm2 (max 400) | die W (max 300) | card W (max 2800) | package mm2 (max 5248) | worst min TPS | worst model | contract |',
+  '|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|',
+  ...morphologyBySatisfied.map(m => {
+    const a = m.axes, p = m.physical;
+    const contract = m.misses.length ? `misses ${m.misses.map(x => `${x.id} by ${x.shortfall.toFixed(x.id === 'B-AREA' ? 1 : 3)}`).join(', ')}` : 'all entries satisfied';
+    return `| \`${m.morphologyId}\` | ${a.lCoresPerDie}+${a.hCoresPerDie} | ${a.localMiBPerDieTotal}/${a.sharedMiBPerDie} | ${a.mcTier} | ${a.dies} | ${a.tp} | ${p.dieAreaMm2.toFixed(1)}${p.limits.dieAreaMm2.satisfied ? '' : ' **OVER**'} | ${p.diePowerW.toFixed(1)}${p.limits.diePowerW.satisfied ? '' : ' **OVER**'} | ${p.cardPowerW.toFixed(0)}${p.limits.cardPowerW.satisfied ? '' : ' **OVER**'} | ${p.packageAreaMm2.toFixed(0)}${p.limits.packageAreaMm2.satisfied ? '' : ' **OVER**'} | ${m.minTpsPerUser.toFixed(1)} | ${m.worstModel} | ${contract} |`;
+  }),
+  '',
+  `- ${morphologySummary.satisfiesEveryEntry.length} of ${morphology.length} shapes satisfy every L1 contract entry; ${morphologySummary.meetsTarget.length} reach ${morphologySummary.contract.targetTpsPerUser} TPS/usr for every model. Best by contract: ${morphologySummary.bestByContract ? `\`${morphologySummary.bestByContract}\`` : 'none'}.`,
+  '- A row that misses B-AREA is NOT dropped: the package area it would need is the number "差多少" is asking for, and a silently absent shape reads as an option nobody considered.',
+  `- The D-Gate above is computed over the published grid only. This table informs the L2 decision (out/direction/direction_selected.json) and refines the contract into out/budget/L2_budget.json; it does not select candidates.`,
   ''
 ].join('\n');
 fs.mkdirSync(path.join(root, 'out/direction'), {recursive: true});
 fs.writeFileSync(path.join(root, IDS.stageAReport), `${report}\n`, 'utf8');
-console.log(JSON.stringify({runId, manifestHash, candidateCount: candidates.length, selected: register.formalSelectedCandidates, reference: selection.reference.map(r => r.candidateId), dGate: gateStatus.directionGate.decision, sweepSamples: sweep.length, feasibleCount: sweepSummary.feasibleCount}, null, 2));
+console.log(JSON.stringify({runId, manifestHash, candidateCount: candidates.length, selected: register.formalSelectedCandidates, reference: selection.reference.map(r => r.candidateId), dGate: gateStatus.directionGate.decision, sweepSamples: sweep.length, feasibleCount: sweepSummary.feasibleCount, morphologies: morphology.length, morphologiesSatisfyingContract: morphologySummary.satisfiesEveryEntry.length, bestMorphologyByContract: morphologySummary.bestByContract}, null, 2));

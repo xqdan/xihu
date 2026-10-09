@@ -1,7 +1,7 @@
 {
   "schemaVersion": "directional-tps-scorecard-v0.5",
   "runId": "stage-a-20261002-token-time",
-  "stage": "direction",
+  "stage": "arch.direction",
   "agentId": "D7",
   "targetTpsPerUser": 1000,
   "architectureGateTpsPerUser": 1050,
@@ -30,17 +30,19 @@
   "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
   "inputHashes": {
     "manifest": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
-    "operatorWorkload": "242c9d6ece485c81650d2d325a3cc51a56d763c1c2251984398ca5d8753d56a2",
-    "runner": "f2964ccda38f71ed4be6cc255170c1df153e268c9e749065eacc429b5f023ece",
+    "operatorWorkload": "8d4b1bb8c647f779dd3dc5a9c6405d74fc09c5cf7e2f68bed4414ec9239cfad7",
+    "runner": "b2efb96803dd51ff093a31150635ad6edf44d30852bca6f1bd9c987cdc7d72de",
     "resourceProfiles": "4082c03570d863b6a4f5e76d5a161a1de2fbbb911b80b385fab0f1be860b9cae",
-    "tokenTime": "4109e8879ceaf9be0f8bd426a736d8c0891ea240610f06017d8d26373e7bbd46",
-    "envelope": "a5f1b78d6d10e7401914e400daac2e8943103f0dadac258407243b0f1d19ef42",
-    "gateValidator": "f8071b61c3af9805466422b1977374f4608b9eb6342c21bd3042fc144d89d12a",
+    "tokenTime": "3b8045142e624e325e0fbb19708280ae6e5020144cc9016a20beb5625c44b327",
+    "envelope": "d557eea5732489c092556560430e56d87f2c73f7ae59d90faccb511832d1f950",
+    "gateValidator": "e566297c29e2d1f388030d1f0a80d8190467c2d3030dd37858699d164def131f",
     "modelProfiles": "2fcd288d537fad43c417db08d239b74519c01a05da50e9a04ea6bb626f673a73",
-    "mcSpec": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49"
+    "mcSpec": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "l1Contract": "a297fe8e66c29953ffd1ce9cc06fa562df2668cd6bd6d2ebc2f5b902b808538e",
+    "morphologyModel": "eee9afe536ac5bbcf9140fed51830858af86620fcf539b73adaeb1c475355990"
   },
   "provenance": {
-    "sourceCommit": "8b8d057f0991768881e5b704f7650e8faa8f2887",
+    "sourceCommit": "f9e05202394a7038cd52f692d45aaba4b62bb300",
     "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
     "seed": 20261002,
     "runId": "stage-a-20261002-token-time",
@@ -2115,6 +2117,4258 @@
         "memoryLaneUs": 775.3004419656204,
         "serialLaneUs": 753.3986824792746,
         "feasible": true
+      }
+    ]
+  },
+  "morphology": {
+    "contract": {
+      "splitId": "S-CMP",
+      "source": "out/requirements/budget_frontier.json",
+      "targetTpsPerUser": 1000,
+      "architectureGateTpsPerUser": 1050,
+      "entries": [
+        {
+          "id": "B-MEM-BW",
+          "quantity": "mcPayloadGBsPerCube",
+          "min": 640,
+          "max": null,
+          "set": "fixed by split"
+        },
+        {
+          "id": "B-SERIAL-CMP",
+          "quantity": "computeScale",
+          "min": 0.7444854736328125,
+          "max": null,
+          "set": "derived"
+        },
+        {
+          "id": "B-TAU",
+          "quantity": "tauUs",
+          "min": null,
+          "max": 1.15,
+          "set": "fixed by split"
+        },
+        {
+          "id": "B-SRAM-CAP",
+          "quantity": "sharedMiBPerDie",
+          "min": 16,
+          "max": null,
+          "set": "derived"
+        },
+        {
+          "id": "B-AREA",
+          "quantity": "dieAreaMm2",
+          "min": null,
+          "max": 400,
+          "set": "k3_physical_basis.BASIS.limits"
+        }
+      ]
+    },
+    "axes": {
+      "lhRatios": [
+        [
+          8,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          16,
+          4
+        ],
+        [
+          8,
+          8
+        ],
+        [
+          8,
+          12
+        ],
+        [
+          8,
+          16
+        ]
+      ],
+      "localSram": [
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          4
+        ],
+        [
+          4,
+          4
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          8
+        ]
+      ],
+      "sharedMiB": [
+        8,
+        12,
+        16,
+        20,
+        24,
+        32
+      ],
+      "mcTiers": [
+        "MC320",
+        "MC640"
+      ],
+      "dies": [
+        4,
+        6,
+        8
+      ],
+      "tps": [
+        8,
+        16,
+        32
+      ]
+    },
+    "baseline": {
+      "source": "out/rdma/k3_rdma_final_tuning_results.json#/search/best/x",
+      "x": {
+        "nL": 8,
+        "nH": 4,
+        "lRows": 1,
+        "lCols": 256,
+        "lEngines": 8,
+        "hRows": 48,
+        "hCols": 128,
+        "hEngines": 5,
+        "ghz": 1,
+        "vectorLanes": 512,
+        "lMiB": 1,
+        "hMiB": 4,
+        "lBanks": 64,
+        "hBanks": 64,
+        "bankBytes": 64,
+        "sharedMiB": 16,
+        "sharedSlices": 16,
+        "tmaEngines": 4,
+        "tmaBytes": 512,
+        "nocBytes": 256,
+        "nocLanes": 4,
+        "reduceLanes": 4096,
+        "ucieLanes": 128,
+        "ucieGbps": 64,
+        "mcGBs": 640,
+        "rdmaLanes": 16,
+        "weightTileMiB": 8,
+        "kvTile": 32768,
+        "headTile": 96,
+        "depth": 4,
+        "windowFraction": 1
+      }
+    },
+    "candidateCount": 25,
+    "satisfiesEveryEntry": [
+      "P1-compact-MC640-TP8",
+      "P1-compact-MC640-TP16",
+      "P1-compact-MC640-TP32",
+      "P1-compact-N12x4-MC640-TP32",
+      "P1-compact-L1H4S20-MC640-TP32",
+      "P1-compact-L1H4S24-MC640-TP32",
+      "P1-compact-L1H4S32-MC640-TP32",
+      "P1-compact-L2H4S16-MC640-TP32",
+      "P1-compact-L4H4S16-MC640-TP32",
+      "P1-compact-L1H2S16-MC640-TP32",
+      "P1-compact-L1H8S16-MC640-TP32",
+      "P1-compact-D6-MC640-TP32"
+    ],
+    "meetsTarget": [
+      "P1-compact-MC640-TP32",
+      "P1-compact-N4x4-MC640-TP32",
+      "P1-compact-N12x4-MC640-TP32",
+      "P1-compact-N16x4-MC640-TP32",
+      "P1-compact-N8x8-MC640-TP32",
+      "P1-compact-N8x12-MC640-TP32",
+      "P1-compact-N8x16-MC640-TP32",
+      "P1-compact-L1H4S8-MC640-TP32",
+      "P1-compact-L1H4S12-MC640-TP32",
+      "P1-compact-L1H4S20-MC640-TP32",
+      "P1-compact-L1H4S24-MC640-TP32",
+      "P1-compact-L1H4S32-MC640-TP32",
+      "P1-compact-L2H4S16-MC640-TP32",
+      "P1-compact-L4H4S16-MC640-TP32",
+      "P1-compact-L1H2S16-MC640-TP32",
+      "P1-compact-L1H8S16-MC640-TP32"
+    ],
+    "meetsArchitectureGate": [
+      "P1-compact-MC640-TP32",
+      "P1-compact-N4x4-MC640-TP32",
+      "P1-compact-N12x4-MC640-TP32",
+      "P1-compact-N16x4-MC640-TP32",
+      "P1-compact-N8x8-MC640-TP32",
+      "P1-compact-N8x12-MC640-TP32",
+      "P1-compact-N8x16-MC640-TP32",
+      "P1-compact-L1H4S8-MC640-TP32",
+      "P1-compact-L1H4S12-MC640-TP32",
+      "P1-compact-L1H4S20-MC640-TP32",
+      "P1-compact-L1H4S24-MC640-TP32",
+      "P1-compact-L1H4S32-MC640-TP32",
+      "P1-compact-L2H4S16-MC640-TP32",
+      "P1-compact-L4H4S16-MC640-TP32",
+      "P1-compact-L1H2S16-MC640-TP32",
+      "P1-compact-L1H8S16-MC640-TP32"
+    ],
+    "bestByContract": "P1-compact-L1H2S16-MC640-TP32",
+    "rows": [
+      {
+        "morphologyId": "P1-compact-MC320-TP8",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 40,
+          "mcTier": "MC320",
+          "mcGBsPerCube": 320,
+          "dies": 8,
+          "tp": 8
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 3584000000000
+        },
+        "physical": {
+          "dieAreaMm2": 365.3410392708195,
+          "diePowerW": 283.2693760000001,
+          "cardPowerW": 2601.5150080000008,
+          "packageAreaMm2": 4522.728314166556,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 365.3410392708195,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.2693760000001,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2601.5150080000008,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4522.728314166556,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 137.80155544183788,
+            "bound": "memory",
+            "memoryLaneUs": 6202.403535724963,
+            "serialLaneUs": 1574.4171098837955,
+            "computeUs": 852.8083005897672,
+            "baselineComputeUs": 852.8083005897672,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 448.26271403544513,
+            "bound": "memory",
+            "memoryLaneUs": 1906.696292016988,
+            "serialLaneUs": 554.7610726329157,
+            "computeUs": 100.94242647058823,
+            "baselineComputeUs": 100.94242647058823,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 463.84519823480133,
+            "bound": "memory",
+            "memoryLaneUs": 1842.642454753191,
+            "serialLaneUs": 660.651268297994,
+            "computeUs": 225.22498334099265,
+            "baselineComputeUs": 225.22498334099265,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 137.80155544183788,
+        "worstModel": "K3",
+        "meetsTarget": false,
+        "meetsArchitectureGate": false,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 320,
+            "satisfied": false,
+            "shortfall": 320,
+            "note": "16 cubes x 320 GB/s/cube = 5.12 TB/s raw, 0.7 sustained = 3584000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 365.3410392708195,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.2693760000001 W, card power 2601.5150080000008 W, package 4522.728314166556 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-MEM-BW",
+            "shortfall": 320
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-MC320-TP16",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 40,
+          "mcTier": "MC320",
+          "mcGBsPerCube": 320,
+          "dies": 8,
+          "tp": 16
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 3584000000000
+        },
+        "physical": {
+          "dieAreaMm2": 365.3410392708195,
+          "diePowerW": 283.2693760000001,
+          "cardPowerW": 2601.5150080000008,
+          "packageAreaMm2": 4522.728314166556,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 365.3410392708195,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.2693760000001,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2601.5150080000008,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4522.728314166556,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 275.60311088367575,
+            "bound": "memory",
+            "memoryLaneUs": 3101.2017678624816,
+            "serialLaneUs": 1027.0714916141148,
+            "computeUs": 426.4041502948836,
+            "baselineComputeUs": 426.4041502948836,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 896.5254280708903,
+            "bound": "memory",
+            "memoryLaneUs": 953.348146008494,
+            "serialLaneUs": 480.50348320283354,
+            "computeUs": 50.471213235294115,
+            "baselineComputeUs": 50.471213235294115,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 927.6903964696027,
+            "bound": "memory",
+            "memoryLaneUs": 921.3212273765955,
+            "serialLaneUs": 514.8099259447524,
+            "computeUs": 112.61249167049633,
+            "baselineComputeUs": 112.61249167049633,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 275.60311088367575,
+        "worstModel": "K3",
+        "meetsTarget": false,
+        "meetsArchitectureGate": false,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 320,
+            "satisfied": false,
+            "shortfall": 320,
+            "note": "16 cubes x 320 GB/s/cube = 5.12 TB/s raw, 0.7 sustained = 3584000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 365.3410392708195,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.2693760000001 W, card power 2601.5150080000008 W, package 4522.728314166556 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-MEM-BW",
+            "shortfall": 320
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-MC320-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 40,
+          "mcTier": "MC320",
+          "mcGBsPerCube": 320,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 3584000000000
+        },
+        "physical": {
+          "dieAreaMm2": 365.3410392708195,
+          "diePowerW": 283.2693760000001,
+          "cardPowerW": 2601.5150080000008,
+          "packageAreaMm2": 4522.728314166556,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 365.3410392708195,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.2693760000001,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2601.5150080000008,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4522.728314166556,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 551.2062217673515,
+            "bound": "memory",
+            "memoryLaneUs": 1550.6008839312408,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1793.0508561417805,
+            "bound": "memory",
+            "memoryLaneUs": 476.674073004247,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1855.3807929392053,
+            "bound": "memory",
+            "memoryLaneUs": 460.66061368829776,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 551.2062217673515,
+        "worstModel": "K3",
+        "meetsTarget": false,
+        "meetsArchitectureGate": false,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 320,
+            "satisfied": false,
+            "shortfall": 320,
+            "note": "16 cubes x 320 GB/s/cube = 5.12 TB/s raw, 0.7 sustained = 3584000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 365.3410392708195,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.2693760000001 W, card power 2601.5150080000008 W, package 4522.728314166556 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-MEM-BW",
+            "shortfall": 320
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-MC640-TP8",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 40,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 8
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 365.3410392708195,
+          "diePowerW": 283.2693760000001,
+          "cardPowerW": 2744.875008000001,
+          "packageAreaMm2": 4522.728314166556,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 365.3410392708195,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.2693760000001,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2744.875008000001,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4522.728314166556,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 275.60311088367575,
+            "bound": "memory",
+            "memoryLaneUs": 3101.2017678624816,
+            "serialLaneUs": 1574.4171098837955,
+            "computeUs": 852.8083005897672,
+            "baselineComputeUs": 852.8083005897672,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 896.5254280708903,
+            "bound": "memory",
+            "memoryLaneUs": 953.348146008494,
+            "serialLaneUs": 554.7610726329157,
+            "computeUs": 100.94242647058823,
+            "baselineComputeUs": 100.94242647058823,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 927.6903964696027,
+            "bound": "memory",
+            "memoryLaneUs": 921.3212273765955,
+            "serialLaneUs": 660.651268297994,
+            "computeUs": 225.22498334099265,
+            "baselineComputeUs": 225.22498334099265,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 275.60311088367575,
+        "worstModel": "K3",
+        "meetsTarget": false,
+        "meetsArchitectureGate": false,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 365.3410392708195,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.2693760000001 W, card power 2744.875008000001 W, package 4522.728314166556 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-MC640-TP16",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 40,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 16
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 365.3410392708195,
+          "diePowerW": 283.2693760000001,
+          "cardPowerW": 2744.875008000001,
+          "packageAreaMm2": 4522.728314166556,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 365.3410392708195,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.2693760000001,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2744.875008000001,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4522.728314166556,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 551.2062217673515,
+            "bound": "memory",
+            "memoryLaneUs": 1550.6008839312408,
+            "serialLaneUs": 1027.0714916141148,
+            "computeUs": 426.4041502948836,
+            "baselineComputeUs": 426.4041502948836,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1778.760996702416,
+            "bound": "collective",
+            "memoryLaneUs": 476.674073004247,
+            "serialLaneUs": 480.50348320283354,
+            "computeUs": 50.471213235294115,
+            "baselineComputeUs": 50.471213235294115,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1660.2260594186332,
+            "bound": "collective",
+            "memoryLaneUs": 460.66061368829776,
+            "serialLaneUs": 514.8099259447524,
+            "computeUs": 112.61249167049633,
+            "baselineComputeUs": 112.61249167049633,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 551.2062217673515,
+        "worstModel": "K3",
+        "meetsTarget": false,
+        "meetsArchitectureGate": false,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 365.3410392708195,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.2693760000001 W, card power 2744.875008000001 W, package 4522.728314166556 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 40,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 365.3410392708195,
+          "diePowerW": 283.2693760000001,
+          "cardPowerW": 2744.875008000001,
+          "packageAreaMm2": 4522.728314166556,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 365.3410392708195,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.2693760000001,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2744.875008000001,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4522.728314166556,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1927.7168428715738,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1934.196963330403,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 365.3410392708195,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.2693760000001 W, card power 2744.875008000001 W, package 4522.728314166556 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-N4x4-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            4,
+            4
+          ],
+          "lCoresPerDie": 4,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 20,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 36,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 131072000000000,
+            "H": 1966080000000000,
+            "V": 65536000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 65536000000000
+          },
+          "tfPerDie": 262.144,
+          "vectorTopPerDie": 8.192,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 333.13644472188884,
+          "diePowerW": 263.144256,
+          "cardPowerW": 2583.8740479999997,
+          "packageAreaMm2": 4265.09155777511,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 333.13644472188884,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 263.144256,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2583.8740479999997,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4265.09155777511,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1055.271142511431,
+            "bound": "collective",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 809.9348312195473,
+            "computeUs": 262.2392067823223,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 0.8130061014271412
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1837.5078088915322,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 465.14134555784494,
+            "computeUs": 44.115110294117656,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 0.572039975631932
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1826.8694307686317,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 467.84999535585337,
+            "computeUs": 78.82352516722834,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 0.7143330080174851
+          }
+        },
+        "minTpsPerUser": 1055.271142511431,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 0.572039975631932,
+            "satisfied": false,
+            "shortfall": 0.1724454980008805,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 0.572039975631932x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 333.13644472188884,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 263.144256 W, card power 2583.8740479999997 W, package 4265.09155777511 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-SERIAL-CMP",
+            "shortfall": 0.1724454980008805
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-N12x4-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            12,
+            4
+          ],
+          "lCoresPerDie": 12,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 28,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 44,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 393216000000000,
+            "H": 1966080000000000,
+            "V": 131072000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 131072000000000
+          },
+          "tfPerDie": 294.912,
+          "vectorTopPerDie": 16.384,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 397.5456338197501,
+          "diePowerW": 303.394496,
+          "cardPowerW": 2905.8759680000003,
+          "packageAreaMm2": 4780.365070558,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": false,
+          "reasons": [
+            "die power after shared-port scaling",
+            "card power after shared-port scaling"
+          ],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 397.5456338197501,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 303.394496,
+              "max": 300,
+              "satisfied": false
+            },
+            "cardPowerW": {
+              "value": 2905.8759680000003,
+              "max": 2800,
+              "satisfied": false
+            },
+            "packageAreaMm2": {
+              "value": 4780.365070558,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 734.4908603007946,
+            "computeUs": 196.80220735038807,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1.0833317269041363
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1959.8227915538776,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 436.11129454372315,
+            "computeUs": 18.93563725490196,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1.3327043752443133
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1972.8693551317383,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 433.22729529841683,
+            "computeUs": 48.79321822023079,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1.1539768822197158
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1.0833317269041363,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1.0833317269041363x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 397.5456338197501,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 303.394496 W, card power 2905.8759680000003 W, package 4780.365070558 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-N16x4-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            16,
+            4
+          ],
+          "lCoresPerDie": 16,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 32,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 48,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 524288000000000,
+            "H": 1966080000000000,
+            "V": 163840000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 163840000000000
+          },
+          "tfPerDie": 311.296,
+          "vectorTopPerDie": 20.48,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 439.9523661838069,
+          "diePowerW": 325.5164160000001,
+          "cardPowerW": 3082.8513280000006,
+          "packageAreaMm2": 5119.6189294704545,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": false,
+          "reasons": [
+            "die area after shared-port scaling",
+            "die power after shared-port scaling",
+            "card power after shared-port scaling"
+          ],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 439.9523661838069,
+              "max": 400,
+              "satisfied": false
+            },
+            "diePowerW": {
+              "value": 325.5164160000001,
+              "max": 300,
+              "satisfied": false
+            },
+            "cardPowerW": {
+              "value": 3082.8513280000006,
+              "max": 2800,
+              "satisfied": false
+            },
+            "packageAreaMm2": {
+              "value": 5119.6189294704545,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 725.0182174320378,
+            "computeUs": 188.58602627623313,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1.1305295485422238
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1976.2909248836256,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 432.477245095473,
+            "computeUs": 15.783612132352943,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1.5988486289472104
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1992.802999602328,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 428.89380178141727,
+            "computeUs": 45.034524061414935,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1.2502906827318
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1.1305295485422238,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1.1305295485422238x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 439.9523661838069,
+            "satisfied": false,
+            "shortfall": 39.95236618380687,
+            "note": "SF4/liquid basis; die power 325.5164160000001 W, card power 3082.8513280000006 W, package 5119.6189294704545 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-AREA",
+            "shortfall": 39.95236618380687
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-N8x8-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            8
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 8,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 40,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 56,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 3932160000000000,
+            "V": 131072000000000,
+            "INDEXER": 3932160000000000,
+            "REDUCE": 131072000000000
+          },
+          "tfPerDie": 524.288,
+          "vectorTopPerDie": 16.384,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 500.98536704637417,
+          "diePowerW": 414.5749760000001,
+          "cardPowerW": 3795.319808000001,
+          "packageAreaMm2": 5607.882936370993,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": false,
+          "reasons": [
+            "die area after shared-port scaling",
+            "die power after shared-port scaling",
+            "card power after shared-port scaling",
+            "package area after shared-port scaling"
+          ],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 500.98536704637417,
+              "max": 400,
+              "satisfied": false
+            },
+            "diePowerW": {
+              "value": 414.5749760000001,
+              "max": 300,
+              "satisfied": false
+            },
+            "cardPowerW": {
+              "value": 3795.319808000001,
+              "max": 2800,
+              "satisfied": false
+            },
+            "packageAreaMm2": {
+              "value": 5607.882936370993,
+              "max": 5248,
+              "satisfied": false
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 658.7637257135448,
+            "computeUs": 131.11960339116115,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1.6260122028542825
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1943.7802757632687,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 439.71063260493133,
+            "computeUs": 22.057555147058828,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1.144079951263864
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 2023.385978783361,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 422.41117792798815,
+            "computeUs": 39.41176258361417,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1.4286660160349702
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1.144079951263864,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1.144079951263864x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 500.98536704637417,
+            "satisfied": false,
+            "shortfall": 100.98536704637417,
+            "note": "SF4/liquid basis; die power 414.5749760000001 W, card power 3795.319808000001 W, package 5607.882936370993 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-AREA",
+            "shortfall": 100.98536704637417
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-N8x12-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            12
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 12,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 56,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 72,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 5898240000000000,
+            "V": 163840000000000,
+            "INDEXER": 5898240000000000,
+            "REDUCE": 163840000000000
+          },
+          "tfPerDie": 770.048,
+          "vectorTopPerDie": 20.48,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 646.8318326370547,
+          "diePowerW": 547.877376,
+          "cardPowerW": 4861.7390080000005,
+          "packageAreaMm2": 6774.654661096438,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": false,
+          "reasons": [
+            "die area after shared-port scaling",
+            "die power after shared-port scaling",
+            "card power after shared-port scaling",
+            "package area after shared-port scaling"
+          ],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 646.8318326370547,
+              "max": 400,
+              "satisfied": false
+            },
+            "diePowerW": {
+              "value": 547.877376,
+              "max": 300,
+              "satisfied": false
+            },
+            "cardPowerW": {
+              "value": 4861.7390080000005,
+              "max": 2800,
+              "satisfied": false
+            },
+            "packageAreaMm2": {
+              "value": 6774.654661096438,
+              "max": 5248,
+              "satisfied": false
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 627.1687887129235,
+            "computeUs": 103.71545367072609,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 2.055644242026958
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1949.2222967074072,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 438.48300737406953,
+            "computeUs": 20.99276348039216,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1.2021097956549567
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 2055.0051506607124,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 415.9117822288945,
+            "computeUs": 33.77445389625035,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1.6671252778271952
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1.2021097956549567,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1.2021097956549567x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 646.8318326370547,
+            "satisfied": false,
+            "shortfall": 246.83183263705473,
+            "note": "SF4/liquid basis; die power 547.877376 W, card power 4861.7390080000005 W, package 6774.654661096438 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-AREA",
+            "shortfall": 246.83183263705473
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-N8x16-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            16
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 16,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 72,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 88,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 7864320000000000,
+            "V": 196608000000000,
+            "INDEXER": 7864320000000000,
+            "REDUCE": 196608000000000
+          },
+          "tfPerDie": 1015.808,
+          "vectorTopPerDie": 24.576,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 782.4761604126095,
+          "diePowerW": 679.182976,
+          "cardPowerW": 5912.183808000001,
+          "packageAreaMm2": 7859.809283300876,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": false,
+          "reasons": [
+            "die area after shared-port scaling",
+            "die power after shared-port scaling",
+            "card power after shared-port scaling",
+            "package area after shared-port scaling"
+          ],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 782.4761604126095,
+              "max": 400,
+              "satisfied": false
+            },
+            "diePowerW": {
+              "value": 679.182976,
+              "max": 300,
+              "satisfied": false
+            },
+            "cardPowerW": {
+              "value": 5912.183808000001,
+              "max": 2800,
+              "satisfied": false
+            },
+            "packageAreaMm2": {
+              "value": 7859.809283300876,
+              "max": 5248,
+              "satisfied": false
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 611.3525884330961,
+            "computeUs": 89.9971316348805,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 2.368987447426717
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1951.9652372982712,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 437.86684228242314,
+            "computeUs": 20.45832720588235,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1.2335127092107072
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 2071.200853197037,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 412.6595705972054,
+            "computeUs": 30.953619201261233,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1.8190520943332504
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1.2335127092107072,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1.2335127092107072x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 782.4761604126095,
+            "satisfied": false,
+            "shortfall": 382.4761604126095,
+            "note": "SF4/liquid basis; die power 679.182976 W, card power 5912.183808000001 W, package 7859.809283300876 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-AREA",
+            "shortfall": 382.4761604126095
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-L1H4S8-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 8,
+          "totalSramMiBPerDie": 32,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 357.41964849228583,
+          "diePowerW": 282.54937600000005,
+          "cardPowerW": 2739.1150080000007,
+          "packageAreaMm2": 4459.357187938286,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 357.41964849228583,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 282.54937600000005,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2739.1150080000007,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4459.357187938286,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1927.7168428715738,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1934.196963330403,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 8,
+            "satisfied": false,
+            "shortfall": 8,
+            "note": "depth 4 window; 8 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 357.41964849228583,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 282.54937600000005 W, card power 2739.1150080000007 W, package 4459.357187938286 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-SRAM-CAP",
+            "shortfall": 8
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-L1H4S12-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 12,
+          "totalSramMiBPerDie": 36,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 361.3803438815526,
+          "diePowerW": 282.90937600000007,
+          "cardPowerW": 2741.995008000001,
+          "packageAreaMm2": 4491.0427510524205,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 361.3803438815526,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 282.90937600000007,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2741.995008000001,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4491.0427510524205,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1927.7168428715738,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1934.196963330403,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 12,
+            "satisfied": false,
+            "shortfall": 4,
+            "note": "depth 4 window; 12 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 361.3803438815526,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 282.90937600000007 W, card power 2741.995008000001 W, package 4491.0427510524205 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-SRAM-CAP",
+            "shortfall": 4
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-L1H4S20-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 20,
+          "totalSramMiBPerDie": 44,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 369.3017346600863,
+          "diePowerW": 283.62937600000004,
+          "cardPowerW": 2747.755008,
+          "packageAreaMm2": 4554.41387728069,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 369.3017346600863,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.62937600000004,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2747.755008,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4554.41387728069,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1927.7168428715738,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1934.196963330403,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 20,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 20 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 369.3017346600863,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.62937600000004 W, card power 2747.755008 W, package 4554.41387728069 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-L1H4S24-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 24,
+          "totalSramMiBPerDie": 48,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 373.2624300493531,
+          "diePowerW": 283.98937600000005,
+          "cardPowerW": 2750.635008,
+          "packageAreaMm2": 4586.099440394824,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 373.2624300493531,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.98937600000005,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2750.635008,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4586.099440394824,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1927.7168428715738,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1934.196963330403,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 24,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 24 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 373.2624300493531,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.98937600000005 W, card power 2750.635008 W, package 4586.099440394824 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-L1H4S32-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 32,
+          "totalSramMiBPerDie": 56,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 381.1838208278868,
+          "diePowerW": 284.7093760000001,
+          "cardPowerW": 2756.3950080000004,
+          "packageAreaMm2": 4649.470566623094,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 381.1838208278868,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 284.7093760000001,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2756.3950080000004,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4649.470566623094,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1927.7168428715738,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1934.196963330403,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 32,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 32 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 381.1838208278868,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 284.7093760000001 W, card power 2756.3950080000004 W, package 4649.470566623094 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-L2H4S16-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            2,
+            4
+          ],
+          "localMiBPerDieTotal": 32,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 48,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 373.2624300493531,
+          "diePowerW": 283.98937600000005,
+          "cardPowerW": 2750.635008,
+          "packageAreaMm2": 4586.099440394824,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 373.2624300493531,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.98937600000005,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2750.635008,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4586.099440394824,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1927.7168428715738,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1934.196963330403,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 373.2624300493531,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.98937600000005 W, card power 2750.635008 W, package 4586.099440394824 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-L4H4S16-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            4,
+            4
+          ],
+          "localMiBPerDieTotal": 48,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 64,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 389.10521160642037,
+          "diePowerW": 285.42937600000005,
+          "cardPowerW": 2762.1550080000006,
+          "packageAreaMm2": 4712.8416928513625,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 389.10521160642037,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 285.42937600000005,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2762.1550080000006,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4712.8416928513625,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1927.7168428715738,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1934.196963330403,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 389.10521160642037,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 285.42937600000005 W, card power 2762.1550080000006 W, package 4712.8416928513625 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-L1H2S16-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            2
+          ],
+          "localMiBPerDieTotal": 16,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 32,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 357.41964849228583,
+          "diePowerW": 282.54937600000005,
+          "cardPowerW": 2739.1150080000007,
+          "packageAreaMm2": 4459.357187938286,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 357.41964849228583,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 282.54937600000005,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2739.1150080000007,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4459.357187938286,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1927.7168428715738,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1934.196963330403,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 357.41964849228583,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 282.54937600000005 W, card power 2739.1150080000007 W, package 4459.357187938286 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-L1H8S16-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            8
+          ],
+          "localMiBPerDieTotal": 40,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 56,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 7168000000000
+        },
+        "physical": {
+          "dieAreaMm2": 381.1838208278868,
+          "diePowerW": 284.7093760000001,
+          "cardPowerW": 2756.3950080000004,
+          "packageAreaMm2": 4649.470566623094,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 381.1838208278868,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 284.7093760000001,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2756.3950080000004,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4649.470566623094,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 1102.412443534703,
+            "bound": "memory",
+            "memoryLaneUs": 775.3004419656204,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1927.7168428715738,
+            "bound": "collective",
+            "memoryLaneUs": 238.3370365021235,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1934.196963330403,
+            "bound": "collective",
+            "memoryLaneUs": 230.33030684414888,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 1102.412443534703,
+        "worstModel": "K3",
+        "meetsTarget": true,
+        "meetsArchitectureGate": true,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "16 cubes x 640 GB/s/cube = 10.24 TB/s raw, 0.7 sustained = 7168000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 381.1838208278868,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 284.7093760000001 W, card power 2756.3950080000004 W, package 4649.470566623094 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-D4-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 40,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 4,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 131072000000000,
+            "H": 983040000000000,
+            "V": 49152000000000,
+            "INDEXER": 983040000000000,
+            "REDUCE": 49152000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 8,
+          "memoryBytesPerSecond": 3584000000000
+        },
+        "physical": {
+          "dieAreaMm2": 365.3410392708195,
+          "diePowerW": 283.2693760000001,
+          "cardPowerW": 1412.4375040000004,
+          "packageAreaMm2": 2261.364157083278,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 365.3410392708195,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.2693760000001,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 1412.4375040000004,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 2261.364157083278,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 551.2062217673515,
+            "bound": "memory",
+            "memoryLaneUs": 1550.6008839312408,
+            "serialLaneUs": 999.204744751007,
+            "computeUs": 426.4041502948836,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 0.5
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1793.0508561417805,
+            "bound": "memory",
+            "memoryLaneUs": 476.674073004247,
+            "serialLaneUs": 472.46945732356716,
+            "computeUs": 50.471213235294115,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 0.5
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1686.4453131169616,
+            "bound": "collective",
+            "memoryLaneUs": 460.66061368829776,
+            "serialLaneUs": 506.80614903614,
+            "computeUs": 112.61249167049633,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 0.5
+          }
+        },
+        "minTpsPerUser": 551.2062217673515,
+        "worstModel": "K3",
+        "meetsTarget": false,
+        "meetsArchitectureGate": false,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "8 cubes x 640 GB/s/cube = 5.12 TB/s raw, 0.7 sustained = 3584000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 0.5,
+            "satisfied": false,
+            "shortfall": 0.24448547363281248,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 0.5x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 365.3410392708195,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.2693760000001 W, card power 1412.4375040000004 W, package 2261.364157083278 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-SERIAL-CMP",
+            "shortfall": 0.24448547363281248
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-D6-MC640-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 16,
+          "totalSramMiBPerDie": 40,
+          "mcTier": "MC640",
+          "mcGBsPerCube": 640,
+          "dies": 6,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 196608000000000,
+            "H": 1474560000000000,
+            "V": 73728000000000.02,
+            "INDEXER": 1474560000000000,
+            "REDUCE": 73728000000000.02
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 12,
+          "memoryBytesPerSecond": 5376000000000
+        },
+        "physical": {
+          "dieAreaMm2": 365.3410392708195,
+          "diePowerW": 283.2693760000001,
+          "cardPowerW": 2078.6562560000007,
+          "packageAreaMm2": 3392.0462356249172,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 365.3410392708195,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.2693760000001,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2078.6562560000007,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 3392.0462356249172,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 826.8093326510274,
+            "bound": "memory",
+            "memoryLaneUs": 1033.7339226208271,
+            "serialLaneUs": 835.3340365698521,
+            "computeUs": 284.26943352992237,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 0.7500000000000001
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1886.4530856980666,
+            "bound": "collective",
+            "memoryLaneUs": 317.78271533616476,
+            "serialLaneUs": 453.072944766384,
+            "computeUs": 33.64747549019608,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 0.75
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1843.9025256721254,
+            "bound": "collective",
+            "memoryLaneUs": 307.1070757921985,
+            "serialLaneUs": 463.52821952413433,
+            "computeUs": 75.07499444699754,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 0.7500000000000001
+          }
+        },
+        "minTpsPerUser": 826.8093326510274,
+        "worstModel": "K3",
+        "meetsTarget": false,
+        "meetsArchitectureGate": false,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 640,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "12 cubes x 640 GB/s/cube = 7.68 TB/s raw, 0.7 sustained = 5376000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 0.75,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 0.75x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 16,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 16 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 365.3410392708195,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.2693760000001 W, card power 2078.6562560000007 W, package 3392.0462356249172 mm2"
+          }
+        ],
+        "misses": []
+      },
+      {
+        "morphologyId": "P1-compact-L1H4S8-MC320-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 8,
+          "totalSramMiBPerDie": 32,
+          "mcTier": "MC320",
+          "mcGBsPerCube": 320,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 3584000000000
+        },
+        "physical": {
+          "dieAreaMm2": 357.41964849228583,
+          "diePowerW": 282.54937600000005,
+          "cardPowerW": 2595.7550080000005,
+          "packageAreaMm2": 4459.357187938286,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 357.41964849228583,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 282.54937600000005,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2595.7550080000005,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4459.357187938286,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 551.2062217673515,
+            "bound": "memory",
+            "memoryLaneUs": 1550.6008839312408,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1793.0508561417805,
+            "bound": "memory",
+            "memoryLaneUs": 476.674073004247,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1855.3807929392053,
+            "bound": "memory",
+            "memoryLaneUs": 460.66061368829776,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 551.2062217673515,
+        "worstModel": "K3",
+        "meetsTarget": false,
+        "meetsArchitectureGate": false,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 320,
+            "satisfied": false,
+            "shortfall": 320,
+            "note": "16 cubes x 320 GB/s/cube = 5.12 TB/s raw, 0.7 sustained = 3584000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 8,
+            "satisfied": false,
+            "shortfall": 8,
+            "note": "depth 4 window; 8 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 357.41964849228583,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 282.54937600000005 W, card power 2595.7550080000005 W, package 4459.357187938286 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-MEM-BW",
+            "shortfall": 320
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "shortfall": 8
+          }
+        ]
+      },
+      {
+        "morphologyId": "P1-compact-L1H4S24-MC320-TP32",
+        "axes": {
+          "lhRatio": [
+            8,
+            4
+          ],
+          "lCoresPerDie": 8,
+          "hCoresPerDie": 4,
+          "localMiBPerDie": [
+            1,
+            4
+          ],
+          "localMiBPerDieTotal": 24,
+          "sharedMiBPerDie": 24,
+          "totalSramMiBPerDie": 48,
+          "mcTier": "MC320",
+          "mcGBsPerCube": 320,
+          "dies": 8,
+          "tp": 32
+        },
+        "hardware": {
+          "peakByCore": {
+            "L": 262144000000000,
+            "H": 1966080000000000,
+            "V": 98304000000000,
+            "INDEXER": 1966080000000000,
+            "REDUCE": 98304000000000
+          },
+          "tfPerDie": 278.528,
+          "vectorTopPerDie": 12.288,
+          "cubes": 16,
+          "memoryBytesPerSecond": 3584000000000
+        },
+        "physical": {
+          "dieAreaMm2": 373.2624300493531,
+          "diePowerW": 283.98937600000005,
+          "cardPowerW": 2607.2750080000005,
+          "packageAreaMm2": 4586.099440394824,
+          "basis": "SF4",
+          "cooling": "liquid",
+          "feasible": true,
+          "reasons": [],
+          "limits": {
+            "dieAreaMm2": {
+              "value": 373.2624300493531,
+              "max": 400,
+              "satisfied": true
+            },
+            "diePowerW": {
+              "value": 283.98937600000005,
+              "max": 300,
+              "satisfied": true
+            },
+            "cardPowerW": {
+              "value": 2607.2750080000005,
+              "max": 2800,
+              "satisfied": true
+            },
+            "packageAreaMm2": {
+              "value": 4586.099440394824,
+              "max": 5248,
+              "satisfied": true
+            }
+          }
+        },
+        "tpsPerModel": {
+          "K3": {
+            "tpsPerUser": 551.2062217673515,
+            "bound": "memory",
+            "memoryLaneUs": 1550.6008839312408,
+            "serialLaneUs": 753.3986824792746,
+            "computeUs": 213.2020751474418,
+            "baselineComputeUs": 213.2020751474418,
+            "computeScale": 1
+          },
+          "GLM-5.2": {
+            "tpsPerUser": 1793.0508561417805,
+            "bound": "memory",
+            "memoryLaneUs": 476.674073004247,
+            "serialLaneUs": 443.3746884877924,
+            "computeUs": 25.235606617647058,
+            "baselineComputeUs": 25.235606617647058,
+            "computeScale": 1
+          },
+          "DeepSeek-V4-Pro": {
+            "tpsPerUser": 1855.3807929392053,
+            "bound": "memory",
+            "memoryLaneUs": 460.66061368829776,
+            "serialLaneUs": 441.88925476813154,
+            "computeUs": 56.30624583524816,
+            "baselineComputeUs": 56.30624583524816,
+            "computeScale": 1
+          }
+        },
+        "minTpsPerUser": 551.2062217673515,
+        "worstModel": "K3",
+        "meetsTarget": false,
+        "meetsArchitectureGate": false,
+        "checks": [
+          {
+            "id": "B-MEM-BW",
+            "quantity": "mcPayloadGBsPerCube",
+            "requirement": {
+              "min": 640
+            },
+            "value": 320,
+            "satisfied": false,
+            "shortfall": 320,
+            "note": "16 cubes x 320 GB/s/cube = 5.12 TB/s raw, 0.7 sustained = 3584000000000 B/s"
+          },
+          {
+            "id": "B-SERIAL-CMP",
+            "quantity": "computeScale",
+            "requirement": {
+              "min": 0.7444854736328125
+            },
+            "value": 1,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "vs P1 peaks, worst model K3; the shape may compute 1x faster"
+          },
+          {
+            "id": "B-TAU",
+            "quantity": "tauUs",
+            "requirement": {
+              "max": 1.15
+            },
+            "value": 1.15,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "not a morphology axis: tau is the spec basis (tauBasis.tauUs), carried unchanged"
+          },
+          {
+            "id": "B-SRAM-CAP",
+            "quantity": "sharedMiBPerDie",
+            "requirement": {
+              "min": 16
+            },
+            "value": 24,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "depth 4 window; 24 MiB shared per die against the contract's 16"
+          },
+          {
+            "id": "B-AREA",
+            "quantity": "dieAreaMm2",
+            "requirement": {
+              "max": 400
+            },
+            "value": 373.2624300493531,
+            "satisfied": true,
+            "shortfall": 0,
+            "note": "SF4/liquid basis; die power 283.98937600000005 W, card power 2607.2750080000005 W, package 4586.099440394824 mm2"
+          }
+        ],
+        "misses": [
+          {
+            "id": "B-MEM-BW",
+            "shortfall": 320
+          }
+        ]
       }
     ]
   },

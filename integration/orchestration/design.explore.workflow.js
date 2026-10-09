@@ -197,7 +197,7 @@ return {
   writesToOut: false,
   landedUnder: 'scratch/',
   nextActions: [
-    '若这次探索该变成结论：走对应的正规 workflow（方向性问题走 design.direction，'
+    '若这次探索该变成结论：走对应的正规 workflow（方向性问题走 design.arch.direction，'
     + '候选级走 C 组，产物级走 design.verify）并补齐证据；本记录本身不构成证据',
     `如需复核本次探索读了什么：读 ${EXPLORE_PATH}`,
   ],

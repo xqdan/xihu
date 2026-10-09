@@ -9,7 +9,9 @@
 //     the D group's artifacts are Stage B's, built on the baseline, so they describe another point;
 //     the departing fields are named and the way out is an ADR plus baseline:sync;
 //   * at the published point the experts are called and the run record names the point;
-//   * the main loop hands converge exactly what design_point.js resolves.
+//   * the main loop hands converge exactly what design_point.js resolves;
+//   * the L5-b criteria come in as evaluate_gates.js computed them, and any one of them failing
+//     refuses an ARCH_FREEZE in the script, not in a prompt.
 
 const assert = require('assert');
 const fs = require('fs');
@@ -26,15 +28,17 @@ const landed = {optionId: row.optionId, values: JSON.stringify(row), provenance:
 const joint = DP.resolve({point: 'joint', baselineText: text, jointPoint: landed, runRecord: {candidateSetSha256: coupling.candidateSetSha256}, artifact: coupling});
 const published = DP.resolve({point: 'published', baselineText: text});
 
-const DETAIL = ['detail.freeze', 'detail.workload', 'detail.events', 'detail.execute', 'detail.integrate']
-  .map(s => `out/detailed/${s.replace('.', '_')}.json`);
-const baseArgs = {brief: {stage: 'converge', sourceCommit: 'test'}, detailArtifacts: DETAIL, relevantExperts: ['compute-expert']};
+// L5-a 之后 D 组只有 design.integrate 一格，产物 out/detailed/detail_integrate.json。
+const DETAIL = ['out/detailed/detail_integrate.json'];
+// L5-b 的三条收敛判据由 evaluate_gates.js 算，主循环从 gate_status.json 原样注入。
+const criteria = (overrides = {}) => ({jointPessimisticMeetsTarget: true, loadBearingAccounted: true, observationMatrixCompleteOrBlocked: true, ...overrides});
+const baseArgs = {brief: {stage: 'converge', sourceCommit: 'test'}, detailArtifacts: DETAIL, relevantExperts: ['compute-expert'], convergeCriteria: criteria()};
 
-async function run(args) {
+async function run(args, answer = () => undefined) {
   const labels = [];
   const agent = async (prompt, options = {}) => {
     labels.push(options.label || '');
-    return fromSchema(options.schema, '');
+    return answer(options) || fromSchema(options.schema, '');
   };
   const result = await compileWorkflow(root, 'converge')(args, agent, fns => Promise.all(fns.map(f => f())), () => {}, () => {});
   return {result, labels};
@@ -58,6 +62,22 @@ async function run(args) {
   const record = (open.result.files || []).find(f => f.path.endsWith('converge_run_record.json'));
   assert(record, 'the published-point run lands a run record');
   assert.strictEqual(JSON.parse(record.content).designPoint.sha256, published.sha256, 'the run record names the point');
+  assert.deepStrictEqual(JSON.parse(record.content).convergeCriteria, criteria(), 'the run record carries the script-computed criteria');
+
+  // L5-b: the three converge criteria are evaluate_gates.js's, injected; a run without them does not
+  // start, and a criterion that does not hold refuses an ARCH_FREEZE however the agents argue.
+  const {convergeCriteria, ...noCriteria} = baseArgs;
+  await assert.rejects(run({...noCriteria, designPoint: published}), /args\.convergeCriteria/, 'a run without the criteria does not start');
+  assert.strictEqual(open.result.verdict, 'ARCH_FREEZE', 'with every criterion met the mock architect may freeze');
+  for (const key of ['jointPessimisticMeetsTarget', 'loadBearingAccounted', 'observationMatrixCompleteOrBlocked']) {
+    const refused = await run({...baseArgs, designPoint: published, convergeCriteria: criteria({[key]: false})});
+    assert.strictEqual(refused.result.verdict, 'BLOCKED_CONFIG', `${key} false refuses ARCH_FREEZE`);
+    assert(refused.result.routeContradictions.some((c) => c.includes(key)), `the refusal names ${key}`);
+    assert.deepStrictEqual(refused.result.files, [], 'nothing lands');
+  }
+  const proposal = await run({...baseArgs, designPoint: published, convergeCriteria: criteria({jointPessimisticMeetsTarget: false})},
+    (o) => (o.label === 'architect' ? {...fromSchema(o.schema, ''), verdict: 'D_GATE_PROPOSAL', openItems: ['joint pessimistic TPS below target']} : undefined));
+  assert.strictEqual(proposal.result.verdict, 'D_GATE_PROPOSAL', 'an unmet criterion still allows a proposal that keeps it open');
 
   // The main loop's resolution: before design.coupling lands a joint point it is the published one.
   if (!fs.existsSync(path.join(root, DP.JOINT_FILE))) assert.strictEqual(DP.resolve().kind, 'published');

@@ -317,7 +317,7 @@ const merged = await agent(
   + `它们已经进了 conflicts / undecided 两个字段，是数据，不改变"这一格定了没有"。\n`
   + `  DIRECTION_BACKFLOW：收敛过程中发现方向级矛盾（例如某接口在给定形态下根本不存在），`
   + `必须回到 direction 重定，不得靠下折中值把矛盾摊平。\n`
-  + `  D_GATE_PROPOSAL：接口面收敛了，但它改变了候选集的裁定范围，需要 dgate 重新裁定。\n`
+  + `  D_GATE_PROPOSAL：接口面收敛了，但它改变了候选集的裁定范围，需要 arch.direction 重新裁定。\n`
   + `注意：这是"这一格能不能定稿"，不是"契约通过没通过"——那由 verifier 与检点者判。`,
   {label: 'architect', phase: 'Contract convergence', effort: 'high', schema: CONTRACT_SCHEMA})
 

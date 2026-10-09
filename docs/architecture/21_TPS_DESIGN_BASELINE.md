@@ -386,7 +386,7 @@ Stage A/B 的 18 个槽位用规划 token time，它的 5 个因子在**一个**
 - 规划模型在带宽越低时越悲观，说明 `kMemory` 不是常数。
 - 观察矩阵里每个槽位带 `corroboration`：K3 TP32 MC640 是 `FITTED_POINT`（残差不是证据），K3 TP32 MC320 是 `DETAILED_HOLDOUT`，
   其余 16 个槽位（GLM-5.2、DeepSeek-V4-Pro 的全部，以及 K3 的 TP8/TP16）是 `UNCORROBORATED`——没有对应的详细模型，数字是 K3 因子的外推。
-- Stage A 与 Stage B 调用同一个公式、同一组标定，两者的 TPS 差在构造上为 0。因此 `design.detail.integrate` 的粗估-细估 delta 为 0
+- Stage A 与 Stage B 调用同一个公式、同一组标定，两者的 TPS 差在构造上为 0。因此 `design.integrate` 的粗估-细估 delta 为 0
   只说明两者同源；它对 `UNCORROBORATED` 槽位不是对账结果，workflow 会把这些槽位单独列出。
 
 几点读法：

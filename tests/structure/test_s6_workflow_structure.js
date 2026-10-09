@@ -1,24 +1,32 @@
 'use strict';
 
-// S6 的六个 workflow：detail.freeze / detail.workload / detail.events /
-// detail.execute / detail.integrate / converge.
+// S6 的两个 workflow：integrate（D 组）/ converge（A0）.
+//
+// D 组原先是五个脚本：detail.freeze / detail.workload / detail.events /
+// detail.execute / detail.integrate。L5-a（23 号文档 §8 P6）之后：
+//   * B1 前移为 L1-a 的 design.req.workload，验收判据整段搬到
+//     tests/structure/test_req_workload_structure.js；
+//   * B0 / B2 / B3 / B4 合成一个 design.integrate，四块各自保留为内部 phase。
+// 这里的 §9 把原先四格的验收判据整段迁到 design.integrate 上，一条没删；
+// 只看某一块的断言按 phase 切片查（例如 B0 的"无 integrator"只在冻结块里成立——
+// 合并后同一文件的 B2 与 B4 当然调用 integrator）。
 //
 // 它们与 S4、S5 都不同，所以两份既有测试都不覆盖它们：
 //   * S4 的 test_design_workflow_skeleton.js 的 DOMAINS 写死了四域（C 组骨架）；
-//   * S5 的 test_s5_workflow_structure.js 只列了 contract / direction / dgate。
+//   * S5 的 test_s5_workflow_structure.js 只列了 contract / arch.direction。
 // 这份测试补的正是这两份空出来的那一段。
 //
 // 它守的是 S6 的验收判据（《22 号文档》§9.1/§9.2）与四条硬边界在各格上的落点：
 //
 //   * 语法：按运行时的真实形态解析（包一层函数），而不是直接 node --check
-//   * 阶段顺序：六个 workflow 各自的 phase() 序列与 meta.phases 一致
+//   * 阶段顺序：各 workflow 的 phase() 序列与 meta.phases 一致
 //   * 检点收尾：最后一格 agent 调用是检点类策略，落盘受它（及其合取）门控
 //   * 缺输入必有出路：§9.2 要求 D 组任一步骤缺输入时输出 BLOCKED_CONFIG + nextActions，
 //     不得静默补全——这条按 return 块逐个查，不靠措辞
 //   * 裁决消费：roster 里每个策略的 verdictEnum 都要有 workflow 接，
 //     或挂在 pendingConsumption 上（当前为空，即全部必须被消费）
 //   * 策略版本：ledgerPatch.strategyVersions 必须与 roster 一致，且调用过的策略都在表里
-//   * 各格的验收点：B0 无 integrator、B1 三条 sizing 比、B2 共享 manifest hash 与五条守恒、
+//   * 各块的验收点：B0 无 integrator、B2 共享 manifest hash 与五条守恒、
 //     B3 的 PPA_DIRECTION_BACKFLOW 专线与零容差面积守恒、B4 的 18 个观察位与
 //     "delta 由脚本算、原因由 architect 给"、A0 的收敛路由与"提案不是门控结论"
 //
@@ -39,19 +47,11 @@ const rosterById = new Map(roster.strategies.map((s) => [s.agentId, s]));
 const read = (f) => fs.readFileSync(path.join(wfDir, f), 'utf8');
 
 const FILE = {
-  freeze: 'design.detail.freeze.workflow.js',
-  workload: 'design.detail.workload.workflow.js',
-  events: 'design.detail.events.workflow.js',
-  execute: 'design.detail.execute.workflow.js',
-  integrate: 'design.detail.integrate.workflow.js',
+  integrate: 'design.integrate.workflow.js',
   converge: 'design.converge.workflow.js',
 };
 const META_NAME = {
-  freeze: 'design-detail-freeze',
-  workload: 'design-detail-workload',
-  events: 'design-detail-events',
-  execute: 'design-detail-execute',
-  integrate: 'design-detail-integrate',
+  integrate: 'design-integrate',
   converge: 'design-converge',
 };
 const S6 = Object.keys(FILE);
@@ -185,15 +185,18 @@ for (const k of S6) {
 
 // ---------------------------------------------------------------------------
 // 2. meta 形态与阶段顺序。meta 必须是纯字面量，phases 与 phase() 调用一一对应。
-//    phase 顺序是编排：改顺序等于改了各格看到的东西——
-//    例如把 events 的守恒对账挪到申报之前，三路就先把结论交了再对账。
+//    phase 顺序是编排：改顺序等于改了各块看到的东西——
+//    例如把 events 的守恒对账挪到申报之前，三路就先把结论交了再对账；
+//    把执行块挪到事件块之前，Q6/Q7 就是在一份还没守恒的事件流上记账。
 // ---------------------------------------------------------------------------
 const PHASES = {
-  freeze: ['Freeze declaration', 'Freeze assembly', 'Invariant check'],
-  workload: ['Operator inventory', 'Roofline and sizing', 'Merge', 'Invariant check'],
-  events: ['Event declaration', 'Conservation', 'Invariant check'],
-  execute: ['Software and PPA declaration', 'Merge', 'Invariant check'],
-  integrate: ['Merge', 'Delta attribution', 'Independent verification', 'Invariant check'],
+  integrate: [
+    'Freeze declaration', 'Freeze assembly',
+    'Event declaration', 'Conservation',
+    'Software and PPA declaration', 'Execute merge',
+    'Slot merge', 'Delta attribution',
+    'Independent verification', 'Invariant check',
+  ],
   converge: ['Backflow intake', 'Framing review', 'Gate evidence', 'Architect convergence', 'Invariant check'],
 };
 for (const k of S6) {
@@ -213,9 +216,9 @@ for (const k of S6) {
 }
 
 // ---------------------------------------------------------------------------
-// 3. 契约守卫。六个文件都以同一组三守卫开头：brief 必给、产物路径必给、
+// 3. 契约守卫。每个文件都以同一组三守卫开头：brief 必给、产物路径必给、
 //    brief.stage 必须与本格一致。第三守卫是契约串了时的唯一防线——
-//    拿 detail.workload 的 brief 去跑 detail.events，守卫不拦就会
+//    拿 converge 的 brief 去跑 integrate，守卫不拦就会
 //    用错阶段的输入跑出一份看起来正常的产物。
 // ---------------------------------------------------------------------------
 for (const k of S6) {
@@ -305,7 +308,7 @@ for (const k of S6) {
   assert(!/Date\.now\(|Math\.random\(|new Date\(\)/.test(t), `${FILE[k]} 不得取时间或随机数；会破坏 resume`);
 }
 
-// 六格的产物都落在 out/detailed/ 下——同一阶段的产物聚在一处，
+// 两格的产物都落在 out/detailed/ 下——同一阶段的产物聚在一处，
 // 下一格才有一条稳定的引用路径。散到各处会让引用随实现漂移。
 // （不是 out/detail/：out/ 的目录表里只有 out/detailed/ 这一行。）
 for (const k of S6) {
@@ -313,7 +316,7 @@ for (const k of S6) {
   assert(paths.length > 0, `${FILE[k]} 必须声明落盘路径`);
   for (const p of paths) {
     assert(p.startsWith('/out/detailed/'),
-      `${FILE[k]} 的落盘路径 ${p} 不在 out/detailed/ 下；S6 六格共用这一处产物目录`);
+      `${FILE[k]} 的落盘路径 ${p} 不在 out/detailed/ 下；S6 两格共用这一处产物目录`);
   }
 }
 
@@ -399,49 +402,58 @@ for (const k of S6) {
 }
 
 // ---------------------------------------------------------------------------
-// 9. 各格的验收点。
+// 9. 各块的验收点。原先是 D 组四格各自的验收点，L5-a 后四格合进 design.integrate，
+//    判据一条没删，只把作用域从"整份文件"收到"那一块的 phase 切片"——
+//    合并后同一文件的 B2 与 B4 当然调用 integrator，B0 的"无 integrator"
+//    只能在冻结块里查。切片取 phase('X') 到下一块首个 phase 之间的代码。
 // ---------------------------------------------------------------------------
+
+function phaseSlice(text, from, to) {
+  const start = text.indexOf(`phase('${from}')`);
+  assert(start >= 0, `design.integrate 缺 phase('${from}')`);
+  const end = to ? text.indexOf(`phase('${to}')`, start) : text.length;
+  assert(end > start, `design.integrate 的 phase('${to}') 必须在 phase('${from}') 之后`);
+  return text.slice(start, end);
+}
+const block = {
+  freeze: phaseSlice(code.integrate, 'Freeze declaration', 'Event declaration'),
+  events: phaseSlice(code.integrate, 'Event declaration', 'Software and PPA declaration'),
+  execute: phaseSlice(code.integrate, 'Software and PPA declaration', 'Slot merge'),
+  slots: phaseSlice(code.integrate, 'Slot merge', null),
+};
+
+// 合并本身的验收点：四块合一不是摊平。
+//   (a) 中间四次检点收成末尾一次——检点者看整份产物，找"每块合规、合起来不成立"；
+//   (b) 块与块之间传的是本 workflow 内存里的上一块结论，不是另一份待落盘的产物：
+//       事件块看得到冻结清单，执行块看得到合并后的事件流；
+//   (c) 每一块都有自己的终止出口，不拿着上游缺口进入下一块。
+assert.strictEqual((code.integrate.match(/head\('invariant-checker'\)/g) || []).length, 1,
+  'design.integrate 只在末尾检点一次：中间各块的对账由脚本做，检点者看整份产物');
+assert(/FROZEN_JSON/.test(block.events), 'design.integrate 的事件块必须看得到 B0 冻结的配置');
+assert(/EVENTS_JSON/.test(block.execute), 'design.integrate 的执行块必须建立在 B2 合并后的事件流上，而不是另一份产物');
+for (const [name, text] of Object.entries(block)) {
+  assert(/return \{[\s\S]*?files: \[\]/.test(text), `design.integrate 的 ${name} 块必须有自己的不落盘出口`);
+}
+assert(/path: `\$\{REPO\}\/out\/detailed\/detail_integrate\.json`/.test(src.integrate),
+  'design.integrate 的产物落在 out/detailed/detail_integrate.json：backflow 与 converge 都按这条路径读');
 
 // B0 freeze（19 号文档 §3）：三件事。
 //   (a) 没有 integrator——freeze 是"抄录 + 核验"，合并语义（多份结论汇成一个）
 //       在这里无从判定，配 integrator 它会退化成橡皮图章；
 //   (b) 冻结字段清单是常量，不从产物里读；
 //   (c) manifest 状态是三个枚举，不是"看起来像 planning 就放行"。
-assert(!/head\('integrator'\)/.test(code.freeze),
-  'design.detail.freeze 不得调用 integrator：B0 只有一个确定性输入，没有可合并的多份结论');
-assert(!/INTEGRATION_OK|DELTA_UNEXPLAINED/.test(code.freeze),
-  'design.detail.freeze 不得消费 integrator 的裁决枚举——它不使用该策略');
-assert(/const FREEZE_FIELDS = \[[\s\S]*?'seed',[\s\S]*?\]/.test(src.freeze),
-  'design.detail.freeze 的冻结字段清单必须是常量数组，且含 seed');
-assert(/const MANIFEST_STATES = \['FROZEN', 'PLANNING', 'BLOCKED_CONFIG'\]/.test(src.freeze),
-  'design.detail.freeze 的 manifest 状态必须是三个枚举');
-assert(/notFrozen\.length \|\| badStates\.length/.test(src.freeze),
-  'design.detail.freeze 必须由脚本对账字段覆盖，而不是靠 agent 自律');
-assert(!/head\('verifier'\)/.test(src.freeze),
-  'design.detail.freeze 不得调用 verifier：B0 的产物是配置抄录，没有可回放的物理量');
-
-// B1 workload（§4）：三件事。
-//   (a) 三条 sizing 比齐备（compute / bandwidth / network）——只报 compute 比
-//       就说 sizing 做完了，网络受限的算子就没人看过；
-//   (b) 每个算子五个字段齐全；
-//   (c) 算子状态有取值域，不得发明新状态。
-// 这三条比在数组里是带引号的（'requiredToAvailableRatio',），
-// 所以每个片段都要连引号写，否则在引号处断掉。
-assert(/const RATIO_FIELDS = \[[\s\S]*?'requiredToAvailableRatio',[\s\S]*?'requiredToAvailableBandwidthRatio',[\s\S]*?'requiredToAvailableNetworkRatio',/.test(src.workload),
-  'design.detail.workload 必须钉住三条 sizing 比（compute / bandwidth / network）');
-assert(/const OPERATOR_FIELDS = \['operatorId', 'coreClass', 'status', 'confidence', 'source'\]/.test(src.workload),
-  'design.detail.workload 必须钉住算子的五个登记字段');
-assert(/const OPERATOR_STATES = \[/.test(src.workload),
-  'design.detail.workload 必须给算子状态一个取值域，而不是接受任意字符串');
-assert(/sizingGaps\.length/.test(src.workload),
-  'design.detail.workload 的退出条件必须由脚本对账（算子字段、三条比、状态），不由 agent 自律');
-assert(/head\('integrator'\)/.test(src.workload) && /INTEGRATION_OK/.test(src.workload),
-  'design.detail.workload 必须调用 integrator 并消费其裁决');
-// Q1 先于 Q2：算子清单没定，逐个算子的强度就没有对象。
-const invIdx = src.workload.indexOf("phase('Operator inventory')");
-const sizIdx = src.workload.indexOf("phase('Roofline and sizing')");
-assert(invIdx >= 0 && sizIdx > invIdx,
-  'design.detail.workload 必须先定算子 DAG 再算 sizing：并行会让两侧去算一份可能被推翻的算子表');
+assert(!/head\('integrator'\)/.test(block.freeze),
+  'design.integrate 的冻结块不得调用 integrator：B0 只有一个确定性输入，没有可合并的多份结论');
+assert(!/INTEGRATION_OK|DELTA_UNEXPLAINED/.test(block.freeze),
+  'design.integrate 的冻结块不得消费 integrator 的裁决枚举——它不使用该策略');
+assert(/const FREEZE_FIELDS = \[[\s\S]*?'seed',[\s\S]*?\]/.test(src.integrate),
+  'design.integrate 的冻结字段清单必须是常量数组，且含 seed');
+assert(/const MANIFEST_STATES = \['FROZEN', 'PLANNING', 'BLOCKED_CONFIG'\]/.test(src.integrate),
+  'design.integrate 的冻结块的 manifest 状态必须是三个枚举');
+assert(/notFrozen\.length \|\| badStates\.length/.test(block.freeze),
+  'design.integrate 的冻结块必须由脚本对账字段覆盖，而不是靠 agent 自律');
+assert(!/head\('verifier'\)/.test(block.freeze),
+  'design.integrate 的冻结块不得调用 verifier：B0 的产物是配置抄录，没有可回放的物理量');
 
 // B2 events（§5）：三件事。
 //   (a) 三路并行且共享同一 manifest hash——hash 不一致，跨域对账就没有意义；
@@ -450,42 +462,42 @@ assert(invIdx >= 0 && sizIdx > invIdx,
 // 注意名字在数组里是带引号的（'byteConservation',），
 // 所以匹配时必须连引号一起写：只写 byteConservation, 会在引号处断掉，
 // 断言永远不成立——而它看起来像在检查，实际什么都没查。
-assert(/const CONSERVATIONS = \[[\s\S]*?'byteConservation',[\s\S]*?'flopConservation',[\s\S]*?'transactionConservation',[\s\S]*?'bufferLifetime',[\s\S]*?'creditConservation',[\s\S]*?\]/.test(src.events),
-  'design.detail.events 必须钉住五条守恒：byte / flop / transaction / bufferLifetime / credit');
-assert(/const EVENT_TRACE_FIELDS = \['operatorId', 'layerId', 'tileId', 'manifestHash'\]/.test(src.events),
-  'design.detail.events 必须钉住事件的四个追溯字段');
-assert(/await parallel\(DECLARANTS\.map/.test(src.events),
-  'design.detail.events 的三域申报必须并行，而不是串行');
-assert(/hashes\.length !== 1/.test(src.events),
-  'design.detail.events 必须核对三路共享同一 manifest hash 后才进入合并');
-assert(/conservationErrors/.test(src.events),
-  'design.detail.events 必须由脚本重算五条守恒，而不是相信 agent 写的 met');
-assert(/MULTIPLIER_PATTERN/.test(src.events) && /multiplierHits/.test(src.events),
-  'design.detail.events 必须主动扫无出处的加速比/利用率乘子');
-assert(/SYNTHETIC_PLACEHOLDER/.test(src.events),
-  'design.detail.events 必须写明重放产物里的占位事件不得作为证据');
-assert(/DIRECTION_BACKFLOW/.test(src.events) && /BLOCKED_CONFIG/.test(src.events),
-  'design.detail.events 必须消费三域的两个回流/缺口裁决');
+assert(/const CONSERVATIONS = \[[\s\S]*?'byteConservation',[\s\S]*?'flopConservation',[\s\S]*?'transactionConservation',[\s\S]*?'bufferLifetime',[\s\S]*?'creditConservation',[\s\S]*?\]/.test(src.integrate),
+  'design.integrate 的事件块必须钉住五条守恒：byte / flop / transaction / bufferLifetime / credit');
+assert(/const EVENT_TRACE_FIELDS = \['operatorId', 'layerId', 'tileId', 'manifestHash'\]/.test(src.integrate),
+  'design.integrate 的事件块必须钉住事件的四个追溯字段');
+assert(/await parallel\(EVENT_DECLARANTS\.map/.test(block.events),
+  'design.integrate 的事件块的三域申报必须并行，而不是串行');
+assert(/hashes\.length !== 1/.test(block.events),
+  'design.integrate 的事件块必须核对三路共享同一 manifest hash 后才进入合并');
+assert(/conservationErrors/.test(block.events),
+  'design.integrate 的事件块必须由脚本重算五条守恒，而不是相信 agent 写的 met');
+assert(/MULTIPLIER_PATTERN/.test(block.events) && /multiplierHits/.test(block.events),
+  'design.integrate 的事件块必须主动扫无出处的加速比/利用率乘子');
+assert(/SYNTHETIC_PLACEHOLDER/.test(block.events),
+  'design.integrate 的事件块必须写明重放产物里的占位事件不得作为证据');
+assert(/DIRECTION_BACKFLOW/.test(block.events) && /BLOCKED_CONFIG/.test(block.events),
+  'design.integrate 的事件块必须消费三域的两个回流/缺口裁决');
 
 // B3 execute（§6）：三件事。
 //   (a) physical-expert 的 PPA_DIRECTION_BACKFLOW 走专线回 A0，不与软件回流摊平；
 //   (b) 面积守恒容差为 0；
 //   (c) 卡功耗两套口径不得混用（差 21.915648 W）。
-assert(/PPA_DIRECTION_BACKFLOW/.test(src.execute),
-  'design.detail.execute 必须消费 physical-expert 的 PPA_DIRECTION_BACKFLOW');
-assert(/d\.verdict === 'PPA_DIRECTION_BACKFLOW'/.test(src.execute),
-  'design.detail.execute 必须把 PPA 回流与软件回流分开上报——两类证据的重定方向不同');
-assert(/const AREA_TOLERANCE_MM2 = 0\b/.test(src.execute),
-  'design.detail.execute 的面积守恒容差必须是 0：它是一条等式，不是不等式');
-assert(/const POWER_CALIBERS = \['MEMORY_DOMAIN', 'PHYSICAL_DOMAIN'\]/.test(src.execute),
-  'design.detail.execute 必须钉住两套卡功耗口径');
-assert(/21\.915648/.test(src.execute),
-  'design.detail.execute 必须写明两套卡功耗口径的差值，否则混用无法被发现');
-assert(/const SOFTWARE_SCHEMA = declarationSchema\(\['LOCAL_DETAIL_FIX', 'DIRECTION_BACKFLOW', 'BLOCKED_CONFIG'\]\)/.test(src.execute)
-  && /const PHYSICAL_SCHEMA = declarationSchema\(\['LOCAL_DETAIL_FIX', 'PPA_DIRECTION_BACKFLOW', 'BLOCKED_CONFIG'\]\)/.test(src.execute),
-  'design.detail.execute 的两域裁决枚举必须按 roster 各自给：只有 physical-expert 有 PPA_DIRECTION_BACKFLOW');
-assert(/await parallel\(DECLARANTS\.map/.test(src.execute),
-  'design.detail.execute 的 Q6/Q7 必须并行，互不可见');
+assert(/PPA_DIRECTION_BACKFLOW/.test(block.execute),
+  'design.integrate 的执行块必须消费 physical-expert 的 PPA_DIRECTION_BACKFLOW');
+assert(/d\.verdict === 'PPA_DIRECTION_BACKFLOW'/.test(block.execute),
+  'design.integrate 的执行块必须把 PPA 回流与软件回流分开上报——两类证据的重定方向不同');
+assert(/const AREA_TOLERANCE_MM2 = 0\b/.test(src.integrate),
+  'design.integrate 的执行块的面积守恒容差必须是 0：它是一条等式，不是不等式');
+assert(/const POWER_CALIBERS = \['MEMORY_DOMAIN', 'PHYSICAL_DOMAIN'\]/.test(src.integrate),
+  'design.integrate 的执行块必须钉住两套卡功耗口径');
+assert(/21\.915648/.test(src.integrate),
+  'design.integrate 的执行块必须写明两套卡功耗口径的差值，否则混用无法被发现');
+assert(/const SOFTWARE_SCHEMA = declarationSchema\(\['LOCAL_DETAIL_FIX', 'DIRECTION_BACKFLOW', 'BLOCKED_CONFIG'\]\)/.test(src.integrate)
+  && /const PHYSICAL_SCHEMA = declarationSchema\(\['LOCAL_DETAIL_FIX', 'PPA_DIRECTION_BACKFLOW', 'BLOCKED_CONFIG'\]\)/.test(src.integrate),
+  'design.integrate 的执行块的两域裁决枚举必须按 roster 各自给：只有 physical-expert 有 PPA_DIRECTION_BACKFLOW');
+assert(/await parallel\(EXECUTE_DECLARANTS\.map/.test(block.execute),
+  'design.integrate 的执行块的 Q6/Q7 必须并行，互不可见');
 
 // B4 integrate（§7）——S6 的头条验收："粗估-细估 delta 有归因"。
 //   (a) 18 个观察位由常量推导，不是从产物里读（读了等于让被测者定考题）；
@@ -493,37 +505,40 @@ assert(/await parallel\(DECLARANTS\.map/.test(src.execute),
 //   (c) 每一个非零 delta 都必须归位，没有"小于 x% 可以不解释"的宽容线；
 //   (d) verifier 只看落盘产物，不看 agent 的申报散文。
 assert(/const OBSERVATION_MODELS = \['GLM-5\.2', 'DeepSeek-V4-Pro', 'Kimi-K3'\]/.test(src.integrate),
-  'design.detail.integrate 的三个模型必须是常量');
+  'design.integrate 的合并块的三个模型必须是常量');
 assert(/const OBSERVATION_TP = \[8, 16, 32\]/.test(src.integrate) && /const OBSERVATION_MC = \['MC320', 'MC640'\]/.test(src.integrate),
-  'design.detail.integrate 的 TP 三档与 MC 两档必须是常量');
+  'design.integrate 的合并块的 TP 三档与 MC 两档必须是常量');
 assert(/const OBSERVATION_COUNT = OBSERVATION_MODELS\.length \* OBSERVATION_TP\.length \* OBSERVATION_MC\.length/.test(src.integrate),
-  'design.detail.integrate 的 18 位必须由常量相乘得出，不得从产物里读');
+  'design.integrate 的合并块的 18 位必须由常量相乘得出，不得从产物里读');
 assert(/const OBSERVATION_STATES = \['MODEL_OBSERVED', 'PENDING_MODEL_RUN', 'BLOCKED_CONFIG', 'SILICON_OBSERVED'\]/.test(src.integrate),
-  'design.detail.integrate 的观察状态必须是四个枚举');
-assert(/const deltaBySlot = new Map/.test(src.integrate) && /deltaPct/.test(src.integrate),
-  'design.detail.integrate 的 delta 百分比必须由脚本相减得出，不由任何 agent 产生');
+  'design.integrate 的合并块的观察状态必须是四个枚举');
+assert(/const deltaBySlot = new Map/.test(block.slots) && /deltaPct/.test(src.integrate),
+  'design.integrate 的合并块的 delta 百分比必须由脚本相减得出，不由任何 agent 产生');
 assert(/const CORROBORATION_KINDS = \['FITTED_POINT', 'DETAILED_HOLDOUT', 'UNCORROBORATED', 'NONE'\]/.test(src.integrate)
   && /uncorroboratedSlots/.test(src.integrate) && /corroborationBySlot/.test(src.integrate),
-  'design.detail.integrate 必须区分有独立印证的槽位与未印证的槽位：粗估与细估同公式，delta 为 0 不是对账结果');
-assert(/silentDeltas/.test(src.integrate),
-  'design.detail.integrate 必须抓住"未被提及的 delta"——不设宽容线，非零就要归位');
-assert(/head\('architect'\)/.test(src.integrate),
-  'design.detail.integrate 必须由 architect 做归因裁决（解释权不在合并者手里）');
+  'design.integrate 的合并块必须区分有独立印证的槽位与未印证的槽位：粗估与细估同公式，delta 为 0 不是对账结果');
+assert(/silentDeltas/.test(block.slots),
+  'design.integrate 的合并块必须抓住"未被提及的 delta"——不设宽容线，非零就要归位');
+assert(/head\('architect'\)/.test(block.slots),
+  'design.integrate 的合并块必须由 architect 做归因裁决（解释权不在合并者手里）');
 assert(/综合因素/.test(src.integrate),
-  'design.detail.integrate 必须显式禁止"综合因素"式假归因');
-assert(/head\('verifier'\)/.test(src.integrate),
-  'design.detail.integrate 必须调用 verifier 独立验证 18 位的数值产物');
+  'design.integrate 的合并块必须显式禁止"综合因素"式假归因');
+assert(/head\('verifier'\)/.test(block.slots),
+  'design.integrate 的合并块必须调用 verifier 独立验证 18 位的数值产物');
 assert(/你\*\*不\*\*看任何 agent 的申报过程|不看任何 agent 的申报/.test(src.integrate),
-  'design.detail.integrate 的 verifier 必须只拿落盘产物，不拿申报散文');
+  'design.integrate 的合并块的 verifier 必须只拿落盘产物，不拿申报散文');
 assert(/okInvariants && okVerified/.test(src.integrate),
-  'design.detail.integrate 的落盘必须同时受检点与独立验证门控');
+  'design.integrate 的合并块的落盘必须同时受检点与独立验证门控');
 
 // A0 converge（§8）：三件事。
-//   (a) D 组的五格必须到齐——少一格，"每格都合规、合起来不成立"的缺口就可能藏在没到的那一格；
+//   (a) D 组必须到齐——L5-a 之后 D 组只剩 design.integrate 一格，它的产物里含冻结、
+//       事件、执行账本与 18 位四块；少了它，"每块都合规、合起来不成立"的缺口就无从看起；
 //   (b) 收敛路由是数据：ARCH_FREEZE / D_GATE_PROPOSAL 可往下走，DIRECTION_BACKFLOW 终止；
 //   (c) **提案不是门控结论**：PASS 只由 evaluate_gates.js 计算。
-assert(/const REQUIRED_STAGES = \[[\s\S]*?'detail\.freeze', 'detail\.workload', 'detail\.events', 'detail\.execute', 'detail\.integrate',[\s\S]*?\]/.test(src.converge),
-  'design.converge 必须要求 D 组五格到齐');
+assert(/const REQUIRED_STAGES = \[\s*'integrate',\s*\]/.test(src.converge),
+  'design.converge 必须要求 D 组的 integrate 到齐（L5-a 后 D 组只剩这一格）');
+assert(!/'detail\.(freeze|workload|events|execute|integrate)'/.test(code.converge),
+  'design.converge 不得再要求已合并或前移的 detail.* 五格');
 assert(/missingStages\.length/.test(src.converge),
   'design.converge 必须在缺格时拒绝给出裁决，而不是照常收敛');
 assert(/const CONVERGENCE_ROUTE = \{/.test(src.converge) && /proceed: false/.test(src.converge),

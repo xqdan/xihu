@@ -1,22 +1,30 @@
 'use strict';
 
-// S5 的三个 workflow：contract / direction / dgate.
+// S5 的两个 workflow：contract / arch.direction.
 //
-// 它们不是 C 组骨架的副本——contract 与 direction 没有"搜索策略 → 确定性搜索"两步，
-// dgate 干脆没有候选枚举。所以 S4 的 test_design_workflow_skeleton.js 既不能覆盖它们，
-// 也不该被它们拓宽（那份测试的 DOMAINS 是写死的四域，这是刻意的）。
-// 这份测试补的正是 S4 空出来的那一段。
+// 它们不是 C 组骨架的副本——contract 与 arch.direction 没有"搜索策略 → 确定性搜索"两步，
+// 后者的候选也不是某个域的设计空间取值，而是**形态宏参数**（L/H 算力配比、
+// 片上 SRAM 总量与 local/shared 切分、MC 档位、die 数、TP），由主循环侧的
+// stage_a.js 确定性枚举后作为产物传进来。所以 S4 的
+// test_design_workflow_skeleton.js 既不能覆盖它们，也不该被它们拓宽
+// （那份测试的 DOMAINS 是写死的四域，这是刻意的）。这份测试补的正是 S4 空出来的那一段。
+//
+// 本组从三个收成两个：direction 与 dgate 合并成 arch.direction。
+// 拆两格曾经的理由是"路线选择"与"门控放行"是两件事，但两格读的是同一份打分卡、
+// 同一份包络，第二格除了把第一格刚核过的门槛再核一遍之外没有新输入。合并之后
+// 路线与门控在一格里闭合，门槛证据只核一次。
 //
 // 它守的是 S5 的验收判据与四条硬边界各自在本组 workflow 上的落点：
 //
 //   * 语法：按运行时的真实形态解析（包一层函数），而不是直接 node --check
-//   * 阶段顺序：三个 workflow 各自的 phase() 序列与 meta.phases 一致
+//   * 阶段顺序：两个 workflow 各自的 phase() 序列与 meta.phases 一致
 //   * 检点收尾：每个 workflow 的最后一个 agent 调用是检点类策略，且返回值受它门控
 //   * 裁决消费：roster 里每个策略的 verdictEnum，要么被某个 workflow 消费，要么在
 //     pendingConsumption 里有明确到期切片——没有第三条路，否则就是写了个没人接的分支
 //   * 策略版本：workflow 写进 ledgerPatch 的 strategyVersions 必须与 roster 一致，
 //     且它调用过的每个策略都必须在表里
-//   * S5 判据：direction 的 ≤3 收敛、dgate 的门槛条数与"不自行判定结论"
+//   * S5 判据：arch.direction 的 ≤3 收敛、门槛条数固定为 8、
+//     门槛核验只开**一个** gate-keeper 实例、以及"不自行判定结论"
 //
 // 它不比较策略正文，也不比较 prompt 的措辞——那些是预期会不同的部分。
 
@@ -35,10 +43,14 @@ const read = (f) => fs.readFileSync(path.join(wfDir, f), 'utf8');
 
 const FILE = {
   contract: 'design.contract.workflow.js',
-  direction: 'design.direction.workflow.js',
-  dgate: 'design.dgate.workflow.js',
+  'arch.direction': 'design.arch.direction.workflow.js',
 };
 const S5 = Object.keys(FILE);
+// meta.name 是阶段名的连字形式：design.arch.direction → design-arch-direction。
+const META_NAME = {
+  contract: 'design-contract',
+  'arch.direction': 'design-arch-direction',
+};
 const src = Object.fromEntries(S5.map((k) => [k, read(FILE[k])]));
 
 // 从 `const STRATEGY_VERSIONS = {` 起扫到大括号配平的 `}`。
@@ -101,13 +113,12 @@ for (const k of S5) {
 // ---------------------------------------------------------------------------
 const PHASES = {
   contract: ['Interface declaration', 'Contract convergence', 'Independent verification', 'Invariant check'],
-  direction: ['Candidate evaluation', 'Convergence', 'Framing review', 'Gate evidence', 'Invariant check'],
-  dgate: ['Threshold evidence', 'Evidence assembly', 'Invariant check'],
+  'arch.direction': ['Candidate evaluation', 'Convergence', 'Framing review', 'Gate evidence', 'Evidence assembly', 'Invariant check'],
 };
 for (const k of S5) {
   const t = src[k];
   assert(/export const meta = \{/.test(t), `${FILE[k]} 必须导出 meta`);
-  assert(new RegExp(`name: 'design-${k}'`).test(t), `${FILE[k]} 的 meta.name 必须是 design-${k}`);
+  assert(new RegExp(`name: '${META_NAME[k]}'`).test(t), `${FILE[k]} 的 meta.name 必须是 ${META_NAME[k]}`);
   assert(/description: '[^']+'/.test(t), `${FILE[k]} 的 meta.description 不得为空`);
 
   const order = [...t.matchAll(/^phase\('([^']+)'\)/gm)].map((m) => m[1]);
@@ -157,10 +168,23 @@ for (const k of S5) {
   assert(emptyFirst || emptyLast,
     `${FILE[k]} 检点不通过的那一支必须是 files: []，不得仍然落盘`);
 }
-// dgate 的倒数第二个调用是 architect 的证据包汇总，再往前是 8 个独立 gate-keeper。
-// "独立实例"是这个阶段的核心：一个 agent 查八条门槛，宽松会传染。
-assert(/await parallel\(D_GATE_THRESHOLDS\.map/.test(src.dgate),
-  'design.dgate 必须为每条门槛各起一个独立 gate-keeper 实例，而不是一个 agent 查八条');
+// arch.direction 的门槛核验只开**一个** gate-keeper 实例，一次核完 8 条并逐条输出。
+//
+// 这条曾经是反的：拆成 direction + dgate 时，dgate 为每条门槛各起一个独立实例，
+// 理由是"一个 agent 查八条，宽松会传染"。但 8 条门槛读的是同一份打分卡与同一份包络，
+// 彼此之间没有信息屏障要维护（候选评估要互相看不见，是因为看得见就会对齐措辞；
+// 门槛核验没有这个问题）。开 8 个实例换来的不是独立性，是同一份产物被读 8 遍，
+// 以及"8 条之间的交叉引用没人负责"这个缺口。收成一个实例、输出逐条数组之后，
+// 宽松不会跨条传染——因为每条仍各自给 status / evidenceLevel / evidence / blocker——
+// 而交叉引用落进了同一个实例。
+// 所以这里断言的是反面：不得扇出，且必须逐条。
+assert(!/parallel\(\s*D_GATE_THRESHOLDS\.map/.test(src['arch.direction']),
+  'design.arch.direction 不得为每条门槛各起一个 gate-keeper 实例；门槛核验是一个实例逐条输出');
+assert.strictEqual([...src['arch.direction'].matchAll(/head\('gate-keeper'\)/g)].length, 1,
+  'design.arch.direction 必须恰好调用一次 gate-keeper：一次核完 8 条，逐条给证据');
+// 逐条输出是这一条的落地方式：给了总体 status 就等于把 8 条合成 1 条。
+assert(/required:\s*\[[^\]]*'thresholds'/.test(src['arch.direction']) && /逐条/.test(src['arch.direction']),
+  'design.arch.direction 的 gate-keeper 必须输出逐条数组，不得合成一条总体结论');
 
 // ---------------------------------------------------------------------------
 // 4. 只读与确定性。workflow 没有文件系统，也不能取时间或随机数。
@@ -211,13 +235,11 @@ for (const s of roster.strategies) {
 }
 
 // S5 之后这两个裁决必须真的被消费，不能再挂在暂缓表上——这是本切片的验收点之一。
-// 门控证据枚举在 direction 与 dgate 里都被 switch 消费。
-assert(/GATE_EVIDENCE_COMPLETE/.test(src.direction) && /GATE_BLOCKED/.test(src.direction),
-  'design.direction 必须消费 gate-keeper 的两个门控证据裁决');
-assert(/okGate|gate\.verdict === 'GATE_EVIDENCE_COMPLETE'/.test(src.direction),
-  'design.direction 的落盘必须受门控证据裁决门控');
-assert(/GATE_EVIDENCE_COMPLETE/.test(src.dgate) && /GATE_BLOCKED/.test(src.dgate),
-  'design.dgate 必须消费 gate-keeper 的两个门控证据裁决');
+// 门控证据枚举在 arch.direction 里被 switch 消费。
+assert(/GATE_EVIDENCE_COMPLETE/.test(src['arch.direction']) && /GATE_BLOCKED/.test(src['arch.direction']),
+  'design.arch.direction 必须消费 gate-keeper 的两个门控证据裁决');
+assert(/okGate|gate\.verdict === 'GATE_EVIDENCE_COMPLETE'/.test(src['arch.direction']),
+  'design.arch.direction 的落盘必须受门控证据裁决门控');
 
 // 方向回流的两个枚举必须被 design.contract 消费。contract 是最早的一格，
 // 它一旦带着方向级矛盾往下走，后面每一格都会建在这个矛盾上。
@@ -271,40 +293,42 @@ for (const k of S5) {
 // ---------------------------------------------------------------------------
 // 7. S5 的两条验收判据。
 //
-//    (a)《22 号文档》§9.1/§9.2：direction 从 6–12 收敛到 ≤3。
+//    (a)《22 号文档》§9.1/§9.2：从 6–12 候选收敛到 ≤3。
 //       §4.1 的表格里写的是"只留 winner"，与 §9 冲突。以 §9 为准，证据是确定性的：
 //       evaluate_gates.js 的 candidateCountLe3 就是 ≤3，stage_a.js 的
 //       selectCandidates 也是至多三个正式候选。验收判据按可复算的那一份走。
 //
-//    (b) dgate 不产生门控结论字面量。这条不是靠措辞保证的，是靠三层结构：
-//       8 个 gate-keeper 只能报证据状态、architect 只能转抄脚本的 decision、
-//       invariant-checker 专门核验转抄是否逐字一致且没有自行判定。
+//    (b) 门控结论不由这一格产生。这条不是靠措辞保证的，是靠三层结构：
+//        一个 gate-keeper 只能报**逐条证据**状态（不得合并成总体结论）、
+//        architect 只能转抄脚本的 decision、invariant-checker 专门核验转抄是否
+//        逐字一致且没有自行判定。
 // ---------------------------------------------------------------------------
-const MAX = src.direction.match(/const MAX_CANDIDATES = args\.maxCandidates \|\| (\d+)/);
-assert(MAX, 'design.direction 必须接受 args.maxCandidates');
+const MAX = src['arch.direction'].match(/const MAX_CANDIDATES = args\.maxCandidates \|\| (\d+)/);
+assert(MAX, 'design.arch.direction 必须接受 args.maxCandidates');
 const maxN = Number(MAX[1]);
-assert(maxN >= 6 && maxN <= 12, `design.direction 的候选上限应在 6–12 之间（验收判据的起点），当前 ${maxN}`);
-assert(/CANDIDATES\.slice\(0, MAX_CANDIDATES\)/.test(src.direction),
-  'design.direction 必须在评估前对候选集切片，收敛上界不能靠 agent 自律');
-assert(/\.filter\(\(r\) => r\.rank <= 3\)/.test(src.direction),
-  'design.direction 必须把正式候选截到 3 个以内');
-assert(/candidateCountLe3/.test(src.direction),
-  'design.direction 的记录里必须指明 ≤3 由 evaluate_gates.js 的 candidateCountLe3 复核');
-assert(/convergence:\s*\{/.test(src.direction), 'design.direction 的 runRecord 必须记录收敛前后计数');
-assert(/from: sliced\.length[\s\S]{0,80}to: formal\.length/.test(src.direction),
-  'design.direction 的收敛记录必须同时给出收敛前与收敛后的实际计数');
+assert(maxN >= 6 && maxN <= 12, `design.arch.direction 的候选上限应在 6–12 之间（验收判据的起点），当前 ${maxN}`);
+assert(/CANDIDATES\.slice\(0, MAX_CANDIDATES\)/.test(src['arch.direction']),
+  'design.arch.direction 必须在评估前对候选集切片，收敛上界不能靠 agent 自律');
+assert(/\.filter\(\(r\) => r\.rank <= 3\)/.test(src['arch.direction']),
+  'design.arch.direction 必须把正式候选截到 3 个以内');
+assert(/candidateCountLe3/.test(src['arch.direction']),
+  'design.arch.direction 的记录里必须指明 ≤3 由 evaluate_gates.js 的 candidateCountLe3 复核');
+assert(/convergence:\s*\{/.test(src['arch.direction']), 'design.arch.direction 的 runRecord 必须记录收敛前后计数');
+assert(/from: sliced\.length[\s\S]{0,80}to: formal\.length/.test(src['arch.direction']),
+  'design.arch.direction 的收敛记录必须同时给出收敛前与收敛后的实际计数');
 
-// dgate：门槛条数必须是常量，不能从产物里读——用被测数据决定核验范围，等于让被测者定考题。
-assert(/const THRESHOLDS = args\.thresholds \|\| 8/.test(src.dgate), 'design.dgate 的门槛条数必须是常量 8');
-assert(/THRESHOLDS !== D_GATE_THRESHOLDS\.length/.test(src.dgate),
-  'design.dgate 必须在门槛条数与文档不符时抛错，而不是跑少几条');
-assert(/DG-8/.test(src.dgate) && /不超过 3 个候选/.test(src.dgate),
-  'design.dgate 注入的门槛正文必须含第 8 条（≤3 候选）；它与 direction 的收敛判据是同一件事的两个落点');
+// 门槛条数必须是常量，不能从产物里读——用被测数据决定核验范围，等于让被测者定考题。
+assert(/const THRESHOLDS = args\.thresholds \|\| 8/.test(src['arch.direction']),
+  'design.arch.direction 的门槛条数必须是常量 8');
+assert(/THRESHOLDS !== D_GATE_THRESHOLDS\.length/.test(src['arch.direction']),
+  'design.arch.direction 必须在门槛条数与文档不符时抛错，而不是跑少几条');
+assert(/DG-8/.test(src['arch.direction']) && /不超过 3 个候选/.test(src['arch.direction']),
+  'design.arch.direction 注入的门槛正文必须含第 8 条（≤3 候选）；它与收敛判据是同一件事的两个落点');
 // architect 只能转抄，不能推断。
-assert(/gateDecision/.test(src.dgate) && /照抄|逐字一致/.test(src.dgate),
-  'design.dgate 必须要求 architect 照抄脚本的 decision，并要求检点核验逐字一致');
-assert(/不得因|推断/.test(src.dgate),
-  'design.dgate 必须显式禁止"证据齐了就推断结论"这一路径');
+assert(/gateDecision/.test(src['arch.direction']) && /照抄|逐字一致/.test(src['arch.direction']),
+  'design.arch.direction 必须要求 architect 照抄脚本的 decision，并要求检点核验逐字一致');
+assert(/不得因|推断/.test(src['arch.direction']),
+  'design.arch.direction 必须显式禁止"证据齐了就推断结论"这一路径。');
 
 // 任何一个 S5 文件都不得出现门控结论字面量。
 // 禁止句里提到字面量是允许的（策略与 workflow 都要能说明"不得写它"），

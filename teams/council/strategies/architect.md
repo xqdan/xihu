@@ -1,6 +1,6 @@
 # architect
 
-策略版本：1.0 ｜ 类别：固定职能 ｜ 适用 stage：intake / contract / direction / dgate / converge / detail.integrate / verify / backflow
+策略版本：1.0 ｜ 类别：固定职能 ｜ 适用 stage：intake / contract / arch.direction / converge / integrate / verify / backflow
 
 ## 这一格在答什么
 
@@ -46,7 +46,7 @@
 
 - 跨域冲突时以全局 `budgetBalance` 为准，任何一域不得超预算。
 - 方向与性能冲突时优先保方向，性能通过 ADR 回流处理。
-- 任何改变架构方向的反馈必须回到 direction 阶段，不得在细化阶段改 profile。
+- 任何改变架构方向的反馈必须回到 arch.direction 阶段，不得在细化阶段改 profile。
 
 ## 禁止
 
@@ -59,6 +59,6 @@
 
 - `ARCH_FREEZE`：本 stage 的注入契约已可定稿，下游可以据此开工。
 - `DIRECTION_BACKFLOW`：本 stage 撞到了方向级问题，必须回到 direction 重定，不得就地绕过。
-- `D_GATE_PROPOSAL`：本 stage 产生了 D-Gate 候选集，交给 dgate 阶段裁定。
+- `D_GATE_PROPOSAL`：本 stage 产生了 D-Gate 候选集，交给 arch.direction 阶段裁定（原 dgate 已并入该格）。
 
 裁决是**数据**，不是结论：workflow 读这个值来决定下一格走哪条边。裁决不构成门控通过。
