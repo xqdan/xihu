@@ -11,4 +11,8 @@ const SEARCHES = {
 const name = process.argv[2];
 if (!SEARCHES[name]) throw new Error(`usage: run_search.js <${Object.keys(SEARCHES).join('|')}>`);
 process.chdir(path.resolve(__dirname, '../..'));
-require(SEARCHES[name]).run();
+// run() is async (the candidates are evaluated on a worker pool; K3_SEARCH_JOBS sets its size).
+require(SEARCHES[name]).run().catch(error => {
+  console.error(error);
+  process.exit(1);
+});

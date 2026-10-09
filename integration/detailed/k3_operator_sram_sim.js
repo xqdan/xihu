@@ -230,6 +230,11 @@ function simulate(plan,sramMiB,{trace=false}={}){
  const {c,ops,layers,scratchReserve}=plan,S=sramMiB*MiB,pool=S-scratchReserve;
  if(S+1e-6<plan.minCapacity)return {sramMiB,feasible:false,reason:'Fixed tile + scratch does not fit',minMiB:plan.minCapacity/MiB};
  const js=plan.jobs.map(j=>({...j,status:j.kind==='expert'?'blocked':j.kind==='write'?'output':'queued',reserved:0,remaining:0,adopted:false}));
+ // Expert jobs in (consumer, id) order. consumer is fixed when the plan is built, so the order is static, and a
+ // 'done' job never leaves that state, so the leading run of done experts can be skipped for good.
+ const expertIds=[];for(let i=0;i<js.length;i++)if(js[i].kind==='expert')expertIds.push(i);
+ expertIds.sort((a,b)=>js[a].consumer-js[b].consumer||a-b);
+ let expertHead=0;
  const routed=Array(93).fill(false);routed[0]=true;
  const lane=c.commOverlap===true,tl=c.tmaLane===true;
  // TMA lanes: fillState[k] is null|'filling'|'done'; holders count the
@@ -241,6 +246,10 @@ function simulate(plan,sramMiB,{trace=false}={}){
  let readBytes=0,writeBytes=0,predBytes=0,wrongBytes=0,evictBytes=0,stallCapacityUs=0;
  let iterations=0;const layerStats=layers.map(l=>({...l,start:null,end:null,wait:0,compute:0,comm:0,readBytes:0,writeBytes:0,peak:0,operators:{}}));
  const writes=[],events=[],occupancy=[];let capacityBlocked=false;
+ // A write job only ever moves output -> queued -> filling -> done, and is queued once, so everything before
+ // writeHead is past 'queued' for good and the first queued write is found without rescanning the history.
+ let writeHead=0;
+ function nextWrite(){while(writeHead<writes.length&&js[writes[writeHead]].status!=='queued')writeHead++;return writeHead<writes.length?writes[writeHead]:undefined;}
  function record(){const live=used+(running||comm?(running?running.arena:0)+(comm?comm.arena:0):plan.scratch.base);peakLive=Math.max(peakLive,live);peakReserved=Math.max(peakReserved,used+scratchReserve);if(index<ops.length)layerStats[ops[index].layer].peak=Math.max(layerStats[ops[index].layer].peak,live);if(trace)occupancy.push({t,allocatedMiB:(used+scratchReserve)/MiB,liveMiB:live/MiB});assertCapacity();}
  function assertCapacity(){if(used<-1e-3||used>pool+1e-3)throw Error('SRAM accounting violation '+used+' pool '+pool);}
  function free(j){used-=j.reserved;j.reserved=0;}
@@ -369,7 +378,11 @@ function simulate(plan,sramMiB,{trace=false}={}){
   const o=ops[index];if(!o||dma.kind==='write')return;
   const need=required(o);if(need.includes(dma.id))return;
   let u=need.map(id=>js[id]).find(j=>j.status==='queued');
-  if(!u)u=js.filter(j=>j.kind==='expert'&&j.status==='queued'&&j.consumer<dma.consumer).sort((a,b)=>a.consumer-b.consumer)[0];
+  // The queued expert with the earliest consumer (ties: first in job order) among those consumed before the running DMA.
+  if(!u){
+   while(expertHead<expertIds.length&&js[expertIds[expertHead]].status==='done')expertHead++;
+   for(let k=expertHead;k<expertIds.length;k++){const j=js[expertIds[k]];if(!(j.consumer<dma.consumer))break;if(j.status==='queued'){u=j;break;}}
+  }
   if(!u||u.consumer>=dma.consumer||u.bytes>pool-used+1e-6)return;
   const j=dma;j.status='paused';parked.push(j);dma=null;preemptions++;
   if(trace)events.push({type:'DMA park',t,job:j.id,layer:j.layer,category:j.category,remaining:j.remaining});
@@ -384,7 +397,7 @@ function simulate(plan,sramMiB,{trace=false}={}){
   const o=ops[index],need=o?required(o):[],pinned=new Set(need);
   const p0=need.map(id=>js[id]).find(j=>j.status==='paused');if(p0){resume(p0);return;}
   // Pending writebacks own space already; drain first, bounded by one tile.
-  let id=writes.find(id=>js[id].status==='queued');
+  let id=nextWrite();
   if(id===undefined)id=need.find(id=>js[id].status==='queued');
   if(id!==undefined){const j=js[id];if(j.kind!=='write'&&!evictFor(j.bytes,pinned)){capacityBlocked=true;return;}startDMA(j);return;}
   if(!o)return;
@@ -399,8 +412,13 @@ function simulate(plan,sramMiB,{trace=false}={}){
   // Parked prefetches already own their space; they resume in consumer order.
   for(const j of parked)candidates.push(j);
   // Consumer order, not oracle hit order; all prediction bytes include wrong data.
-  candidates.sort((a,b)=>a.consumer-b.consumer||a.id-b.id);
-  for(const j of candidates){if(j.status==='paused'){resume(j);return;}if(j.bytes<=pool-used+1e-6){startDMA(j);return;}}
+  // The first candidate in (consumer, id) order that is paused or fits is the minimum of those that qualify; no sort needed.
+  let pick=null;const room=pool-used+1e-6;
+  for(const j of candidates){
+   if(j.status!=='paused'&&!(j.bytes<=room))continue;
+   if(pick===null||j.consumer<pick.consumer||(j.consumer===pick.consumer&&j.id<pick.id))pick=j;
+  }
+  if(pick!==null){if(pick.status==='paused')resume(pick);else startDMA(pick);return;}
   if(candidates.length)capacityBlocked=true;
  }
  function startDMA(j){
@@ -417,7 +435,7 @@ function simulate(plan,sramMiB,{trace=false}={}){
   const port=dma.kind==='write'?c.sramReadTBs*1e6-opRead:c.sramWriteTBs*1e6-opWrite;
   return Math.max(0,Math.min(c.memTBs*1e6,c.fabricTBs*1e6-commFabric,port));
  }
- while(index<ops.length||comm||dma||parked.length||fills.length||writes.some(id=>js[id].status==='queued')){
+ while(index<ops.length||comm||dma||parked.length||fills.length||nextWrite()!==undefined){
   if(++iterations>ops.length*30+js.length*30)throw Error('Event loop bound');
   capacityBlocked=false;while(tryOp());if(tl)startFills();selectDMA();
   if(tl)fillSpeeds();
