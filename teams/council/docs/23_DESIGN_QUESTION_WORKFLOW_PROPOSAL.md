@@ -183,6 +183,8 @@ flowchart TB
 - **策略实例**：耦合两侧的域专家 → `integrator`（取 Pareto，记录被否组合）→ `invariant-checker`。
 - **产出**：`out/coupling/joint_point.json`：唯一一份"全局设计点" `x`，供 L4、L5 使用。**这也接上了现在"C 组 winner 无人消费"的断口。**
 
+> **实施状态（P5）**：已实现，见 §8 的 P5 实现状态。设计空间 `teams/hardware/inputs/coupling_design_space.json`，内核 `integration/detailed/coupling_search.js`（产物 `out/detailed/coupling_candidates.json` 与 `coupling_design.json`，`npm run coupling:search`），workflow `design.coupling.workflow.js`。当前结果：五个 winner 原样拼合的点 992.57 TPS/usr，低于合同目标 1000——每个域单独换上自己的 winner 都过线（sram 1009.57 最紧），合在一起不过；76 行里 8 行可行、4 行在 Pareto 集上，联合点 `areaReallocation:hEngines=4|lBanks=32`：1004.04 TPS/usr、301.388 mm²、die 242.614 W、整卡 2419.63 W，五个合同条目逐条成立。与上表的出入：τ 不是自由度（按 `B-TAU` 上限回放，τ 扫描只作灵敏度），所以第二组耦合实际是"向量 lanes × commOverlap"加一条 τ 扫描。
+
 ### L4 `design.attribution` ★ — 维度归因（按 `args.dimension` 参数化）
 
 这是"SRAM、集合通信怎么影响最终 TPS/usr"的直接回答。一个脚本，按维度各跑一次。
@@ -213,7 +215,7 @@ flowchart TB
 
 实现在 `integration/detailed/tps_attribution.js`（内核）、`integration/pipelines/generate_tps_attribution.js`（`npm run attribution:cards`）、`integration/orchestration/design.attribution.workflow.js`，测试 `tests/regression/test_tps_attribution.js`。与上面设计稿不同的地方：
 
-1. **设计点**：`joint_point.json` 还不存在（L3 `coupling` 未做），P1 用发布点 `out/rdma/k3_rdma_final_tuning_results.json` 的 `search.best.x`，卡的 `inputs.pointSource` 写明这一点。
+1. **设计点**：P1 实现时 `joint_point.json` 还不存在（L3 `coupling` 未做），P1 用发布点 `out/rdma/k3_rdma_final_tuning_results.json` 的 `search.best.x`，卡的 `inputs.pointSource` 写明这一点。P5 之后 `design.coupling` 能落盘 `out/coupling/joint_point.json`（带 `x` / `opt` / `model`），但 L4 尚未改读它。
 2. **软件开关不随移动重调**：每一步只换一个量、其余（含 `OPT`）不变，是回放不是重搜。所以硬件行的 ΔTPS 是"软件不跟着调"时的上界损失；重调留到有 `coupling` 之后。
 3. **行结构**：每个参数一行，`moves[]` 列出每一步（`dTps`、`dRawUs`、`dDieAreaMm2`、`dDiePowerW`、`dTpsPerMm2`、`dTpsPerW`、`withinBudget`，以及联合悲观点上的同一步），外加 `breakEven`、`evidence`、`measurementNeeded`、`owner`。分类是机械的枚举：`loadBearing` / `graded` / `slack` / `insensitive` / `basis` / `untested`，判据写在卡的 `classes` 里；计数口径（`countBasis`）恒为 `basis`，不能记为性能收益或损失。承重行另带 `bearsBy`：`budget`（某个可行的不利移动超出 raw 预算）或 `feasibility`（只撞上硬约束）。映射变量（`kvTile`、`depth`、`headTile`）的不可行邻点、以及模型算不了的输入（报 `model error`）都不计入分类。卡的 `bindingConstraints` 按约束汇总所有不可行移动：同一条约束挡住多行，说明设计点正贴着这面墙。
 4. **关键路径占比**放在维度级 `criticalPath`（本维度服务项在时间账中的份额），不是逐参数字段；`joint` 卡没有这一项。
@@ -300,7 +302,7 @@ flowchart TB
 | P2（已实现，见 §4 L1-b 的实现状态） | L1-b `req.budget` + `requirement_frontier.js` | 规划部分基本是 `maxTauForTarget` 的推广；详细部分是小网格重放 | 把"算力 / 带宽 / τ"的关系变成可下发的合同 |
 | P3（已实现，见下） | 预算合同 schema + `make_brief.js` + ledger 注入 | 中 | 接通层间链 |
 | P4（已实现，见下） | L3 改可行条件；拆 `sram` / `mc`；补旁证专家 | `sram_design_space.json` + 搜索脚本 | 依赖 P2 的合同 |
-| P5 | L3 `coupling` | 中 | 依赖 P4 |
+| P5（已实现，见下） | L3 `coupling` | `coupling_design_space.json` + `coupling_search.js` + workflow | 依赖 P4 |
 | P6 | L1-a 前移、L2 合并、L5 合并、converge 新判据 | 以删改为主 | 收口 |
 
 **P1 之后停一次**：如果灵敏度卡在真实设计点上读不出"哪些参数承重"，说明维度切法或参数清单不对，应先调整再往下做。
@@ -324,6 +326,21 @@ flowchart TB
 2. **拆 `sram` / `mc`**。新增 `teams/hardware/inputs/sram_design_space.json`、`integration/detailed/sram_search.js`（产物 `out/detailed/sram_candidates.json`，回归测试 `tests/regression/test_sram_design.js`）与 `design.sram.workflow.js`；原 `design.memory` 改名 `design.mc`，设计空间与产物文件名保持 `memory_*`。`brief_intents.json`、两份 schema 的 `stage` 枚举、`make_brief.js`、`search_brief.js`、`runtime/land.js`（`out/sram/`、`out/mc/`）随之改。与 §4 表格的出入见该节的实施状态（`lMiB` / `hMiB` 不搜、预取深度留给 coupling）。
 3. **旁证专家按 §4 表配齐**。两格的主策略都是 `memory-expert`，按 SRAM / MC 两个席位区分；它作为旁证时 `absentLateral` 记 `memory-expert/sram` 或 `memory-expert/mc`，其余专家记 agentId。`agent_roster.json` 的 `consumers` 与各 workflow 实际调用的 `head()` 一一对应（`tools/check_agent_strategy.js` 核对）。`tests/regression/test_c_group_workflow_behavior.js` 对五个域逐个丢掉每一路旁证，断言退回 `BLOCKED_CONFIG` 且点名正确的席位。
 4. **SRAM 产物声明字段口径**（`fieldCaliber`：面积含端口代价、功耗口径、`sharedMiB` 的口径），`search_brief.js` 因而不再把这几项记为 `UNVERIFIED`；目前声明了口径的是 comm 与 sram。
+
+#### P5 实现状态（已实现，与上文的出入）
+
+`teams/hardware/inputs/coupling_design_space.json`、`integration/detailed/coupling_search.js`、`integration/pipelines/generate_coupling_design.js`（`npm run coupling:search`）与 `integration/orchestration/design.coupling.workflow.js`；回归测试 `tests/regression/test_coupling_design.js`（内核）与 `tests/regression/test_coupling_workflow_behavior.js`（workflow）。
+
+1. **合成点是一行候选，不是默认答案**。内核读五个域的设计产物（不是搜索结果的前几行），把 sram winner 的 `x`、compute winner 的 lanes / 解包 / exp 单元、mc winner 的档位、comm winner 的信号投递与控制路径拼成一个点，在 physical winner 的基准与预留上回放，并对**全部五个**合同条目逐条判定——coupling 不拥有任何条目，它是五条第一次同时成立的地方（`requirements.contractEntries` 因此与合同条目全集比对，而不走 `design_contract.js` 的 `declared()`）。各域产物先与它自己的候选集核对；`out/<domain>/<domain>_winner.json` 已落盘且点名的不是搜索 winner 时直接报错，不静默换掉。
+2. **网格由设计空间定死，没有搜索策略这一步**。三组耦合：`sramDepthMc`（`sharedMiB` × 预取深度 × `mcGBs`，全积）、`tauOverlapCompute`（`vectorLanes` × `commOverlap`，全积）、`areaReallocation`（从合成点出发，每个字段走一步，外加"一组降一步、另一组升一步"的成对移动；步长是 `die_area_reallocation.js` 的 `MOVES`，合成点的取值不在表里时插入）。同一个点从两组耦合都能到达时只算一行，共 76 行。
+3. **τ 不是自由度**。每行按 `B-TAU` 上限回放；`tauOverlapCompute` 的行另带 `tauSweep`（1.0 / 1.15 / 1.3 / 1.5 µs 各自的 TPS/usr）与最慢集合通信距上限的 `tauHeadroomUs`，只作灵敏度。合成点在 τ = 1.0 µs 时是 1066.79 TPS/usr——差额是合同的 τ 给出来的，不是哪个域设计错了。
+4. **低于条款的行照样回放、保留**，违反项写明条款（`clause:B-SRAM-CAP`、`clause:B-MEM-BW`、`clause:B-TAU`），即 integrator 要登记的被否组合，也是没有可行行时 L1-b 重新切分要用的数。另外两条可行判据：compute winner 要求的 H-core kernel 在该行的 lanes 与矩阵形态下仍然藏得住向量时间；封装放置窗口（扣 physical winner 的预留）与 PHY 岸线放得下。comm core 的面积作为单独一项加进 die 面积（`A.physical()` 不计它），功耗未建模。
+5. **排序**：可行优先，再看是否在 (TPS/usr ↑, die 面积 ↓, 整卡功耗 ↓) 的 Pareto 集上，再按 die 面积、整卡功耗。当前 8 行可行、4 行 Pareto；4 行 Pareto 都把 `lBanks` 从 sram winner 的 16 退回 32；联合点再把 compute winner 的 `hEngines` 从 5 降到 4，省回面积（`departsFrom` = sram: lBanks，compute: hEngines）。
+6. **workflow 的席位**：耦合两侧的域专家五席并行审行（`compute-expert`、`memory-expert/sram`、`memory-expert/mc`、`comm-expert`、`physical-expert`，与设计空间 `couplings.*.seats` 一致，由行为测试核对），每席只对 `departsFrom` 含本域的行发言；缺任何一席即 `BLOCKED_CONFIG`。integrator 取联合点之后有一道**不经 agent 的机械核对**：必须是交给它的候选里的一行、`values` 逐字相同、可行且在 Pareto 集上，否则 `INVARIANT_VIOLATED`、不落盘、不再问检点者。落盘的 `joint_point.json` 除 `optionId` / `values` / `provenance` 外带 `x` / `opt` / `model`，这三项取自产物原行；`search_brief.js verify coupling` 与主循环的落盘前核对因此新增一条：winner 里任何额外字段都必须等于原行的同名字段。
+7. **回流**：没有可行行时不进合并，返回 `DIRECTION_BACKFLOW`、`routeTo: design.req.budget`，原样转交产物的 `backflow`（差额、最接近的行、TPS 最高的行、各域单独的最好点），并在 ledger 记一条 `BACKFLOW-COUPLING-L1B` 阻塞。
+8. **接线**：`search_brief.js` 新增 `STAGES`（五个域加 coupling）与 `landedFiles()`（coupling 的落盘文件名是 `joint_point.json` / `coupling_run_record.json`），`run_workflow.js` 按它准备 `args.searchBrief` 并在落盘前核对；`land.js` 放行 `out/coupling/`；`brief_intents.json` 加 `coupling`，两份 schema 的 `stage` 枚举加 `coupling`，`make_brief.js` 因此覆盖七个 stage；`agent_roster.json` 的 `consumers` 补上 `design.coupling`。
+9. **模型覆盖**：联合回放只有 K3 TP32 详细模型；GLM-5.2 与 DeepSeek-V4-Pro 只经由 compute winner 的 kernel 检查覆盖（联合点上起约束作用的是 GLM-5.2 的 DSA indexer）。brief 的禁止项与退出条件要求如实陈述这一点。
+10. **还没接上的下游**：L4 `attribution` 仍按 P1 的约定读发布点（`inputs.pointSource`），L5 也还没有改读 `out/coupling/joint_point.json`；`joint_point.json` 要等真实跑一次 `design.coupling` 并 `--land` 后才存在。改读联合点不在 P5 的范围内，尚未排期。
 
 成本：主链单轮约 L1 ≈ 12、L2 ≈ 6+N、L3 ≈ 5×(4+N) + 4、L4 ≈ 4×6、L5 ≈ 12 个策略实例；N 取 4 时约 110 个，低于现有全量的 300 多个。L4 各维度互相独立，可以并行跑。
 

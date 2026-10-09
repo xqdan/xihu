@@ -23,7 +23,7 @@ const {spawnSync} = require('child_process');
 
 const root = path.resolve(__dirname, '../..');
 const COPY_EXCLUDE = new Set(['.git', 'archive', 'node_modules', 'scratch', 'coverage', '.tmp']);
-const REGENERATE_SCRIPTS = ['aicore:search', 'commcore:search', 'memory:search', 'sram:search', 'physical:search', 'model:planning'];
+const REGENERATE_SCRIPTS = ['aicore:search', 'commcore:search', 'memory:search', 'sram:search', 'physical:search', 'coupling:search', 'model:planning'];
 
 const readJson = (base, relativePath) => JSON.parse(fs.readFileSync(path.join(base, relativePath), 'utf8'));
 

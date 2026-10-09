@@ -9,8 +9,9 @@
  * check what landed. The script source is identical in every environment; only the
  * backend differs.
  *
- *   before   C-group workflows get `args.searchBrief` from search_brief.js (the
- *            candidate numbers reach the workflow without an agent transcribing them);
+ *   before   C-group workflows and design.coupling get `args.searchBrief` from
+ *            search_brief.js (the candidate numbers reach the workflow without an agent
+ *            transcribing them);
  *            attribution gets its sensitivity card and req.budget its budget frontier,
  *            each refused when built from other inputs; the L1 contract's consumers get
  *            `args.brief` derived from the contract (make_brief.js) rather than from a
@@ -18,7 +19,7 @@
  *            stages decided (design_ledger.js);
  *   during   a working-tree snapshot is taken; agents must be read-only;
  *   after    if anything in the tree changed, nothing is landed (exit 3); a C-group
- *            winner is checked against the candidate artifact before anything is
+ *            winner (design.coupling: the joint point) is checked against the candidate artifact before anything is
  *            written (exit 5 on mismatch); every `file:line` citation in the result
  *            must point at an existing line with text (exit 7 otherwise; check_citations.js),
  *            and for attribution and req.budget every off-card (off-frontier) number in an
@@ -67,7 +68,7 @@ const {createClaudeBackend} = require('../orchestration/runtime/backends/claude'
 const {createCursorBackend} = require('../orchestration/runtime/backends/cursor');
 const {createExchangeBackend} = require('../orchestration/runtime/backends/exchange');
 const {buildOutcomeFile} = require('../orchestration/runtime/outcome');
-const {DOMAINS, DEFAULT_MAX, buildSearchBrief, verifyLandedWinner} = require('./search_brief');
+const {STAGES, DEFAULT_MAX, buildSearchBrief, verifyLandedWinner, landedFiles} = require('./search_brief');
 const {checkCitations, checkRangeNumbers} = require('./check_citations');
 const MAKE_BRIEF = require('./make_brief');
 const LEDGER = require('./design_ledger');
@@ -145,12 +146,12 @@ function prepareArgs(workflow, flags) {
     args.ledgerPath = ledger.path;
     if (!args.rejectedOptions) args.rejectedOptions = ledger.ledger.rejectedOptions;
   }
-  if (Object.hasOwn(DOMAINS, workflow)) {
+  if (Object.hasOwn(STAGES, workflow)) {
     if (!args.brief) throw new Error(`design.${workflow} needs a brief: pass --brief <file>, or build one from a budget contract (npm run budget:frontier)`);
     const max = flags.max ? Number(flags.max) : DEFAULT_MAX;
     const searchBrief = buildSearchBrief(workflow, {max});
     if (!searchBrief.ok) throw new Error(`search brief for ${workflow} is not usable: ${searchBrief.notes}`);
-    args.searchArtifact = DOMAINS[workflow].artifact;
+    args.searchArtifact = STAGES[workflow].artifact;
     args.searchBrief = searchBrief;
   }
   // design.attribution reads one sensitivity card (npm run attribution:cards). The card is
@@ -223,10 +224,14 @@ function findingsOf(result) {
   }));
 }
 
+// The landed winner / run record file names (design.coupling's are joint_point.json and
+// coupling_run_record.json, the domains' <domain>_winner.json and <domain>_run_record.json).
+const landedName = (workflow, which) => path.posix.basename(landedFiles(workflow)[which]);
+
 // A winner without its run record (or the reverse) is half a result.
 function halfWinnerResult(workflow, files) {
-  const winner = parseLanded(files, `${workflow}_winner.json`);
-  const record = parseLanded(files, `${workflow}_run_record.json`);
+  const winner = parseLanded(files, landedName(workflow, 'winner'));
+  const record = parseLanded(files, landedName(workflow, 'record'));
   if (winner && !record) return `${workflow} returned a winner without its run_record`;
   if (record && !winner) return `${workflow} returned a run_record without a winner`;
   return null;
@@ -347,9 +352,9 @@ async function main(argv, deps = {}) {
 
   // The C-group winner is checked against the candidate artifact BEFORE anything is
   // written: a winner that is not a verbatim artifact row must never reach out/.
-  if (Object.hasOwn(DOMAINS, workflow) && files.length) {
-    const winner = parseLanded(files, `${workflow}_winner.json`);
-    const record = parseLanded(files, `${workflow}_run_record.json`);
+  if (Object.hasOwn(STAGES, workflow) && files.length) {
+    const winner = parseLanded(files, landedName(workflow, 'winner'));
+    const record = parseLanded(files, landedName(workflow, 'record'));
     // A winner without its run record (or the reverse) is half a result: refuse it.
     const half = halfWinnerResult(workflow, files);
     if (half) {

@@ -419,4 +419,7 @@ function build(result = search()) {
   };
 }
 
-module.exports = {SPACE_FILE, context, evaluate, search, alternatives, candidates, build, replay, signalOpt};
+// withProtocol and protocolClasses are also what design.coupling's joint replay
+// (coupling_search.js) needs to carry the comm winner's control path and B-TAU check.
+module.exports = {SPACE_FILE, context, evaluate, search, alternatives, candidates, build, replay, signalOpt,
+  withProtocol, protocolClasses};

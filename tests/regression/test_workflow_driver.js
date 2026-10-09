@@ -20,6 +20,7 @@
 //     after it is a mechanical violation;
 //   * req.budget: an unreachable entry rules its split out, none left is a direction backflow,
 //     and a landed contract that is not its frontier split verbatim is refused (exit 5);
+//   * design.coupling's joint point is checked against its artifact under its own file names;
 //   * the budget contract's consumers get their brief derived from the contract rather than
 //     from a committed file, and every other stage still has to be handed one.
 
@@ -77,7 +78,7 @@ async function run(argv, deps) {
   assert(builtBrief.hardConstraints.every((c) => c.source && c.source !== 'TBD'), 'every derived constraint names where its number came from');
   const listed = await run(['--list']);
   assert.strictEqual(listed.code, 0);
-  assert.strictEqual(listed.text.split('\n').length, 22);
+  assert.strictEqual(listed.text.split('\n').length, 23);
 
   // The mock backend invents a winner; the artifact check must reject it before landing.
   const invented = await run(['compute', '--backend', 'mock'], {backend: createMockBackend({reply: (call) => withDims(call)})});
@@ -102,6 +103,31 @@ async function run(argv, deps) {
   assert.strictEqual(good.summary.landing.landed.length, 2);
   assert.deepStrictEqual(good.summary.landing.rejected, []);
   assert(!fs.existsSync(path.join(root, 'out/compute')), 'a dry run must not create out/compute');
+
+  // design.coupling lands under its own names (joint_point.json, coupling_run_record.json) and
+  // the driver checks the joint point against the coupling artifact the same way.
+  const joint = buildSearchBrief('coupling', {max: 12}).candidates.find((c) => {
+    const row = JSON.parse(c.values);
+    return row.feasible && row.pareto;
+  });
+  const withJoint = createMockBackend({reply: (call) => {
+    const required = (call.schema && call.schema.required) || [];
+    if (!(required.includes('winner') && required.includes('excluded'))) return undefined;
+    return {...fromSchema(call.schema, ''), winner: {optionId: joint.optionId, values: joint.values, provenance: 'driver test'}};
+  }});
+  const coupled = await run(['coupling', '--backend', 'mock'], {backend: withJoint});
+  assert.strictEqual(coupled.code, 0, coupled.text);
+  assert.strictEqual(coupled.summary.verdict, 'INVARIANT_OK');
+  assert.strictEqual(coupled.summary.verifyLanded.ok, true, coupled.text);
+  assert.deepStrictEqual(coupled.summary.landing.landed.map((f) => f.path), ['out/coupling/joint_point.json', 'out/coupling/coupling_run_record.json']);
+  assert(!fs.existsSync(path.join(root, 'out/coupling')), 'a dry run must not create out/coupling');
+  // An invented joint point is stopped by the workflow's own mechanical check, so the run
+  // returns no files and lands only its outcome record.
+  const inventedJoint = await run(['coupling', '--backend', 'mock']);
+  assert.strictEqual(inventedJoint.code, 0, inventedJoint.text);
+  assert.strictEqual(inventedJoint.summary.verdict, 'INVARIANT_VIOLATED');
+  assert.deepStrictEqual(inventedJoint.summary.landing.landed.map((f) => f.path), ['out/coupling/coupling_outcome.json']);
+  assert(/winner without its run_record/.test(halfWinnerResult('coupling', [{path: 'out/coupling/joint_point.json', content: '{}'}])));
 
   // A lateral expert's backflow ends the run with no files. The summary names the expert,
   // and the stop is landable as an outcome record (dry run here: nothing is written).

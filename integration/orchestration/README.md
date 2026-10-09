@@ -45,7 +45,7 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 | `k3_external_references.workflow.js` | → `design.audit` 的一个可选阶段（传 `args.premises` 时启用），产物落 `references/external/` |
 | `k3_agent_learning.workflow.js` | → `design.learn`（仍是一次性脚本），产物落 `references/sota/`，并按领域登记了注入点 |
 
-## 21 个脚本
+## 23 个脚本
 
 每个 workflow 对应的业务环节、产出和结局，见 [`WORKFLOWS.md`](WORKFLOWS.md)；下面按组列出契约与分工。
 
@@ -95,9 +95,18 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 | sram | compute、mc、software |
 | mc | sram、comm、physical |
 | comm | mc、compute、physical |
-| physical | compute、sram、mc、comm |骨架的六步闭环与脚本 API 强制的三处出入，见计划文档 §4.3。
+| physical | compute、sram、mc、comm |
+骨架的六步闭环与脚本 API 强制的三处出入，见计划文档 §4.3。
 
 **顺序上有一处刻意的安排**：旁证约束串在**确定性搜索之后**，不是串在"初稿"之后。约束针对的是具体候选——见不到候选就提不出可执行的约束（"说不出否掉谁的约束不要提"）。
+
+### L3 · 跨域联合
+
+| 脚本 | 回答 | 策略实例 |
+|---|---|---|
+| `design.coupling.workflow.js` | 五个 winner 放在一起合同是否成立、联合点取哪一行 | 耦合两侧的域专家五席（`compute-expert` · `memory-expert/sram` · `memory-expert/mc` · `comm-expert` · `physical-expert`）· `integrator` · `invariant-checker` |
+
+联合候选由 `coupling_search.js`（`npm run coupling:search`）回放，经 `search_brief.js brief coupling` 核验后注入；integrator 交回的联合点由脚本核对为可行、在 Pareto 集上、`values` 逐字等于产物行，之后才交检点。没有可行行时不调用任何 agent，回流 `design.req.budget`（doc 23 §6）。`tests/regression/test_coupling_workflow_behavior.js` 用 mock 运行时执行它。
 
 ### D 组 · 细化（严格串行）
 

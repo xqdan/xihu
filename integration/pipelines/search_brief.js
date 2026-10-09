@@ -1,7 +1,7 @@
 'use strict';
 
 /* The deterministic half of the C-group design workflows (design.compute / sram / mc /
- * comm / physical).
+ * comm / physical) and of design.coupling, which composes their winners.
  *
  * A workflow has no filesystem and its agents are read-only, so the search
  * artifact has to reach it through the main loop. Until now the main loop passed a
@@ -21,7 +21,7 @@
  * Usage:
  *   node integration/pipelines/search_brief.js brief  <domain> [--max N] [--no-recompute]
  *   node integration/pipelines/search_brief.js verify <domain>
- *   domain: compute | sram | mc | comm | physical
+ *   domain: compute | sram | mc | comm | physical | coupling
  */
 
 const crypto = require('crypto');
@@ -33,6 +33,7 @@ const sramSearch = require('../detailed/sram_search.js');
 const memorySearch = require('../detailed/memory_search.js');
 const commSearch = require('../detailed/comm_core_search.js');
 const physicalSearch = require('../detailed/physical_search.js');
+const couplingSearch = require('../detailed/coupling_search.js');
 
 const root = path.resolve(__dirname, '../..');
 const DEFAULT_MAX = 12;
@@ -70,13 +71,27 @@ const DOMAINS = {
   }
 };
 
+// Every stage this module briefs and verifies: the five domains, and design.coupling, which
+// reads the five winners rather than a design space of its own and so is not a domain. Its
+// landed files are named for what they are (the joint point), not <stage>_winner.json.
+const STAGES = {
+  ...DOMAINS,
+  coupling: {
+    artifact: 'out/detailed/coupling_candidates.json',
+    search: couplingSearch,
+    caliberUnverified: {areaIncludesPortCost: 'UNVERIFIED', powerScope: 'UNVERIFIED'},
+    landed: {winner: 'out/coupling/joint_point.json', record: 'out/coupling/coupling_run_record.json'}
+  }
+};
+const landedFiles = name => STAGES[name].landed || {winner: `out/${name}/${name}_winner.json`, record: `out/${name}/${name}_run_record.json`};
+
 const sha256 = buffer => crypto.createHash('sha256').update(buffer).digest('hex');
 const readText = relativePath => fs.readFileSync(path.join(root, relativePath));
 const readJson = relativePath => JSON.parse(readText(relativePath).toString('utf8').replace(/^\uFEFF/, ''));
 
 function domainOf(name) {
-  const entry = DOMAINS[name];
-  if (!entry) throw new Error(`unknown domain ${name}; expected one of ${Object.keys(DOMAINS).join(', ')}`);
+  const entry = STAGES[name];
+  if (!entry) throw new Error(`unknown domain ${name}; expected one of ${Object.keys(STAGES).join(', ')}`);
   return entry;
 }
 
@@ -141,6 +156,9 @@ function buildSearchBrief(domain, {max = DEFAULT_MAX, recompute = true, artifact
     dimensions: Array.isArray(space.dimensions) ? space.dimensions : Object.keys(space.dimensions || {}),
     fieldCaliber: {...(caliberStated ? data.fieldCaliber : entry.caliberUnverified), source: caliberStated ? 'artifact' : 'NOT_STATED_BY_ARTIFACT'},
     candidates: data.candidates.slice(0, max).map(row => ({optionId: row.optionId, values: JSON.stringify(row)})),
+    // design.coupling's artifact also says what the five winners deliver together and, when
+    // no joint point is feasible, what goes back to L1-b. Both are passed through verbatim.
+    ...('composition' in data ? {composition: data.composition, backflow: data.backflow, paretoCandidates: data.paretoCandidates} : {}),
     provenance: {
       artifactPath: entry.artifact,
       artifactSha256,
@@ -179,6 +197,11 @@ function verifyLandedWinner(domain, winner, runRecord, {artifact} = {}) {
       failures.push(`winner.values for ${winner.optionId} differs from the artifact row; the numbers were not transcribed verbatim`);
     }
     if (row.feasible !== true) failures.push(`winner ${winner.optionId} is not feasible in the artifact`);
+    // Anything else the landed winner carries (the joint point's x / opt / model) is a copy of
+    // the row and must be the row's own value, or a consumer reads numbers nobody checked.
+    for (const key of Object.keys(winner).filter(k => !['optionId', 'values', 'provenance'].includes(k))) {
+      if (!isDeepStrictEqual(winner[key], row[key])) failures.push(`winner.${key} for ${winner.optionId} differs from the artifact row`);
+    }
   }
 
   if (!runRecord || runRecord.candidateSetSha256 !== data.candidateSetSha256) {
@@ -193,8 +216,8 @@ function verifyLandedWinner(domain, winner, runRecord, {artifact} = {}) {
 
 function main(argv) {
   const [command, domain, ...flags] = argv;
-  if (!['brief', 'verify'].includes(command) || !Object.hasOwn(DOMAINS, domain)) {
-    console.error('usage: search_brief.js brief|verify <compute|sram|mc|comm|physical> [--max N] [--no-recompute]');
+  if (!['brief', 'verify'].includes(command) || !Object.hasOwn(STAGES, domain)) {
+    console.error('usage: search_brief.js brief|verify <compute|sram|mc|comm|physical|coupling> [--max N] [--no-recompute]');
     return 2;
   }
   if (command === 'brief') {
@@ -208,8 +231,7 @@ function main(argv) {
     console.log(JSON.stringify(brief, null, 2));
     return brief.ok ? 0 : 1;
   }
-  const winnerPath = `out/${domain}/${domain}_winner.json`;
-  const recordPath = `out/${domain}/${domain}_run_record.json`;
+  const {winner: winnerPath, record: recordPath} = landedFiles(domain);
   const missing = [winnerPath, recordPath].filter(p => !fs.existsSync(path.join(root, p)));
   if (missing.length) {
     console.error(`nothing to verify, missing: ${missing.join(', ')}`);
@@ -220,6 +242,6 @@ function main(argv) {
   return result.ok ? 0 : 1;
 }
 
-module.exports = {DOMAINS, DEFAULT_MAX, buildSearchBrief, verifyLandedWinner};
+module.exports = {DOMAINS, STAGES, DEFAULT_MAX, buildSearchBrief, verifyLandedWinner, landedFiles};
 
 if (require.main === module) process.exitCode = main(process.argv.slice(2));
