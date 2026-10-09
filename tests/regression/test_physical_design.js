@@ -82,7 +82,10 @@ assert(ev.dieAreaMm2 <= req.dieAreaLimitMm2, 'die area within its limit');
 assert(ev.diePowerW <= ev.diePowerLimitW, 'die power within its limit');
 assert(ev.cardPowerW <= ev.cardPowerLimitW, 'card power within its limit');
 assert(ev.shorelineMm <= ev.edgeBudgetMm, 'shoreline within the die edge budget');
-assert(ev.k3System.tpsPerUser >= ev.k3System.publishedTpsPerUser * (1 - stored.requirements.tpsTolerance), 'K3 TPS within tolerance');
+assert(ev.k3System.tpsPerUser >= ev.k3System.contractTargetTpsPerUser - 1e-9, 'K3 TPS reaches the contract target');
+assert.strictEqual(stored.requirements.contractEntry, 'B-AREA', 'the physical domain answers for the area entry');
+assert.strictEqual(stored.clause.id, stored.requirements.contractEntry, 'the clause scored is the one the space declares');
+assert.strictEqual(stored.requirements.dieAreaLimitMm2, stored.clause.max, 'the die-area cap is the contract\'s, not a local constant');
 
 // 4. Area conservation closes on the placement window, and the reserve is the
 // keep-out share, not the usable share. Reading reserveFraction backwards (as a

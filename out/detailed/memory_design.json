@@ -4,7 +4,7 @@
   "document": "teams/hardware/docs/04_MEMORY_SUBSYSTEM_MC.md",
   "designSpace": {
     "file": "teams/hardware/inputs/memory_design_space.json",
-    "sha256": "e707deb90b88854cf55f72594c77e37ac8b3d66c5b0f2527cc8d7893e65323f0",
+    "sha256": "a3351d596698789f35e0affb9a467126078af817293d1c30ef92727ecfa552a9",
     "dimensions": [
       "mcGBs",
       "cubesPerCard",
@@ -19,7 +19,7 @@
       "capacity: cubesPerCard x capacityGBPerCube >= the K3 per-rank backing floor, accounting for ECC overhead",
       "the package placement window must hold the compute dies plus the cubes (8 x computeDieArea + nCubes x memoryCubeAreaMm2Planning <= placementWindowMm2)",
       "the card power budget must hold (the MC term the model charges plus the compute dies)",
-      "the K3 detailed replay at the published point must keep TPS/usr within tpsTolerance"
+      "the tier delivers the contract's per-cube payload (requirements.contractEntry), and the K3 detailed replay reaches the contract target"
     ],
     "objective": [
       "feasible first",
@@ -35,11 +35,36 @@
       "GLM-5.2",
       "DeepSeek-V4-Pro"
     ],
-    "tpsTolerance": 0.001,
+    "contractEntry": "B-MEM-BW",
     "capacityFloorGBPerRank": 49.198161184,
     "dieAreaLimitMm2": 400,
     "cardPowerLimitW": 2800,
     "placementWindowMm2": 5248
+  },
+  "contract": {
+    "path": "out/requirements/budget_frontier.json",
+    "splitId": "S-CMP",
+    "origin": "frontier split",
+    "sha256": "713b98cd40576ce5d5150ca01d0ed07a2db03289217f8b1889b8f3ce5c066a71",
+    "target": {
+      "tpsPerUser": 1000,
+      "architectureGate": 1050,
+      "rawBudgetUs": 854.7008547008547,
+      "engineeringMargin": 1.17
+    },
+    "point": {
+      "tauUs": 1.15,
+      "computeScale": 0.7444854736328125,
+      "mcGBs": 640
+    }
+  },
+  "clause": {
+    "id": "B-MEM-BW",
+    "quantity": "mcPayloadGBsPerCube",
+    "owner": "mc",
+    "ownerAgent": "memory-expert",
+    "min": 640,
+    "source": "out/requirements/budget_frontier.json#B-MEM-BW"
   },
   "caliber": {
     "mcGBs": "per memory cube, link bandwidth, GB/s, raw (before TECH.mcUtil); the die-facing figure is memoryCubesPerComputeDie x mcGBs x mcUtil, capped by the UCIe port bandwidth",
@@ -141,7 +166,8 @@
     "k3System": {
       "publishedTpsPerUser": 1101.771070241925,
       "tpsPerUser": 1101.771070241925,
-      "rawLatencyUs": 775.7517671190814
+      "rawLatencyUs": 775.7517671190814,
+      "contractTargetTpsPerUser": 1000
     },
     "classification": "STRETCH_AGGRESSIVE",
     "mcGBs": 640,
@@ -188,6 +214,12 @@
       "tpsDeltaPct": -1.9050917604046202,
       "riskClassWinner": "STRETCH_AGGRESSIVE",
       "riskClassAlternative": "GRID"
+    },
+    "resplit": {
+      "entry": "B-MEM-BW",
+      "quantity": "mcPayloadGBsPerCube",
+      "currentMin": 640,
+      "proposedMin": 400
     },
     "status": "NOT the baseline: reported so that the cost of the open precision decision is a number; it cannot win until the condition closes"
   },

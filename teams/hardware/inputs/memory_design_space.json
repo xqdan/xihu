@@ -15,12 +15,12 @@
     "models": ["Kimi K3", "GLM-5.2", "DeepSeek-V4-Pro"],
     "modelsReason": "the repository serves three models; a cube count or tier that only closes K3 does not close the package",
     "publishedPoint": "stretchMc640GBs",
-    "tpsTolerance": 0.001,
-    "tpsReason": "the K3 detailed replay at the published point must keep TPS/usr within 0.1% of the published value; the search may not move the published point, only reach it more cheaply",
+    "contractEntry": "B-MEM-BW",
+    "contractReason": "the L1 budget contract (integration/detailed/design_contract.js) owns the system requirement: the mc domain answers for B-MEM-BW, tested directly on the mcGBs tier (a conditional route is exempt: it changes the bytes the entry is priced on, and reports the re-split it needs), and the K3 replay is held to the contract target.tpsPerUser. The search may move off the published point if the contract still holds",
     "capacityFloorGBPerRank": 49.2,
     "capacityFloorReason": "K3 model backing per rank at 1M context (out/workload planning, tpsDesign.dataMovement); a capacity below this cannot hold one K3 request regardless of bandwidth",
     "minTpsPerUser": 1000,
-    "minTpsReason": "the program goal (baseline.goal.target) is 1000 TPS/usr; a candidate below it does not close the bandwidth blocker even if it is the cheapest in its class",
+    "minTpsReason": "the program goal (baseline.goal.target) is 1000 TPS/usr. The search reads the contract's target instead; this copy is for the exploration scripts (die_area_reallocation.js, mtp_exploration.js) that run without a contract",
     "dieAreaLimitMm2": 400,
     "cardPowerLimitW": 2800,
     "placementWindowMm2": 5248,
@@ -31,7 +31,7 @@
     "capacity: cubesPerCard x capacityGBPerCube >= the K3 per-rank backing floor, accounting for ECC overhead",
     "the package placement window must hold the compute dies plus the cubes (8 x computeDieArea + nCubes x memoryCubeAreaMm2Planning <= placementWindowMm2)",
     "the card power budget must hold (the MC term the model charges plus the compute dies)",
-    "the K3 detailed replay at the published point must keep TPS/usr within tpsTolerance"
+    "the tier delivers the contract's per-cube payload (requirements.contractEntry), and the K3 detailed replay reaches the contract target"
   ],
   "objective": [
     "feasible first",

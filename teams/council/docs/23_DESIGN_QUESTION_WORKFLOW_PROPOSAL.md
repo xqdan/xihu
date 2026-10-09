@@ -171,6 +171,8 @@ flowchart TB
 
 `design.memory` 拆成 `design.sram` 与 `design.mc`：片上 SRAM 是本项目 TPS 的主要杠杆之一（KV tile 可行性、预取深度、H local tile 81% 占用），目前不在任何 C 组空间里。
 
+> **实施状态（P4）**：已拆分。`design.sram.workflow.js` 读 `teams/hardware/inputs/sram_design_space.json` 与 `integration/detailed/sram_search.js` 的产物 `out/detailed/sram_candidates.json`；`design.mc.workflow.js` 即原 `design.memory`，设计空间与产物文件名保持 `memory_*` 不变。两格主策略都是 `memory-expert`，分坐 SRAM / MC 席位；作为旁证时在 `absentLateral` 里记作 `memory-expert/sram` / `memory-expert/mc`。上表旁证专家已按列配齐（compute 不变）。与上表的出入：`lMiB` / `hMiB` 未进入搜索维度——local 容量由 local tile 可行性单独决定，在 winner 处用 `localSweep` 逐档重放给出数字，理由记在设计空间的 `ruled.localCapacity`；预取深度留给 L3 `design.coupling`。可行条件是满足 `B-SRAM-CAP`（不再锚定已发布 TPS）：486 个候选、298 个可行，winner `sharedMiB 16 / lBanks 16 / hBanks 32 / sharedSlices 8 / tmaEngines 1 / port scaling off`，313.219 mm²、1009.57 TPS/usr；已发布组合（365.341 mm²）按"可行优先、再比含端口代价的 die 面积"排第 216。
+
 #### L3 `design.coupling` ★ — 跨域联合
 
 - **设计问题**：各域单独选出的点合在一起是否仍满足合同？耦合维度上有没有比"各自最优"更好的组合？
@@ -297,7 +299,7 @@ flowchart TB
 | P1（已实现，见 §4 L4 的实现状态） | L4 `attribution` + `tps_attribution.js`，先做 `sram`、`comm`、`joint` 三个维度 | 内核约 70% 可复用 `k3_tps_design_baseline.js` / `die_area_reallocation.js` | 直接回答"SRAM、集合通信怎么影响 TPS/usr"；不依赖其他格 |
 | P2（已实现，见 §4 L1-b 的实现状态） | L1-b `req.budget` + `requirement_frontier.js` | 规划部分基本是 `maxTauForTarget` 的推广；详细部分是小网格重放 | 把"算力 / 带宽 / τ"的关系变成可下发的合同 |
 | P3（已实现，见下） | 预算合同 schema + `make_brief.js` + ledger 注入 | 中 | 接通层间链 |
-| P4 | L3 改可行条件；拆 `sram` / `mc`；补旁证专家 | `sram_design_space.json` + 搜索脚本 | 依赖 P2 的合同 |
+| P4（已实现，见下） | L3 改可行条件；拆 `sram` / `mc`；补旁证专家 | `sram_design_space.json` + 搜索脚本 | 依赖 P2 的合同 |
 | P5 | L3 `coupling` | 中 | 依赖 P4 |
 | P6 | L1-a 前移、L2 合并、L5 合并、converge 新判据 | 以删改为主 | 收口 |
 
@@ -308,13 +310,20 @@ flowchart TB
 `integration/pipelines/make_brief.js`、`integration/pipelines/design_ledger.js`，主循环接在 `run_workflow.js`，回归测试 `tests/regression/test_brief_and_ledger.js`。与上表那一行的出入：
 
 1. **没有单独的"预算合同 schema 文件"**。合同的形状由产它的内核（`requirement_frontier.js`）固定，由消费它的 `make_brief.js` 在读的时候校验（`layer`、`schemaVersion`、六个必需 split 条目都在），不合即拒。再写一份 JSON Schema 等于给同一个形状立第二份定义，两份会漂。L1 合同已经被 `run_workflow.js` 的 `verifyLandedBudget` 逐字段核对过它等于前沿里那一条切分——真正的"合同对不对"由那里判，schema 文件补不出新的保证。
-2. **brief 是现派生的，不落盘**。`make_brief.js` 把散文（`teams/council/inputs/brief_intents.json`：题目、形态、禁止项、退出条件、设计空间、profile 绑定）与合同里的数拼成一份 `DesignBrief`：面积/功耗/带宽预算与七条硬约束全部派生，每条的 `source` 是指回合同文件里那个 split 条目的 JSON Pointer。仓库里因此没有第二份合同数字可以陈旧。本轮覆盖合同的直接消费者：`direction`、`compute`、`memory`、`comm`、`physical`；其余各格仍需 `--brief`。
+2. **brief 是现派生的，不落盘**。`make_brief.js` 把散文（`teams/council/inputs/brief_intents.json`：题目、形态、禁止项、退出条件、设计空间、profile 绑定）与合同里的数拼成一份 `DesignBrief`：面积/功耗/带宽预算与七条硬约束全部派生，每条的 `source` 是指回合同文件里那个 split 条目的 JSON Pointer。仓库里因此没有第二份合同数字可以陈旧。本轮覆盖合同的直接消费者：`direction`、`compute`、`memory`、`comm`、`physical`；其余各格仍需 `--brief`。（P4 起 `memory` 拆为 `sram` 与 `mc`，覆盖六个 stage。）
 3. **带宽是合同自己的数乘封装基数**，不是基线发布点：`B-MEM-BW.min`（每 cube）× `k3_mc_baseline.json` 的 `card.memoryCubesPerComputeDie`。
 4. **`profileBinding.mcProfile` 手写，不从合同的 `point.mcGBs` 推**。ADR-0021 下 MC320 是唯一可制造默认值、MC640 只能是 stretch，而当前默认切分 `S-CMP` 要求的每 cube 带宽正好高于 MC320 参照——按 point 推会让一个 stretch 档位自称可制造默认值。这条由测试钉住。
 5. **ledger 由主循环写，不走 `land.js`**。`out/governance/` 是 `dgate` 与 `backflow` 的落盘前缀，ledger 不是任何一格的产物。`--land` 且文件全部落盘后才并入，并完校验 `design_ledger.schema.json`；不合格则文件已落、ledger 不动（退出码 8）。合并只增不减：被否方案、未决阻塞、证据索引按自然键合并，同一个 ADR 给出不同结论是错误而不是合并结果。
 6. **顺带补了校验器的 `minProperties` / `maxProperties`**：`design_ledger.schema.json` 早就写了 `minProperties: 1`（没有策略版本的 ledger 不是 ledger），而 `runtime/schema.js` 一直静默忽略它。
 7. **`stage` 枚举补了 `req.budget`**（`design_brief.schema.json` 与 `design_ledger.schema.json`），P2 那一格此前不在枚举里。
 8. **Gate 仍然不读 brief 或 ledger**。接通的是层间的输入链，不是判据链。
+
+#### P4 实现状态（已实现，与上文的出入）
+
+1. **可行条件改为满足合同条目**。`integration/detailed/design_contract.js` 读生效的 L1 合同（显式文件 → `out/budget/L1_budget.json` → 前沿里的默认切分 `S-CMP`），一张 `OWNS` 表规定每个域只答自己的条目：compute → `B-SERIAL-CMP`、sram → `B-SRAM-CAP`、mc → `B-MEM-BW`、comm → `B-TAU`、physical → `B-AREA`。候选可行 = 满足本域条目且不把系统拉到合同目标之下；别的域的条目是旁证专家的事，联合问题留给 P5 的 `coupling`。每份产物记录打分所依据的合同（`provenance`）与所用条款（`clause`）。
+2. **拆 `sram` / `mc`**。新增 `teams/hardware/inputs/sram_design_space.json`、`integration/detailed/sram_search.js`（产物 `out/detailed/sram_candidates.json`，回归测试 `tests/regression/test_sram_design.js`）与 `design.sram.workflow.js`；原 `design.memory` 改名 `design.mc`，设计空间与产物文件名保持 `memory_*`。`brief_intents.json`、两份 schema 的 `stage` 枚举、`make_brief.js`、`search_brief.js`、`runtime/land.js`（`out/sram/`、`out/mc/`）随之改。与 §4 表格的出入见该节的实施状态（`lMiB` / `hMiB` 不搜、预取深度留给 coupling）。
+3. **旁证专家按 §4 表配齐**。两格的主策略都是 `memory-expert`，按 SRAM / MC 两个席位区分；它作为旁证时 `absentLateral` 记 `memory-expert/sram` 或 `memory-expert/mc`，其余专家记 agentId。`agent_roster.json` 的 `consumers` 与各 workflow 实际调用的 `head()` 一一对应（`tools/check_agent_strategy.js` 核对）。`tests/regression/test_c_group_workflow_behavior.js` 对五个域逐个丢掉每一路旁证，断言退回 `BLOCKED_CONFIG` 且点名正确的席位。
+4. **SRAM 产物声明字段口径**（`fieldCaliber`：面积含端口代价、功耗口径、`sharedMiB` 的口径），`search_brief.js` 因而不再把这几项记为 `UNVERIFIED`；目前声明了口径的是 comm 与 sram。
 
 成本：主链单轮约 L1 ≈ 12、L2 ≈ 6+N、L3 ≈ 5×(4+N) + 4、L4 ≈ 4×6、L5 ≈ 12 个策略实例；N 取 4 时约 110 个，低于现有全量的 300 多个。L4 各维度互相独立，可以并行跑。
 

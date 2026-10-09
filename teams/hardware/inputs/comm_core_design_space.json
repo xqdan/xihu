@@ -22,10 +22,12 @@
     "peerEntryBytes": 16,
     "managementCoreAreaMm2": 0.03,
     "firmwareContentionCycles": 40,
-    "evidence": "ASSUMPTION: double-buffered graph so the next model's graph loads while the current one runs; at most half of the Comm Core busy per token; WQE size is R.MEM.wqeCqeBytes; one RV32 management core with 16 KiB I/D about 0.03 mm2; a firmware job on the critical path that shares its core with epoch and exception work waits up to 40 cycles"
+    "evidence": "ASSUMPTION: double-buffered graph so the next model's graph loads while the current one runs; at most half of the Comm Core busy per token; WQE size is R.MEM.wqeCqeBytes; one RV32 management core with 16 KiB I/D about 0.03 mm2; a firmware job on the critical path that shares its core with epoch and exception work waits up to 40 cycles",
+    "contractEntry": "B-TAU",
+    "contractReason": "the per-collective ceiling is the L1 budget contract's B-TAU max (integration/detailed/design_contract.js), not a local OPT constant: the comm domain answers for that entry"
   },
   "constraints": [
-    "every collective class: protocol time + control path <= OPT.tauUs (spec tau), so the published point is unchanged; this also keeps the raw latency within the raw budget because TPS does not rise with tau",
+    "every collective class: protocol time + control path <= the contract's B-TAU ceiling, so the published point is unchanged; this also keeps the raw latency within the raw budget because TPS does not rise with tau",
     "graph storage fits the local SRAM with graphBuffers copies when the graph is stored locally",
     "Comm Core busy time per token <= maxUtilization x raw latency"
   ],

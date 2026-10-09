@@ -1,11 +1,11 @@
 export const meta = {
-  name: 'design-memory',
-  description: 'K3 设计 memory 域：专家提搜索策略与守恒判据，确定性脚本枚举打分，integrator 合并，invariant-checker 检点后落盘',
-  whenToUse: 'C 组四域的标准骨架。需要 args.brief（intake 产出的 DesignBrief）args.searchArtifact（主循环已生成好的搜索结果路径，仅作记录）与 args.searchBrief（search_brief.js 核验过的候选集）。本 workflow 不执行搜索、不写文件。',
+  name: 'design-sram',
+  description: 'K3 设计 sram 域：专家提搜索策略与守恒判据，确定性脚本枚举打分，integrator 合并，invariant-checker 检点后落盘',
+  whenToUse: 'C 组五域的标准骨架。需要 args.brief（intake 产出的 DesignBrief）args.searchArtifact（主循环已生成好的搜索结果路径，仅作记录）与 args.searchBrief（search_brief.js 核验过的候选集）。本 workflow 不执行搜索、不写文件。',
   phases: [
-    { title: 'Search policy', detail: 'memory-expert 提出搜哪些维度、哪些必须排除、按什么排序' },
+    { title: 'Search policy', detail: 'memory-expert（SRAM 席）提出搜哪些维度、哪些必须排除、按什么排序' },
     { title: 'Deterministic search', detail: '由脚本枚举并打分，并由 search_brief.js 读取核验；workflow 内没有 agent 参与取数' },
-    { title: 'Constraint recall', detail: 'compute / software 专家对候选集给出侧向约束' },
+    { title: 'Constraint recall', detail: 'compute / mc / software 专家对候选集给出侧向约束' },
     { title: 'Merge', detail: 'integrator 合并候选，记录冲突与排除依据' },
     { title: 'Invariant check', detail: 'invariant-checker 强制检点；不通过则不落盘' },
   ],
@@ -21,12 +21,17 @@ export const meta = {
 // 2. 最后一步是检点，不是总结。检点不通过就退回且不落盘 winner——
 //    integrator（合并者）与 invariant-checker（检点者）必须是两次 agent 调用，
 //    合并者对自己拼出的结果有结构性偏好，让它兼任检点，违规项会被解释掉。
+//
+// 本文件是 design.memory 拆分后的 SRAM 一半（doc 23 第 4 节）：设计空间是
+// teams/hardware/inputs/sram_design_space.json，本域对 L1 合同的 B-SRAM-CAP 负责。
+// SRAM 与 MC 两个域的主策略都是 memory-expert；在本域它坐 SRAM 席，
+// 在旁证里另以 MC 席（memory-expert/mc）发言，替 B-MEM-BW 一侧说话。
 // ---------------------------------------------------------------------------
 
 const REPO = args.repo || '.'
-const STAGE = 'memory'
+const STAGE = 'sram'
 const BRIEF = args.brief
-const RUN_ID = args.runId || 'memory-run'
+const RUN_ID = args.runId || 'sram-run'
 const MAX_CANDIDATES = args.maxCandidates || 12
 // 搜索产物由**主循环**在调用本 workflow 之前产生，路径经 args 传入。
 // 这里刻意不接收命令、也不让 agent 去执行命令：搜索脚本会写 out/，
@@ -38,21 +43,21 @@ const SEARCH_COMMAND_FOR_RECORD = args.searchCommand || 'UNVERIFIED'
 // 已核验的候选集（search_brief.js brief 的输出）；workflow 不自己读产物，也不让 agent 转写数值。
 const SEARCH_BRIEF = args.searchBrief
 
-if (!BRIEF) throw new Error('design.memory 需要 args.brief（intake 阶段产出的 DesignBrief）')
+if (!BRIEF) throw new Error('design.sram 需要 args.brief（intake 阶段产出的 DesignBrief）')
 if (!SEARCH_ARTIFACT) {
-  throw new Error('design.memory 需要 args.searchArtifact（已由主循环生成好的搜索结果路径）；本 workflow 不执行搜索')
+  throw new Error('design.sram 需要 args.searchArtifact（已由主循环生成好的搜索结果路径）；本 workflow 不执行搜索')
 }
 if (!SEARCH_BRIEF) {
-  throw new Error('design.memory 需要 args.searchBrief（主循环用 node integration/pipelines/search_brief.js brief memory 生成）；本 workflow 不读搜索产物')
+  throw new Error('design.sram 需要 args.searchBrief（主循环用 node integration/pipelines/search_brief.js brief sram 生成）；本 workflow 不读搜索产物')
 }
-if (BRIEF.stage !== 'memory') {
+if (BRIEF.stage !== 'sram') {
   // brief 的 stage 与 workflow 名称必须一致，否则会把别的阶段的契约拿来用
-  throw new Error(`brief.stage=${BRIEF.stage}，与 design.memory 不符；契约串了`)
+  throw new Error(`brief.stage=${BRIEF.stage}，与 design.sram 不符；契约串了`)
 }
 
 const HEAD = [
   `仓库根目录：${REPO}`,
-  `本 workflow：design.memory（stage=${STAGE}，runId=${RUN_ID}）`,
+  `本 workflow：design.sram（stage=${STAGE}，runId=${RUN_ID}）`,
   `你是一个策略实例。先读你的策略正文：${REPO}/teams/council/strategies/__AGENT__.md`,
   '那份文件是本角色的判断规则、正确性判据、证据规则、取舍规则与禁止事项，逐条遵守。',
   '以下运行时上下文由 workflow 注入；注入内容与策略正文冲突时，注入内容优先（它承载本 stage 的事实）。',
@@ -79,9 +84,14 @@ const knowledgeHead = (agentId) => {
 }
 const head = (agentId) => [HEAD.replace('__AGENT__', agentId), ...knowledgeHead(agentId)].join('\n')
 
+// memory-expert 同时是 sram 与 mc 两个域的主策略，所以每次调用都要说清坐的是哪一席：
+// 本域的主策略坐 SRAM 席；旁证里的 MC 席是同一份策略的另一个实例，替 B-MEM-BW 说话。
+const SRAM_SEAT = '你坐 SRAM 席：本域是片上 SRAM/TMA（Shared 窗口、L/H Local bank、Shared slice、TMA 引擎、Shared 端口放大），对 L1 合同的 B-SRAM-CAP 负责；MC 档位、cube 容量与链路带宽是 design.mc 的问题，不在本域取舍。'
+const MC_SEAT = '你坐 MC 席（memory-expert/mc）：替 L1 合同的 B-MEM-BW 一侧说话，回答 MC 侧接不接得住；本域的 SRAM 取舍不是你的决定。'
+
 const BRIEF_JSON = JSON.stringify(BRIEF, null, 2)
 
-// 旁证约束的标准契约。四个域共用同一形状，这样一条约束在不同域之间传递时
+// 旁证约束的标准契约。五个域共用同一形状，这样一条约束在不同域之间传递时
 // 不需要翻译，也不会因为字段名不同而被当成两回事。
 // 关键点是 constraintId 必须引用 brief 里已有的硬约束——旁证是**转述约束**，
 // 不是发明约束；发明出来的约束没有出处，下游无法复核也就无法执行。
@@ -126,6 +136,7 @@ phase('Search policy')
 // 把维度收窄是控制成本的唯一手段，所以这一步的产出直接决定下一步跑多少组合。
 const policy = await agent(
   `${head('memory-expert')}
+${SRAM_SEAT}
 
 brief（本 stage 的注入契约，逐字段遵守）：
 ${BRIEF_JSON}
@@ -326,6 +337,7 @@ const perThread = await parallel(
   threads.map((d) => () =>
     agent(
       `${head('memory-expert')}
+${SRAM_SEAT}
 
 brief：
 ${BRIEF_JSON}
@@ -368,7 +380,9 @@ phase('Constraint recall')
 
 // 第四步：旁证给约束，串在候选集之后而不是与候选并行。
 // 顺序是刻意的——约束针对的是具体候选，见不到候选就提不出可执行的约束。
-const [computeC, softwareC] = await parallel([
+// 旁证按 doc 23 第 4 节取 compute、mc、software：算力侧接不接得住 bank / TMA 带宽，
+// MC 侧接不接得住窗口决定的预取深度与 DMA 落地，软件侧接不接得住 tile 与调度。
+const [computeC, mcC, softwareC] = await parallel([
   () =>
     agent(
       `${head('compute-expert')}
@@ -376,7 +390,7 @@ const [computeC, softwareC] = await parallel([
 brief：
 ${BRIEF_JSON}
 
-memory 域已选出的候选集（来自确定性搜索）：
+sram 域已选出的候选集（来自确定性搜索）：
 ${JSON.stringify(candidateBrief, null, 2)}
 
 任务：对这批候选给出**算力侧的约束**。只回答 AI Core 一侧接不接得住，
@@ -391,12 +405,33 @@ ${JSON.stringify(candidateBrief, null, 2)}
     ),
   () =>
     agent(
+      `${head('memory-expert')}
+${MC_SEAT}
+
+brief：
+${BRIEF_JSON}
+
+sram 域已选出的候选集（来自确定性搜索）：
+${JSON.stringify(candidateBrief, null, 2)}
+
+任务：对这批候选给出**MC 侧的约束**。只回答 MC 一侧接不接得住，
+不要评价候选好坏、不要重算候选数值。
+- 逐条给出：这条约束否掉哪个 candidateId 或哪种取值，依据是什么。
+- Shared 窗口决定 DMA 预取深度：窗口变小时 MC 侧要多付的带宽或时延，必须按 B-MEM-BW 的持续 payload 口径陈述，
+  不得与档位 peak 混用，也不得用 MC640 数字冒充可制造默认值。
+- 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
+- 若 MC 侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
+- 若 MC 侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
+      { label: 'constraint:mc', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+    ),
+  () =>
+    agent(
       `${head('software-expert')}
 
 brief：
 ${BRIEF_JSON}
 
-memory 域已选出的候选集（来自确定性搜索）：
+sram 域已选出的候选集（来自确定性搜索）：
 ${JSON.stringify(candidateBrief, null, 2)}
 
 任务：对这批候选给出**软件侧的约束**。只回答编译 / 运行时 / 固件一侧接不接得住，
@@ -413,8 +448,10 @@ ${JSON.stringify(candidateBrief, null, 2)}
 
 // 旁证缺席不是"没有意见"：某一路侧向专家调用失败（返回空），它的约束就不存在，
 // 而合并者会把"没人反对"当成通过。缺任何一路都退回，不合并、不落盘。
+// MC 席与本域主策略同为 memory-expert，按席位记名，缺席时才说得清缺的是哪一侧。
 const lateral = [
   ['compute-expert', computeC],
+  ['memory-expert/mc', mcC],
   ['software-expert', softwareC],
 ]
 const absentLateral = lateral.filter(([, c]) => !c).map(([agentId]) => agentId)
@@ -459,13 +496,13 @@ ${BRIEF_JSON}
 确定性搜索的候选集（数值的唯一来源；你不得修改、重算或新增任何候选）：
 ${JSON.stringify(candidateBrief, null, 2)}
 
-memory-expert 逐搜索线程的读数（只读解释，不是新数值）：
+memory-expert（SRAM 席）逐搜索线程的读数（只读解释，不是新数值）：
 ${JSON.stringify(liveThreads, null, 2)}
 
 旁证给出的侧向约束：
 ${JSON.stringify(constraints, null, 2)}
 
-排序判据（来自 memory-expert，你不得引入新的排序维度）：
+排序判据（来自 memory-expert（SRAM 席），你不得引入新的排序维度）：
 ${JSON.stringify(policy.ranking)}
 
 任务：合并出唯一 winner。
@@ -478,6 +515,8 @@ ${JSON.stringify(policy.ranking)}
   不得归为"一个常数加项"了事；归为常数之前必须先验证它确实是常数。
 - 带宽、容量、功耗三类量的口径必须逐项写明（裸 / 可持续、扣 ECC 前后、卡级 / die 级），
   本域与相邻域口径不同时要给出差额，不得把两个口径的数直接并列当同量比较。
+- SRAM 容量的口径必须写明是每 die Shared 窗口、每卡窗口还是每核 Local；与合同 B-SRAM-CAP 比对的只能是每 die Shared 窗口。
+  面积与功耗必须写明是否含 Shared 端口放大计费。
 - 如果存在无法归因的差异（例如与既有基线的差找不到原因），用 DELTA_UNEXPLAINED 交回，不要靠合并掩盖。
 - 不要判定候选是否满足约束——那是下一步检点的事。`,
   { label: 'integrator', phase: 'Merge', effort: 'high', schema: {
@@ -560,7 +599,7 @@ ${JSON.stringify(merged.excluded, null, 2)}
 未解决的冲突：
 ${JSON.stringify(merged.conflicts, null, 2)}
 
-memory-expert 声明的守恒关系与口径约束（本 stage 的检点清单）：
+memory-expert（SRAM 席）声明的守恒关系与口径约束（本 stage 的检点清单）：
 ${JSON.stringify(policy.invariants, null, 2)}
 
 确定性搜索的元信息（候选来源指纹与计数）：
@@ -652,9 +691,9 @@ const runRecord = {
   // 本 workflow 不执行它（执行在主循环，见文件头注释）。
   searchArtifact: SEARCH_ARTIFACT,
   searchCommandForRecord: SEARCH_COMMAND_FOR_RECORD,
-  // 口径是产物的一部分：链路带宽是裸速率还是可持续值、每 cube 容量扣 ECC 前后。
+  // 口径是产物的一部分：面积是否含 Shared 端口计费、功耗是 die 级还是卡级、窗口是每 die 还是每卡。
   // 未标注口径时后续与规格的比对无意义，所以它必须随 runRecord 落盘。
-  fieldCaliber: search.fieldCaliber || { mcGBsCaliber: 'UNVERIFIED', capacityGBPerCubeCaliber: 'UNVERIFIED', note: '产物未提供口径标注' },
+  fieldCaliber: search.fieldCaliber || { areaIncludesPortCost: 'UNVERIFIED', powerScope: 'UNVERIFIED', sharedMiBCaliber: 'UNVERIFIED', note: '产物未提供口径标注' },
   policy: { dims: policy.dims, evaluationAxes: policy.evaluationAxes || [], excluded: policy.excluded, ranking: policy.ranking },
   uncoveredDims: search.uncoveredDims || [],
   threadReadings: liveThreads,
@@ -677,11 +716,11 @@ return {
   files: okInvariants
     ? [
         {
-          path: `${REPO}/out/memory/${STAGE}_winner.json`,
+          path: `${REPO}/out/sram/${STAGE}_winner.json`,
           content: JSON.stringify(merged.winner, null, 2),
         },
         {
-          path: `${REPO}/out/memory/${STAGE}_run_record.json`,
+          path: `${REPO}/out/sram/${STAGE}_run_record.json`,
           content: JSON.stringify(runRecord, null, 2),
         },
       ]

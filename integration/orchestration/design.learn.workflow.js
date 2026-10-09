@@ -32,7 +32,7 @@ export const meta = {
 // 本脚本落 references/sota/README.md + references/sota/<unit>.md。
 // "落盘"本身不产生价值——**有人读才算**。所以每个单元都登记了它被哪一格注入：
 //
-//   memory-subsystem         → design.memory / design.dgate 的 memory-expert 实例
+//   memory-subsystem         → design.sram / design.mc / design.dgate 的 memory-expert 实例
 //   interconnect-collective  → design.comm / design.dgate 的 comm-expert 实例
 //   compute-core             → design.compute / design.dgate 的 compute-expert 实例
 //   model-workload           → design.detail.workload / design.dgate 的 model-expert 实例
@@ -77,7 +77,7 @@ const UNITS = [
     key: 'memory-subsystem',
     title: '内存子系统与 MC 效率',
     as_of: '2026-01',
-    consumedBy: 'design.memory / design.dgate 的 memory-expert 实例',
+    consumedBy: 'design.sram / design.mc / design.dgate 的 memory-expert 实例',
     focus:
       'HBM/DRAM 控制器的 sustained 效率（raw→effective 折扣的实际分布）、命令混合与 refresh 的影响、' +
       'bank/row 冲突下的可达带宽、QoS 与多租户干扰、容量与带宽的权衡、' +

@@ -51,10 +51,15 @@ for (const v of Object.values(stored.ruled)) assert(!('alternatives' in v), 'rul
 assert(!/"(alternatives|candidates|perOption|sweep)"\s*:\s*[[{]/.test(JSON.stringify(stored)), 'no alternative lists in out/');
 assert(stored.designSpace.feasible > 0 && stored.designSpace.feasible <= stored.designSpace.candidates);
 
-// 3. The winner keeps the published K3 replay, and the capacity floor is the one
-// the replay reports rather than a number typed into the requirements block.
+// 3. The winner meets the contract it was scored against (B-MEM-BW on the tier, the
+// target on the replay), and the capacity floor is the one the replay reports rather
+// than a number typed into the requirements block.
 const ev = stored.evaluation, req = stored.requirements;
-assert(ev.k3System.tpsPerUser >= ev.k3System.publishedTpsPerUser * (1 - req.tpsTolerance), 'K3 TPS within tolerance');
+assert.strictEqual(req.contractEntry, 'B-MEM-BW', 'the mc domain answers for the memory bandwidth entry');
+assert.strictEqual(stored.clause.id, req.contractEntry, 'the clause scored is the one the space declares');
+assert(stored.design.mcGBs && space.dimensions.mcGBs.options[stored.design.mcGBs.option].gbs >= stored.clause.min, 'the winning tier meets the B-MEM-BW bound');
+assert(ev.k3System.tpsPerUser >= ev.k3System.contractTargetTpsPerUser - 1e-9, 'K3 TPS reaches the contract target');
+assert.strictEqual(ev.k3System.contractTargetTpsPerUser, stored.contract.target.tpsPerUser, 'the target tested is the contract\'s own');
 assert(ev.k3System.tpsPerUser > 0 && ev.k3System.rawLatencyUs > 0, 'the winner carries a replay');
 close(req.capacityFloorGBPerRank, an.capacityFloorGB, 'the floor is the replay backing requirement');
 assert.strictEqual(req.capacityFloorGBPerRank, result.ctx.capacityFloorGB, 'the artifact must carry the searched floor');
@@ -101,7 +106,7 @@ for (const r of heldOut) {
   close(half.dieGBs, win.dieGBs / 2, 'half the cubes is half the die-side bandwidth');
   close(half.mcPowerW, win.mcPowerW / 2, 'half the cubes is half the MC power');
   assert(half.tpsPerUser < win.tpsPerUser * 0.8, 'the replay sees the lower bandwidth');
-  assert(!half.feasible && half.violations.includes('belowProgramGoal'), 'a half-cube card does not close the program goal');
+  assert(!half.feasible && half.violations.includes('belowContractTarget'), 'a half-cube card does not reach the contract target');
   for (const c of ['24', '32']) {
     assert(alt.cubesPerCard[c].violations.includes('cubesAboveReplayModel'), `${c} cubes exceed what the replay models`);
     assert.strictEqual(alt.cubesPerCard[c].tpsPerUser, null, `${c} cubes: no TPS/usr is claimed beyond the replay model`);
@@ -151,7 +156,12 @@ for (let i = 1; i < cands.length; i++) {
   if (b.feasible) assert(b.tpsPerUser > 0, `candidate ${i} has no replay`);
 }
 // The published tier is the aggressive one, so the safer tiers must lose on
-// something other than risk alone -- they lose on the replay.
+// something other than risk alone -- and since ADR-0024 the search's first
+// question is the contract's own clause, not the published point: B-MEM-BW
+// prices a cube's sustained payload, the published 640 GB/s tier IS that bound,
+// so every cheaper tier is below it by construction. A tier at the clause can
+// still miss the system target once the cube count scales it down, so the replay
+// is checked as well; here the clause is what every other tier breaks.
 const published = space.dimensions.mcGBs.options[String(stored.hardware.publishedTier)];
 assert.strictEqual(stored.design.mcGBs.classification, published.classification, 'the winner is at the published tier');
 for (const t of Object.keys(space.dimensions.mcGBs.options)) {
@@ -159,7 +169,8 @@ for (const t of Object.keys(space.dimensions.mcGBs.options)) {
   if (t === String(stored.hardware.publishedTier)) continue;
   const v = S.evaluate(result.ctx, {mcGBs: t}, req, result.best.pick);
   assert(!v.feasible, `tier ${t} with the winner's other options must be infeasible`);
-  assert(v.violations.includes('k3Tps'), `tier ${t} must fail on the replay`);
+  assert(v.violations.includes('belowContractBandwidth'), `tier ${t} is below the contract's per-cube bandwidth and must say so`);
+  assert(o.gbs < result.ctx.mcPayloadGBsPerCubeMin, `tier ${t} is above the contract bound; the search should resolve this by data, not by this test`);
 }
 
 // 7. The candidate set is persisted next to the winner with a reproducible
@@ -205,6 +216,9 @@ assert(S.CONDITIONAL_ROUTES.fewerBytesPerToken && !('fewerBytesPerToken' in S.HE
 assert(CA.tpsPerUser >= result.req.minTpsPerUser, `the conditional alternative must meet the program goal, got ${CA.tpsPerUser}`);
 assert(result.best.pick.route !== 'fewerBytesPerToken' && result.best.tpsPerUser === stored.evaluation.k3System.tpsPerUser, 'a conditional route must not become the baseline winner');
 assert(CA.mcGBs < result.best.mcGBs && CA.versusWinner.mcPowerSavedW > 0, 'the alternative is only interesting if it needs a lower MC tier');
+// Below the B-MEM-BW clause the route is a proposal to re-split the entry, and it says which.
+assert.deepStrictEqual(CA.resplit, {entry: 'B-MEM-BW', quantity: 'mcPayloadGBsPerCube', currentMin: result.ctx.mcPayloadGBsPerCubeMin, proposedMin: CA.mcGBs},
+  'a conditional route below the clause must name the entry it would re-split');
 assert(CA.tunedSoftwareKnobs && CA.limitation && CA.conditionedOn.includes('B-001'), 'the alternative must state its tuned knobs, limitation and the decision it waits on');
 assert.deepStrictEqual(JSON.parse(JSON.stringify(S.build(result).conditionalAlternative)), JSON.parse(JSON.stringify(stored.conditionalAlternative)), 'out/detailed/memory_design.json conditionalAlternative must be regenerated');
 const must = [

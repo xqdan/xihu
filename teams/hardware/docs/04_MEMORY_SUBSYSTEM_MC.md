@@ -174,8 +174,10 @@ UCIe 端口 819.2 GB/s 封顶，所以"cube 数 × 档位"超出端口是**不�
 档位是链路规格，不是可持续带宽承诺——可持续值见第 8 节的签核要求。
 
 **约束**：容量下限 49.198 GB/rank（由回放读出，`r.backingGB`，不是手写的）；
-K3 回放在发布点 TPS/usr 不低于 99.9%；封装面积（8 Die + N cube）+ 预留 ≤ 5248 mm²；
-卡功耗 ≤ 2800 W；路线必须与自身档位/cube 数自洽（见下）。
+每颗 MC 档位不低于 L1 合同 `B-MEM-BW` 的 `mcPayloadGBsPerCube` 下限（640 GB/s，`out/requirements/budget_frontier.json` 的 `S-CMP`）；
+K3 回放 TPS/usr 不低于合同的 `target.tpsPerUser`（1000）；封装面积（8 Die + N cube）+ 预留 ≤ 5248 mm²；
+Die 面积与卡功耗按 `B-AREA` 的上限（400 mm²、2800 W）；路线必须与自身档位/cube 数自洽（见下）。
+两条合同判据彼此不蕴含：档位达到条目下限的候选，cube 数减半后仍可能回放不到 1000。
 搜索共 400 个组合、4 个可行，设计空间 sha256 前缀见下。
 
 **目标**：可行优先，然后制造风险档位最低，然后卡级 MC 功耗最低，然后容量余量最大。
@@ -202,20 +204,21 @@ K3 回放在发布点 TPS/usr 不低于 99.9%；封装面积（8 Die + N cube）
 
 | 档位 GB/s | 分类 | Die 侧 GB/s | MC 功耗 W | 卡功耗 W | TPS/usr | 结果 |
 | ---: | --- | ---: | ---: | ---: | ---: | --- |
-| 320 | `REFERENCE` | 448 | 255.36 | 2579.60 | 586.46 | `k3Tps, routeContradiction:mcX-at-reference-tier` |
-| 400 | `GRID` | 560 | 291.20 | 2615.44 | 721.01 | `k3Tps` |
-| 480 | `DEFAULT_SEARCH_CAP` | 672 | 327.04 | 2651.28 | 853.44 | `k3Tps` |
-| 560 | `AGGRESSIVE` | 784 | 362.88 | 2687.12 | 977.00 | `k3Tps` |
+| 320 | `REFERENCE` | 448 | 255.36 | 2579.60 | 586.46 | `belowContractBandwidth, belowContractTarget, routeContradiction:mcX-at-reference-tier` |
+| 400 | `GRID` | 560 | 291.20 | 2615.44 | 721.01 | `belowContractBandwidth, belowContractTarget` |
+| 480 | `DEFAULT_SEARCH_CAP` | 672 | 327.04 | 2651.28 | 853.44 | `belowContractBandwidth, belowContractTarget` |
+| 560 | `AGGRESSIVE` | 784 | 362.88 | 2687.12 | 977.00 | `belowContractBandwidth, belowContractTarget` |
 | 640 | `STRETCH_AGGRESSIVE` | 896 | 398.72 | 2722.96 | 1101.77 | **选中** |
 
 这张表就是 B-002 的量化：320→560 全部低于 1000 TPS/usr，只有 640 档达标。
+`belowContractBandwidth` 是直接对条目的判断（档位低于 `B-MEM-BW` 的 640 GB/s），`belowContractTarget` 是回放对合同目标的判断；两者在这张表上重合，因为 `B-MEM-BW` 本身就是从同一回放在 1000 TPS/usr 处反推出来的。
 `routeContradiction:mcX-at-reference-tier` 表示"选 MC-X 路线却用参考档位"这一自我矛盾——它不是价格问题，是配置不自洽。
 
 #### 5.1.3 cube 数扫描（其余维度固定在最终方案）
 
 | cube 数 | 卡级容量 GB | 已占用 mm² | 预留 mm² | 结果 |
 | ---: | ---: | ---: | ---: | --- |
-| 8 | 128 | 3660.5 | 1587.5 | `k3Tps, belowProgramGoal`（每 die 1 颗，die 侧 448 GB/s，586.46 TPS/usr） |
+| 8 | 128 | 3660.5 | 1587.5 | `belowContractTarget`（每 die 1 颗，die 侧 448 GB/s，586.46 TPS/usr；档位仍是 640，满足 `B-MEM-BW`） |
 | 16 | 256 | 4460.5 | 787.5 | **选中** |
 | 24 | 384 | 5260.5 | −12.5 | `cubesAboveReplayModel, packageArea, cardPower` |
 | 32 | 512 | 6060.5 | −812.5 | `cubesAboveReplayModel, packageArea, cardPower` |
@@ -233,12 +236,12 @@ cube 数会改变 die 侧带宽（每 die 的 cube 数 × 单 cube 带宽）和 
 
 | 维度 | 选项 | 结果 | 该选项的组合 | Die 侧 GB/s | 容量 GB | MC 功耗 W | TPS/usr |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: |
-| `mcGBs` | `320` | `infeasible: k3Tps, belowProgramGoal, routeContradiction:mcX-at-reference-tier` | 320 / 16 / 16 / mcX / 0 | 448 | 256 | 255.36 | 586.46 |
-| `mcGBs` | `400` | `infeasible: k3Tps, belowProgramGoal` | 400 / 16 / 16 / mcX / 0 | 560 | 256 | 291.20 | 721.01 |
-| `mcGBs` | `480` | `infeasible: k3Tps, belowProgramGoal` | 480 / 16 / 16 / mcX / 0 | 672 | 256 | 327.04 | 853.44 |
-| `mcGBs` | `560` | `infeasible: k3Tps, belowProgramGoal` | 560 / 16 / 16 / mcX / 0 | 784 | 256 | 362.88 | 977.00 |
+| `mcGBs` | `320` | `infeasible: belowContractBandwidth, belowContractTarget, routeContradiction:mcX-at-reference-tier` | 320 / 16 / 16 / mcX / 0 | 448 | 256 | 255.36 | 586.46 |
+| `mcGBs` | `400` | `infeasible: belowContractBandwidth, belowContractTarget` | 400 / 16 / 16 / mcX / 0 | 560 | 256 | 291.20 | 721.01 |
+| `mcGBs` | `480` | `infeasible: belowContractBandwidth, belowContractTarget` | 480 / 16 / 16 / mcX / 0 | 672 | 256 | 327.04 | 853.44 |
+| `mcGBs` | `560` | `infeasible: belowContractBandwidth, belowContractTarget` | 560 / 16 / 16 / mcX / 0 | 784 | 256 | 362.88 | 977.00 |
 | `mcGBs` | `640` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
-| `cubesPerCard` | `8` | `infeasible: k3Tps, belowProgramGoal` | 640 / 8 / 16 / mcX / 0 | 448 | 128 | 199.36 | 586.46 |
+| `cubesPerCard` | `8` | `infeasible: belowContractTarget` | 640 / 8 / 16 / mcX / 0 | 448 | 128 | 199.36 | 586.46 |
 | `cubesPerCard` | `16` | **选中** | 640 / 16 / 16 / mcX / 0 | 896 | 256 | 398.72 | 1101.77 |
 | `cubesPerCard` | `24` | `infeasible: cubesAboveReplayModel, packageArea, cardPower` | 640 / 24 / 16 / mcX / 0 | 1344 | 384 | 598.08 | — |
 | `cubesPerCard` | `32` | `infeasible: cubesAboveReplayModel, packageArea, cardPower` | 640 / 32 / 16 / mcX / 0 | 1792 | 512 | 797.44 | — |
@@ -263,7 +266,8 @@ cube 数会改变 die 侧带宽（每 die 的 cube 数 × 单 cube 带宽）和 
 
 **有条件的路线 `fewerBytesPerToken`**（`conditional:*`）：这条路线**被算了**，但不能当基线，因为它依赖一个还没关闭的决定（稠密投影 FP8 的精度签核，B-001 / O-012）。
 搜索用"稠密投影 FP8、路由专家/KV/激活不变"重放 K3，每个带宽档位在软件旋钮网格上重调（depth {1,2,4} × weightTileMiB {4,8} × windowFraction {.5,.75,1} × kvTile {16384,32768}；硬件钉在发布点），
-只豁免"与发布点的偏差"这一条容差（这条路线本来就要改变发布点），其余限制（`belowProgramGoal`、封装面积、卡功耗、容量等）照常。结果：
+只豁免"与发布点的偏差"这一条容差（这条路线本来就要改变发布点）和 `B-MEM-BW` 条目（条目是按 BF16 稠密的每 token 字节数定价的，这条路线改变的正是这个字节数，所以它不是"低于条目"，而是"提议重切条目"），
+其余限制（`belowContractTarget`、封装面积、卡功耗、容量等）照常。它的摘要带 `resplit` 字段，写明要把 `B-MEM-BW` 的下限从 640 改到多少。结果：
 
 | 备选 | MC 档位 | 风险档 | TPS/usr | MC 功耗 W | 与基线相比 |
 | --- | ---: | --- | ---: | ---: | --- |

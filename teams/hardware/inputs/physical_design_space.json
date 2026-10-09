@@ -16,8 +16,8 @@
     "models": ["Kimi K3", "GLM-5.2", "DeepSeek-V4-Pro"],
     "modelsReason": "the package must serve the three models at the published point; a die/cube arrangement that only fits one is not a package",
     "publishedPoint": "tpsDesign.hardware",
-    "tpsTolerance": 0.001,
-    "tpsReason": "the physical domain may not move the published point: every candidate is replayed on the K3 detailed model and must keep TPS/usr within 0.1% of the published value",
+    "contractEntry": "B-AREA",
+    "contractReason": "the L1 budget contract (integration/detailed/design_contract.js) owns the system requirement: the physical domain answers for B-AREA (the die-area cap is read from it) and every candidate's K3 replay must reach the contract target.tpsPerUser. The die and card power caps stay with the searched cooling option: the contract's limits are stated on the liquid basis (B-AREA.basis), and an air-cooled candidate must answer to its own, tighter pair",
     "areaConservationTolerance": 0,
     "areaConservationReason": "the document states all unit areas + keep-out = package usable area, error 0; a non-zero residual means a term is unaccounted for, not that the budget is loose",
     "dieAreaLimitMm2": 400,
@@ -31,7 +31,7 @@
     "card power <= 2800 W (the MC term and the fixed overhead are charged, not assumed away)",
     "package area (dies + cubes) + reserve <= the 5248 mm2 placement window",
     "PHY shoreline <= the die edge budget (4 x sqrt(dieArea) x phyEdgeFraction); the published point sits at 24.21 / 52.95 mm and this constraint is what a naive lane increase breaks first",
-    "the K3 detailed replay at the published point keeps TPS/usr within tpsTolerance",
+    "the K3 detailed replay at the candidate reaches the contract target of requirements.contractEntry",
     "every area term must be classifiable as logic, SRAM or PHY: k3_physical_basis.resize throws on an unclassified term, and that must stay true"
   ],
   "objective": [

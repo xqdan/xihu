@@ -1,6 +1,6 @@
 'use strict';
 
-// Runs the four C-group design workflows (compute, memory, comm, physical) against a
+// Runs the five C-group design workflows (compute, sram, mc, comm, physical) against a
 // mock runtime. The structure tests only read these files as text; this test
 // executes them, so a control-flow change is checked by what the workflow RETURNS.
 //
@@ -157,17 +157,21 @@ function allInfeasible(real) {
     assert.strictEqual(verifyLandedWinner(domain, landedWinner, {...landedRecord, candidateSetSha256: '0'}).ok, false);
 
     // 3. A lateral expert that fails blocks the run; it is not "no objection".
+    // label -> the seat named in absentLateral. memory-expert holds both the SRAM and the
+    // MC seat (doc 23 §4), so as a lateral of sram / mc / comm / physical it is named by seat.
     const LATERAL = {
-      compute: ['constraint:memory', 'constraint:physical'],
-      memory: ['constraint:compute', 'constraint:software'],
-      comm: ['constraint:memory', 'constraint:physical'],
-      physical: ['constraint:compute', 'constraint:memory', 'constraint:comm']
+      compute: {'constraint:memory': 'memory-expert', 'constraint:physical': 'physical-expert'},
+      sram: {'constraint:compute': 'compute-expert', 'constraint:mc': 'memory-expert/mc', 'constraint:software': 'software-expert'},
+      mc: {'constraint:sram': 'memory-expert/sram', 'constraint:comm': 'comm-expert', 'constraint:physical': 'physical-expert'},
+      comm: {'constraint:mc': 'memory-expert/mc', 'constraint:compute': 'compute-expert', 'constraint:physical': 'physical-expert'},
+      physical: {'constraint:compute': 'compute-expert', 'constraint:sram': 'memory-expert/sram', 'constraint:mc': 'memory-expert/mc', 'constraint:comm': 'comm-expert'}
     }[domain];
-    for (const label of LATERAL) {
+    assert(LATERAL, `${domain}: no lateral expectation`);
+    for (const [label, seat] of Object.entries(LATERAL)) {
       const blocked = await run(domain, baseArgs(domain, brief), {winner, drop: [label]});
       assert.strictEqual(blocked.result.verdict, 'BLOCKED_CONFIG', `${domain}: dropping ${label} must block`);
       assert.deepStrictEqual(blocked.result.files, [], `${domain}: a blocked run must land nothing`);
-      assert.deepStrictEqual(blocked.result.absentLateral, [label.replace('constraint:', '') + '-expert'], `${domain}: the absent expert must be named`);
+      assert.deepStrictEqual(blocked.result.absentLateral, [seat], `${domain}: the absent expert must be named`);
       assert(blocked.result.nextActions.length === 1, `${domain}: a blocked exit must say what to do next`);
     }
 

@@ -1,7 +1,7 @@
 export const meta = {
   name: 'design-compute',
   description: 'K3 设计 compute 域：专家提搜索策略与守恒判据，确定性脚本枚举打分，integrator 合并，invariant-checker 检点后落盘',
-  whenToUse: 'C 组四域的标准骨架。需要 args.brief（intake 产出的 DesignBrief）args.searchArtifact（主循环已生成好的搜索结果路径，仅作记录）与 args.searchBrief（search_brief.js 核验过的候选集）。本 workflow 不执行搜索、不写文件。',
+  whenToUse: 'C 组五域的标准骨架。需要 args.brief（intake 产出的 DesignBrief）args.searchArtifact（主循环已生成好的搜索结果路径，仅作记录）与 args.searchBrief（search_brief.js 核验过的候选集）。本 workflow 不执行搜索、不写文件。',
   phases: [
     { title: 'Search policy', detail: 'compute-expert 提出搜哪些维度、哪些必须排除、按什么排序' },
     { title: 'Deterministic search', detail: '由脚本枚举并打分，并由 search_brief.js 读取核验；workflow 内没有 agent 参与取数' },
@@ -85,7 +85,7 @@ const head = (agentId) => [HEAD.replace('__AGENT__', agentId), ...knowledgeHead(
 
 const BRIEF_JSON = JSON.stringify(BRIEF, null, 2)
 
-// 旁证约束的标准契约。四个域共用同一形状，这样一条约束在不同域之间传递时
+// 旁证约束的标准契约。五个域共用同一形状，这样一条约束在不同域之间传递时
 // 不需要翻译，也不会因为字段名不同而被当成两回事。
 // 关键点是 constraintId 必须引用 brief 里已有的硬约束——旁证是**转述约束**，
 // 不是发明约束；发明出来的约束没有出处，下游无法复核也就无法执行。

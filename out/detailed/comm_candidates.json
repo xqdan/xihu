@@ -2,7 +2,7 @@
   "status": "MODEL (search over the HW-07 design space on the detailed protocol model; the candidate set behind out/detailed/comm_core_design.json, not FROZEN)",
   "designSpace": {
     "file": "teams/hardware/inputs/comm_core_design_space.json",
-    "sha256": "cc324fd56995ff3e3d7b68ab5e57b0c804359cf0b0a014b88bb90b78d232a9c2",
+    "sha256": "159124176e277293c1672e59277a8ea6824b8fe2c7e5980ed1f4f89f880ff500",
     "dimensions": [
       "placement",
       "trigger",
@@ -25,6 +25,31 @@
     "peerEntryBytes": 16,
     "specTauUs": 1.15
   },
+  "contract": {
+    "path": "out/requirements/budget_frontier.json",
+    "splitId": "S-CMP",
+    "origin": "frontier split",
+    "sha256": "713b98cd40576ce5d5150ca01d0ed07a2db03289217f8b1889b8f3ce5c066a71",
+    "target": {
+      "tpsPerUser": 1000,
+      "architectureGate": 1050,
+      "rawBudgetUs": 854.7008547008547,
+      "engineeringMargin": 1.17
+    },
+    "point": {
+      "tauUs": 1.15,
+      "computeScale": 0.7444854736328125,
+      "mcGBs": 640
+    }
+  },
+  "clause": {
+    "id": "B-TAU",
+    "quantity": "tauUs",
+    "owner": "comm",
+    "ownerAgent": "comm-expert",
+    "max": 1.15,
+    "source": "out/requirements/budget_frontier.json#B-TAU"
+  },
   "fieldCaliber": {
     "areaIncludesPortCost": "yes",
     "powerScope": "die",
@@ -38,12 +63,12 @@
   "truncated": true,
   "infeasibleByCause": {
     "sramCapacity": 5243,
-    "specTau": 22253,
-    "specTau+sramCapacity": 10117,
-    "specTau+sramCapacity+utilization": 480,
-    "specTau+utilization": 1200
+    "aboveContractTau": 22253,
+    "aboveContractTau+sramCapacity": 10117,
+    "aboveContractTau+sramCapacity+utilization": 480,
+    "aboveContractTau+utilization": 1200
   },
-  "candidateSetSha256": "93364449a2586169e96c1c9a1735aabecce797664328c787413a66e48bc28b29",
+  "candidateSetSha256": "b3d8ec99aee82a704e14ac409516df05b463655e1dd5ade4ea3e1229bfe008a8",
   "candidates": [
     {
       "rank": 1,

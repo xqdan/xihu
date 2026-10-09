@@ -288,7 +288,125 @@ context 按 TP rank 切分。KV = 层数 × 656 B × 2²⁰ token ÷ 32；index 
 
 第 3.1 节的系数必须替换成 bank-cycle 仿真结果。验收时报告平均值、P95、P99 和最坏 bank conflict，而不是只给总 TB/s。
 
-## 8. 冻结交付物
+## 8. SRAM 设计空间与搜索（HW-03 决策）
+
+- 所有者：Hardware HW-03（SRAM/TMA）；共签：HW-04（MC 子系统）、SW-02（调度）、SW-03（kernel）
+- 状态：`MODEL`（设计空间搜索：L1 合同 `B-SRAM-CAP` + K3 详细回放对照合同目标 + `B-AREA` 包络；不是 `FROZEN`，不改发布点）
+- 设计空间（全部备选及其 ASSUMPTION）：`teams/hardware/inputs/sram_design_space.json`（哈希 `5aca5129e949`）——**`UNVERIFIED`，由 agent 依仓库文档起草，待域 owner 复核**
+- 搜索：`integration/detailed/sram_search.js`；`npm run sram:search` 只把最终方案写到
+  `out/detailed/sram_design.json`，整个打分的候选集写到 `out/detailed/sram_candidates.json`
+  （带 `candidateSetSha256`）。本节数字由 `tests/regression/test_sram_design.js` 对照新鲜搜索结果检查。
+
+**合同条款**：本域对 L1 合同的 `B-SRAM-CAP` 负责——每 Die Shared SRAM 窗口 ≥ 16 MiB
+（`out/requirements/budget_frontier.json` 的 S-CMP 拆分，prefetch depth 4）。
+窗口是本空间的一个维度，所以条款直接检查：低于下限的候选记 `belowContractCapacity`，不回放。
+回放只要求达到合同的 `target.tpsPerUser`（1000），**不要求保持发布点的 1101.77**——发布点是结果，不是需求。
+Die 面积与功耗上限属于 `B-AREA`（physical 的条款），这里只作为共享包络读取；
+面积和功耗都含 `O.chargeSharedPortCost()` 的端口放大计费（`A.physical()` 不带这一项）。
+
+**目标**：可行优先，然后 Die 面积最小（含端口计费），然后 Die 功耗最小。
+搜索共 486 个组合、324 个回放、298 个可行。不可行原因（一个候选可有多条）：
+
+| 原因 | 候选数 |
+| --- | ---: |
+| `belowContractCapacity` | 162 |
+| `belowContractTarget` | 20 |
+| `cardPower` | 5 |
+| `dieArea` | 2 |
+
+### 8.1 最终方案
+
+| 维度 | 选项 |
+| --- | --- |
+| `sharedMiB` | `16` |
+| `lBanks` | `16` |
+| `hBanks` | `32` |
+| `sharedSlices` | `8` |
+| `tmaEngines` | `1` |
+| `sharedPortScaling` | `off` |
+
+- K3 回放 1009.57 TPS/usr（发布值 1101.77），raw 846.60 µs；高于合同目标 1000 共 9.57，低于架构门 1050 共 40.43。
+- Die 313.219 mm² / 259.832 W，卡 2557.379 W；端口放大不建，计费 0.000 mm²。
+- 发布点的 SRAM 组合（`16 / 64 / 64 / 16 / 4 / published`）在搜索中排第 216 名：
+  比最终方案多 52.122 mm²、23.437 W，多换来 92.20 TPS/usr。
+
+读法：
+
+- 最终方案是"满足合同的最便宜的 Die"，它把发布点带着的 TPS/usr 余量几乎用完（只剩 9.57），且不过架构门。
+  这是按合同打分的预期结果，不是建议把发布点换成它。
+- 这个结论只在**发布点的计算侧**成立。它与 compute、mc、comm、physical 各自的胜者能否同时成立，
+  是 L3 `design.coupling`（P5）的问题；单域搜索不回答。
+- 省下的 52 mm² 是 SRAM 域交给 physical 的余量，不是本域可以自行花掉的面积。
+
+### 8.2 `B-SRAM-CAP` 扫描（其余维度固定在最终方案）
+
+合同的判定来自 S-CMP 拆分点（计算侧放宽），这里的回放在发布点的计算侧，所以两者可以不一致。
+本表把低于下限的窗口也强制回放，只为说明这一点；搜索本身不回放它们。
+
+| sharedMiB | 合同判定 | 回放 TPS/usr | Die 面积 mm² |
+| ---: | --- | ---: | ---: |
+| 8 | 不成立 | 837.24 | 305.298 |
+| 10 | 不成立 | 918.75 | 307.278 |
+| 12 | 不成立 | 973.62 | 309.258 |
+| 13 | 不成立 | 1000.64 | 310.248 |
+| 14 | 不成立 | 1009.49 | 311.239 |
+| 16 | 成立 | 1009.57 | 313.219 |
+| 20 | 成立 | 1009.55 | 317.180 |
+| 24 | 成立 | 1009.41 | 321.140 |
+
+13、14 MiB 在发布点计算侧回放能到合同目标，但合同判定不成立：条款按合同裁决，不按本域的回放裁决。
+若要下调窗口，应回到 L1 重新拆分 `B-SRAM-CAP`，而不是在本域搜索里放行。
+
+### 8.3 本地容量（已裁定维度，用数字说明）
+
+| L MiB | H MiB | 回放 TPS/usr | Die 面积 mm² | 结果 |
+| ---: | ---: | ---: | ---: | --- |
+| 1 | 4 | 1009.57 | 313.219 | **选中** |
+| 2 | 4 | 1009.57 | 321.140 | 面积 |
+| 4 | 4 | 1009.57 | 336.983 | 面积 |
+| 8 | 4 | 1009.57 | 368.669 | 面积 |
+| 1 | 1 | — | 301.337 | `hLocalTile` |
+| 1 | 2 | — | 305.298 | `hLocalTile` |
+| 1 | 8 | 1009.57 | 329.062 | 面积 |
+
+本地容量只由 local tile 是否放得下决定：H 1、2 MiB 放不下 H tile；更大的容量 TPS/usr 不变，只多面积。
+所以它不进搜索维度（`ruled.localCapacity`）。
+
+### 8.4 各备选的落选原因
+
+每个选项把其余维度钉在最终方案上（`alternatives()` 的 `holdDims`）。
+
+| 维度 | 选项 | 结果 | TPS/usr | Die 面积 mm² | Die 功耗 W | 卡功耗 W |
+| --- | --- | --- | ---: | ---: | ---: | ---: |
+| `sharedMiB` | `12` | `infeasible: belowContractCapacity` | — | — | — | — |
+| `sharedMiB` | `16` | **选中** | 1009.57 | 313.219 | 259.832 | 2557.379 |
+| `sharedMiB` | `24` | `die area` | 1009.41 | 321.140 | 260.552 | 2563.139 |
+| `lBanks` | `16` | **选中** | 1009.57 | 313.219 | 259.832 | 2557.379 |
+| `lBanks` | `32` | `die area` | 1045.48 | 316.489 | 263.212 | 2584.412 |
+| `lBanks` | `64` | `die area` | 1055.93 | 323.029 | 269.970 | 2638.479 |
+| `hBanks` | `16` | `infeasible: belowContractTarget` | 991.86 | 311.584 | 258.143 | 2543.862 |
+| `hBanks` | `32` | **选中** | 1009.57 | 313.219 | 259.832 | 2557.379 |
+| `hBanks` | `64` | `die area` | 1015.27 | 316.489 | 263.212 | 2584.412 |
+| `sharedSlices` | `8` | **选中** | 1009.57 | 313.219 | 259.832 | 2557.379 |
+| `sharedSlices` | `16` | `die area` | 1009.72 | 328.391 | 264.133 | 2591.785 |
+| `sharedSlices` | `32` | `die area` | 1005.96 | 351.673 | 270.738 | 2644.623 |
+| `tmaEngines` | `1` | **选中** | 1009.57 | 313.219 | 259.832 | 2557.379 |
+| `tmaEngines` | `2` | `die area` | 1017.46 | 318.584 | 260.792 | 2565.059 |
+| `tmaEngines` | `4` | `die area` | 1020.59 | 329.313 | 262.712 | 2580.419 |
+| `sharedPortScaling` | `published` | `die area` | 1009.84 | 317.107 | 261.202 | 2568.336 |
+| `sharedPortScaling` | `off` | **选中** | 1009.57 | 313.219 | 259.832 | 2557.379 |
+
+- `hBanks 16` 是唯一因合同目标落选的单项：H 核 bank 再减半，TPS/usr 跌到目标以下。
+- 端口放大（`published`）在这里只换来 0.27 TPS/usr，却要 3.888 mm²；与第 3.1 节在发布点的结论一致。
+- `lBanks 32` 只多 3.27 mm² 就多 35.91 TPS/usr，是"余量优先"时最先该考虑的备选；按合同的排序它输在面积上。
+
+### 8.5 不搜索、已裁定的维度
+
+理由在 `sram_design_space.json#ruled`：本地容量（第 8.3 节）、bank 宽度（由 SRAM compiler 决定，与 bank 数换的是同一份带宽）、
+prefetch depth（`B-SRAM-CAP` 就是在 depth 4 上推导的；depth 拿窗口换 MC 带宽，属于 L3 的 SRAM × depth × MC 耦合）、
+TMA 宽度（与引擎数换的是同一份填充带宽）。
+
+## 9. 冻结交付物
 
 - SRAM macro 组合、bank/slice/row 地址图；
 - 所有端口和仲裁优先级（本文第 2.2 节为初版）；

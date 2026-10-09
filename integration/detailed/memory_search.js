@@ -53,6 +53,7 @@ const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const P = require('./k3_physical_basis.js');
 const E = require('../../teams/model/src/design_engine.js');
+const CONTRACT = require('./design_contract.js');
 
 const root = path.resolve(__dirname, '../..');
 const SPACE_FILE = 'teams/hardware/inputs/memory_design_space.json';
@@ -73,8 +74,9 @@ const HELD_OUT_ROUTES = {
 
 // Routes that ARE scored but cannot be the baseline winner yet, because the thing they rely on is
 // an open decision rather than a model gap. `variant` names the replay input they change.
-// A conditional candidate is held to every limit except the published-point tolerance (it moves the
-// point by design); it is reported next to the winner as the alternative if the condition closes.
+// A conditional candidate is held to every limit except the published-point tolerance and the
+// B-MEM-BW clause (it moves the point, and the bytes the clause is priced on, by design); it is
+// reported next to the winner as the alternative if the condition closes.
 const CONDITIONAL_ROUTES = {
   fewerBytesPerToken: {
     variant: 'fp8Dense',
@@ -159,9 +161,22 @@ function replayVariant(ctx, mcGBs, variant) {
 
 function context() {
   const space = read(SPACE_FILE);
+  CONTRACT.declared(space, 'mc', SPACE_FILE);
   const spec = read('teams/hardware/inputs/k3_mc_baseline.json');
   const x = spec.tpsDesign.hardware.x;
+  // The clause this domain answers for (23 section 4, L3): B-MEM-BW, the sustained payload
+  // one memory cube must deliver. The published point stays in ctx -- the replay runs on it
+  // and the artifacts report against it -- but it is no longer the feasibility test.
+  const contract = CONTRACT.load();
+  const bw = CONTRACT.ownedBy(contract.contract, 'mc');
+  const area = CONTRACT.entry(contract.contract, 'B-AREA');
   const ctx = {space, spec, x, point: spec.tpsDesign.point, replays: {},
+    contract, clause: CONTRACT.clause(contract, 'mc'), target: contract.contract.target,
+    mcPayloadGBsPerCubeMin: bw.min,
+    // B-AREA is physical's clause, not this domain's; it is read here only as the shared
+    // envelope every domain designs inside, which is what it was in the space's own
+    // requirements block too. The difference is that it is now one number in one file.
+    limits: {dieAreaMm2: area.max, cardPowerW: area.limits.cardPowerW},
     cubesPerComputeDie: spec.card.memoryCubesPerComputeDie,
     cubeAreaMm2Planning: spec.package.memoryCubeAreaMm2Planning,
     dies: A.LIMITS.dies,
@@ -216,20 +231,25 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   // The header states a tier the port cannot carry is infeasible, not merely expensive.
   if (portCapped) violations.push('portCapped');
 
-  // 3. The K3 replay must keep the published point, and it must clear the
-  // program goal. The tolerance check above only says a candidate did not move
-  // the published point; it does not say the point closes B-002, and the
-  // requirements block states minTpsPerUser for exactly that reason -- a tier
-  // below 1000 TPS/usr does not close the bandwidth blocker even if it is the
-  // cheapest in its class. Both are checked; neither implies the other.
+  // 3. The contract's own clause, and the system target behind it. B-MEM-BW prices one
+  // memory cube's sustained payload, and that is a dimension of this space -- so unlike the
+  // compute search, this one tests the entry directly: the tier either delivers the
+  // contract's GB/s per cube or it does not. The replay is then held to the contract's
+  // TARGET, not to the published point: a candidate that reaches 1000 TPS/usr satisfies
+  // the contract, and scoring against the published 1101.77 made the shipped design its
+  // own requirement. Both are checked; neither implies the other -- a tier at the clause
+  // can still miss the target once the cube count scales it down, and the old pair
+  // (`k3Tps`, `belowProgramGoal`) said the same thing with the published point standing in
+  // for the clause.
+  //
+  // A conditional route is the one exception to the clause, as it was to the published-point
+  // tolerance: B-MEM-BW is priced on the BF16 workload's bytes per token, and a route that
+  // changes those bytes is not measured by it -- it is a proposal to re-split the entry. It is
+  // still held to the target, and its summary names the entry it would re-split.
+  if (!conditional && tier.gbs < ctx.mcPayloadGBsPerCubeMin - EPS) violations.push('belowContractBandwidth');
   if (!perf) { /* cubesAboveReplayModel already recorded: no TPS/usr is claimed */ }
   else if (!perf.feasible) violations.push('systemInfeasible');
-  else {
-    // A conditional route moves the published point on purpose (fewer bytes, same hardware tier): it is
-    // held to the program goal below, not to the published value.
-    if (!conditional && perf.tpsPerUser < ctx.point.tpsPerUser * (1 - req.tpsTolerance)) violations.push('k3Tps');
-    if (perf.tpsPerUser < req.minTpsPerUser - EPS) violations.push('belowProgramGoal');
-  }
+  else if (perf.tpsPerUser < ctx.target.tpsPerUser - EPS) violations.push('belowContractTarget');
 
   // 4. Package window, die area and card power, with the cube count and the tier
   // charged. The card power here is this domain's own caliber (compute dies plus
@@ -237,8 +257,8 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   // physical domain's figure, so the comparison is between like quantities.
   const packageAreaMm2 = ctx.dies * sys.dieAreaMm2 + cubes * ctx.cubeAreaMm2Planning;
   if (packageAreaMm2 > ctx.spec.package.placementWindowMm2 + EPS) violations.push('packageArea');
-  if (sys.dieAreaMm2 > req.dieAreaLimitMm2 + EPS) violations.push('dieArea');
-  if (cardPowerW > req.cardPowerLimitW + EPS) violations.push('cardPower');
+  if (sys.dieAreaMm2 > ctx.limits.dieAreaMm2 + EPS) violations.push('dieArea');
+  if (cardPowerW > ctx.limits.cardPowerW + EPS) violations.push('cardPower');
 
   // 5. Route consistency. The route is not a preference to be ranked: it is a
   // claim about how the gap is closed. A claim the search did not model must not
@@ -360,6 +380,9 @@ function conditionalSummary(result) {
     versusWinner: {winnerMcGBs: best.mcGBs, winnerTpsPerUser: best.tpsPerUser, mcGBsRatio: c.mcGBs / best.mcGBs,
       mcPowerSavedW: best.mcPowerW - c.mcPowerW, tpsDeltaPct: (c.tpsPerUser / best.tpsPerUser - 1) * 100,
       riskClassWinner: best.classification, riskClassAlternative: c.classification},
+    resplit: c.mcGBs < result.ctx.mcPayloadGBsPerCubeMin
+      ? {entry: 'B-MEM-BW', quantity: 'mcPayloadGBsPerCube', currentMin: result.ctx.mcPayloadGBsPerCubeMin, proposedMin: c.mcGBs}
+      : null,
     status: 'NOT the baseline: reported so that the cost of the open precision decision is a number; it cannot win until the condition closes'
   };
 }
@@ -399,8 +422,10 @@ function candidates(result = search()) {
   return {
     status: 'MODEL (search over the HW-04 design space; the candidate set behind out/detailed/memory_design.json, not FROZEN)',
     designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(ctx.space.dimensions)},
-    requirements: {models: req.models, tpsTolerance: req.tpsTolerance, capacityFloorGBPerRank: ctx.capacityFloorGB,
+    requirements: {models: req.models, contractEntry: req.contractEntry, capacityFloorGBPerRank: ctx.capacityFloorGB,
       minTpsPerUser: req.minTpsPerUser},
+    contract: CONTRACT.provenance(ctx.contract),
+    clause: ctx.clause,
     ranking: 'feasible first, then lowest manufacturing risk class, then least card-level MC power, then largest capacity margin, then pick',
     totalCandidates: counts.candidates,
     feasibleCandidates: counts.feasible,
@@ -466,8 +491,10 @@ function build(result = search()) {
     designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(D), candidates: counts.candidates, feasible: counts.feasible,
       constraints: space.constraints, objective: space.objective,
       note: 'only the winning design is written here; the alternatives stay in the design space and in the document'},
-    requirements: {models: req.models, tpsTolerance: req.tpsTolerance, capacityFloorGBPerRank: ctx.capacityFloorGB,
-      dieAreaLimitMm2: req.dieAreaLimitMm2, cardPowerLimitW: req.cardPowerLimitW, placementWindowMm2: ctx.spec.package.placementWindowMm2},
+    requirements: {models: req.models, contractEntry: req.contractEntry, capacityFloorGBPerRank: ctx.capacityFloorGB,
+      dieAreaLimitMm2: ctx.limits.dieAreaMm2, cardPowerLimitW: ctx.limits.cardPowerW, placementWindowMm2: ctx.spec.package.placementWindowMm2},
+    contract: CONTRACT.provenance(ctx.contract),
+    clause: ctx.clause,
     caliber: space.caliber,
     assumptions: {sustainedEfficiency: A.TECH.mcUtil, capacityFloorSource: 'K3 per-rank backing at 1M context, read from the detailed replay (r.backingGB)',
       eccOverhead: best.eccOverhead, cubeAreaMm2Planning: ctx.cubeAreaMm2Planning},
@@ -476,7 +503,8 @@ function build(result = search()) {
     design,
     ruled: Object.fromEntries(Object.entries(space.ruled).map(([k, v]) => [k, {chosen: v.chosen, reason: v.reason}])),
     evaluation: {
-      k3System: {publishedTpsPerUser: point.tpsPerUser, tpsPerUser: best.tpsPerUser, rawLatencyUs: best.rawLatencyUs},
+      k3System: {publishedTpsPerUser: point.tpsPerUser, tpsPerUser: best.tpsPerUser, rawLatencyUs: best.rawLatencyUs,
+        contractTargetTpsPerUser: ctx.target.tpsPerUser},
       classification: best.classification, mcGBs: best.mcGBs, dieGBs: best.dieGBs, portCapped: best.portCapped,
       capacityGBPerCard: best.capacityGBPerCard, capacityMarginGB: best.capacityMarginGB,
       mcPowerW: best.mcPowerW, cardPowerW: best.cardPowerW, packageAreaMm2: best.packageAreaMm2, areaReserveMm2: best.areaReserveMm2,

@@ -2,7 +2,7 @@
   "status": "MODEL (search over the physical design space; the candidate set behind out/detailed/physical_design.json, not FROZEN)",
   "designSpace": {
     "file": "teams/hardware/inputs/physical_design_space.json",
-    "sha256": "2237dc86c1ea725465c8559838075c1ee8a2c0b71742cb3cd9963156aa658d9e",
+    "sha256": "3f5c6046eca584bae6ebc544e4bb66184020bd66e514d2a388ff00479bad1955",
     "dimensions": [
       "process",
       "matrixTFPerMm2",
@@ -16,11 +16,36 @@
       "GLM-5.2",
       "DeepSeek-V4-Pro"
     ],
-    "tpsTolerance": 0.001,
+    "contractEntry": "B-AREA",
     "dieAreaLimitMm2": 400,
     "diePowerLimitW": 300,
     "cardPowerLimitW": 2800,
     "placementWindowMm2": 5248
+  },
+  "contract": {
+    "path": "out/requirements/budget_frontier.json",
+    "splitId": "S-CMP",
+    "origin": "frontier split",
+    "sha256": "713b98cd40576ce5d5150ca01d0ed07a2db03289217f8b1889b8f3ce5c066a71",
+    "target": {
+      "tpsPerUser": 1000,
+      "architectureGate": 1050,
+      "rawBudgetUs": 854.7008547008547,
+      "engineeringMargin": 1.17
+    },
+    "point": {
+      "tauUs": 1.15,
+      "computeScale": 0.7444854736328125,
+      "mcGBs": 640
+    }
+  },
+  "clause": {
+    "id": "B-AREA",
+    "quantity": "dieAreaMm2",
+    "owner": "physical",
+    "ownerAgent": "physical-expert",
+    "max": 400,
+    "source": "out/requirements/budget_frontier.json#B-AREA"
   },
   "ranking": "feasible first, then most conservative keep-out premise, then largest placement reserve within that premise, then largest die power margin, then lowest process risk, then pick",
   "totalCandidates": 24,
