@@ -1,0 +1,1922 @@
+{
+  "format": "traced-operator-ledger/1",
+  "modelId": "GLM-5.2",
+  "evidenceClass": "UNVERIFIED_PLANNING_MANIFEST",
+  "provenance": {
+    "tool": "tools/trace_operator_ledger.py",
+    "toolSha256": "0e42b84c7a499e56dab903d1d1edd7d4c9c385fcff3a2b2164a186f82e58a55c",
+    "python": "3.14.2",
+    "torch": "2.14.1+cpu",
+    "transformers": "5.19.0",
+    "modeling": "transformers.models.glm_moe_dsa.modeling_glm_moe_dsa",
+    "modelingSha256": "68a88d0d9097b7e37dab99999611d1b5ed57d3632add66c7ab26446f354e6be2",
+    "config": {
+      "repo": "zai-org/GLM-5.2",
+      "revision": "cf457fa734ab149ffef225f80893eb38c6ff5cdc",
+      "url": "https://huggingface.co/zai-org/GLM-5.2/raw/cf457fa734ab149ffef225f80893eb38c6ff5cdc/config.json",
+      "sha256": "185f93ee6d12548e16a847e279dc0c3c90b1524c970b0866b42fb545747d859a",
+      "fetched": "local file"
+    },
+    "quantConfig": {
+      "repo": "zai-org/GLM-5.2-FP8",
+      "revision": "f33c6dc501ee5a2c7e35155653b1b1abbc320951",
+      "url": "https://huggingface.co/zai-org/GLM-5.2-FP8/raw/f33c6dc501ee5a2c7e35155653b1b1abbc320951/config.json",
+      "sha256": "22e49334abf8562fecf70ca3292ba3f5b33f5602fb2bf10b52dd64a66cfe65ff",
+      "fetched": "local file"
+    },
+    "checkpointRenames": [
+      [
+        "self_attn.indexers_proj",
+        "self_attn.indexer.weights_proj"
+      ]
+    ],
+    "device": "meta",
+    "attnImplementation": "eager",
+    "expertsImplementation": "batched_mm",
+    "flopSource": "torch.utils.flop_counter.flop_registry (matmul-class ops; elementwise ops count 0)"
+  },
+  "scenario": {
+    "batch": 1,
+    "decodeTokens": 1,
+    "contextTokens": 1048576,
+    "cachedTokens": 1048575
+  },
+  "global": {
+    "parameters": [
+      {
+        "name": "model.embed_tokens.weight",
+        "shape": [
+          154880,
+          6144
+        ],
+        "numel": 951582720,
+        "role": "lookup",
+        "storage": "bf16"
+      },
+      {
+        "name": "model.norm.weight",
+        "shape": [
+          6144
+        ],
+        "numel": 6144,
+        "role": "vector",
+        "storage": "bf16"
+      },
+      {
+        "name": "lm_head.weight",
+        "shape": [
+          154880,
+          6144
+        ],
+        "numel": 951582720,
+        "role": "matmul",
+        "storage": "bf16"
+      }
+    ],
+    "ops": [
+      {
+        "module": "lm_head",
+        "op": "aten.mm",
+        "shapes": [
+          [
+            1,
+            6144
+          ],
+          [
+            6144,
+            154880
+          ]
+        ],
+        "count": 1,
+        "flops": 1903165440
+      }
+    ],
+    "otherOps": {
+      "aten._to_copy": 2,
+      "aten.add": 1,
+      "aten.mean": 1,
+      "aten.mul": 2,
+      "aten.pow": 1,
+      "aten.rsqrt": 1,
+      "aten._unsafe_view": 1,
+      "aten.t": 1,
+      "aten.view": 1
+    },
+    "modules": {
+      "model.norm": {
+        "class": "GlmMoeDsaRMSNorm",
+        "calls": 1
+      },
+      "lm_head": {
+        "class": "Linear",
+        "calls": 1
+      }
+    }
+  },
+  "layerKinds": [
+    {
+      "layers": [
+        0,
+        1,
+        2
+      ],
+      "parameters": [
+        {
+          "name": "self_attn.q_a_proj.weight",
+          "shape": [
+            2048,
+            6144
+          ],
+          "numel": 12582912,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.q_a_layernorm.weight",
+          "shape": [
+            2048
+          ],
+          "numel": 2048,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "self_attn.q_b_proj.weight",
+          "shape": [
+            16384,
+            2048
+          ],
+          "numel": 33554432,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.kv_a_proj_with_mqa.weight",
+          "shape": [
+            576,
+            6144
+          ],
+          "numel": 3538944,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.kv_a_layernorm.weight",
+          "shape": [
+            512
+          ],
+          "numel": 512,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "self_attn.kv_b_proj.weight",
+          "shape": [
+            28672,
+            512
+          ],
+          "numel": 14680064,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.o_proj.weight",
+          "shape": [
+            6144,
+            16384
+          ],
+          "numel": 100663296,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.indexer.wq_b.weight",
+          "shape": [
+            4096,
+            2048
+          ],
+          "numel": 8388608,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.indexer.wk.weight",
+          "shape": [
+            128,
+            6144
+          ],
+          "numel": 786432,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.indexer.k_norm.weight",
+          "shape": [
+            128
+          ],
+          "numel": 128,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "self_attn.indexer.k_norm.bias",
+          "shape": [
+            128
+          ],
+          "numel": 128,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "self_attn.indexer.weights_proj.weight",
+          "shape": [
+            32,
+            6144
+          ],
+          "numel": 196608,
+          "role": "matmul",
+          "storage": "bf16"
+        },
+        {
+          "name": "mlp.gate_proj.weight",
+          "shape": [
+            12288,
+            6144
+          ],
+          "numel": 75497472,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.up_proj.weight",
+          "shape": [
+            12288,
+            6144
+          ],
+          "numel": 75497472,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.down_proj.weight",
+          "shape": [
+            6144,
+            12288
+          ],
+          "numel": 75497472,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "input_layernorm.weight",
+          "shape": [
+            6144
+          ],
+          "numel": 6144,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "post_attention_layernorm.weight",
+          "shape": [
+            6144
+          ],
+          "numel": 6144,
+          "role": "vector",
+          "storage": "bf16"
+        }
+      ],
+      "ops": [
+        {
+          "module": "mlp.down_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              12288
+            ],
+            [
+              12288,
+              6144
+            ]
+          ],
+          "count": 1,
+          "flops": 150994944
+        },
+        {
+          "module": "mlp.gate_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              12288
+            ]
+          ],
+          "count": 1,
+          "flops": 150994944
+        },
+        {
+          "module": "mlp.up_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              12288
+            ]
+          ],
+          "count": 1,
+          "flops": 150994944
+        },
+        {
+          "module": "self_attn",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              64,
+              1,
+              1048576
+            ],
+            [
+              64,
+              1048576,
+              256
+            ]
+          ],
+          "count": 1,
+          "flops": 34359738368
+        },
+        {
+          "module": "self_attn",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              64,
+              1,
+              256
+            ],
+            [
+              64,
+              256,
+              1048576
+            ]
+          ],
+          "count": 1,
+          "flops": 34359738368
+        },
+        {
+          "module": "self_attn.indexer",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              1,
+              1,
+              32
+            ],
+            [
+              1,
+              32,
+              1048576
+            ]
+          ],
+          "count": 1,
+          "flops": 67108864
+        },
+        {
+          "module": "self_attn.indexer",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              1,
+              32,
+              128
+            ],
+            [
+              1,
+              128,
+              1048576
+            ]
+          ],
+          "count": 1,
+          "flops": 8589934592
+        },
+        {
+          "module": "self_attn.indexer.weights_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              32
+            ]
+          ],
+          "count": 1,
+          "flops": 393216
+        },
+        {
+          "module": "self_attn.indexer.wk",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              128
+            ]
+          ],
+          "count": 1,
+          "flops": 1572864
+        },
+        {
+          "module": "self_attn.indexer.wq_b",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              2048
+            ],
+            [
+              2048,
+              4096
+            ]
+          ],
+          "count": 1,
+          "flops": 16777216
+        },
+        {
+          "module": "self_attn.kv_a_proj_with_mqa",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              576
+            ]
+          ],
+          "count": 1,
+          "flops": 7077888
+        },
+        {
+          "module": "self_attn.kv_b_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1048576,
+              512
+            ],
+            [
+              512,
+              28672
+            ]
+          ],
+          "count": 1,
+          "flops": 30786325577728
+        },
+        {
+          "module": "self_attn.o_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              16384
+            ],
+            [
+              16384,
+              6144
+            ]
+          ],
+          "count": 1,
+          "flops": 201326592
+        },
+        {
+          "module": "self_attn.q_a_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              2048
+            ]
+          ],
+          "count": 1,
+          "flops": 25165824
+        },
+        {
+          "module": "self_attn.q_b_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              2048
+            ],
+            [
+              2048,
+              16384
+            ]
+          ],
+          "count": 1,
+          "flops": 67108864
+        }
+      ],
+      "otherOps": {
+        "aten._softmax": 1,
+        "aten._to_copy": 15,
+        "aten._unsafe_view": 15,
+        "aten.add": 12,
+        "aten.cat": 7,
+        "aten.copy_": 2,
+        "aten.empty": 3,
+        "aten.expand": 9,
+        "aten.masked_fill": 1,
+        "aten.mean": 4,
+        "aten.mul": 28,
+        "aten.native_layer_norm": 1,
+        "aten.new_empty": 1,
+        "aten.new_ones": 1,
+        "aten.pow": 4,
+        "aten.relu": 1,
+        "aten.rsqrt": 4,
+        "aten.scatter": 1,
+        "aten.select": 1,
+        "aten.silu": 1,
+        "aten.slice": 14,
+        "aten.split_with_sizes": 5,
+        "aten.squeeze": 2,
+        "aten.sub": 4,
+        "aten.t": 11,
+        "aten.topk": 1,
+        "aten.transpose": 5,
+        "aten.unsqueeze": 8,
+        "aten.view": 25
+      },
+      "modules": {
+        "": {
+          "class": "GlmMoeDsaDecoderLayer",
+          "calls": 1
+        },
+        "input_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "mlp": {
+          "class": "GlmMoeDsaMLP",
+          "calls": 1
+        },
+        "mlp.act_fn": {
+          "class": "SiLUActivation",
+          "calls": 1
+        },
+        "mlp.down_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "mlp.gate_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "mlp.up_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "post_attention_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "self_attn": {
+          "class": "GlmMoeDsaAttention",
+          "calls": 1
+        },
+        "self_attn.indexer": {
+          "class": "GlmMoeDsaIndexer",
+          "calls": 1,
+          "outputShape": [
+            1,
+            1,
+            2048
+          ]
+        },
+        "self_attn.indexer.k_norm": {
+          "class": "LayerNorm",
+          "calls": 1
+        },
+        "self_attn.indexer.weights_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.indexer.wk": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.indexer.wq_b": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.kv_a_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "self_attn.kv_a_proj_with_mqa": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.kv_b_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.o_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.q_a_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "self_attn.q_a_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.q_b_proj": {
+          "class": "Linear",
+          "calls": 1
+        }
+      },
+      "cache": {
+        "kv": {
+          "appendTokens": 1,
+          "readTokens": 1048576,
+          "width": 576,
+          "referenceDtype": "bfloat16"
+        },
+        "index": {
+          "appendTokens": 1,
+          "readTokens": 1048576,
+          "width": 128,
+          "referenceDtype": "bfloat16"
+        }
+      }
+    },
+    {
+      "layers": [
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        11,
+        12,
+        13,
+        15,
+        16,
+        17,
+        19,
+        20,
+        21,
+        23,
+        24,
+        25,
+        27,
+        28,
+        29,
+        31,
+        32,
+        33,
+        35,
+        36,
+        37,
+        39,
+        40,
+        41,
+        43,
+        44,
+        45,
+        47,
+        48,
+        49,
+        51,
+        52,
+        53,
+        55,
+        56,
+        57,
+        59,
+        60,
+        61,
+        63,
+        64,
+        65,
+        67,
+        68,
+        69,
+        71,
+        72,
+        73,
+        75,
+        76,
+        77
+      ],
+      "parameters": [
+        {
+          "name": "self_attn.q_a_proj.weight",
+          "shape": [
+            2048,
+            6144
+          ],
+          "numel": 12582912,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.q_a_layernorm.weight",
+          "shape": [
+            2048
+          ],
+          "numel": 2048,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "self_attn.q_b_proj.weight",
+          "shape": [
+            16384,
+            2048
+          ],
+          "numel": 33554432,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.kv_a_proj_with_mqa.weight",
+          "shape": [
+            576,
+            6144
+          ],
+          "numel": 3538944,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.kv_a_layernorm.weight",
+          "shape": [
+            512
+          ],
+          "numel": 512,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "self_attn.kv_b_proj.weight",
+          "shape": [
+            28672,
+            512
+          ],
+          "numel": 14680064,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.o_proj.weight",
+          "shape": [
+            6144,
+            16384
+          ],
+          "numel": 100663296,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.experts.gate_up_proj",
+          "shape": [
+            256,
+            4096,
+            6144
+          ],
+          "numel": 6442450944,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.experts.down_proj",
+          "shape": [
+            256,
+            6144,
+            2048
+          ],
+          "numel": 3221225472,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.gate.weight",
+          "shape": [
+            256,
+            6144
+          ],
+          "numel": 1572864,
+          "role": "matmul",
+          "storage": "bf16"
+        },
+        {
+          "name": "mlp.shared_experts.gate_proj.weight",
+          "shape": [
+            2048,
+            6144
+          ],
+          "numel": 12582912,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.shared_experts.up_proj.weight",
+          "shape": [
+            2048,
+            6144
+          ],
+          "numel": 12582912,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.shared_experts.down_proj.weight",
+          "shape": [
+            6144,
+            2048
+          ],
+          "numel": 12582912,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "input_layernorm.weight",
+          "shape": [
+            6144
+          ],
+          "numel": 6144,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "post_attention_layernorm.weight",
+          "shape": [
+            6144
+          ],
+          "numel": 6144,
+          "role": "vector",
+          "storage": "bf16"
+        }
+      ],
+      "ops": [
+        {
+          "module": "mlp.experts",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              8,
+              4096,
+              6144
+            ],
+            [
+              8,
+              6144,
+              1
+            ]
+          ],
+          "count": 1,
+          "flops": 402653184
+        },
+        {
+          "module": "mlp.experts",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              8,
+              6144,
+              2048
+            ],
+            [
+              8,
+              2048,
+              1
+            ]
+          ],
+          "count": 1,
+          "flops": 201326592
+        },
+        {
+          "module": "mlp.gate",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              256
+            ]
+          ],
+          "count": 1,
+          "flops": 3145728
+        },
+        {
+          "module": "mlp.shared_experts.down_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              2048
+            ],
+            [
+              2048,
+              6144
+            ]
+          ],
+          "count": 1,
+          "flops": 25165824
+        },
+        {
+          "module": "mlp.shared_experts.gate_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              2048
+            ]
+          ],
+          "count": 1,
+          "flops": 25165824
+        },
+        {
+          "module": "mlp.shared_experts.up_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              2048
+            ]
+          ],
+          "count": 1,
+          "flops": 25165824
+        },
+        {
+          "module": "self_attn",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              64,
+              1,
+              1048576
+            ],
+            [
+              64,
+              1048576,
+              256
+            ]
+          ],
+          "count": 1,
+          "flops": 34359738368
+        },
+        {
+          "module": "self_attn",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              64,
+              1,
+              256
+            ],
+            [
+              64,
+              256,
+              1048576
+            ]
+          ],
+          "count": 1,
+          "flops": 34359738368
+        },
+        {
+          "module": "self_attn.kv_a_proj_with_mqa",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              576
+            ]
+          ],
+          "count": 1,
+          "flops": 7077888
+        },
+        {
+          "module": "self_attn.kv_b_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1048576,
+              512
+            ],
+            [
+              512,
+              28672
+            ]
+          ],
+          "count": 1,
+          "flops": 30786325577728
+        },
+        {
+          "module": "self_attn.o_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              16384
+            ],
+            [
+              16384,
+              6144
+            ]
+          ],
+          "count": 1,
+          "flops": 201326592
+        },
+        {
+          "module": "self_attn.q_a_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              2048
+            ]
+          ],
+          "count": 1,
+          "flops": 25165824
+        },
+        {
+          "module": "self_attn.q_b_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              2048
+            ],
+            [
+              2048,
+              16384
+            ]
+          ],
+          "count": 1,
+          "flops": 67108864
+        }
+      ],
+      "otherOps": {
+        "aten._softmax": 1,
+        "aten._to_copy": 15,
+        "aten._unsafe_view": 10,
+        "aten.add": 12,
+        "aten.bitwise_not": 1,
+        "aten.cat": 3,
+        "aten.clone": 1,
+        "aten.copy_": 2,
+        "aten.div_": 1,
+        "aten.empty": 2,
+        "aten.expand": 7,
+        "aten.gather": 1,
+        "aten.index": 2,
+        "aten.masked_fill": 2,
+        "aten.mean": 4,
+        "aten.mul": 21,
+        "aten.new_empty": 1,
+        "aten.new_ones": 1,
+        "aten.pow": 4,
+        "aten.rsqrt": 4,
+        "aten.scatter": 1,
+        "aten.scatter_": 1,
+        "aten.sigmoid": 1,
+        "aten.silu": 2,
+        "aten.slice": 8,
+        "aten.split": 1,
+        "aten.split_with_sizes": 3,
+        "aten.squeeze": 2,
+        "aten.sub": 2,
+        "aten.sum": 3,
+        "aten.t": 9,
+        "aten.topk": 3,
+        "aten.transpose": 4,
+        "aten.unsqueeze": 8,
+        "aten.view": 26,
+        "aten.zeros_like": 1
+      },
+      "modules": {
+        "": {
+          "class": "GlmMoeDsaDecoderLayer",
+          "calls": 1
+        },
+        "input_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "mlp": {
+          "class": "GlmMoeDsaMoE",
+          "calls": 1
+        },
+        "mlp.experts": {
+          "class": "GlmMoeDsaExperts",
+          "calls": 1,
+          "selected": 8
+        },
+        "mlp.experts.act_fn": {
+          "class": "SiLUActivation",
+          "calls": 1
+        },
+        "mlp.gate": {
+          "class": "GlmMoeDsaTopkRouter",
+          "calls": 1
+        },
+        "mlp.shared_experts": {
+          "class": "GlmMoeDsaMLP",
+          "calls": 1
+        },
+        "mlp.shared_experts.act_fn": {
+          "class": "SiLUActivation",
+          "calls": 1
+        },
+        "mlp.shared_experts.down_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "mlp.shared_experts.gate_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "mlp.shared_experts.up_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "post_attention_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "self_attn": {
+          "class": "GlmMoeDsaAttention",
+          "calls": 1
+        },
+        "self_attn.kv_a_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "self_attn.kv_a_proj_with_mqa": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.kv_b_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.o_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.q_a_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "self_attn.q_a_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.q_b_proj": {
+          "class": "Linear",
+          "calls": 1
+        }
+      },
+      "cache": {
+        "kv": {
+          "appendTokens": 1,
+          "readTokens": 1048576,
+          "width": 576,
+          "referenceDtype": "bfloat16"
+        },
+        "index": null
+      }
+    },
+    {
+      "layers": [
+        6,
+        10,
+        14,
+        18,
+        22,
+        26,
+        30,
+        34,
+        38,
+        42,
+        46,
+        50,
+        54,
+        58,
+        62,
+        66,
+        70,
+        74
+      ],
+      "parameters": [
+        {
+          "name": "self_attn.q_a_proj.weight",
+          "shape": [
+            2048,
+            6144
+          ],
+          "numel": 12582912,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.q_a_layernorm.weight",
+          "shape": [
+            2048
+          ],
+          "numel": 2048,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "self_attn.q_b_proj.weight",
+          "shape": [
+            16384,
+            2048
+          ],
+          "numel": 33554432,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.kv_a_proj_with_mqa.weight",
+          "shape": [
+            576,
+            6144
+          ],
+          "numel": 3538944,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.kv_a_layernorm.weight",
+          "shape": [
+            512
+          ],
+          "numel": 512,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "self_attn.kv_b_proj.weight",
+          "shape": [
+            28672,
+            512
+          ],
+          "numel": 14680064,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.o_proj.weight",
+          "shape": [
+            6144,
+            16384
+          ],
+          "numel": 100663296,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.indexer.wq_b.weight",
+          "shape": [
+            4096,
+            2048
+          ],
+          "numel": 8388608,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.indexer.wk.weight",
+          "shape": [
+            128,
+            6144
+          ],
+          "numel": 786432,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "self_attn.indexer.k_norm.weight",
+          "shape": [
+            128
+          ],
+          "numel": 128,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "self_attn.indexer.k_norm.bias",
+          "shape": [
+            128
+          ],
+          "numel": 128,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "self_attn.indexer.weights_proj.weight",
+          "shape": [
+            32,
+            6144
+          ],
+          "numel": 196608,
+          "role": "matmul",
+          "storage": "bf16"
+        },
+        {
+          "name": "mlp.experts.gate_up_proj",
+          "shape": [
+            256,
+            4096,
+            6144
+          ],
+          "numel": 6442450944,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.experts.down_proj",
+          "shape": [
+            256,
+            6144,
+            2048
+          ],
+          "numel": 3221225472,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.gate.weight",
+          "shape": [
+            256,
+            6144
+          ],
+          "numel": 1572864,
+          "role": "matmul",
+          "storage": "bf16"
+        },
+        {
+          "name": "mlp.shared_experts.gate_proj.weight",
+          "shape": [
+            2048,
+            6144
+          ],
+          "numel": 12582912,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.shared_experts.up_proj.weight",
+          "shape": [
+            2048,
+            6144
+          ],
+          "numel": 12582912,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "mlp.shared_experts.down_proj.weight",
+          "shape": [
+            6144,
+            2048
+          ],
+          "numel": 12582912,
+          "role": "matmul",
+          "storage": "fp8"
+        },
+        {
+          "name": "input_layernorm.weight",
+          "shape": [
+            6144
+          ],
+          "numel": 6144,
+          "role": "vector",
+          "storage": "bf16"
+        },
+        {
+          "name": "post_attention_layernorm.weight",
+          "shape": [
+            6144
+          ],
+          "numel": 6144,
+          "role": "vector",
+          "storage": "bf16"
+        }
+      ],
+      "ops": [
+        {
+          "module": "mlp.experts",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              8,
+              4096,
+              6144
+            ],
+            [
+              8,
+              6144,
+              1
+            ]
+          ],
+          "count": 1,
+          "flops": 402653184
+        },
+        {
+          "module": "mlp.experts",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              8,
+              6144,
+              2048
+            ],
+            [
+              8,
+              2048,
+              1
+            ]
+          ],
+          "count": 1,
+          "flops": 201326592
+        },
+        {
+          "module": "mlp.gate",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              256
+            ]
+          ],
+          "count": 1,
+          "flops": 3145728
+        },
+        {
+          "module": "mlp.shared_experts.down_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              2048
+            ],
+            [
+              2048,
+              6144
+            ]
+          ],
+          "count": 1,
+          "flops": 25165824
+        },
+        {
+          "module": "mlp.shared_experts.gate_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              2048
+            ]
+          ],
+          "count": 1,
+          "flops": 25165824
+        },
+        {
+          "module": "mlp.shared_experts.up_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              2048
+            ]
+          ],
+          "count": 1,
+          "flops": 25165824
+        },
+        {
+          "module": "self_attn",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              64,
+              1,
+              1048576
+            ],
+            [
+              64,
+              1048576,
+              256
+            ]
+          ],
+          "count": 1,
+          "flops": 34359738368
+        },
+        {
+          "module": "self_attn",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              64,
+              1,
+              256
+            ],
+            [
+              64,
+              256,
+              1048576
+            ]
+          ],
+          "count": 1,
+          "flops": 34359738368
+        },
+        {
+          "module": "self_attn.indexer",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              1,
+              1,
+              32
+            ],
+            [
+              1,
+              32,
+              1048576
+            ]
+          ],
+          "count": 1,
+          "flops": 67108864
+        },
+        {
+          "module": "self_attn.indexer",
+          "op": "aten.bmm",
+          "shapes": [
+            [
+              1,
+              32,
+              128
+            ],
+            [
+              1,
+              128,
+              1048576
+            ]
+          ],
+          "count": 1,
+          "flops": 8589934592
+        },
+        {
+          "module": "self_attn.indexer.weights_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              32
+            ]
+          ],
+          "count": 1,
+          "flops": 393216
+        },
+        {
+          "module": "self_attn.indexer.wk",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              128
+            ]
+          ],
+          "count": 1,
+          "flops": 1572864
+        },
+        {
+          "module": "self_attn.indexer.wq_b",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              2048
+            ],
+            [
+              2048,
+              4096
+            ]
+          ],
+          "count": 1,
+          "flops": 16777216
+        },
+        {
+          "module": "self_attn.kv_a_proj_with_mqa",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              576
+            ]
+          ],
+          "count": 1,
+          "flops": 7077888
+        },
+        {
+          "module": "self_attn.kv_b_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1048576,
+              512
+            ],
+            [
+              512,
+              28672
+            ]
+          ],
+          "count": 1,
+          "flops": 30786325577728
+        },
+        {
+          "module": "self_attn.o_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              16384
+            ],
+            [
+              16384,
+              6144
+            ]
+          ],
+          "count": 1,
+          "flops": 201326592
+        },
+        {
+          "module": "self_attn.q_a_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              6144
+            ],
+            [
+              6144,
+              2048
+            ]
+          ],
+          "count": 1,
+          "flops": 25165824
+        },
+        {
+          "module": "self_attn.q_b_proj",
+          "op": "aten.mm",
+          "shapes": [
+            [
+              1,
+              2048
+            ],
+            [
+              2048,
+              16384
+            ]
+          ],
+          "count": 1,
+          "flops": 67108864
+        }
+      ],
+      "otherOps": {
+        "aten._softmax": 1,
+        "aten._to_copy": 19,
+        "aten._unsafe_view": 15,
+        "aten.add": 15,
+        "aten.bitwise_not": 1,
+        "aten.cat": 7,
+        "aten.clone": 1,
+        "aten.copy_": 2,
+        "aten.div_": 1,
+        "aten.empty": 3,
+        "aten.expand": 11,
+        "aten.gather": 1,
+        "aten.index": 2,
+        "aten.masked_fill": 2,
+        "aten.mean": 4,
+        "aten.mul": 31,
+        "aten.native_layer_norm": 1,
+        "aten.new_empty": 1,
+        "aten.new_ones": 1,
+        "aten.pow": 4,
+        "aten.relu": 1,
+        "aten.rsqrt": 4,
+        "aten.scatter": 1,
+        "aten.scatter_": 1,
+        "aten.select": 1,
+        "aten.sigmoid": 1,
+        "aten.silu": 2,
+        "aten.slice": 14,
+        "aten.split": 1,
+        "aten.split_with_sizes": 5,
+        "aten.squeeze": 4,
+        "aten.sub": 4,
+        "aten.sum": 3,
+        "aten.t": 12,
+        "aten.topk": 4,
+        "aten.transpose": 5,
+        "aten.unsqueeze": 13,
+        "aten.view": 34,
+        "aten.zeros_like": 1
+      },
+      "modules": {
+        "": {
+          "class": "GlmMoeDsaDecoderLayer",
+          "calls": 1
+        },
+        "input_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "mlp": {
+          "class": "GlmMoeDsaMoE",
+          "calls": 1
+        },
+        "mlp.experts": {
+          "class": "GlmMoeDsaExperts",
+          "calls": 1,
+          "selected": 8
+        },
+        "mlp.experts.act_fn": {
+          "class": "SiLUActivation",
+          "calls": 1
+        },
+        "mlp.gate": {
+          "class": "GlmMoeDsaTopkRouter",
+          "calls": 1
+        },
+        "mlp.shared_experts": {
+          "class": "GlmMoeDsaMLP",
+          "calls": 1
+        },
+        "mlp.shared_experts.act_fn": {
+          "class": "SiLUActivation",
+          "calls": 1
+        },
+        "mlp.shared_experts.down_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "mlp.shared_experts.gate_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "mlp.shared_experts.up_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "post_attention_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "self_attn": {
+          "class": "GlmMoeDsaAttention",
+          "calls": 1
+        },
+        "self_attn.indexer": {
+          "class": "GlmMoeDsaIndexer",
+          "calls": 1,
+          "outputShape": [
+            1,
+            1,
+            2048
+          ]
+        },
+        "self_attn.indexer.k_norm": {
+          "class": "LayerNorm",
+          "calls": 1
+        },
+        "self_attn.indexer.weights_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.indexer.wk": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.indexer.wq_b": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.kv_a_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "self_attn.kv_a_proj_with_mqa": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.kv_b_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.o_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.q_a_layernorm": {
+          "class": "GlmMoeDsaRMSNorm",
+          "calls": 1
+        },
+        "self_attn.q_a_proj": {
+          "class": "Linear",
+          "calls": 1
+        },
+        "self_attn.q_b_proj": {
+          "class": "Linear",
+          "calls": 1
+        }
+      },
+      "cache": {
+        "kv": {
+          "appendTokens": 1,
+          "readTokens": 1048576,
+          "width": 576,
+          "referenceDtype": "bfloat16"
+        },
+        "index": {
+          "appendTokens": 1,
+          "readTokens": 1048576,
+          "width": 128,
+          "referenceDtype": "bfloat16"
+        }
+      }
+    }
+  ],
+  "unmatchedNotConvert": []
+}

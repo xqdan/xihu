@@ -117,7 +117,7 @@ GLM-5.2 没有详细模型，旁证来自对 HF 参考实现的追踪（[ADR-002
   `tests/regression/test_traced_operator_ledger.js` 要求没有 `MISMATCH`，并在工具改动后报"账本过期"。
 
 每一项的状态是下列之一：`MATCH`、`STORAGE_DIFFERENCE`、`REFERENCE_FORM`、`NOT_IN_PLAN`、`NOT_TRACED`、`MISMATCH`。
-下表是按模型代码和 FP8 `modules_to_not_convert` 推出的**预期**差异，测试用同形状的合成账本核对过；真实账本入库前它们尚未经追踪确认。
+入库账本（2026-10-10，torch 2.14.1、transformers 5.19.0）的对账结果，没有 `MISMATCH`：
 
 | 项 | 状态 | 差异 |
 | --- | --- | --- |
@@ -125,7 +125,7 @@ GLM-5.2 没有详细模型，旁证来自对 HF 参考实现的追踪（[ADR-002
 | dense_projection 字节 | `STORAGE_DIFFERENCE` | checkpoint 把 21 个 full 层的 indexer 头权重投影（`indexers_proj`，即模型代码的 `indexer.weights_proj`）存为 BF16，规划按 FP8 计：+4.13 MB / token |
 | indexer FLOP | `NOT_IN_PLAN` | 参考实现还要按头加权求和（每 full 层 2 × 32 × context）：+1.41 GFLOP / token，占该行 0.78% |
 | 范数参数 | `NOT_IN_PLAN` | 1.17 M 个，规划只计矩阵权重 |
-| sparse_attention FLOP / KV 元素、kv_b_proj | `REFERENCE_FORM` | 参考实现每 token 用 kv_b_proj 解压整个 latent 缓存，并在全上下文上做带 top-k 掩码的稠密 attention；部署是吸收形式、只读 top-k 条目。按参考公式核对，不与规划行比 |
+| sparse_attention FLOP / KV 元素、kv_b_proj | `REFERENCE_FORM` | 参考实现每 token 用 kv_b_proj 解压整个 latent 缓存（78 层合计约 2.4 PFLOP），并在全上下文上做带 top-k 掩码的稠密 attention（约 5.36 TFLOP，规划行 22.25 GFLOP）；部署是吸收形式、只读 top-k 条目。按参考公式核对，不与规划行比 |
 | collective_reduce | `NOT_TRACED` | 集合通信来自 TP32 部署，单设备参考实现里没有 |
 
 ## 4. 规划 token 时间
