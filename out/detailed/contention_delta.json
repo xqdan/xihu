@@ -1,0 +1,888 @@
+{
+  "format": "k3-contention-delta/1",
+  "status": "MODEL: foreground overlap contention, the published model (contention none) against proportional sharing of the shared-SRAM ports and fabric. Feeds no gate or baseline; changing the default needs an ADR (24 doc D3)",
+  "evidenceClass": "MODEL",
+  "workItem": "ARCH-CH-01",
+  "plan": "teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md",
+  "method": "Running op and in-flight collective advance by remaining work. Per resource (shared read, shared write, fabric) the foreground demand, each clipped to the cap, is summed; above the cap every requester gets cap/sum and progresses at its slowest resource. DMA and TMA fills keep the historical priority: they take what the foreground actually draws. No calibration factor.",
+  "provenance": {
+    "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
+    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "coupling": "out/detailed/coupling_candidates.json",
+    "couplingSha256": "1a5fbc4a07f74a869783669771f3a3f788e2bc72e5e1d3fbdba8ec3566c301f0",
+    "sources": {
+      "integration/detailed/contention_delta.js": "07617be32639d7fd8338d04d1a858df203d559156c46a6b302f9689134875084",
+      "integration/detailed/k3_operator_sram_sim.js": "49580d74ff1f93c70ad8185d99cca679bc3d28ab2a61b889c6c8c3ef45343355",
+      "integration/detailed/k3_architecture_search.js": "6dfb8062f990495e75d78e158f7d8ad035da99ce02d3936211fc61afc6b9dab8",
+      "integration/detailed/cost_provider.js": "9a737e30a235e8e9c30f8eab40e198df47667525ca5c27cb5ce16d176dbec413",
+      "teams/vv/inputs/operator_cost_observations.json": "aa535b0adf152419b1452c2bc73e1ba356ec3dfc35f7f16754140af1423ee5b2",
+      "integration/detailed/k3_physical_basis.js": "c93f516e1ecdbd35190f714c06deac1ada09d64656fcd75332a7a2214a2f3c90",
+      "integration/detailed/k3_sram_memory_rdma_model.js": "68314a43ca69a40d170ac1f1f266c09124ee8f34afe8946ff6301fa8b61df187",
+      "integration/detailed/k3_rdma_final_tuning_model.js": "0410f9cf6db81716fce488916905a87e66626af92c8b554bf83109ee3fade12c",
+      "integration/detailed/coupling_search.js": "4d1902471242a412ef4f8abd1dfbb6d61c45441dfb03d8a27f14d2a989d8ca45",
+      "integration/detailed/matrix_vector_search.js": "45b3126aeff9f8d49cbc638448452ed64c5e7f128c755b27997385fe4f7c121f",
+      "integration/detailed/comm_core_search.js": "2a65bab88be9f36b7e7de5216a134be46ba4d59099cd8e4e1516a86f1489663b"
+    }
+  },
+  "summary": {
+    "points": 9,
+    "feasible": 9,
+    "maxAbsRawDeltaUs": 0,
+    "maxPeakForegroundLoad": 0.881144512379227,
+    "zeroDelta": true
+  },
+  "points": [
+    {
+      "point": "published (tpsDesign.hardware.x, model OPT)",
+      "feasible": true,
+      "none": {
+        "rawUs": 775.7517671190814,
+        "computeUs": 434.6247662105369,
+        "tmaHiddenUs": 106.90661439522479,
+        "commUs": 451.94999999999703,
+        "waitUs": 22.353084639818142,
+        "overlapUs": 26.269469336035073,
+        "contentionUs": 0,
+        "tpsPerUser": 1101.771070241925
+      },
+      "proportional": {
+        "rawUs": 775.7517671190814,
+        "computeUs": 434.6247662105369,
+        "tmaHiddenUs": 106.90661439522479,
+        "commUs": 451.94999999999703,
+        "waitUs": 22.353084639818142,
+        "overlapUs": 26.269469336035073,
+        "contentionUs": 0,
+        "tpsPerUser": 1101.771070241925
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 26.269469336035073,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.2053823348742296,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.1751549229585476,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.3126384824414716,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 4.868967920792078,
+        "write": 5.709231479817792,
+        "fabric": 3.198582567925585
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 2.314575759560584,
+          "write": 2.2440392706872365,
+          "fabric": 3.6870870380944605,
+          "clippedUs": 0.0004949068509615386
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 2.2440392706872365,
+          "fabric": 1.4214046822742474,
+          "clippedUs": 0.15355591397849455
+        }
+      ]
+    },
+    {
+      "point": "joint areaReallocation:hEngines=4|lBanks=32",
+      "feasible": true,
+      "none": {
+        "rawUs": 851.2636502535665,
+        "computeUs": 615.4961205100087,
+        "tmaHiddenUs": 196.30933962873115,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.400880404810536,
+        "overlapUs": 41.27401103249961,
+        "contentionUs": 0,
+        "tpsPerUser": 1004.0377672020464
+      },
+      "proportional": {
+        "rawUs": 851.2636502535665,
+        "computeUs": 615.4961205100087,
+        "tmaHiddenUs": 196.30933962873115,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.400880404810536,
+        "overlapUs": 41.27401103249961,
+        "contentionUs": 0,
+        "tpsPerUser": 1004.0377672020464
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 41.27401103249961,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.7449025324577295,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.7458788118961354,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.515634406354515,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.3424575114553612,
+        "write": 1.340700371227667,
+        "fabric": 1.9393585603992227
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "RoPE",
+          "unit": "V",
+          "count": 24,
+          "read": 0,
+          "write": 1.7391304347826089,
+          "fabric": 0,
+          "clippedUs": 0.09179999999999999
+        },
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 3.0540827147401908,
+          "write": 3.4782608695652173,
+          "fabric": 2.212252222856676,
+          "clippedUs": 0.0009128906250000003
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 3.4782608695652173,
+          "fabric": 0,
+          "clippedUs": 0.6118000000000002
+        }
+      ],
+      "rank": 1,
+      "chosen": true,
+      "pareto": true
+    },
+    {
+      "point": "joint areaReallocation:hRows=40|lBanks=32",
+      "feasible": true,
+      "none": {
+        "rawUs": 844.2104992046136,
+        "computeUs": 608.4429694610567,
+        "tmaHiddenUs": 196.30933962873115,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.400880404810536,
+        "overlapUs": 41.274011032499615,
+        "contentionUs": 0,
+        "tpsPerUser": 1012.4262319719132
+      },
+      "proportional": {
+        "rawUs": 844.2104992046136,
+        "computeUs": 608.4429694610567,
+        "tmaHiddenUs": 196.30933962873115,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.400880404810536,
+        "overlapUs": 41.274011032499615,
+        "contentionUs": 0,
+        "tpsPerUser": 1012.4262319719132
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 41.274011032499615,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.7449025324577295,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.7458788118961354,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.515634406354515,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.3424575114553612,
+        "write": 1.340700371227667,
+        "fabric": 1.9393585603992227
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "RoPE",
+          "unit": "V",
+          "count": 24,
+          "read": 0,
+          "write": 1.7391304347826089,
+          "fabric": 0,
+          "clippedUs": 0.09179999999999999
+        },
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 3.0540827147401908,
+          "write": 3.4782608695652173,
+          "fabric": 2.212252222856676,
+          "clippedUs": 0.0009128906250000003
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 3.4782608695652173,
+          "fabric": 0,
+          "clippedUs": 0.6118000000000002
+        }
+      ],
+      "rank": 2,
+      "chosen": false,
+      "pareto": true
+    },
+    {
+      "point": "joint areaReallocation:reduceLanes=3072|lBanks=32",
+      "feasible": true,
+      "none": {
+        "rawUs": 835.0404684353842,
+        "computeUs": 599.2729386918268,
+        "tmaHiddenUs": 196.30933962873098,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.400880404810543,
+        "overlapUs": 41.274011032499814,
+        "contentionUs": 0,
+        "tpsPerUser": 1023.544231697307
+      },
+      "proportional": {
+        "rawUs": 835.0404684353842,
+        "computeUs": 599.2729386918268,
+        "tmaHiddenUs": 196.30933962873098,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.400880404810543,
+        "overlapUs": 41.274011032499814,
+        "contentionUs": 0,
+        "tpsPerUser": 1023.544231697307
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 41.274011032499814,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.7449025324577295,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.7458788118961354,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.515634406354515,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.3424575114553612,
+        "write": 1.340700371227667,
+        "fabric": 1.9393585603992227
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "RoPE",
+          "unit": "V",
+          "count": 24,
+          "read": 0,
+          "write": 1.7391304347826089,
+          "fabric": 0,
+          "clippedUs": 0.09179999999999999
+        },
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 3.0540827147401908,
+          "write": 3.4782608695652173,
+          "fabric": 2.212252222856676,
+          "clippedUs": 0.0009128906250000003
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 3.4782608695652173,
+          "fabric": 0,
+          "clippedUs": 0.6118000000000002
+        }
+      ],
+      "rank": 3,
+      "chosen": false,
+      "pareto": true
+    },
+    {
+      "point": "joint areaReallocation:lBanks=32",
+      "feasible": true,
+      "none": {
+        "rawUs": 830.2958530507685,
+        "computeUs": 594.5283233072112,
+        "tmaHiddenUs": 196.309339628731,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.40088040481053,
+        "overlapUs": 41.274011032499814,
+        "contentionUs": 0,
+        "tpsPerUser": 1029.3931392773004
+      },
+      "proportional": {
+        "rawUs": 830.2958530507685,
+        "computeUs": 594.5283233072112,
+        "tmaHiddenUs": 196.309339628731,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.40088040481053,
+        "overlapUs": 41.274011032499814,
+        "contentionUs": 0,
+        "tpsPerUser": 1029.3931392773004
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 41.274011032499814,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.7449025324577295,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.7458788118961354,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.515634406354515,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.3424575114553612,
+        "write": 1.340700371227667,
+        "fabric": 1.9393585603992227
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "RoPE",
+          "unit": "V",
+          "count": 24,
+          "read": 0,
+          "write": 1.7391304347826089,
+          "fabric": 0,
+          "clippedUs": 0.09179999999999999
+        },
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 3.0540827147401908,
+          "write": 3.4782608695652173,
+          "fabric": 2.212252222856676,
+          "clippedUs": 0.0009128906250000003
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 3.4782608695652173,
+          "fabric": 0,
+          "clippedUs": 0.6118000000000002
+        }
+      ],
+      "rank": 4,
+      "chosen": false,
+      "pareto": true
+    },
+    {
+      "point": "joint tauOverlapCompute:vectorLanes=768|commOverlap=true",
+      "feasible": true,
+      "none": {
+        "rawUs": 851.9760798043442,
+        "computeUs": 626.8287437911399,
+        "tmaHiddenUs": 202.20052032559022,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.22351260303077,
+        "overlapUs": 45.825656264222985,
+        "contentionUs": 0,
+        "tpsPerUser": 1003.1981823916186
+      },
+      "proportional": {
+        "rawUs": 851.9760798043442,
+        "computeUs": 626.8287437911399,
+        "tmaHiddenUs": 202.20052032559022,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.22351260303077,
+        "overlapUs": 45.825656264222985,
+        "contentionUs": 0,
+        "tpsPerUser": 1003.1981823916186
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 45.825656264222985,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.8125353826992754,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.8135116621376811,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.5624571488294313,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.2307156356415638,
+        "write": 1.2292386778725208,
+        "fabric": 1.7779132189557365
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "RoPE",
+          "unit": "V",
+          "count": 24,
+          "read": 0,
+          "write": 1.7391304347826089,
+          "fabric": 0,
+          "clippedUs": 0.09179999999999999
+        },
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 1.5270413573700954,
+          "write": 1.7391304347826086,
+          "fabric": 1.106126111428338,
+          "clippedUs": 0.00054453125
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 1.7391304347826086,
+          "fabric": 0,
+          "clippedUs": 0.36493333333333366
+        }
+      ],
+      "rank": 5,
+      "chosen": false,
+      "pareto": false
+    },
+    {
+      "point": "joint tauOverlapCompute:vectorLanes=832|commOverlap=true",
+      "feasible": true,
+      "none": {
+        "rawUs": 844.25403595604,
+        "computeUs": 619.0912902540513,
+        "tmaHiddenUs": 202.18549370686566,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.223623179953847,
+        "overlapUs": 45.82538377109101,
+        "contentionUs": 0,
+        "tpsPerUser": 1012.374022865031
+      },
+      "proportional": {
+        "rawUs": 844.25403595604,
+        "computeUs": 619.0912902540513,
+        "tmaHiddenUs": 202.18549370686566,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.223623179953847,
+        "overlapUs": 45.82538377109101,
+        "contentionUs": 0,
+        "tpsPerUser": 1012.374022865031
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 45.82538377109101,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.8801682329408211,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.881144512379227,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.6092798913043476,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.1361464349364172,
+        "write": 1.134887621668147,
+        "fabric": 1.6412818054099867
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "RoPE",
+          "unit": "V",
+          "count": 24,
+          "read": 0,
+          "write": 1.7391304347826089,
+          "fabric": 0,
+          "clippedUs": 0.09179999999999999
+        },
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 1.5270413573700954,
+          "write": 1.7391304347826086,
+          "fabric": 1.106126111428338,
+          "clippedUs": 0.00054453125
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 1.7391304347826086,
+          "fabric": 0,
+          "clippedUs": 0.36493333333333366
+        }
+      ],
+      "rank": 6,
+      "chosen": false,
+      "pareto": false
+    },
+    {
+      "point": "joint areaReallocation:tmaEngines=2",
+      "feasible": true,
+      "none": {
+        "rawUs": 852.664811644739,
+        "computeUs": 609.5090070622408,
+        "tmaHiddenUs": 181.03434865554595,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.223381921212585,
+        "overlapUs": 48.98322868315772,
+        "contentionUs": 0,
+        "tpsPerUser": 1002.3878586618209
+      },
+      "proportional": {
+        "rawUs": 852.664811644739,
+        "computeUs": 609.5090070622408,
+        "tmaHiddenUs": 181.03434865554595,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.223381921212585,
+        "overlapUs": 48.98322868315772,
+        "contentionUs": 0,
+        "tpsPerUser": 1002.3878586618209
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 48.98322868315772,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.7449025324577295,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.7458788118961354,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.515634406354515,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.3424575114553612,
+        "write": 1.340700371227667,
+        "fabric": 1.9393585603992227
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "RoPE",
+          "unit": "V",
+          "count": 24,
+          "read": 0,
+          "write": 1.7391304347826089,
+          "fabric": 0,
+          "clippedUs": 0.09179999999999999
+        },
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 1.5270413573700954,
+          "write": 1.7391304347826086,
+          "fabric": 1.106126111428338,
+          "clippedUs": 0.00054453125
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 1.7391304347826086,
+          "fabric": 0,
+          "clippedUs": 0.36493333333333366
+        }
+      ],
+      "rank": 7,
+      "chosen": false,
+      "pareto": false
+    },
+    {
+      "point": "joint areaReallocation:hRows=56",
+      "feasible": true,
+      "none": {
+        "rawUs": 851.1630986580387,
+        "computeUs": 626.0339740952088,
+        "tmaHiddenUs": 202.2182790568073,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.223381921212585,
+        "overlapUs": 45.82597830156174,
+        "contentionUs": 0,
+        "tpsPerUser": 1004.156378546478
+      },
+      "proportional": {
+        "rawUs": 851.1630986580387,
+        "computeUs": 626.0339740952088,
+        "tmaHiddenUs": 202.2182790568073,
+        "commUs": 451.94999999999703,
+        "waitUs": 21.223381921212585,
+        "overlapUs": 45.82597830156174,
+        "contentionUs": 0,
+        "tpsPerUser": 1004.156378546478
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 45.82597830156174,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.7449025324577295,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.7458788118961354,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.515634406354515,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.3424575114553612,
+        "write": 1.340700371227667,
+        "fabric": 1.9393585603992227
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "RoPE",
+          "unit": "V",
+          "count": 24,
+          "read": 0,
+          "write": 1.7391304347826089,
+          "fabric": 0,
+          "clippedUs": 0.09179999999999999
+        },
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 1.5270413573700954,
+          "write": 1.7391304347826086,
+          "fabric": 1.106126111428338,
+          "clippedUs": 0.00054453125
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 1.7391304347826086,
+          "fabric": 0,
+          "clippedUs": 0.36493333333333366
+        }
+      ],
+      "rank": 8,
+      "chosen": false,
+      "pareto": false
+    }
+  ]
+}

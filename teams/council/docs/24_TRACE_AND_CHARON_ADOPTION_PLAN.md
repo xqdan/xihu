@@ -1,7 +1,8 @@
 # 执行 Trace 导出与 Charon 方法借鉴（建议稿）
 
 版本：2026-10-10
-状态：阶段一已实现（2026-10-10，见 §2.1）；阶段二至四仍是 `PROPOSAL`。不改动已落地的任何机制，也不改变发布点 1101.77 TPS/usr
+状态（2026-10-10）：阶段一已实现（§2.1）；ARCH-CH-01 已实现，差值为零（§2.2）；HW-CH-01 按 D4 等待拓扑候选（§2.3）；
+ARCH-CH-02 已实现，实测表为空（§2.4）；阶段四仍是 `PROPOSAL`。不改动已落地的任何机制，也不改变发布点 1101.77 TPS/usr
 
 前置文档：[`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md)、
 [`10_TILE_SIMULATION.md`](../../../docs/architecture/10_TILE_SIMULATION.md)、
@@ -167,6 +168,69 @@ Charon 在第 2–4 点上各有现成方法：按链路分层的通信模型、
 - **计算槽的口径**：模拟器把完整服务时间计入 `computeUs`，计算槽上实际占用的是 `computeUs − tmaHiddenUs`（kernel 本体 + 暴露的 fill）。守恒表按这个口径写，见契约 §5。
 - **体积**：13229 个事件，约 3.35 MB，高于预估的 2–3 MB，主要来自逐算子的 timing 拆解和逐 peer 异步切片。按 D1 只提交发布点这一份明文 JSON；仓库里已有 7.6 MB 的 `out/rdma/` 结果文件，暂不压缩。
 - **对比的归因口径**：每个算子拥有从它发出到下一个算子发出的 advance，advance 之和恰为 `rawUs`，所以逐算子、逐层的差值之和等于总差值。`tmaLane` 回退的差值 +92.67 µs 与 `tpsDesign.software.mechanisms` 的记录一致。
+
+### 2.2 ARCH-CH-01 实现记录（2026-10-10）
+
+| 项 | 落点 |
+|---|---|
+| 选项 | `simulate(plan, sramMiB, {contention})`，`CONTENTION = ['none', 'proportional']`。它是 `simulate` 的参数，不是 `OPT` 键：`O.evaluate` 和所有既有产物不变，`k3_rdma_final_tuning_model.js` 未改（它的 sha256 绑定在规划 workload 和 Stage B 里） |
+| 产物 | `integration/detailed/contention_delta.js`、`integration/pipelines/generate_contention_delta.js`（`npm run contention:delta`）→ `out/detailed/contention_delta.json`；已加入 `REGENERATE_SCRIPTS` |
+| 测试 | `tests/regression/test_contention_delta.js`：默认与 `'none'` 逐个标量相同、不出现 contention 字段；`'proportional'` 守恒；把 shared 专家与 all-gather 的需求人为抬到上限的 0.8 + 0.8 时，被拉长并记账（+11.50 µs）；产物与重建一致 |
+
+模型口径：
+
+- 运行中的算子和在途集合通信改为"剩余工作量 + 速率"推进。对 shared 读口、shared 写口、fabric 三项资源，各自把两方需求（各自先截到上限）求和，超限时每方得 `上限 / 总和`，推进速度取三项中最慢的一项。
+- DMA 和 TMA fill 保持原优先级，只拿前台实际消耗之后剩下的带宽；前台被拉慢时，它们看到的前台消耗也按速度缩小。
+- 被拉长的时间记为 `contentionUs`，守恒式为 `raw = compute − tmaHidden + comm + wait − overlap + contention`，逐层另记。
+- 单独运行时自身需求就超过某项上限的算子不计入争用：它进入分配时按上限计，时长仍按映射值，另在 `overCap` 里列出并给出"按上限运行需多出的时间"。
+
+结果：
+
+| 设计点 | 重叠收益 | 前台需求峰值 / 上限（读、写、fabric） | 差值 |
+|---|---|---|---|
+| 发布点 | 26.27 µs | 0.21、0.18、0.31（Shared SiLU × up 与 Wdown + Router all-gather） | 0 |
+| 8 个可行联合点 | 41.27–48.98 µs | 最高 0.88 | 0 |
+
+- **结论**：在现有映射时长下，重叠的两方离任何上限都有余量，前台争用不吃掉 `commOverlap` 收益。D3 不需要启动：默认值保持 `'none'`，21 号文档 §4.3 已注明复算结果。
+- **附带发现，不属于争用**：有些 epilogue 算子单独运行就超过端口上限，说明映射时长低于"字节数 / 端口带宽"。
+  - 发布点：`KV append source`（24 个，fabric 3.69×）、`Dispatch local pack`（92 个，写口 2.24×）。按上限计合计约多 0.15 µs。
+  - 联合点：另有 `RoPE`（写口 1.74×），合计约 0.70 µs。
+  - 量级可以忽略，但它是映射器的不一致，应交给 SW-CH-01 或 mapper 负责人处理，不应记在争用名下。
+- **局限**：争用只覆盖 shared 侧的三项资源。local SRAM 写口仍只约束 TMA fill（`fillSpeeds()`），MC 带宽只约束 DMA。若将来让更多算子标记 `overlapComm`，需要重跑本报告。
+
+### 2.3 HW-CH-01 状态
+
+未开工。按决策点 D4，需要硬件团队（Collective/RDMA、NoC 负责人）先给出 B-005 的 2–3 个 scale-out 拓扑候选。HW-TR-01 的协议 trace 已经可以作为核对视图：5 类集合通信的协议时间在 0.43–0.98 µs 之间，其余部分由 τ 下限补齐。
+
+### 2.4 ARCH-CH-02 实现记录（2026-10-10）
+
+| 项 | 落点 |
+|---|---|
+| 成本提供者 | `integration/detailed/cost_provider.js`。`mappedPlan` 计算出解析 kernel 后交给 `kernelCost(op, shape, hardware, analytic)`，返回值替换 `timing.kernel`；softmax 融合隐藏、staging、flush、launch 和 `O.mapped` 的 GAIN 都在其后照旧作用 |
+| 实测表 | `teams/vv/inputs/operator_cost_observations.json`（空表，含 schema）。每条：`op`、`shape`{flops, readBytes, writeBytes}、`hardware`（`HW_KEYS` 的 19 个字段：核阵列、频率、向量 lane、local SRAM、TMA、kvTile/headTile）、`kernelUs`、`evidence`、`source`、`environment`、`repeats`、`errorUs` |
+| 报告 | `integration/detailed/cost_coverage.js`、`npm run cost:coverage` → `out/detailed/cost_coverage.json`；已加入 `REGENERATE_SCRIPTS` |
+| trace | `op` / `comm` 切片带 `costSource`、`costEvidence`（契约 §4.1）；trace 与 contention 报告的 provenance 加入提供者和实测表的 sha256 |
+| 测试 | `tests/regression/test_cost_provider.js`：空表下全部 `analytical` / `MODEL`、发布点不变；与解析值相等的实测只改标签；QK 实测取 2 倍时 kernel 行精确替换、raw +76.74 µs 且守恒；两点插值、越界 / 偏离连线 / 换硬件 / 换算子均回退；schema 拒绝缺环境、缺误差、`MODEL` 等证据等级和重复条目 |
+
+查找规则：
+
+- **实测**：算子名、shape、硬件三者都一致。
+- **拟合**：同一算子、同一硬件的两条实测，其 shape 连线经过查询点（0 ≤ λ ≤ 1），线性插值；证据取两者中较弱的一级。不外推，也不跨硬件点。
+- **解析**：其余情况，即现状。集合通信不进这张表，它的回标是 HW-CH-01 的 τ 推导。
+- 计划原稿写的"拟合预测器"收窄为两点插值：在样本积累之前，任何更复杂的拟合都需要先定义误差判据，否则就是新的经验因子。
+
+结果（实测表为空）：
+
+| 项 | µs | 占 raw |
+|---|---|---|
+| kernel，实测 / 拟合 | 0 | 0 |
+| kernel，解析 | 224.84 | 29.0% |
+| 非 kernel（staging、launch、集合通信、τ 下限、等待，减去隐藏项） | 550.91 | 71.0% |
+
+- 待测队列共 30 个算子名、34 个 shape。attention 路径 4 个算子（QK、PV、Linear recurrent 状态更新、online softmax）占 kernel 的 166.35 µs，
+  其中 QK 78.27 µs、PV 69.57 µs，各只有 1 个 shape：两条实测就能把约 19% 的 raw 从解析换成实测。Linear 9 个算子、13 个 shape，30.48 µs；Expert 2 个，26.66 µs。
+- 占比按毛值计：被集合通信掩盖的 kernel 也全额计入，因此是"raw 里有多少时长的来源是实测"，不是"实测改变 raw 多少"。后者用 `--diff` 或重跑报告看。
+- raw 的 71% 不是 kernel，实测表覆盖不到。其中最大的一块是 451.95 µs 的集合通信，归 HW-CH-01。
 
 ## 3. 阶段与顺序
 

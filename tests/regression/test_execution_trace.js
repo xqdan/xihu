@@ -56,6 +56,8 @@ const ev = trace.traceEvents, xs = ev.filter(e => e.ph === 'X');
 const tid = k => E.TRACKS[k].tid;
 for (const e of xs) {
   assert.strictEqual(e.args.evidence, 'MODEL', `slice without evidence class: ${e.name}`);
+  // ARCH-CH-02: op and comm slices carry their cost source; with the empty observation table all are analytical.
+  if (e.cat === 'op' || e.cat === 'comm') assert(e.args.costSource === 'analytical' && e.args.costEvidence === 'MODEL', `cost source of ${e.name}`);
   if (e.cat !== 'layer' && !(e.cat === 'wait' && e.args.operator_id === null)) {
     assert(Number.isInteger(e.args.operator_id), `slice not bound to an operator: ${e.name}`);
     assert.strictEqual(e.args.layer, m.plan.ops[e.args.operator_id].layer, `slice layer of ${e.name}`);

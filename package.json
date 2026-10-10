@@ -21,6 +21,8 @@
     "budget:frontier": "node integration/pipelines/generate_budget_frontier.js",
     "mtp:explore": "node integration/pipelines/generate_mtp_exploration.js",
     "trace:published": "node integration/pipelines/generate_execution_trace.js",
+    "contention:delta": "node integration/pipelines/generate_contention_delta.js",
+    "cost:coverage": "node integration/pipelines/generate_cost_coverage.js",
     "physical:search": "node integration/pipelines/generate_physical_design.js",
     "workflow:brief": "node integration/pipelines/search_brief.js brief",
     "workflow:design-brief": "node integration/pipelines/make_brief.js",

@@ -3,7 +3,7 @@
  * The standalone multi-objective search() is kept as a library function only.
  */
 'use strict';
-const {build,simulate,MiB}=require('./k3_operator_sram_sim.js');
+const {build,simulate,MiB}=require('./k3_operator_sram_sim.js');const CP=require('./cost_provider.js');
 const LIMITS={dies:8,tp:32,context:1048576,dieArea:400,diePower:260,cardPower:2400,packageArea:5248,packageUtil:1,mcCountPerDie:2,mcArea:100,mcGB:8,networkGBs:800,usable:.85};
 // Only SRAM density and reference matrix density are inherited from local concept documents.
 // All other coefficients below are explicit, editable analytical cost assumptions.
@@ -146,7 +146,7 @@ function mappedPlan(x,batch,p=physical(x),basis){
    const dieMerge=6*TECH.ucieHopUs+payload*2/(p.dieCutGB*1000);
    const localReduce=payload/4*2/(D*p.reduceTOP*1e6);
    const ports=Math.max(wire/(D*p.sharedRead*1e6),wire/(D*p.sharedWrite*1e6));
-   o.read=o.write=wire;o.linkBytes=wire+payload*2;
+   o.read=o.write=wire;o.linkBytes=wire+payload*2;o.costSource=CP.ANALYTICAL.source;o.costEvidence=CP.ANALYTICAL.evidence;
    record(o,{collective:Math.max(network,ports)+dieMerge+localReduce+meshLatency},{payload,wire,network,dieMerge,localReduce});continue;
   }
   let domain=o.unit==='H'||/Online softmax|RoPE/.test(o.name)?'H':'L';
@@ -188,7 +188,7 @@ function mappedPlan(x,batch,p=physical(x),basis){
   const wparams=o.inputs.reduce((s,id)=>s+(plan.jobs[id].params||0),0);
   const kvDequant=o.unit==='H'&&kv!==undefined?(plan.jobs[kv].dequant||0):0;
   const unpack=wparams/(NL*x.vectorLanes*TECH.unpackParamsPerLaneCycle*x.ghz*1000)+kvDequant/(cores*x.vectorLanes*TECH.unpackParamsPerLaneCycle*x.ghz*1000);
-  let kernel=Math.max(alu,readTime,writeTime,unpack)*TECH.layoutImbalance;
+  o.costShape={flops:o.flops,readBytes:oldRead,writeBytes:oldWrite};const cost=CP.kernelCost(o.name,o.costShape,x,Math.max(alu,readTime,writeTime,unpack)*TECH.layoutImbalance);let kernel=cost.us;o.costSource=cost.source;o.costEvidence=cost.evidence;if(cost.observations)o.costObservations=cost.observations; // ARCH-CH-02: measured -> fitted -> analytical
   if(o.name.startsWith('QK')){qkKernel=kernel;qkDequant=kvDequant?unpack*TECH.layoutImbalance:0;}
   if(softmaxFusion&&o.name==='Online softmax')kernel=Math.max(kernel/Math.max(1,Math.ceil(tokensPerCore/x.hCols)),kernel-(qkKernel-qkDequant));
   const prev=plan.ops[o.id-1],next=plan.ops[o.id+1];
