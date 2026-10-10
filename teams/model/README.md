@@ -20,6 +20,7 @@
 |---|---|
 | `src/design_engine.js` | K3 形状唯一来源（`MODEL_PRESETS.kimiK3`，工程 preset）与形状推导 |
 | `src/workload_derivation.js` | GLM-5.2 / DeepSeek-V4-Pro 规划算子行推导（manifest `shape` + 显式 ASSUMPTION） |
+| `src/traced_ledger.js` | 追踪算子账本与 GLM 规划行的对账（MODEL-CH-01）；账本由离线工具 `tools/trace_operator_ledger.py` 生成到 `inputs/glm_5_2_traced_operator_ledger.json`（ADR-0025），见 `docs/deployment/OPERATOR_LEDGER.md` 第 3.1 节 |
 | `inputs/` | 正式 manifest、model profiles、manifest qualification matrix、多模型 TP 矩阵 |
 | `docs/deployment/` | 逐模型部署方案（K3、GLM-5.2、DeepSeek-V4-Pro）：切分、dtype、KV/index 布局、每 rank 容量、集合通信次数；字段来源是 `inputs/formal_model_manifests.json`。跨模型：`OPERATOR_LEDGER.md`（规划算子账，MODEL-02）、`SCENARIO_MATRIX.md`（场景矩阵与选择政策，MODEL-03） |
 | `docs/` | manifest qualification 报告 |

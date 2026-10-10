@@ -33,3 +33,4 @@
 | [ADR-0022](ADR-0022-comm-core.md) | — | 每 Die 一个 Comm Core，集合通信触发、WQE 下发与接收计数硬件化 | 2026-09-29 | `PROPOSED` |
 | [ADR-0023](ADR-0023-shared-port-write-ratio.md) | — | 回收共享 SRAM 的 local 写端口放大（`localWriteRatio` 1.70 → 1） | 2026-10-02 | `PROPOSED` |
 | [ADR-0024](ADR-0024-glm-deepseek-q-all-gather.md) | — | GLM-5.2 / DeepSeek-V4-Pro 的注意力按 context 分片，权重保持 1/TP，每层计一次 q all-gather；修订 ADR-0006/0007/0008 的集合通信次数 | 2026-10-02 | `PROPOSED` |
+| [ADR-0025](ADR-0025-offline-python-tools.md) | — | 允许离线 Python 生成器进入 `tools/`，不进 `npm test`，产物以 JSON 入库、由 Node 侧对账 | 2026-10-10 | `ACCEPTED` |
