@@ -149,7 +149,7 @@ flowchart LR
 
 第一次接触本仓库，先读 [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md)：阅读顺序、口径、数字来源、改参数实验和改动流程。
 
-需要 Node.js 18 或更高版本，没有第三方依赖。
+需要 Node.js 18 或更高版本，运行和测试没有第三方依赖。`tools/` 下的离线 Python 生成器不在测试路径上，只用于重新生成入库的 JSON（[ADR-0025](teams/council/adr/ADR-0025-offline-python-tools.md)）。
 
 ```sh
 npm test                 # 全部测试

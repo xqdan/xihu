@@ -106,6 +106,28 @@ xychart-beta
 
 差额几乎全是专家预测失误造成的重读（命中率 0.8 的 ASSUMPTION），这就是 token-time 公式中 `expertReread` 的来源。
 
+### 3.1 GLM-5.2 与追踪账本的对账（MODEL-CH-01）
+
+GLM-5.2 没有详细模型，旁证来自对 HF 参考实现的追踪（[ADR-0025](../../../council/adr/ADR-0025-offline-python-tools.md)）：
+
+- 离线工具 `tools/trace_operator_ledger.py` 在 meta device 上构建 `glm_moe_dsa` 的 78 层，以 1M 上下文跑一个 decode token，
+  导出参数清单（含 FP8 checkpoint 的存储精度）、逐模块的矩阵类算子 FLOP 和 KV / index key 缓存流量，
+  写到 `teams/model/inputs/glm_5_2_traced_operator_ledger.json`。工具需要 torch 2.14.x 和 transformers 5.19.x，不在测试路径上。
+- `teams/model/src/traced_ledger.js#reconcileGlm` 把账本与本文 GLM 行逐项对账，`node teams/model/src/traced_ledger.js` 打印结果；
+  `tests/regression/test_traced_operator_ledger.js` 要求没有 `MISMATCH`，并在工具改动后报"账本过期"。
+
+每一项的状态是下列之一：`MATCH`、`STORAGE_DIFFERENCE`、`REFERENCE_FORM`、`NOT_IN_PLAN`、`NOT_TRACED`、`MISMATCH`。
+下表是按模型代码和 FP8 `modules_to_not_convert` 推出的**预期**差异，测试用同形状的合成账本核对过；真实账本入库前它们尚未经追踪确认。
+
+| 项 | 状态 | 差异 |
+| --- | --- | --- |
+| 各类参数数、总参数、dense_projection FLOP、routed_moe FLOP / 字节、index key 元素数、层结构 | `MATCH` | 0 |
+| dense_projection 字节 | `STORAGE_DIFFERENCE` | checkpoint 把 21 个 full 层的 indexer 头权重投影（`indexers_proj`，即模型代码的 `indexer.weights_proj`）存为 BF16，规划按 FP8 计：+4.13 MB / token |
+| indexer FLOP | `NOT_IN_PLAN` | 参考实现还要按头加权求和（每 full 层 2 × 32 × context）：+1.41 GFLOP / token，占该行 0.78% |
+| 范数参数 | `NOT_IN_PLAN` | 1.17 M 个，规划只计矩阵权重 |
+| sparse_attention FLOP / KV 元素、kv_b_proj | `REFERENCE_FORM` | 参考实现每 token 用 kv_b_proj 解压整个 latent 缓存，并在全上下文上做带 top-k 掩码的稠密 attention；部署是吸收形式、只读 top-k 条目。按参考公式核对，不与规划行比 |
+| collective_reduce | `NOT_TRACED` | 集合通信来自 TP32 部署，单设备参考实现里没有 |
+
 ## 4. 规划 token 时间
 
 ```mermaid
@@ -163,3 +185,5 @@ xychart-beta
 
 改 manifest 或推导代码后运行 `npm run model:planning` 与 `npm test`；新增算子行时同步更新
 `teams/hardware/src/resource_profiles.js#peakByCore`（若引入新 `coreClass`）和本文第 2 节。
+改 GLM 形状或 `deriveGlm` 后，若追踪账本已入库，`test_traced_operator_ledger.js` 会重新对账；改了 `tools/trace_operator_ledger.py`
+就要重跑工具，否则测试报账本过期。

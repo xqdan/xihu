@@ -2,7 +2,7 @@
 
 版本：2026-10-10
 状态（2026-10-10）：阶段一已实现（§2.1）；ARCH-CH-01 已实现，差值为零（§2.2）；HW-CH-01 已用自选的 5 个拓扑候选（`ASSUMPTION`）实现，名义参数下只有直连全互联达标（§2.3）；
-ARCH-CH-02 已实现，实测表为空（§2.4）；阶段四仍是 `PROPOSAL`。不改动已落地的任何机制，也不改变发布点 1101.77 TPS/usr
+ARCH-CH-02 已实现，实测表为空（§2.4）；D2 已批准（[ADR-0025](../adr/ADR-0025-offline-python-tools.md)）；MODEL-CH-01 的工具和对账已实现，账本尚未生成（§2.5）；SW-CH-01、ARCH-CH-03 仍是 `PROPOSAL`。不改动已落地的任何机制，也不改变发布点 1101.77 TPS/usr
 
 前置文档：[`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md)、
 [`10_TILE_SIMULATION.md`](../../../docs/architecture/10_TILE_SIMULATION.md)、
@@ -133,7 +133,7 @@ Charon 在第 2–4 点上各有现成方法：按链路分层的通信模型、
 | 要回答的问题 | GLM-5.2 和 DeepSeek-V4-Pro 能不能拥有与 K3 同级的详细 DAG，而不是只有规划行？K3 手写 DAG 的算子清单有没有遗漏？ |
 | 做法 | 写一个离线工具：用 `torch.fx` 或 meta device 在 HF 模型定义上追踪一个 decoder block，导出算子账本 JSON，内容包括算子、shape、dtype、FLOP、字节。Node 侧只读这份 JSON，并和 `design_engine.js` 以及规划行对账 |
 | 首个目标 | GLM-5.2（形状取自公开 HF `config.json`，ADR-0007）：用追踪出的账本与现有规划行逐项对账 |
-| 约束 | 仓库约定 Node.js、零第三方依赖，Python 工具因此只能作为离线生成器，产物按 `references/` 或 `teams/model/inputs/` 的规则入库（见决策点 D2） |
+| 约束 | 仓库约定 Node.js、零第三方依赖，Python 工具因此只能作为离线生成器，产物按 `references/` 或 `teams/model/inputs/` 的规则入库（D2，已由 ADR-0025 批准） |
 | 依赖 | 独立于其他工作包，可以并行 |
 
 ### SW-CH-01 优化开关改写为图变换规则（借鉴 Charon §4(b)）
@@ -310,6 +310,48 @@ D4 原定由硬件团队给候选。2026-10-10 按用户指示，由架构 agent
 - 占比按毛值计：被集合通信掩盖的 kernel 也全额计入，因此是"raw 里有多少时长的来源是实测"，不是"实测改变 raw 多少"。后者用 `--diff` 或重跑报告看。
 - raw 的 71% 不是 kernel，实测表覆盖不到。其中最大的一块是 451.95 µs 的集合通信，归 HW-CH-01。
 
+### 2.5 MODEL-CH-01 实现记录（2026-10-10）
+
+| 项 | 落点 |
+|---|---|
+| 追踪工具 | `tools/trace_operator_ledger.py`（ADR-0025 的离线生成器）。输入钉在 `zai-org/GLM-5.2@cf457fa7` 与 `zai-org/GLM-5.2-FP8@f33c6dc5` 的 `config.json`，模型代码为 transformers 5.19.x 的 `glm_moe_dsa`；也可用 `--config-file` / `--quant-config-file` 离线运行 |
+| 账本 | `teams/model/inputs/glm_5_2_traced_operator_ledger.json`，**尚未生成**：本机安装 torch / transformers 未获许可，工具没有运行过 |
+| 对账 | `teams/model/src/traced_ledger.js#reconcileGlm`，`node teams/model/src/traced_ledger.js` 打印逐项结果 |
+| 测试 | `tests/regression/test_traced_operator_ledger.js`：合成账本对账无 `MISMATCH`，且已知差异的状态和大小精确；9 种扰动（形状、缺层、indexer 层、专家数、缓存宽度、未匹配的 not-convert 项、多余 FLOP 等）都报 `MISMATCH`；provenance 缺项被拒；工具与对账的输出路径、格式一致。账本入库后还检查：provenance 齐全、工具 sha256 与当前文件一致（否则报过期）、revision 是工具里钉住的那个、对账无 `MISMATCH`。账本不存在时打印 `SKIP` |
+
+追踪口径：
+
+- 用 meta device，不分配权重。逐层构建 `GlmMoeDsaDecoderLayer` 并按顺序运行 78 层，`prev_topk_indices` 在层间传递，shared 层复用前一个 full 层的 top-k。
+- 场景是一个 decode token，已缓存 1048575 个 token。缓存是鸭子类型的替身，只返回形状正确的 meta 张量，并记录读写的 token 数和元素宽度。
+- FLOP 来自 `torch.utils.flop_counter` 的注册表，只覆盖矩阵类算子。每个算子挂到发出它的最内层模块上；其余算子只计次数。
+- 参数清单记录 checkpoint 的存储精度：默认 FP8，`modules_to_not_convert` 中列出的模块记 BF16。
+  - checkpoint 名 `self_attn.indexers_proj` 按 ASSUMPTION 映射为模型代码的 `self_attn.indexer.weights_proj`，映射写进账本。
+  - 映射不上的条目列在 `unmatchedNotConvert`，对账时视为 `MISMATCH`。
+- 专家用 `batched_mm` 实现：eager 实现里的 `nonzero` 在 meta device 上无法运行。attention 用 eager 实现。
+- 不追踪：embedding 查表、MTP 层、集合通信。
+
+对账口径：每项给一个状态，含义见 `traced_ledger.js` 文件头。只有 `MISMATCH` 让测试失败。参考实现与部署 kernel 的差异（kv_b_proj 解压整个缓存、全上下文稠密 attention）按参考公式核对后记为 `REFERENCE_FORM`，不用来修改规划行。
+
+按模型代码推出的预期差异（合成账本已核对，真实追踪尚未确认），见 [`OPERATOR_LEDGER.md`](../../model/docs/deployment/OPERATOR_LEDGER.md) §3.1：
+
+1. **FP8 checkpoint 把 21 个 full 层的 `indexers_proj` 存为 BF16**，`deriveGlm` 按 FP8 计。dense_projection 字节因此少计 4.13 MB / token，占该行 0.02%。
+2. **indexer 行漏掉按头加权求和这一步**，每个 full 层 2 × 32 × context FLOP，合计 1.41 GFLOP / token，占该行 0.78%。
+3. 其余参数数和 FLOP 与规划行逐位一致。
+
+两项都远低于规划精度，暂不改 `deriveGlm`。若真实账本确认，由 model 团队决定是否把它们并入规划行；并入会改变三模型规划的 GLM 数值，需要重跑 `npm run model:planning`。
+
+### 2.6 运行追踪工具
+
+```sh
+python -m venv .venv
+.venv/bin/pip install torch==2.14.1 transformers==5.19.0      # Windows: .venv\Scripts\pip
+.venv/bin/python tools/trace_operator_ledger.py --model GLM-5.2
+node teams/model/src/traced_ledger.js
+npm test
+```
+
+工具第一次真正运行时，可能需要按报错调整对模型代码内部接口的调用，例如 rotary 的构造或缓存方法的签名。调整后账本里的工具 sha256 会随之更新。
+
 ## 3. 阶段与顺序
 
 ```mermaid
@@ -343,7 +385,7 @@ flowchart LR
 | 二 | ARCH-CH-01 | M–L | 可能下降，上界 26.27 µs | 改默认值时需要 | `contention_delta.json` 落盘并入评审 |
 | 二 | HW-CH-01 | L | 不改基线 | 改 τ 口径时需要（修订 ADR-0004） | `tau_derivation.json` 落盘；B-008 关闭证据栏可引用 |
 | 三 | ARCH-CH-02 | M | 无（实测表为空） | 否 | 算子带 `costSource`；报告给出 raw 按证据等级的分解 |
-| 四 | MODEL-CH-01 / SW-CH-01 / ARCH-CH-03 | M / M / S | 无或仅附加视角 | 视结论而定 | 各自的对账报告 |
+| 四 | MODEL-CH-01 / SW-CH-01 / ARCH-CH-03 | M / M / S | 无或仅附加视角 | 视结论而定 | 各自的对账报告（MODEL-CH-01：工具和对账已实现，等账本，§2.5） |
 
 规模口径：S 约一个工作日以内，M 约数个工作日，L 需要跨团队输入（拓扑候选、Comm Core 周期）。
 
@@ -363,7 +405,7 @@ flowchart LR
 | 编号 | 问题 | 建议 |
 |---|---|---|
 | D1 | 时间线 trace（约 2–3 MB）是否提交进 `out/`？ | 提交发布点这一份，作为默认可视化；diff 和其他设计点的 trace 只写到 `scratch/`。若嫌体积大，可只提交 `.gz`，测试解压后核对 |
-| D2 | 是否允许离线 Python 工具（MODEL-CH-01）进入仓库？ | 允许，放在 `tools/`，不进 `npm test`；产物 JSON 入库后由 Node 侧对账 |
+| D2 | 是否允许离线 Python 工具（MODEL-CH-01）进入仓库？ | **已决定（2026-10-10，[ADR-0025](../adr/ADR-0025-offline-python-tools.md)）**：允许，放在 `tools/`，不进 `npm test`；产物 JSON 带 provenance 入库，由 Node 侧对账 |
 | D3 | ARCH-CH-01 的差值若不为零，是否改默认值？ | 由 ADR 决定；在此之前 21 号文档的时间账注明"未计前台争用，上界 26.27 µs" |
 | D4 | HW-CH-01 的拓扑候选由谁提供？ | 硬件团队（Collective/RDMA、NoC 负责人）先给出 B-005 的 2–3 个候选，没有候选不开工。2026-10-10 按用户指示改为架构 agent 先选 5 个常见候选开工（`ASSUMPTION`），待硬件团队评审替换（§2.3） |
 

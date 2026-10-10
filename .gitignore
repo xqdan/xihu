@@ -14,3 +14,7 @@ references/private/
 # local generated scratch outputs (out/ holds committed generated artifacts and is tracked)
 scratch/
 .probe-tmp/
+
+# offline Python generators (tools/, ADR-0025)
+.venv/
+__pycache__/
