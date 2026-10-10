@@ -36,7 +36,7 @@ flowchart LR
 ```
 
 1. **长上下文成本从 KV 转到 index key。** 两个模型的 attention 只读 top-2048 个 KV，但 indexer 要扫全部 1M 个 index key。
-   DeepSeek-V4-Pro 的 indexer 每 token 1047.97 GFLOP，是 K3 attention（5257.04 GFLOP）的 20%；GLM-5.2 只有 21 层有 indexer，180.39 GFLOP。
+   DeepSeek-V4-Pro 的 indexer 每 token 1047.97 GFLOP，是 K3 attention（5257.04 GFLOP）的 20%；GLM-5.2 只有 21 层有 indexer，181.80 GFLOP。
 2. **L 侧仍是字节受限。** 两个模型的 dense 权重是 FP8，每 rank 每 token 读 0.58–0.64 GB，是 K3（3.47 GB，BF16）的约 1/6。
    按 K3 的 unpack 规则，FP8 与 MXFP4 一样要过向量 lane。
 3. **稀疏注意力的负载均衡是新风险。** 全局 top-2048 按 context 段分布到 32 个 rank，平均每 rank 64 个 token；
@@ -53,18 +53,18 @@ flowchart LR
 | dense_projection | L | 111.16 / 111.16 | 35.30 / 18.72 | 38.66 / 20.42 |
 | routed_moe | L | 97.24 / 25.83 | 45.30 / 22.65 | 57.49 / 15.27 |
 | attention / sparse_attention | H | 5257.04 / 16.51 | 22.25 / 0.105 | 34.80 / 0.082 |
-| indexer | H（`INDEXER` 按 H 峰值计） | — | 180.39 / 2.91 | 1047.97 / 8.44 |
+| indexer | H（`INDEXER` 按 H 峰值计） | — | 181.80 / 2.91 | 1047.97 / 8.44 |
 | kda_state | V | 0.76 / 0.43 | — | — |
-| collective_reduce | REDUCE | 0.28 / 0.57 | 0.10 / 0.20 | 0.11 / 0.22 |
-| **合计** | | **5466.5 / 154.50** | **283.3 / 44.58** | **1179.0 / 44.44** |
-| **每 rank 字节** | | **4.83 GB** | **1.39 GB** | **1.39 GB** |
+| collective_reduce | REDUCE | 0.28 / 0.57 | 0.13 / 0.26 | 0.14 / 0.28 |
+| **合计** | | **5466.5 / 154.50** | **284.8 / 44.64** | **1179.0 / 44.49** |
+| **每 rank 字节** | | **4.83 GB** | **1.40 GB** | **1.39 GB** |
 
 ```mermaid
 xychart-beta
   title "每 rank 每 token 读取字节（GB，TP32，推导值）"
   x-axis ["K3", "GLM-5.2", "DeepSeek-V4-Pro"]
   y-axis "GB" 0 --> 5
-  bar [4.83, 1.39, 1.39]
+  bar [4.83, 1.40, 1.39]
 ```
 
 ```mermaid
@@ -72,7 +72,7 @@ xychart-beta
   title "H 侧每 token 全局 FLOP（GFLOP）"
   x-axis ["K3 attention", "GLM indexer", "GLM sparse attn", "DS indexer", "DS sparse attn"]
   y-axis "GFLOP" 0 --> 5500
-  bar [5257.04, 180.39, 22.25, 1047.97, 34.80]
+  bar [5257.04, 181.80, 22.25, 1047.97, 34.80]
 ```
 
 DeepSeek-V4-Pro 的 routed 字节与 expert hidden 的解法有关（点估计 3841 / 变体 3300，部署方案第 6 节），

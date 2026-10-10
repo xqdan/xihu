@@ -15,7 +15,7 @@
       },
       {
         "path": "out/workload/planning_operator_workload.json",
-        "sha256": "bf486346b0e23b1ab987adf45392a281bf621e8d7cf4336241808a7c0ef41542"
+        "sha256": "54eca7f93f5d356991fe0ee93f8c18b06379c2c25beb02162910bc3332875fd6"
       },
       {
         "path": "teams/hardware/src/resource_profiles.js",
@@ -1042,16 +1042,16 @@
               "coreClass": "L",
               "bytesClass": "weight",
               "globalFlops": 35297034240,
-              "globalBytes": 18718064640,
+              "globalBytes": 18722193408,
               "flops": 4412129280,
-              "bytes": 2339758080,
-              "flopPerByte": 1.8857202878000106,
+              "bytes": 2340274176,
+              "flopPerByte": 1.8853044336630753,
               "computeUs": 33.001838235294116,
-              "memoryUs": 326.41714285714284,
+              "memoryUs": 326.48914285714284,
               "balanceFlopPerByte": 18.65142857142857,
               "bound": "bandwidth",
-              "shareOfComputeUs": 0.3269372392678704,
-              "shareOfMemoryUs": 0.42177988853545517
+              "shareOfComputeUs": 0.3263692066572313,
+              "shareOfMemoryUs": 0.42183367812069483
             },
             {
               "operatorId": "routed_moe",
@@ -1066,24 +1066,24 @@
               "memoryUs": 394.97142857142853,
               "balanceFlopPerByte": 18.65142857142857,
               "bound": "bandwidth",
-              "shareOfComputeUs": 0.4195752237916635,
-              "shareOfMemoryUs": 0.510362304073152
+              "shareOfComputeUs": 0.41884623858868214,
+              "shareOfMemoryUs": 0.5103148270378263
             },
             {
               "operatorId": "indexer",
               "coreClass": "INDEXER",
               "bytesClass": "index",
-              "globalFlops": 180388626432,
+              "globalFlops": 181797912576,
               "globalBytes": 2906652672,
-              "flops": 22548578304,
+              "flops": 22724739072,
               "bytes": 363331584,
-              "flopPerByte": 62.06060606060606,
-              "computeUs": 22.487843137254902,
+              "flopPerByte": 62.54545454545455,
+              "computeUs": 22.663529411764706,
               "memoryUs": 50.688,
               "balanceFlopPerByte": 139.88571428571427,
               "bound": "bandwidth",
-              "shareOfComputeUs": 0.2227789040102699,
-              "shareOfMemoryUs": 0.06549649568938784
+              "shareOfComputeUs": 0.2241292761158992,
+              "shareOfMemoryUs": 0.06549040280318771
             },
             {
               "operatorId": "sparse_attention",
@@ -1098,8 +1098,8 @@
               "memoryUs": 1.8274285714285714,
               "balanceFlopPerByte": 139.88571428571427,
               "bound": "compute",
-              "shareOfComputeUs": 0.027474407246802255,
-              "shareOfMemoryUs": 0.0023613117020051216
+              "shareOfComputeUs": 0.027426672215732955,
+              "shareOfMemoryUs": 0.0023610920382913314
             },
             {
               "operatorId": "collective_reduce",
@@ -1114,18 +1114,18 @@
               "memoryUs": null,
               "balanceFlopPerByte": null,
               "bound": "tau",
-              "shareOfComputeUs": 0.0032342256833940725,
+              "shareOfComputeUs": 0.003228606422454424,
               "shareOfMemoryUs": null
             }
           ],
           "totals": {
-            "globalFlopsPerToken": 283361673216,
-            "globalBytesPerToken": 44640632832,
-            "flopsPerTokenPerRank": 35420209152,
-            "bytesPerTokenPerRank": 5580079104,
-            "nonCollectiveBytesPerTokenPerRank": 5547343872,
+            "globalFlopsPerToken": 284770959360,
+            "globalBytesPerToken": 44644761600,
+            "flopsPerTokenPerRank": 35596369920,
+            "bytesPerTokenPerRank": 5580595200,
+            "nonCollectiveBytesPerTokenPerRank": 5547859968,
             "collectiveBytesPerTokenPerRank": 32735232,
-            "aggregateFlopPerByte": 6.347617747320021
+            "aggregateFlopPerByte": 6.378597379720357
           },
           "coreClassSplit": [
             {
@@ -1133,28 +1133,28 @@
               "computeUs": 75.35477941176471,
               "computeUsCalibrated": 86.87843018296792,
               "globalFlops": 80595517440,
-              "shareOfComputeUs": 0.7465124630595339
+              "shareOfComputeUs": 0.7452154452459134
             },
             {
               "coreClass": "INDEXER",
-              "computeUs": 22.487843137254902,
-              "computeUsCalibrated": 25.926802854664224,
-              "globalFlops": 180388626432,
-              "shareOfComputeUs": 0.2227789040102699
+              "computeUs": 22.663529411764706,
+              "computeUsCalibrated": 26.12935600196629,
+              "globalFlops": 181797912576,
+              "shareOfComputeUs": 0.2241292761158992
             },
             {
               "coreClass": "H",
               "computeUs": 2.773333333333333,
               "computeUsCalibrated": 3.197446110982585,
               "globalFlops": 22246588416,
-              "shareOfComputeUs": 0.027474407246802255
+              "shareOfComputeUs": 0.027426672215732955
             },
             {
               "coreClass": "REDUCE",
               "computeUs": 0.3264705882352941,
               "computeUsCalibrated": 0.37639619448430467,
               "globalFlops": 130940928,
-              "shareOfComputeUs": 0.0032342256833940725
+              "shareOfComputeUs": 0.003228606422454424
             }
           ],
           "bytesClassSplit": [
@@ -1166,9 +1166,9 @@
             },
             {
               "bytesClass": "weight",
-              "bytes": 2339758080,
-              "memoryUs": 326.41714285714284,
-              "globalBytes": 18718064640
+              "bytes": 2340274176,
+              "memoryUs": 326.48914285714284,
+              "globalBytes": 18722193408
             },
             {
               "bytesClass": "index",
@@ -1208,7 +1208,7 @@
                 "routed_moe"
               ],
               "globalFlops": 80595517440,
-              "globalBytes": 41367306240
+              "globalBytes": 41371435008
             },
             {
               "loFlopPerByte": 4,
@@ -1223,7 +1223,7 @@
               "operators": [
                 "indexer"
               ],
-              "globalFlops": 180388626432,
+              "globalFlops": 181797912576,
               "globalBytes": 2906652672
             },
             {
@@ -1248,25 +1248,25 @@
             }
           },
           "lanes": {
-            "memoryLaneUs": 953.348146008494,
-            "serialLaneUs": 554.7610726329157,
-            "serialComputeUs": 171.81107263291568,
-            "flopUs": 116.37907534309902,
+            "memoryLaneUs": 953.42862578863,
+            "serialLaneUs": 554.966615556021,
+            "serialComputeUs": 172.016615556021,
+            "flopUs": 116.5816284904011,
             "fixedUs": 23.29589377275135,
-            "tmaExposedUs": 32.136103517065315,
+            "tmaExposedUs": 32.13909329286855,
             "commUs": 382.95,
-            "rawUs": 953.348146008494,
-            "e2eUs": 1115.417330829938,
-            "tpsPerUser": 896.5254280708903,
+            "rawUs": 953.42862578863,
+            "e2eUs": 1115.511492172697,
+            "tpsPerUser": 896.4497515415877,
             "bound": "memory",
             "boundingOperator": "routed_moe",
             "uncalibrated": {
-              "memoryUs": 773.9039999999999,
+              "memoryUs": 773.9759999999999,
               "expertMemoryUs": 394.97142857142853,
-              "computeUs": 100.94242647058823,
+              "computeUs": 101.11811274509805,
               "computeUsByCore": {
                 "L": 75.35477941176471,
-                "INDEXER": 22.487843137254902,
+                "INDEXER": 22.663529411764706,
                 "H": 2.773333333333333,
                 "REDUCE": 0.3264705882352941
               }
@@ -1279,17 +1279,17 @@
               {
                 "ratio": "requiredToAvailableRatio",
                 "lane": "compute",
-                "requiredUs": 116.37907534309902,
+                "requiredUs": 116.5816284904011,
                 "availableUs": 854.7008547008547,
-                "value": 0.13616351815142586,
+                "value": 0.1364005053337693,
                 "note": "calibrated compute time (kFlop x planning compute) against the raw budget"
               },
               {
                 "ratio": "requiredToAvailableBandwidthRatio",
                 "lane": "memory",
-                "requiredUs": 953.348146008494,
+                "requiredUs": 953.42862578863,
                 "availableUs": 854.7008547008547,
-                "value": 1.115417330829938,
+                "value": 1.1155114921726972,
                 "note": "memory lane (bandwidth-limited, with expert re-read) against the raw budget"
               },
               {
@@ -1349,16 +1349,16 @@
               "coreClass": "L",
               "bytesClass": "weight",
               "globalFlops": 35297034240,
-              "globalBytes": 18718064640,
+              "globalBytes": 18722193408,
               "flops": 2206064640,
-              "bytes": 1169879040,
-              "flopPerByte": 1.8857202878000106,
+              "bytes": 1170137088,
+              "flopPerByte": 1.8853044336630753,
               "computeUs": 16.500919117647058,
-              "memoryUs": 163.20857142857142,
+              "memoryUs": 163.24457142857142,
               "balanceFlopPerByte": 18.65142857142857,
               "bound": "bandwidth",
-              "shareOfComputeUs": 0.3269372392678704,
-              "shareOfMemoryUs": 0.42177988853545517
+              "shareOfComputeUs": 0.3263692066572313,
+              "shareOfMemoryUs": 0.42183367812069483
             },
             {
               "operatorId": "routed_moe",
@@ -1373,24 +1373,24 @@
               "memoryUs": 197.48571428571427,
               "balanceFlopPerByte": 18.65142857142857,
               "bound": "bandwidth",
-              "shareOfComputeUs": 0.4195752237916635,
-              "shareOfMemoryUs": 0.510362304073152
+              "shareOfComputeUs": 0.41884623858868214,
+              "shareOfMemoryUs": 0.5103148270378263
             },
             {
               "operatorId": "indexer",
               "coreClass": "INDEXER",
               "bytesClass": "index",
-              "globalFlops": 180388626432,
+              "globalFlops": 181797912576,
               "globalBytes": 2906652672,
-              "flops": 11274289152,
+              "flops": 11362369536,
               "bytes": 181665792,
-              "flopPerByte": 62.06060606060606,
-              "computeUs": 11.243921568627451,
+              "flopPerByte": 62.54545454545455,
+              "computeUs": 11.331764705882353,
               "memoryUs": 25.344,
               "balanceFlopPerByte": 139.88571428571427,
               "bound": "bandwidth",
-              "shareOfComputeUs": 0.2227789040102699,
-              "shareOfMemoryUs": 0.06549649568938784
+              "shareOfComputeUs": 0.2241292761158992,
+              "shareOfMemoryUs": 0.06549040280318771
             },
             {
               "operatorId": "sparse_attention",
@@ -1405,8 +1405,8 @@
               "memoryUs": 0.9137142857142857,
               "balanceFlopPerByte": 139.88571428571427,
               "bound": "compute",
-              "shareOfComputeUs": 0.027474407246802255,
-              "shareOfMemoryUs": 0.0023613117020051216
+              "shareOfComputeUs": 0.027426672215732955,
+              "shareOfMemoryUs": 0.0023610920382913314
             },
             {
               "operatorId": "collective_reduce",
@@ -1421,18 +1421,18 @@
               "memoryUs": null,
               "balanceFlopPerByte": null,
               "bound": "tau",
-              "shareOfComputeUs": 0.0032342256833940725,
+              "shareOfComputeUs": 0.003228606422454424,
               "shareOfMemoryUs": null
             }
           ],
           "totals": {
-            "globalFlopsPerToken": 283361673216,
-            "globalBytesPerToken": 44640632832,
-            "flopsPerTokenPerRank": 17710104576,
-            "bytesPerTokenPerRank": 2790039552,
-            "nonCollectiveBytesPerTokenPerRank": 2773671936,
+            "globalFlopsPerToken": 284770959360,
+            "globalBytesPerToken": 44644761600,
+            "flopsPerTokenPerRank": 17798184960,
+            "bytesPerTokenPerRank": 2790297600,
+            "nonCollectiveBytesPerTokenPerRank": 2773929984,
             "collectiveBytesPerTokenPerRank": 16367616,
-            "aggregateFlopPerByte": 6.347617747320021
+            "aggregateFlopPerByte": 6.378597379720357
           },
           "coreClassSplit": [
             {
@@ -1440,28 +1440,28 @@
               "computeUs": 37.677389705882355,
               "computeUsCalibrated": 43.43921509148396,
               "globalFlops": 80595517440,
-              "shareOfComputeUs": 0.7465124630595339
+              "shareOfComputeUs": 0.7452154452459134
             },
             {
               "coreClass": "INDEXER",
-              "computeUs": 11.243921568627451,
-              "computeUsCalibrated": 12.963401427332112,
-              "globalFlops": 180388626432,
-              "shareOfComputeUs": 0.2227789040102699
+              "computeUs": 11.331764705882353,
+              "computeUsCalibrated": 13.064678000983145,
+              "globalFlops": 181797912576,
+              "shareOfComputeUs": 0.2241292761158992
             },
             {
               "coreClass": "H",
               "computeUs": 1.3866666666666665,
               "computeUsCalibrated": 1.5987230554912926,
               "globalFlops": 22246588416,
-              "shareOfComputeUs": 0.027474407246802255
+              "shareOfComputeUs": 0.027426672215732955
             },
             {
               "coreClass": "REDUCE",
               "computeUs": 0.16323529411764706,
               "computeUsCalibrated": 0.18819809724215233,
               "globalFlops": 130940928,
-              "shareOfComputeUs": 0.0032342256833940725
+              "shareOfComputeUs": 0.003228606422454424
             }
           ],
           "bytesClassSplit": [
@@ -1473,9 +1473,9 @@
             },
             {
               "bytesClass": "weight",
-              "bytes": 1169879040,
-              "memoryUs": 163.20857142857142,
-              "globalBytes": 18718064640
+              "bytes": 1170137088,
+              "memoryUs": 163.24457142857142,
+              "globalBytes": 18722193408
             },
             {
               "bytesClass": "index",
@@ -1515,7 +1515,7 @@
                 "routed_moe"
               ],
               "globalFlops": 80595517440,
-              "globalBytes": 41367306240
+              "globalBytes": 41371435008
             },
             {
               "loFlopPerByte": 4,
@@ -1530,7 +1530,7 @@
               "operators": [
                 "indexer"
               ],
-              "globalFlops": 180388626432,
+              "globalFlops": 181797912576,
               "globalBytes": 2906652672
             },
             {
@@ -1555,25 +1555,25 @@
             }
           },
           "lanes": {
-            "memoryLaneUs": 476.674073004247,
-            "serialLaneUs": 480.50348320283354,
-            "serialComputeUs": 97.55348320283352,
-            "flopUs": 58.18953767154951,
+            "memoryLaneUs": 476.714312894315,
+            "serialLaneUs": 480.60625466438614,
+            "serialComputeUs": 97.65625466438618,
+            "flopUs": 58.29081424520055,
             "fixedUs": 23.29589377275135,
-            "tmaExposedUs": 16.068051758532658,
+            "tmaExposedUs": 16.069546646434276,
             "commUs": 382.95,
-            "rawUs": 480.50348320283354,
-            "e2eUs": 562.1890753473152,
-            "tpsPerUser": 1778.760996702416,
+            "rawUs": 480.60625466438614,
+            "e2eUs": 562.3093179573317,
+            "tpsPerUser": 1778.380631558164,
             "bound": "collective",
             "boundingOperator": "collective_reduce",
             "uncalibrated": {
-              "memoryUs": 386.95199999999994,
+              "memoryUs": 386.98799999999994,
               "expertMemoryUs": 197.48571428571427,
-              "computeUs": 50.471213235294115,
+              "computeUs": 50.55905637254902,
               "computeUsByCore": {
                 "L": 37.677389705882355,
-                "INDEXER": 11.243921568627451,
+                "INDEXER": 11.331764705882353,
                 "H": 1.3866666666666665,
                 "REDUCE": 0.16323529411764706
               }
@@ -1586,17 +1586,17 @@
               {
                 "ratio": "requiredToAvailableRatio",
                 "lane": "compute",
-                "requiredUs": 58.18953767154951,
+                "requiredUs": 58.29081424520055,
                 "availableUs": 854.7008547008547,
-                "value": 0.06808175907571293,
+                "value": 0.06820025266688465,
                 "note": "calibrated compute time (kFlop x planning compute) against the raw budget"
               },
               {
                 "ratio": "requiredToAvailableBandwidthRatio",
                 "lane": "memory",
-                "requiredUs": 476.674073004247,
+                "requiredUs": 476.714312894315,
                 "availableUs": 854.7008547008547,
-                "value": 0.557708665414969,
+                "value": 0.5577557460863486,
                 "note": "memory lane (bandwidth-limited, with expert re-read) against the raw budget"
               },
               {
@@ -1656,16 +1656,16 @@
               "coreClass": "L",
               "bytesClass": "weight",
               "globalFlops": 35297034240,
-              "globalBytes": 18718064640,
+              "globalBytes": 18722193408,
               "flops": 1103032320,
-              "bytes": 584939520,
-              "flopPerByte": 1.8857202878000106,
+              "bytes": 585068544,
+              "flopPerByte": 1.8853044336630753,
               "computeUs": 8.250459558823529,
-              "memoryUs": 81.60428571428571,
+              "memoryUs": 81.62228571428571,
               "balanceFlopPerByte": 18.65142857142857,
               "bound": "bandwidth",
-              "shareOfComputeUs": 0.3269372392678704,
-              "shareOfMemoryUs": 0.42177988853545517
+              "shareOfComputeUs": 0.3263692066572313,
+              "shareOfMemoryUs": 0.42183367812069483
             },
             {
               "operatorId": "routed_moe",
@@ -1680,24 +1680,24 @@
               "memoryUs": 98.74285714285713,
               "balanceFlopPerByte": 18.65142857142857,
               "bound": "bandwidth",
-              "shareOfComputeUs": 0.4195752237916635,
-              "shareOfMemoryUs": 0.510362304073152
+              "shareOfComputeUs": 0.41884623858868214,
+              "shareOfMemoryUs": 0.5103148270378263
             },
             {
               "operatorId": "indexer",
               "coreClass": "INDEXER",
               "bytesClass": "index",
-              "globalFlops": 180388626432,
+              "globalFlops": 181797912576,
               "globalBytes": 2906652672,
-              "flops": 5637144576,
+              "flops": 5681184768,
               "bytes": 90832896,
-              "flopPerByte": 62.06060606060606,
-              "computeUs": 5.621960784313726,
+              "flopPerByte": 62.54545454545455,
+              "computeUs": 5.665882352941177,
               "memoryUs": 12.672,
               "balanceFlopPerByte": 139.88571428571427,
               "bound": "bandwidth",
-              "shareOfComputeUs": 0.2227789040102699,
-              "shareOfMemoryUs": 0.06549649568938784
+              "shareOfComputeUs": 0.2241292761158992,
+              "shareOfMemoryUs": 0.06549040280318771
             },
             {
               "operatorId": "sparse_attention",
@@ -1712,8 +1712,8 @@
               "memoryUs": 0.45685714285714285,
               "balanceFlopPerByte": 139.88571428571427,
               "bound": "compute",
-              "shareOfComputeUs": 0.027474407246802255,
-              "shareOfMemoryUs": 0.0023613117020051216
+              "shareOfComputeUs": 0.027426672215732955,
+              "shareOfMemoryUs": 0.0023610920382913314
             },
             {
               "operatorId": "collective_reduce",
@@ -1728,18 +1728,18 @@
               "memoryUs": null,
               "balanceFlopPerByte": null,
               "bound": "tau",
-              "shareOfComputeUs": 0.0032342256833940725,
+              "shareOfComputeUs": 0.003228606422454424,
               "shareOfMemoryUs": null
             }
           ],
           "totals": {
-            "globalFlopsPerToken": 283361673216,
-            "globalBytesPerToken": 44640632832,
-            "flopsPerTokenPerRank": 8855052288,
-            "bytesPerTokenPerRank": 1395019776,
-            "nonCollectiveBytesPerTokenPerRank": 1386835968,
+            "globalFlopsPerToken": 284770959360,
+            "globalBytesPerToken": 44644761600,
+            "flopsPerTokenPerRank": 8899092480,
+            "bytesPerTokenPerRank": 1395148800,
+            "nonCollectiveBytesPerTokenPerRank": 1386964992,
             "collectiveBytesPerTokenPerRank": 8183808,
-            "aggregateFlopPerByte": 6.347617747320021
+            "aggregateFlopPerByte": 6.378597379720357
           },
           "coreClassSplit": [
             {
@@ -1747,28 +1747,28 @@
               "computeUs": 18.838694852941178,
               "computeUsCalibrated": 21.71960754574198,
               "globalFlops": 80595517440,
-              "shareOfComputeUs": 0.7465124630595339
+              "shareOfComputeUs": 0.7452154452459134
             },
             {
               "coreClass": "INDEXER",
-              "computeUs": 5.621960784313726,
-              "computeUsCalibrated": 6.481700713666056,
-              "globalFlops": 180388626432,
-              "shareOfComputeUs": 0.2227789040102699
+              "computeUs": 5.665882352941177,
+              "computeUsCalibrated": 6.5323390004915725,
+              "globalFlops": 181797912576,
+              "shareOfComputeUs": 0.2241292761158992
             },
             {
               "coreClass": "H",
               "computeUs": 0.6933333333333332,
               "computeUsCalibrated": 0.7993615277456463,
               "globalFlops": 22246588416,
-              "shareOfComputeUs": 0.027474407246802255
+              "shareOfComputeUs": 0.027426672215732955
             },
             {
               "coreClass": "REDUCE",
               "computeUs": 0.08161764705882353,
               "computeUsCalibrated": 0.09409904862107617,
               "globalFlops": 130940928,
-              "shareOfComputeUs": 0.0032342256833940725
+              "shareOfComputeUs": 0.003228606422454424
             }
           ],
           "bytesClassSplit": [
@@ -1780,9 +1780,9 @@
             },
             {
               "bytesClass": "weight",
-              "bytes": 584939520,
-              "memoryUs": 81.60428571428571,
-              "globalBytes": 18718064640
+              "bytes": 585068544,
+              "memoryUs": 81.62228571428571,
+              "globalBytes": 18722193408
             },
             {
               "bytesClass": "index",
@@ -1822,7 +1822,7 @@
                 "routed_moe"
               ],
               "globalFlops": 80595517440,
-              "globalBytes": 41367306240
+              "globalBytes": 41371435008
             },
             {
               "loFlopPerByte": 4,
@@ -1837,7 +1837,7 @@
               "operators": [
                 "indexer"
               ],
-              "globalFlops": 180388626432,
+              "globalFlops": 181797912576,
               "globalBytes": 2906652672
             },
             {
@@ -1862,25 +1862,25 @@
             }
           },
           "lanes": {
-            "memoryLaneUs": 238.3370365021235,
-            "serialLaneUs": 443.3746884877924,
-            "serialComputeUs": 60.42468848779243,
-            "flopUs": 29.094768835774754,
+            "memoryLaneUs": 238.3571564471575,
+            "serialLaneUs": 443.4260742185688,
+            "serialComputeUs": 60.47607421856876,
+            "flopUs": 29.145407122600275,
             "fixedUs": 23.29589377275135,
-            "tmaExposedUs": 8.034025879266329,
+            "tmaExposedUs": 8.034773323217138,
             "commUs": 382.95,
-            "rawUs": 443.3746884877924,
-            "e2eUs": 518.7483855307171,
-            "tpsPerUser": 1927.7168428715738,
+            "rawUs": 443.4260742185688,
+            "e2eUs": 518.8085068357254,
+            "tpsPerUser": 1927.4934524476448,
             "bound": "collective",
             "boundingOperator": "collective_reduce",
             "uncalibrated": {
-              "memoryUs": 193.47599999999997,
+              "memoryUs": 193.49399999999997,
               "expertMemoryUs": 98.74285714285713,
-              "computeUs": 25.235606617647058,
+              "computeUs": 25.27952818627451,
               "computeUsByCore": {
                 "L": 18.838694852941178,
-                "INDEXER": 5.621960784313726,
+                "INDEXER": 5.665882352941177,
                 "H": 0.6933333333333332,
                 "REDUCE": 0.08161764705882353
               }
@@ -1893,17 +1893,17 @@
               {
                 "ratio": "requiredToAvailableRatio",
                 "lane": "compute",
-                "requiredUs": 29.094768835774754,
+                "requiredUs": 29.145407122600275,
                 "availableUs": 854.7008547008547,
-                "value": 0.034040879537856464,
+                "value": 0.034100126333442324,
                 "note": "calibrated compute time (kFlop x planning compute) against the raw budget"
               },
               {
                 "ratio": "requiredToAvailableBandwidthRatio",
                 "lane": "memory",
-                "requiredUs": 238.3370365021235,
+                "requiredUs": 238.3571564471575,
                 "availableUs": 854.7008547008547,
-                "value": 0.2788543327074845,
+                "value": 0.2788778730431743,
                 "note": "memory lane (bandwidth-limited, with expert re-read) against the raw budget"
               },
               {

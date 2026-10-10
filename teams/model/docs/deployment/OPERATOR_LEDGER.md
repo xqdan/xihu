@@ -63,13 +63,13 @@ flowchart LR
 
 | 行 | K3 GFLOP / GB | GLM-5.2 GFLOP / GB | DeepSeek-V4-Pro GFLOP / GB | 推导 |
 | --- | --- | --- | --- | --- |
-| dense_projection | 111.16 / 111.16 | 35.30 / 18.72 | 38.66 / 20.42 | attention、indexer 权重、dense FFN、shared expert、router、LM head；embedding 是查表，不计 |
+| dense_projection | 111.16 / 111.16 | 35.30 / 18.72 | 38.66 / 20.42 | attention、indexer 权重、dense FFN、shared expert、router、LM head；embedding 是查表，不计。GLM 的 indexer 头权重投影（`indexers_proj`）按 checkpoint 存储计 BF16 |
 | routed_moe | 97.24 / 25.83 | 45.30 / 22.65 | 57.49 / 15.27 | 激活专家参数 × 字节/参数（K3 MXFP4 0.53125、GLM FP8 1、DS FP4 0.53125） |
 | attention / sparse_attention | 5257.04 / 16.51 | 22.25 / 0.105 | 34.80 / 0.082 | K3：24 × 2 × 1M × 96 × (576 + 512)；GLM/DS：层数 × 2 × 2048 × heads × (576 + 512)；字节 × 656 B/token/层 |
-| indexer | — | 180.39 / 2.91 | 1047.97 / 8.44 | full 层数 × 1M × heads × 128 × 2；字节 × 132 B/token |
+| indexer | — | 181.80 / 2.91 | 1047.97 / 8.44 | full 层数 × 1M × heads × 128 × 2；GLM 另加按头加权求和 full 层数 × 1M × heads × 2；字节 × 132 B/token |
 | kda_state | 0.76 / 0.43 | — | — | 69 层 × state 128 × 128 × heads |
-| collective_reduce | 0.28 / 0.57 | 0.10 / 0.20 | 0.11 / 0.22 | 次数 × 2 × hidden × 2 B × 32（每 rank ring 消息 × TP32）；FLOP = 字节 / 2 |
-| **合计** | **5466.5 / 154.50** | **283.3 / 44.58** | **1179.0 / 44.44** | |
+| collective_reduce | 0.28 / 0.57 | 0.13 / 0.26 | 0.14 / 0.28 | 次数 × 2 × hidden × 2 B × 32（每 rank ring 消息 × TP32）；FLOP = 字节 / 2 |
+| **合计** | **5466.5 / 154.50** | **284.8 / 44.64** | **1179.0 / 44.49** | |
 
 ```mermaid
 xychart-beta
@@ -121,12 +121,18 @@ GLM-5.2 没有详细模型，旁证来自对 HF 参考实现的追踪（[ADR-002
 
 | 项 | 状态 | 差异 |
 | --- | --- | --- |
-| 各类参数数、总参数、dense_projection FLOP、routed_moe FLOP / 字节、index key 元素数、层结构 | `MATCH` | 0 |
-| dense_projection 字节 | `STORAGE_DIFFERENCE` | checkpoint 把 21 个 full 层的 indexer 头权重投影（`indexers_proj`，即模型代码的 `indexer.weights_proj`）存为 BF16，规划按 FP8 计：+4.13 MB / token |
-| indexer FLOP | `NOT_IN_PLAN` | 参考实现还要按头加权求和（每 full 层 2 × 32 × context）：+1.41 GFLOP / token，占该行 0.78% |
+| 各类参数数、总参数、dense_projection FLOP / 字节、routed_moe FLOP / 字节、indexer FLOP、index key 元素数、层结构 | `MATCH` | 0 |
 | 范数参数 | `NOT_IN_PLAN` | 1.17 M 个，规划只计矩阵权重 |
 | sparse_attention FLOP / KV 元素、kv_b_proj | `REFERENCE_FORM` | 参考实现每 token 用 kv_b_proj 解压整个 latent 缓存（78 层合计约 2.4 PFLOP），并在全上下文上做带 top-k 掩码的稠密 attention（约 5.36 TFLOP，规划行 22.25 GFLOP）；部署是吸收形式、只读 top-k 条目。按参考公式核对，不与规划行比 |
 | collective_reduce | `NOT_TRACED` | 集合通信来自 TP32 部署，单设备参考实现里没有 |
+
+首次对账发现的两处差异已经并入 `deriveGlm`，现在都是 `MATCH`：
+
+- checkpoint 把 21 个 full 层的 indexer 头权重投影（`indexers_proj`，即模型代码的 `indexer.weights_proj`）存为 BF16，
+  规划原按 FP8 计。现在按 BF16 计，dense_projection 字节 +4.13 MB / token（+0.02%）。
+- 参考实现在 q·k 打分之后还要按头加权求和（每 full 层 2 × 32 × context）。现在计入 indexer 行，+1.41 GFLOP / token（+0.78%）。
+
+两项对 GLM 规划 TPS/usr 的影响都在 0.02% 以内（例如 TP32 / MC640 由 1927.72 变为 1927.49）。
 
 ## 4. 规划 token 时间
 

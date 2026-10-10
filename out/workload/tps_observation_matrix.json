@@ -87,7 +87,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP8#/model/K3/tp8/MC320",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -135,7 +135,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP8#/model/K3/tp8/MC640",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -183,7 +183,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP16#/model/K3/tp16/MC320",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -231,7 +231,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP16#/model/K3/tp16/MC640",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -279,7 +279,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP32#/model/K3/tp32/MC320",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -327,7 +327,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP32#/model/K3/tp32/MC640",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -369,13 +369,13 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 448.26271403544513,
-      "rawLatencyUsPerToken": 1906.696292016988,
-      "e2eLatencyUsPerToken": 2230.834661659876,
+      "tpsPerUser": 448.22487577079386,
+      "rawLatencyUsPerToken": 1906.85725157726,
+      "e2eLatencyUsPerToken": 2231.022984345394,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP8#/model/GLM-5.2/tp8/MC320",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -385,17 +385,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 448.26271403544513,
+          "tpsPerUser": 448.22487577079386,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 448.26271403544513,
+          "tpsPerUser": 448.22487577079386,
           "bound": "memory"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 448.26271403544513,
+          "tpsPerUser": 448.22487577079386,
           "bound": "memory"
         }
       ],
@@ -417,13 +417,13 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 896.5254280708903,
-      "rawLatencyUsPerToken": 953.348146008494,
-      "e2eLatencyUsPerToken": 1115.417330829938,
+      "tpsPerUser": 896.4497515415877,
+      "rawLatencyUsPerToken": 953.42862578863,
+      "e2eLatencyUsPerToken": 1115.511492172697,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP8#/model/GLM-5.2/tp8/MC640",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -433,17 +433,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 896.5254280708903,
+          "tpsPerUser": 896.4497515415877,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 896.5254280708903,
+          "tpsPerUser": 896.4497515415877,
           "bound": "memory"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 896.5254280708903,
+          "tpsPerUser": 896.4497515415877,
           "bound": "memory"
         }
       ],
@@ -465,13 +465,13 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 896.5254280708903,
-      "rawLatencyUsPerToken": 953.348146008494,
-      "e2eLatencyUsPerToken": 1115.417330829938,
+      "tpsPerUser": 896.4497515415877,
+      "rawLatencyUsPerToken": 953.42862578863,
+      "e2eLatencyUsPerToken": 1115.511492172697,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP16#/model/GLM-5.2/tp16/MC320",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -481,17 +481,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 896.5254280708903,
+          "tpsPerUser": 896.4497515415877,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 896.5254280708903,
+          "tpsPerUser": 896.4497515415877,
           "bound": "memory"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 896.5254280708903,
+          "tpsPerUser": 896.4497515415877,
           "bound": "memory"
         }
       ],
@@ -513,13 +513,13 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1778.760996702416,
-      "rawLatencyUsPerToken": 480.50348320283354,
-      "e2eLatencyUsPerToken": 562.1890753473152,
+      "tpsPerUser": 1778.380631558164,
+      "rawLatencyUsPerToken": 480.60625466438614,
+      "e2eLatencyUsPerToken": 562.3093179573317,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP16#/model/GLM-5.2/tp16/MC640",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -529,17 +529,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1778.760996702416,
+          "tpsPerUser": 1778.380631558164,
           "bound": "collective"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1431.531477072871,
+          "tpsPerUser": 1431.2851084197614,
           "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 1119.372609127118,
+          "tpsPerUser": 1119.221966009407,
           "bound": "collective"
         }
       ],
@@ -561,13 +561,13 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1793.0508561417805,
-      "rawLatencyUsPerToken": 476.674073004247,
-      "e2eLatencyUsPerToken": 557.708665414969,
+      "tpsPerUser": 1792.8995030831754,
+      "rawLatencyUsPerToken": 476.714312894315,
+      "e2eLatencyUsPerToken": 557.7557460863485,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP32#/model/GLM-5.2/tp32/MC320",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -577,17 +577,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1793.0508561417805,
+          "tpsPerUser": 1792.8995030831754,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1526.4568115565226,
+          "tpsPerUser": 1526.316737538414,
           "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 1176.5856368126701,
+          "tpsPerUser": 1176.5024135450165,
           "bound": "collective"
         }
       ],
@@ -609,13 +609,13 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1927.7168428715738,
-      "rawLatencyUsPerToken": 443.3746884877924,
-      "e2eLatencyUsPerToken": 518.7483855307171,
+      "tpsPerUser": 1927.4934524476448,
+      "rawLatencyUsPerToken": 443.4260742185688,
+      "e2eLatencyUsPerToken": 518.8085068357254,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP32#/model/GLM-5.2/tp32/MC640",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -625,17 +625,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1927.7168428715738,
+          "tpsPerUser": 1927.4934524476448,
           "bound": "collective"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1526.4568115565226,
+          "tpsPerUser": 1526.316737538414,
           "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 1176.5856368126701,
+          "tpsPerUser": 1176.5024135450165,
           "bound": "collective"
         }
       ],
@@ -663,7 +663,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP8#/model/DeepSeek-V4-Pro/tp8/MC320",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -714,7 +714,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP8#/model/DeepSeek-V4-Pro/tp8/MC640",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -765,7 +765,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP16#/model/DeepSeek-V4-Pro/tp16/MC320",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -816,7 +816,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP16#/model/DeepSeek-V4-Pro/tp16/MC640",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -867,7 +867,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP32#/model/DeepSeek-V4-Pro/tp32/MC320",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
@@ -918,7 +918,7 @@
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP32#/model/DeepSeek-V4-Pro/tp32/MC640",
       "blocker": null,
-      "manifestHash": "d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0",
+      "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
       "runId": "stage-b-20261002-planning",
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",

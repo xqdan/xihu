@@ -11,7 +11,7 @@
       },
       {
         "path": "out/workload/planning_operator_workload.json",
-        "sha256": "bf486346b0e23b1ab987adf45392a281bf621e8d7cf4336241808a7c0ef41542"
+        "sha256": "54eca7f93f5d356991fe0ee93f8c18b06379c2c25beb02162910bc3332875fd6"
       }
     ],
     "publishedPoint": "teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware.x",
@@ -345,63 +345,63 @@
         "slots": [
           {
             "tp": 8,
-            "memoryLaneUsAtMC640": 953.348146008494,
+            "memoryLaneUsAtMC640": 953.42862578863,
             "bandwidthMin": {
-              "mcPayloadGBsPerCube": 713.8670917311604,
-              "effectiveBytesPerSecond": 7995311427388.995,
+              "mcPayloadGBsPerCube": 713.9273549905262,
+              "effectiveBytesPerSecond": 7995986375893.894,
               "withinMC320": false,
               "withinMC640": false
             },
             "serial": {
-              "flopUs": 116.37907534309902,
+              "flopUs": 116.5816284904011,
               "fixedUs": 23.29589377275135,
-              "tmaExposedUs": 32.136103517065315,
+              "tmaExposedUs": 32.13909329286855,
               "collectivesPerToken": 333,
               "collectiveBandwidthFloorUs": 0.12288
             },
             "tauMaxByComputeScale": [
               {
                 "computeScale": 0.5,
-                "tauMaxUs": 1.7012333535280482
+                "tauMaxUs": 1.7000078398031009
               },
               {
                 "computeScale": 0.75,
-                "tauMaxUs": 1.934224495356074
+                "tauMaxUs": 1.9334044934375374
               },
               {
                 "computeScale": 1,
-                "tauMaxUs": 2.0507200662700873
+                "tauMaxUs": 2.050102820254756
               },
               {
                 "computeScale": 1.5,
-                "tauMaxUs": 2.1672156371841003
+                "tauMaxUs": 2.1668011470719746
               },
               {
                 "computeScale": 2,
-                "tauMaxUs": 2.225463422641107
+                "tauMaxUs": 2.2251503104805836
               }
             ],
-            "tauMaxAtUnboundedComputeUs": 2.400206779012126,
+            "tauMaxAtUnboundedComputeUs": 2.400197800706411,
             "computeScaleMinByTau": [
               {
                 "tauUs": 1,
-                "computeScaleMin": 0.24959650101723468
+                "computeScaleMin": 0.25003251703082896
               },
               {
                 "tauUs": 1.15,
-                "computeScaleMin": 0.279543127272268
+                "computeScaleMin": 0.28003167199129414
               },
               {
                 "tauUs": 1.3,
-                "computeScaleMin": 0.31765548023240014
+                "computeScaleMin": 0.3182109437292706
               },
               {
                 "tauUs": 1.5,
-                "computeScaleMin": 0.38822937228439963
+                "computeScaleMin": 0.3889089488742646
               },
               {
                 "tauUs": 2,
-                "computeScaleMin": 0.8732653494893687
+                "computeScaleMin": 0.8748048585816396
               }
             ],
             "networkMinBytesPerSecondByTau": [
@@ -428,76 +428,76 @@
             ],
             "nominal": {
               "MC320": {
-                "rawUs": 1906.696292016988,
-                "tpsPerUser": 448.26271403544513,
+                "rawUs": 1906.85725157726,
+                "tpsPerUser": 448.22487577079386,
                 "bound": "memory"
               },
               "MC640": {
-                "rawUs": 953.348146008494,
-                "tpsPerUser": 896.5254280708903,
+                "rawUs": 953.42862578863,
+                "tpsPerUser": 896.4497515415877,
                 "bound": "memory"
               }
             }
           },
           {
             "tp": 16,
-            "memoryLaneUsAtMC640": 476.674073004247,
+            "memoryLaneUsAtMC640": 476.714312894315,
             "bandwidthMin": {
-              "mcPayloadGBsPerCube": 356.9335458655802,
-              "effectiveBytesPerSecond": 3997655713694.4976,
+              "mcPayloadGBsPerCube": 356.9636774952631,
+              "effectiveBytesPerSecond": 3997993187946.947,
               "withinMC320": false,
               "withinMC640": true
             },
             "serial": {
-              "flopUs": 58.18953767154951,
+              "flopUs": 58.29081424520055,
               "fixedUs": 23.29589377275135,
-              "tmaExposedUs": 16.068051758532658,
+              "tmaExposedUs": 16.069546646434276,
               "collectivesPerToken": 333,
               "collectiveBandwidthFloorUs": 0.06144
             },
             "tauMaxByComputeScale": [
               {
                 "computeScale": 0.5,
-                "tauMaxUs": 2.098972473953369
+                "tauMaxUs": 2.0983597170908954
               },
               {
                 "computeScale": 0.75,
-                "tauMaxUs": 2.2154680448673814
+                "tauMaxUs": 2.2150580439081136
               },
               {
                 "computeScale": 1,
-                "tauMaxUs": 2.273715830324388
+                "tauMaxUs": 2.2734072073167226
               },
               {
                 "computeScale": 1.5,
-                "tauMaxUs": 2.3319636157813948
+                "tauMaxUs": 2.3317563707253317
               },
               {
                 "computeScale": 2,
-                "tauMaxUs": 2.3610875085098977
+                "tauMaxUs": 2.3609309524296362
               }
             ],
-            "tauMaxAtUnboundedComputeUs": 2.4484591866954077,
+            "tauMaxAtUnboundedComputeUs": 2.44845469754255,
             "computeScaleMinByTau": [
               {
                 "tauUs": 1,
-                "computeScaleMin": 0.12064085614292551
+                "computeScaleMin": 0.12085120129943537
               },
               {
                 "tauUs": 1.15,
-                "computeScaleMin": 0.1345774731786089
+                "computeScaleMin": 0.1348121659978755
               },
               {
                 "tauUs": 1.3,
-                "computeScaleMin": 0.15215460714266088
+                "computeScaleMin": 0.15242002196550902
               },
               {
                 "tauUs": 1.5,
-                "computeScaleMin": 0.18423919428716273
+                "computeScaleMin": 0.1845607288143295
               },
               {
                 "tauUs": 2,
-                "computeScaleMin": 0.3896527522574865
+                "computeScaleMin": 0.3903348346779637
               }
             ],
             "networkMinBytesPerSecondByTau": [
@@ -524,76 +524,76 @@
             ],
             "nominal": {
               "MC320": {
-                "rawUs": 953.348146008494,
-                "tpsPerUser": 896.5254280708903,
+                "rawUs": 953.42862578863,
+                "tpsPerUser": 896.4497515415877,
                 "bound": "memory"
               },
               "MC640": {
-                "rawUs": 480.50348320283354,
-                "tpsPerUser": 1778.760996702416,
+                "rawUs": 480.60625466438614,
+                "tpsPerUser": 1778.380631558164,
                 "bound": "collective"
               }
             }
           },
           {
             "tp": 32,
-            "memoryLaneUsAtMC640": 238.3370365021235,
+            "memoryLaneUsAtMC640": 238.3571564471575,
             "bandwidthMin": {
-              "mcPayloadGBsPerCube": 178.4667729327901,
-              "effectiveBytesPerSecond": 1998827856847.2488,
+              "mcPayloadGBsPerCube": 178.48183874763154,
+              "effectiveBytesPerSecond": 1998996593973.4734,
               "withinMC320": true,
               "withinMC640": true
             },
             "serial": {
-              "flopUs": 29.094768835774754,
+              "flopUs": 29.145407122600275,
               "fixedUs": 23.29589377275135,
-              "tmaExposedUs": 8.034025879266329,
+              "tmaExposedUs": 8.034773323217138,
               "collectivesPerToken": 333,
               "collectiveBandwidthFloorUs": 0.03072
             },
             "tauMaxByComputeScale": [
               {
                 "computeScale": 0.5,
-                "tauMaxUs": 2.297842034166029
+                "tauMaxUs": 2.297535655734792
               },
               {
                 "computeScale": 0.75,
-                "tauMaxUs": 2.3560898196230355
+                "tauMaxUs": 2.355884819143401
               },
               {
                 "computeScale": 1,
-                "tauMaxUs": 2.3852137123515385
+                "tauMaxUs": 2.3850594008477057
               },
               {
                 "computeScale": 1.5,
-                "tauMaxUs": 2.414337605080042
+                "tauMaxUs": 2.4142339825520103
               },
               {
                 "computeScale": 2,
-                "tauMaxUs": 2.4288995514442933
+                "tauMaxUs": 2.4288212734041625
               }
             ],
-            "tauMaxAtUnboundedComputeUs": 2.472585390537048,
+            "tauMaxAtUnboundedComputeUs": 2.4725831459606193,
             "computeScaleMinByTau": [
               {
                 "tauUs": 1,
-                "computeScaleMin": 0.05933216419704228
+                "computeScaleMin": 0.05943552006078327
               },
               {
                 "tauUs": 1.15,
-                "computeScaleMin": 0.06606127574873005
+                "computeScaleMin": 0.06617636507785939
               },
               {
                 "tauUs": 1.3,
-                "computeScaleMin": 0.074511996218453
+                "computeScaleMin": 0.07464182426160608
               },
               {
                 "tauUs": 1.5,
-                "computeScaleMin": 0.08983445467679124
+                "computeScaleMin": 0.0899910156539538
               },
               {
                 "tauUs": 2,
-                "computeScaleMin": 0.18488019294506797
+                "computeScaleMin": 0.1852028491938795
               }
             ],
             "networkMinBytesPerSecondByTau": [
@@ -620,13 +620,13 @@
             ],
             "nominal": {
               "MC320": {
-                "rawUs": 476.674073004247,
-                "tpsPerUser": 1793.0508561417805,
+                "rawUs": 476.714312894315,
+                "tpsPerUser": 1792.8995030831754,
                 "bound": "memory"
               },
               "MC640": {
-                "rawUs": 443.3746884877924,
-                "tpsPerUser": 1927.7168428715738,
+                "rawUs": 443.4260742185688,
+                "tpsPerUser": 1927.4934524476448,
                 "bound": "collective"
               }
             }
@@ -1343,7 +1343,7 @@
           },
           {
             "model": "GLM-5.2",
-            "value": 2.385205841064453
+            "value": 2.385036468505859
           },
           {
             "model": "DeepSeek-V4-Pro",
@@ -1397,7 +1397,7 @@
           },
           {
             "model": "GLM-5.2",
-            "value": 178.4716796875
+            "value": 178.486328125
           },
           {
             "model": "DeepSeek-V4-Pro",
@@ -1431,7 +1431,7 @@
           },
           {
             "path": "out/workload/planning_operator_workload.json",
-            "sha256": "bf486346b0e23b1ab987adf45392a281bf621e8d7cf4336241808a7c0ef41542"
+            "sha256": "54eca7f93f5d356991fe0ee93f8c18b06379c2c25beb02162910bc3332875fd6"
           }
         ],
         "target": {
@@ -1513,7 +1513,7 @@
                   },
                   {
                     "model": "GLM-5.2",
-                    "value": 2.385205841064453
+                    "value": 2.385036468505859
                   },
                   {
                     "model": "DeepSeek-V4-Pro",
@@ -1642,11 +1642,11 @@
             },
             {
               "model": "GLM-5.2",
-              "rawUs": 511.5541722829585,
-              "tpsPerUser": 1670.7924615031577,
+              "rawUs": 511.6055580137349,
+              "tpsPerUser": 1670.624646884522,
               "bound": "collective",
-              "memoryLaneUs": 238.3370365021235,
-              "serialLaneUs": 511.5541722829585
+              "memoryLaneUs": 238.3571564471575,
+              "serialLaneUs": 511.6055580137349
             },
             {
               "model": "DeepSeek-V4-Pro",
@@ -1687,7 +1687,7 @@
           },
           {
             "path": "out/workload/planning_operator_workload.json",
-            "sha256": "bf486346b0e23b1ab987adf45392a281bf621e8d7cf4336241808a7c0ef41542"
+            "sha256": "54eca7f93f5d356991fe0ee93f8c18b06379c2c25beb02162910bc3332875fd6"
           }
         ],
         "target": {
@@ -1898,11 +1898,11 @@
             },
             {
               "model": "GLM-5.2",
-              "rawUs": 453.36029108465704,
-              "tpsPerUser": 1885.2574244118227,
+              "rawUs": 453.4290563592022,
+              "tpsPerUser": 1884.9715136556422,
               "bound": "collective",
-              "memoryLaneUs": 238.3370365021235,
-              "serialLaneUs": 453.36029108465704
+              "memoryLaneUs": 238.3571564471575,
+              "serialLaneUs": 453.4290563592022
             },
             {
               "model": "DeepSeek-V4-Pro",
@@ -1943,7 +1943,7 @@
           },
           {
             "path": "out/workload/planning_operator_workload.json",
-            "sha256": "bf486346b0e23b1ab987adf45392a281bf621e8d7cf4336241808a7c0ef41542"
+            "sha256": "54eca7f93f5d356991fe0ee93f8c18b06379c2c25beb02162910bc3332875fd6"
           }
         ],
         "target": {
@@ -1992,7 +1992,7 @@
                   },
                   {
                     "model": "GLM-5.2",
-                    "value": 178.4716796875
+                    "value": 178.486328125
                   },
                   {
                     "model": "DeepSeek-V4-Pro",
@@ -2154,11 +2154,11 @@
             },
             {
               "model": "GLM-5.2",
-              "rawUs": 443.3746884877924,
-              "tpsPerUser": 1927.7168428715738,
+              "rawUs": 443.4260742185688,
+              "tpsPerUser": 1927.4934524476448,
               "bound": "collective",
-              "memoryLaneUs": 262.74374812047733,
-              "serialLaneUs": 443.3746884877924
+              "memoryLaneUs": 262.76592843222323,
+              "serialLaneUs": 443.4260742185688
             },
             {
               "model": "DeepSeek-V4-Pro",
@@ -2201,7 +2201,7 @@
           },
           {
             "path": "out/workload/planning_operator_workload.json",
-            "sha256": "bf486346b0e23b1ab987adf45392a281bf621e8d7cf4336241808a7c0ef41542"
+            "sha256": "54eca7f93f5d356991fe0ee93f8c18b06379c2c25beb02162910bc3332875fd6"
           }
         ],
         "target": {
@@ -2406,11 +2406,11 @@
             },
             {
               "model": "GLM-5.2",
-              "rawUs": 484.3125661718034,
-              "tpsPerUser": 1764.7711713465249,
+              "rawUs": 484.3719380480257,
+              "tpsPerUser": 1764.5548545715105,
               "bound": "collective",
-              "memoryLaneUs": 250.75557374141326,
-              "serialLaneUs": 484.3125661718034
+              "memoryLaneUs": 250.7767420349974,
+              "serialLaneUs": 484.3719380480257
             },
             {
               "model": "DeepSeek-V4-Pro",
