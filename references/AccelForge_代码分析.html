@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AccelForge 代码仓分析 | Accelergy-Project/accelforge</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffdf8;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #e7e0d4;
+      --accent: #9a3412;
+      --accent-soft: #fed7aa;
+      --teal: #0f766e;
+      --navy: #1e3a5f;
+      --shadow: 0 12px 40px rgba(28, 25, 23, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "Source Han Serif SC", "Noto Serif SC", Georgia, serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #fde68a33, transparent 50%),
+        radial-gradient(900px 500px at 100% 0%, #99f6e433, transparent 45%),
+        var(--bg);
+      line-height: 1.75;
+    }
+    a { color: var(--navy); }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 28px 80px; }
+    header.hero {
+      background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow);
+      padding: 42px 48px 36px; margin-bottom: 28px; position: relative; overflow: hidden;
+    }
+    header.hero::before {
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7px;
+      background: linear-gradient(180deg, #c2410c, #0f766e);
+    }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .badge {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 12px; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 999px;
+      background: #f5f5f4; color: var(--muted); border: 1px solid var(--line);
+    }
+    .badge.hot { background: #ffedd5; color: #9a3412; border-color: #fdba74; }
+    .badge.ok { background: #ccfbf1; color: #115e59; border-color: #5eead4; }
+    .badge.warn { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    h1 { font-size: 30px; line-height: 1.35; margin: 0 0 10px; letter-spacing: -0.02em; }
+    .subtitle { font-size: 16px; color: var(--muted); margin: 0 0 18px; }
+    .meta {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 13.5px; color: var(--muted);
+    }
+    .meta strong { color: var(--ink); }
+    nav.toc {
+      background: var(--paper); border: 1px solid var(--line); padding: 22px 28px; margin-bottom: 28px;
+    }
+    nav.toc h2 {
+      margin: 0 0 10px; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    nav.toc ol { margin: 0; padding-left: 22px; columns: 2; font-size: 14.5px; }
+    nav.toc a { text-decoration: none; }
+    nav.toc a:hover { text-decoration: underline; }
+    section.card {
+      background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow);
+      padding: 34px 42px 38px; margin-bottom: 22px;
+    }
+    h2 { margin: 0 0 16px; font-size: 23px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    h3 { margin: 26px 0 10px; font-size: 18px; color: var(--navy); }
+    p { margin: 0 0 14px; }
+    ul, ol { margin: 0 0 14px; padding-left: 22px; }
+    li { margin-bottom: 6px; }
+    .lead { font-size: 17.5px; color: #292524; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 16px 0; }
+    .tile { background: #faf7f2; border: 1px solid var(--line); padding: 16px 16px 14px; }
+    .tile h4 { margin: 0 0 6px; font-size: 15px; }
+    .tile p { margin: 0; font-size: 14px; color: var(--muted); }
+    .callout {
+      border-left: 4px solid var(--accent); background: #fff7ed; padding: 12px 16px;
+      margin: 16px 0 18px; font-size: 15px;
+    }
+    .callout.teal { border-left-color: var(--teal); background: #f0fdfa; }
+    .callout.navy { border-left-color: var(--navy); background: #f0f4f8; }
+    .callout.warn { border-left-color: #d97706; background: #fffbeb; }
+    table {
+      width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 12px 0 18px;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f5f0e6; font-weight: 650; }
+    tr:nth-child(even) td { background: #faf8f4; }
+    footer { margin-top: 10px; color: var(--muted); font-size: 13px; text-align: center; }
+    .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 8px; }
+    .kpi .n {
+      font-size: 26px; font-weight: 700; color: var(--accent);
+      font-family: "Segoe UI", sans-serif; line-height: 1.15;
+    }
+    .kpi .k { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+    .kpi > div { background: #fff7ed; border: 1px solid #fed7aa; padding: 12px 12px 10px; }
+    .fig {
+      margin: 22px 0 6px; background: #faf8f4; border: 1px solid var(--line);
+      padding: 18px 14px 10px; overflow-x: auto;
+    }
+    .fig svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+    .figcap {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 13px; color: var(--muted); text-align: center; margin: 6px 0 20px; line-height: 1.55;
+    }
+    code { font-family: "Cascadia Code", Consolas, monospace; font-size: 0.92em; background: #f5f0e6; padding: 1px 5px; }
+    pre {
+      font-family: "Cascadia Code", Consolas, monospace; font-size: 12.5px; line-height: 1.5;
+      background: #1c1917; color: #e7e5e4; padding: 14px 16px; margin: 12px 0 16px;
+      overflow-x: auto; border-radius: 4px;
+    }
+    pre .c { color: #a8a29e; }
+    pre .k { color: #fdba74; }
+    pre .s { color: #5eead4; }
+    .steps { counter-reset: step; list-style: none; padding-left: 0; }
+    .steps li {
+      position: relative; padding: 10px 12px 10px 48px; margin-bottom: 8px;
+      background: #faf7f2; border: 1px solid var(--line);
+    }
+    .steps li::before {
+      counter-increment: step; content: counter(step);
+      position: absolute; left: 12px; top: 12px; width: 24px; height: 24px;
+      border-radius: 50%; background: var(--navy); color: #fff;
+      font: 700 12px/24px "Segoe UI", sans-serif; text-align: center;
+    }
+    @media (max-width: 860px) {
+      header.hero, section.card { padding: 24px 20px; }
+      nav.toc ol, .grid-2, .grid-3, .kpi { columns: 1; grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; }
+      header.hero, section.card, nav.toc { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="badge-row">
+        <span class="badge hot">代码仓分析</span>
+        <span class="badge">Accelergy-Project/accelforge · main</span>
+        <span class="badge ok">纯 Python · Pydantic · sympy · pandas</span>
+        <span class="badge ok">MIT License</span>
+        <span class="badge">配套论文：arXiv:2609.11906</span>
+        <span class="badge warn">静态阅读，未实际运行</span>
+      </div>
+      <h1>符号化成本模型 + Pareto 拼接：AccelForge 的 mapper 是怎么"快且最优"的</h1>
+      <p class="subtitle">AccelForge 代码仓架构分析：Spec 前端、FFM mapper、LoopTree 符号模型与 hwcomponents 集成</p>
+      <p class="meta">
+        <strong>仓库：</strong><a href="https://github.com/Accelergy-Project/accelforge" target="_blank" rel="noopener">github.com/Accelergy-Project/accelforge</a>
+        · 作者 Tanner Andrulis / Michael Gilbert（MIT）<br />
+        <strong>配套阅读：</strong><a href="AccelForge_论文分析.html">AccelForge 论文分析</a>
+        · <a href="Charon_论文分析.html">Charon 论文分析</a><br />
+        <strong>方法：</strong>浅克隆 main 分支（405 个文件，5.3 MB），静态阅读源码、示例 YAML、文档与 notebook；未安装依赖、未执行任何代码。
+      </p>
+    </header>
+
+    <nav class="toc">
+      <h2>目录</h2>
+      <ol>
+        <li><a href="#s1">一句话结论与仓库概况</a></li>
+        <li><a href="#s2">仓库地图：五个子包与它们的依赖方向</a></li>
+        <li><a href="#s3">两条主路径：map_workload_to_arch 与 evaluate_mapping</a></li>
+        <li><a href="#s4">Spec 前端：Pydantic 模型与表达式求值管线</a></li>
+        <li><a href="#s5">架构描述：节点类型、YAML 语法与扁平化</a></li>
+        <li><a href="#s6">工作负载：Einsum 级联、投影与 renames</a></li>
+        <li><a href="#s7">映射 IR：节点类型与"融合 = 绕过外层存储"</a></li>
+        <li><a href="#s8">FFM mapper 管线：从模板到 Pareto 前沿</a></li>
+        <li><a href="#s9">核心技巧一：符号化建模与单调性剪枝</a></li>
+        <li><a href="#s10">核心技巧二：Compatibility 与脏-净两阶段 Join</a></li>
+        <li><a href="#s11">LoopTree 模型：复用分析、延迟与能耗</a></li>
+        <li><a href="#s12">hwcomponents 集成与组件成本</a></li>
+        <li><a href="#s13">生态：示例、notebook、测试与 CI</a></li>
+        <li><a href="#s14">代码质量观察、局限与论文对照</a></li>
+      </ol>
+    </nav>
+
+    <section class="card" id="s1">
+      <h2>1. 一句话结论与仓库概况</h2>
+      <p class="lead">
+        AccelForge 的代码揭示了论文里没写的核心机制：<strong>成本模型对每个"映射模板"只符号化地跑一次</strong>，输出以 tile 形状为自变量的 sympy 表达式；mapper 用导数判定目标函数对每个 tile 变量的单调性来剪枝，再用 <code>lambdify</code> 把表达式编译成 numpy 向量函数批量求值。跨算子的融合决策则靠"每个 Einsum 先求 Pareto 前沿，再按兼容性从左到右拼接"完成——模型和 mapper 共用同一套 pmapping / join 基础设施，<code>evaluate_mapping</code> 本质上就是"每个 Einsum 只有一个候选的 mapper"。
+      </p>
+      <div class="kpi">
+        <div>
+          <div class="n">~200</div>
+          <div class="k">Python 源文件（accelforge/ 包内），最大单文件 make_tile_shapes.py ≈ 2700 行</div>
+        </div>
+        <div>
+          <div class="n">5</div>
+          <div class="k">子包：frontend / mapper / model / plotting / util</div>
+        </div>
+        <div>
+          <div class="n">23 + 47</div>
+          <div class="k">示例架构 YAML（含 9 个存内计算）+ 示例负载 YAML（含 10 个 LLM）</div>
+        </div>
+        <div>
+          <div class="n">16</div>
+          <div class="k">Jupyter notebook（6 教程 + 9 存内计算复现 + 1 基础模拟）</div>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>维度</th><th>事实（来自 pyproject.toml / README / 源码）</th></tr></thead>
+        <tbody>
+          <tr><td>语言与版本</td><td>纯 Python，<code>requires-python &gt;= 3.8</code>（但源码用了 <code>Self</code>、<code>StrEnum</code>、<code>X | Y</code> 类型语法，实际需要 3.11+）；版本由 setuptools-scm 从 git tag 生成，fallback 1.0</td></tr>
+          <tr><td>核心依赖</td><td><code>pydantic&gt;=2</code>（规格校验）· <code>sympy</code> + <code>symengine</code>（符号模型）· <code>pandas</code> + <code>numpy</code>（pmapping 数据帧）· <code>joblib</code>（并行与缓存）· <code>numba</code>（加速）· <code>islpy&gt;=2025</code>（多面体分析）· <code>jinja2</code> + <code>ruamel.yaml</code>（YAML 模板）</td></tr>
+          <tr><td>硬件成本后端</td><td><code>hwcomponents</code> 及插件 <code>-adc</code> / <code>-cacti</code> / <code>-library</code> / <code>-neurosim</code>，全部为硬依赖（Accelergy 的继任者）</td></tr>
+          <tr><td>可视化</td><td><code>matplotlib</code> · <code>plotly</code> · <code>pydot</code>（映射树渲染为 SVG）</td></tr>
+          <tr><td>顶层 API</td><td><code>af.Spec</code> 一个对象承载全部输入；<code>spec.map_workload_to_arch()</code> 与 <code>spec.evaluate_mapping()</code> 两个动词；<code>af.Metrics</code> 位标志选目标</td></tr>
+          <tr><td>谱系</td><td>文档明确定位为 Timeloop 的迁移目标（<code>docs/guide/timeloop_compare.rst</code>），MICRO 2026 有配套 tutorial</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="s2">
+      <h2>2. 仓库地图：五个子包与它们的依赖方向</h2>
+      <p>
+        <code>accelforge/</code> 包下的五个子包职责清晰：<code>frontend</code> 定义全部输入数据模型（Pydantic），<code>mapper/FFM</code> 实现搜索，<code>model/_looptree</code> 实现成本评估，<code>plotting</code> 做结果可视化，<code>util</code> 提供并行、表达式求值、frozenset 等基础设施。依赖方向基本是 <code>mapper → model → frontend → util</code>，但 <code>model/main.py</code> 反向导入了 <code>mapper/FFM/_join_pmappings</code>——因为模型评估复用了 mapper 的 join 机制（见第 3 节）。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="仓库目录与子包依赖">
+          <defs>
+            <marker id="arwA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+            <marker id="arwA2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#c2410c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="20" y="20" width="300" height="400" rx="8" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="36" y="44" font-weight="700" font-size="12.5" fill="#44403c">仓库根目录</text>
+            <g font-family="Consolas, monospace" font-size="11" fill="#57534e">
+              <text x="36" y="68">accelforge/</text>
+              <text x="52" y="86">frontend/   ← 输入数据模型</text>
+              <text x="52" y="104">mapper/FFM/ ← 搜索</text>
+              <text x="52" y="122">model/      ← 成本评估</text>
+              <text x="52" y="140">plotting/   ← 可视化</text>
+              <text x="52" y="158">util/       ← 基础设施</text>
+              <text x="36" y="184">examples/</text>
+              <text x="52" y="202">arches/     23 个架构 YAML</text>
+              <text x="52" y="220">workloads/  47 个负载 YAML</text>
+              <text x="52" y="238">mappings/   手写映射示例</text>
+              <text x="36" y="264">notebooks/  16 个 ipynb</text>
+              <text x="36" y="282">tests/      pytest + 参考 YAML</text>
+              <text x="36" y="300">docs/       Sphinx + 自定义扩展</text>
+              <text x="36" y="326">pyproject.toml · setup.py</text>
+              <text x="36" y="344">Dockerfile · Makefile</text>
+              <text x="36" y="362">.github/workflows/ ×2</text>
+              <text x="36" y="380">CITATION.cff · LICENSE (MIT)</text>
+            </g>
+
+            <rect x="360" y="20" width="600" height="400" rx="8" fill="#faf8f4" stroke="#e7e0d4"/>
+            <text x="376" y="44" font-weight="700" font-size="12.5" fill="#44403c">子包依赖方向（箭头 = import）</text>
+
+            <rect x="400" y="64" width="220" height="60" rx="7" fill="#ffedd5" stroke="#c2410c" stroke-width="1.6"/>
+            <text x="510" y="88" text-anchor="middle" font-weight="700" fill="#9a3412">mapper / FFM</text>
+            <text x="510" y="106" text-anchor="middle" font-size="10.5" fill="#7c2d12">make_pmappings · join · pareto</text>
+
+            <rect x="700" y="64" width="220" height="60" rx="7" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.6"/>
+            <text x="810" y="88" text-anchor="middle" font-weight="700" fill="#115e59">model / _looptree</text>
+            <text x="810" y="106" text-anchor="middle" font-size="10.5" fill="#134e4a">reuse · capacity · latency · energy</text>
+
+            <rect x="400" y="190" width="520" height="60" rx="7" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1.6"/>
+            <text x="660" y="214" text-anchor="middle" font-weight="700" fill="#1e3a5f">frontend（Pydantic 数据模型）</text>
+            <text x="660" y="232" text-anchor="middle" font-size="10.5" fill="#334155">spec · arch · workload · mapping · mapper(config) · model(config) · renames · variables</text>
+
+            <rect x="400" y="316" width="250" height="60" rx="7" fill="#f5f5f4" stroke="#a8a29e" stroke-width="1.6"/>
+            <text x="525" y="340" text-anchor="middle" font-weight="700" fill="#44403c">util</text>
+            <text x="525" y="358" text-anchor="middle" font-size="10.5" fill="#57534e">parallel · _eval_expressions · oset · _yaml</text>
+
+            <rect x="670" y="316" width="250" height="60" rx="7" fill="#f5f5f4" stroke="#a8a29e" stroke-width="1.6"/>
+            <text x="795" y="340" text-anchor="middle" font-weight="700" fill="#44403c">plotting</text>
+            <text x="795" y="358" text-anchor="middle" font-size="10.5" fill="#57534e">roofline · skislope · accesstrace · mappings</text>
+
+            <path d="M 624 94 L 696 94" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwA)"/>
+            <text x="660" y="86" text-anchor="middle" font-size="9.5" fill="#78716c">run_model</text>
+            <path d="M 760 128 C 740 160 560 150 540 186" fill="none" stroke="#c2410c" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#arwA2)"/>
+            <text x="690" y="162" text-anchor="middle" font-size="9.5" fill="#c2410c">model/main.py 反向 import join 机制</text>
+            <path d="M 510 128 L 510 186" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwA)"/>
+            <path d="M 810 128 L 810 186" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwA)"/>
+            <path d="M 560 254 L 540 312" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwA)"/>
+            <path d="M 760 254 L 780 312" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwA)"/>
+
+            <rect x="400" y="392" width="520" height="20" rx="4" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="660" y="406" text-anchor="middle" font-size="10.5" fill="#9a3412">外部：hwcomponents（组件成本）· sympy/symengine · pandas · joblib · islpy</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 1 · 仓库目录与子包依赖。frontend 是所有子包的公共底座；mapper 与 model 之间存在双向依赖（红色虚线），这不是设计失误，而是"模型即单候选 mapper"这一架构选择的直接后果。</p>
+    </section>
+
+    <section class="card" id="s3">
+      <h2>3. 两条主路径：map_workload_to_arch 与 evaluate_mapping</h2>
+      <p>
+        <code>frontend/spec.py</code> 里的 <code>Spec</code> 类只暴露两个高层动词。<code>map_workload_to_arch()</code> 走 <code>mapper/FFM/main.py</code>：生成 pmapping → join → 对最终映射逐个详细评估。<code>evaluate_mapping()</code> 走 <code>model/main.py</code>：把用户手写的 <code>spec.mapping</code> 在 <code>Split</code> 节点处切成每个 Einsum 的 pmapping，对每个跑 <code>run_model</code> 得到一行数据帧，然后<strong>调用与 mapper 完全相同的</strong> <code>clean_compress_and_join_pmappings(for_model=True)</code> 拼成总结果。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="两条主路径">
+          <defs>
+            <marker id="arwB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="380" y="16" width="220" height="56" rx="8" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1.8"/>
+            <text x="490" y="40" text-anchor="middle" font-weight="700" font-size="13" fill="#1e3a5f">af.Spec</text>
+            <text x="490" y="58" text-anchor="middle" font-size="10.5" fill="#334155">arch + workload + [mapping] + config …</text>
+
+            <path d="M 440 72 L 250 110" stroke="#c2410c" stroke-width="1.8" marker-end="url(#arwB)"/>
+            <path d="M 540 72 L 730 110" stroke="#0f766e" stroke-width="1.8" marker-end="url(#arwB)"/>
+
+            <rect x="20" y="114" width="460" height="270" rx="8" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="250" y="138" text-anchor="middle" font-weight="700" font-size="12.5" fill="#9a3412">spec.map_workload_to_arch()　— 无 mapping 时</text>
+            <text x="250" y="156" text-anchor="middle" font-size="10" fill="#7c2d12">mapper/FFM/main.py</text>
+
+            <rect x="44" y="170" width="412" height="36" rx="5" fill="#fff" stroke="#c2410c"/>
+            <text x="250" y="186" text-anchor="middle" font-size="11" fill="#9a3412">① make_pmappings(spec)</text>
+            <text x="250" y="200" text-anchor="middle" font-size="9.5" fill="#78716c">每个 Einsum × 每个 Compute 节点 → 模板 → tile 形状 → Pareto 组</text>
+
+            <rect x="44" y="218" width="412" height="36" rx="5" fill="#fff" stroke="#c2410c"/>
+            <text x="250" y="234" text-anchor="middle" font-size="11" fill="#9a3412">② join_pmappings(pmappings, metrics)</text>
+            <text x="250" y="248" text-anchor="middle" font-size="9.5" fill="#78716c">compress → 脏/净多轮 join → Pareto → Mappings</text>
+
+            <rect x="44" y="266" width="412" height="36" rx="5" fill="#fff" stroke="#c2410c"/>
+            <text x="250" y="282" text-anchor="middle" font-size="11" fill="#9a3412">③ eval_in_detail：对每个最终映射再调 evaluate_mapping</text>
+            <text x="250" y="296" text-anchor="middle" font-size="9.5" fill="#78716c">用 info_metrics 补齐逐组件延迟、动作计数等细节列</text>
+
+            <rect x="44" y="314" width="412" height="54" rx="5" fill="#ffedd5" stroke="#fdba74"/>
+            <text x="250" y="334" text-anchor="middle" font-size="11" font-weight="700" fill="#9a3412">输出：Mappings</text>
+            <text x="250" y="352" text-anchor="middle" font-size="9.5" fill="#7c2d12">.data = pandas DataFrame，每行一个 Pareto 最优映射；列名用 &lt;SEP&gt; 分层</text>
+
+            <path d="M 250 206 L 250 216" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <path d="M 250 254 L 250 264" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <path d="M 250 302 L 250 312" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+
+            <rect x="500" y="114" width="460" height="270" rx="8" fill="#f0fdfa" stroke="#5eead4"/>
+            <text x="730" y="138" text-anchor="middle" font-weight="700" font-size="12.5" fill="#115e59">spec.evaluate_mapping()　— 有手写 mapping 时</text>
+            <text x="730" y="156" text-anchor="middle" font-size="10" fill="#134e4a">model/main.py</text>
+
+            <rect x="524" y="170" width="412" height="36" rx="5" fill="#fff" stroke="#0f766e"/>
+            <text x="730" y="186" text-anchor="middle" font-size="11" fill="#115e59">① _split_mapping_to_pmappings：在 Split 节点处切开</text>
+            <text x="730" y="200" text-anchor="middle" font-size="9.5" fill="#78716c">DFS 遍历 Nested/Sequential，每条到 Compute 叶子的路径 = 1 个 pmapping</text>
+
+            <rect x="524" y="218" width="412" height="36" rx="5" fill="#fff" stroke="#0f766e"/>
+            <text x="730" y="234" text-anchor="middle" font-size="11" fill="#115e59">② 每个 pmapping → run_model(job) → 一行 DataFrame</text>
+            <text x="730" y="248" text-anchor="middle" font-size="9.5" fill="#78716c">PmappingGroup(compatibility, 单行数据帧)</text>
+
+            <rect x="524" y="266" width="412" height="36" rx="5" fill="#fff" stroke="#0f766e"/>
+            <text x="730" y="282" text-anchor="middle" font-size="11" fill="#115e59">③ clean_compress_and_join_pmappings(for_model=True)</text>
+            <text x="730" y="296" text-anchor="middle" font-size="9.5" fill="#78716c">与 mapper 共用的 join；for_model 跳过脏轮次直接拼接</text>
+
+            <rect x="524" y="314" width="412" height="54" rx="5" fill="#ccfbf1" stroke="#5eead4"/>
+            <text x="730" y="334" text-anchor="middle" font-size="11" font-weight="700" fill="#115e59">输出：Mappings（通常只有 1 行）</text>
+            <text x="730" y="352" text-anchor="middle" font-size="9.5" fill="#134e4a">同一数据帧格式 → 模型结果与 mapper 结果可直接并排比较</text>
+
+            <path d="M 730 206 L 730 216" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <path d="M 730 254 L 730 264" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+            <path d="M 730 302 L 730 312" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwB)"/>
+
+            <path d="M 480 285 L 500 285" stroke="#c2410c" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#arwB)"/>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 2 · 两条主路径共享 pmapping 数据帧格式与 join 代码。右侧 ③ 对应 <code>model/main.py:69</code>，左侧 ③ 调用右侧整条路径（<code>mapper/FFM/main.py:116</code>）。这种"模型是 mapper 的退化情形"设计保证了评估一致性，代价是模块间出现循环依赖。</p>
+      <div class="callout teal">
+        数据帧列名约定（<code>_pareto_df/df_convention.py</code>）值得记住：<code>Total&lt;SEP&gt;energy</code>、<code>Total&lt;SEP&gt;latency</code> 是目标列；<code>&lt;Einsum&gt;&lt;SEP&gt;mapping</code> 存 pmapping 对象 ID；<code>reservation&lt;SEP&gt;&lt;memory&gt;&lt;SEP&gt;&lt;level&gt;</code> 存某存储在某循环层级的占用比例；<code>usage&lt;SEP&gt;…</code> 存空间阵列利用率。join 阶段的 Pareto 比较、兼容性匹配、资源超额检查全部通过列名前缀分派。
+      </div>
+    </section>
+
+    <section class="card" id="s4">
+      <h2>4. Spec 前端：Pydantic 模型与表达式求值管线</h2>
+      <p>
+        <code>Spec</code>（<code>frontend/spec.py:33</code>）有 8 个字段：<code>arch</code>、<code>mapping</code>、<code>workload</code>、<code>variables</code>、<code>config</code>、<code>renames</code>、<code>mapper</code>（FFM 配置）、<code>model</code>（模型配置）。所有字段都是 <code>EvalableModel</code>（<code>util/_basetypes.py</code>）的子类——Pydantic 模型加一层"字符串表达式延迟求值"。YAML 里几乎任何数值位置都可以写 Python 表达式（如 <code>size: 1024 * 1024</code>、<code>throughput: 32 * 200e6</code>），求值时按固定顺序构建符号表：
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="表达式求值符号表流">
+          <defs>
+            <marker id="arwC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <text x="20" y="28" font-weight="700" font-size="12" fill="#57534e">Spec._spec_eval_expressions(einsum_name)　— spec.py:90　符号表 st 逐级累积</text>
+
+            <rect x="20" y="48" width="150" height="70" rx="6" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="95" y="72" text-anchor="middle" font-weight="700" fill="#44403c">① variables</text>
+            <text x="95" y="90" text-anchor="middle" font-size="10" fill="#57534e">用户自定义常量</text>
+            <text x="95" y="106" text-anchor="middle" font-size="10" fill="#57534e">st.update(vars)</text>
+
+            <rect x="200" y="48" width="150" height="70" rx="6" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="275" y="72" text-anchor="middle" font-weight="700" fill="#44403c">② renames</text>
+            <text x="275" y="90" text-anchor="middle" font-size="10" fill="#57534e">input/output/weight</text>
+            <text x="275" y="106" text-anchor="middle" font-size="10" fill="#57534e">集合表达式 → 张量名</text>
+
+            <rect x="380" y="48" width="150" height="70" rx="6" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="455" y="72" text-anchor="middle" font-weight="700" fill="#1e3a5f">③ workload</text>
+            <text x="455" y="90" text-anchor="middle" font-size="10" fill="#334155">rank_sizes · Einsum</text>
+            <text x="455" y="106" text-anchor="middle" font-size="10" fill="#334155">+ 当前 Einsum 的 renames</text>
+
+            <rect x="560" y="48" width="150" height="70" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="635" y="72" text-anchor="middle" font-weight="700" fill="#9a3412">④ tags → bools</text>
+            <text x="635" y="90" text-anchor="middle" font-size="10" fill="#7c2d12">Einsum 标签变成布尔</text>
+            <text x="635" y="106" text-anchor="middle" font-size="10" fill="#7c2d12">供 arch 条件表达式用</text>
+
+            <rect x="740" y="48" width="150" height="70" rx="6" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="815" y="72" text-anchor="middle" font-weight="700" fill="#115e59">⑤ arch</text>
+            <text x="815" y="90" text-anchor="middle" font-size="10" fill="#134e4a">可引用上面全部符号</text>
+            <text x="815" y="106" text-anchor="middle" font-size="10" fill="#134e4a">→ 架构可依赖负载</text>
+
+            <path d="M 172 83 L 197 83" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwC)"/>
+            <path d="M 352 83 L 377 83" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwC)"/>
+            <path d="M 532 83 L 557 83" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwC)"/>
+            <path d="M 712 83 L 737 83" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwC)"/>
+
+            <path d="M 815 118 L 815 150" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwC)"/>
+            <rect x="560" y="154" width="330" height="40" rx="6" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="725" y="171" text-anchor="middle" font-size="10.5" fill="#1e3a5f">⑥ 其余字段（mapping / mapper / model / config）</text>
+            <text x="725" y="186" text-anchor="middle" font-size="10" fill="#334155">super()._eval_expressions(st, already_evaluated)</text>
+
+            <rect x="20" y="154" width="510" height="40" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="275" y="171" text-anchor="middle" font-size="10.5" fill="#9a3412">失败时 EvaluationError.add_field("Spec().workload") 逐层回填字段路径</text>
+            <text x="275" y="186" text-anchor="middle" font-size="10" fill="#7c2d12">→ 报错精确到 "Spec().arch.nodes[2].actions[0].energy"</text>
+
+            <rect x="20" y="214" width="940" height="70" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="236" text-anchor="middle" font-size="11" fill="#57534e">两个求值开关：eval_arch / eval_non_arch。mapper 先用 eval_non_arch=True, eval_arch=False 求一次负载（make_pmappings.py:388），</text>
+            <text x="490" y="254" text-anchor="middle" font-size="11" fill="#57534e">再对每个 Einsum 单独 eval_arch=True（make_pmappings.py:103）——因为架构属性可以依赖 Einsum（如按位宽切换 MAC 能耗），</text>
+            <text x="490" y="272" text-anchor="middle" font-size="11" fill="#78716c">所以"一个架构"在 mapper 内部实际是"每个 Einsum 一份求值后的架构副本"。这也是 flattened_arches 字典以 (einsum, compute) 为键的原因。</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 3 · 表达式求值的符号表累积顺序。顺序本身就是语义：variables 能被 renames 引用，workload 能被 arch 引用，反之不行。tags 机制让架构描述里可以写 <code>energy: 2 if is_attention else 1</code> 这类按 Einsum 变化的成本。</p>
+      <p>
+        YAML 加载层叠了两套模板：<strong>Jinja2</strong>（<code>{% set %}</code>、<code>{% for %}</code>、<code>{{include_text()}}</code>）在解析前展开文本，用于 LLM 负载的参数化（例如 <code>multi_head.yaml</code> 用 <code>DECODE</code> 变量切换 prefill / decode 的 Einsum 形态）；<strong>YAML 标签</strong>（<code>!Memory</code>、<code>!Compute</code>、<code>!Storage</code>、<code>!Temporal</code>…）由 <code>util/_yaml.py</code> 映射到 Pydantic 类的 <code>Tag</code> 判别联合（<code>structure.py:226</code>）。
+      </p>
+    </section>
+
+    <section class="card" id="s5">
+      <h2>5. 架构描述：节点类型、YAML 语法与扁平化</h2>
+      <p>
+        架构是一棵节点树（<code>frontend/arch/structure.py</code> + <code>components.py</code>）。顶层 <code>Arch</code> 继承 <code>Hierarchical</code>，其 <code>nodes</code> 列表从上到下就是存储层级。叶子有四类可计费组件（<code>Memory</code> / <code>Toll</code> / <code>Compute</code> / <code>Network</code>）加一个纯结构节点 <code>Container</code>；分支有 <code>Hierarchical</code>、<code>Array</code>（带空间扇出）、<code>Fork</code>（旁路分支）。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="架构节点类层次">
+          <defs>
+            <marker id="arwD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="400" y="14" width="180" height="40" rx="6" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="490" y="32" text-anchor="middle" font-weight="700" fill="#44403c">ArchNode</text>
+            <text x="490" y="47" text-anchor="middle" font-size="9.5" fill="#78716c">EvalableModel · structure.py:37</text>
+
+            <rect x="140" y="92" width="180" height="40" rx="6" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="230" y="110" text-anchor="middle" font-weight="700" fill="#44403c">Leaf</text>
+            <text x="230" y="125" text-anchor="middle" font-size="9.5" fill="#78716c">name · :202</text>
+
+            <rect x="660" y="92" width="180" height="40" rx="6" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="750" y="110" text-anchor="middle" font-weight="700" fill="#44403c">Branch</text>
+            <text x="750" y="125" text-anchor="middle" font-size="9.5" fill="#78716c">nodes: ArchNodes · :225</text>
+
+            <path d="M 440 54 L 300 90" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwD)"/>
+            <path d="M 540 54 L 680 90" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwD)"/>
+
+            <rect x="380" y="92" width="200" height="40" rx="6" fill="#fef3c7" stroke="#d97706" stroke-dasharray="5 3"/>
+            <text x="480" y="110" text-anchor="middle" font-weight="700" fill="#92400e">Spatialable（mixin）</text>
+            <text x="480" y="125" text-anchor="middle" font-size="9.5" fill="#92400e">spatial: [{name, fanout, reuse}]</text>
+
+            <rect x="20" y="180" width="130" height="52" rx="6" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="85" y="200" text-anchor="middle" font-weight="700" fill="#1e3a5f">Container</text>
+            <text x="85" y="216" text-anchor="middle" font-size="9.5" fill="#334155">Leaf + Spatialable</text>
+            <text x="85" y="228" text-anchor="middle" font-size="9" fill="#64748b">只定义空间阵列</text>
+
+            <rect x="170" y="180" width="200" height="52" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="270" y="200" text-anchor="middle" font-weight="700" fill="#9a3412">Component</text>
+            <text x="270" y="216" text-anchor="middle" font-size="9.5" fill="#7c2d12">actions · area · leak_power</text>
+            <text x="270" y="228" text-anchor="middle" font-size="9" fill="#9a3412">component_class → hwcomponents</text>
+
+            <path d="M 200 132 L 110 178" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwD)"/>
+            <path d="M 240 132 L 260 178" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwD)"/>
+            <path d="M 420 132 L 310 178" stroke="#d97706" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arwD)"/>
+            <path d="M 400 132 L 130 180" stroke="#d97706" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arwD)"/>
+
+            <rect x="20" y="272" width="110" height="70" rx="6" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="75" y="292" text-anchor="middle" font-weight="700" fill="#115e59">Memory</text>
+            <text x="75" y="308" text-anchor="middle" font-size="9.5" fill="#134e4a">size · min_usage</text>
+            <text x="75" y="322" text-anchor="middle" font-size="9.5" fill="#134e4a">tensors: keep/may_keep</text>
+            <text x="75" y="336" text-anchor="middle" font-size="9" fill="#0f766e">允许时间复用</text>
+
+            <rect x="140" y="272" width="110" height="70" rx="6" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="195" y="292" text-anchor="middle" font-weight="700" fill="#115e59">Toll</text>
+            <text x="195" y="308" text-anchor="middle" font-size="9.5" fill="#134e4a">不存数据</text>
+            <text x="195" y="322" text-anchor="middle" font-size="9.5" fill="#134e4a">每次经过计一次 read</text>
+            <text x="195" y="336" text-anchor="middle" font-size="9" fill="#0f766e">如 NoC / 端口</text>
+
+            <rect x="260" y="272" width="110" height="70" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="315" y="292" text-anchor="middle" font-weight="700" fill="#9a3412">Compute</text>
+            <text x="315" y="308" text-anchor="middle" font-size="9.5" fill="#7c2d12">action: compute</text>
+            <text x="315" y="322" text-anchor="middle" font-size="9.5" fill="#7c2d12">树的叶子终点</text>
+            <text x="315" y="336" text-anchor="middle" font-size="9" fill="#9a3412">每 Einsum 可不同</text>
+
+            <rect x="380" y="272" width="110" height="70" rx="6" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="435" y="292" text-anchor="middle" font-weight="700" fill="#44403c">Network</text>
+            <text x="435" y="308" text-anchor="middle" font-size="9.5" fill="#57534e">TopologySpec</text>
+            <text x="435" y="322" text-anchor="middle" font-size="9.5" fill="#57534e">路由按映射中</text>
+            <text x="435" y="336" text-anchor="middle" font-size="9" fill="#78716c">spatial 节点顺序</text>
+
+            <path d="M 230 232 L 90 270" stroke="#78716c" stroke-width="1.2" marker-end="url(#arwD)"/>
+            <path d="M 250 232 L 200 270" stroke="#78716c" stroke-width="1.2" marker-end="url(#arwD)"/>
+            <path d="M 290 232 L 310 270" stroke="#78716c" stroke-width="1.2" marker-end="url(#arwD)"/>
+            <path d="M 320 232 L 420 270" stroke="#78716c" stroke-width="1.2" marker-end="url(#arwD)"/>
+            <text x="150" y="262" font-size="9" fill="#78716c">TensorHolder</text>
+
+            <rect x="560" y="180" width="130" height="52" rx="6" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="625" y="200" text-anchor="middle" font-weight="700" fill="#1e3a5f">Hierarchical</text>
+            <text x="625" y="216" text-anchor="middle" font-size="9.5" fill="#334155">_flatten() · :450</text>
+            <text x="625" y="228" text-anchor="middle" font-size="9" fill="#64748b">顺序层级</text>
+
+            <rect x="710" y="180" width="130" height="52" rx="6" fill="#fef3c7" stroke="#d97706"/>
+            <text x="775" y="200" text-anchor="middle" font-weight="700" fill="#92400e">Array</text>
+            <text x="775" y="216" text-anchor="middle" font-size="9.5" fill="#92400e">Branch + Spatialable</text>
+            <text x="775" y="228" text-anchor="middle" font-size="9" fill="#b45309">必须有 spatial</text>
+
+            <rect x="560" y="272" width="130" height="52" rx="6" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="625" y="292" text-anchor="middle" font-weight="700" fill="#1e3a5f">Fork</text>
+            <text x="625" y="308" text-anchor="middle" font-size="9.5" fill="#334155">旁路分支 · :578</text>
+            <text x="625" y="320" text-anchor="middle" font-size="9" fill="#64748b">主路径继续到下一兄弟</text>
+
+            <rect x="860" y="180" width="100" height="52" rx="6" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1.8"/>
+            <text x="910" y="200" text-anchor="middle" font-weight="700" fill="#1e3a5f">Arch</text>
+            <text x="910" y="216" text-anchor="middle" font-size="9.5" fill="#334155">顶层 · arch.py:15</text>
+
+            <path d="M 720 132 L 640 178" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwD)"/>
+            <path d="M 760 132 L 770 178" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwD)"/>
+            <path d="M 560 132 L 740 180" stroke="#d97706" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arwD)"/>
+            <path d="M 625 232 L 625 270" stroke="#78716c" stroke-width="1.2" marker-end="url(#arwD)"/>
+            <path d="M 690 206 L 858 206" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwD)"/>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 4 · 架构节点类层次（<code>frontend/arch/</code>）。<code>Spatialable</code> 是 mixin，让 <code>Container</code>、<code>Component</code>、<code>Array</code> 都能声明 <code>spatial: [{name, fanout, reuse}]</code>。四种可计费叶子中 <code>Memory</code> 与 <code>Toll</code> 的区别是"是否允许时间复用"——这决定了模型里是否为它分配 Buffet。</p>
+      <h3>示例：eyeriss.yaml 的节点树</h3>
+      <pre><span class="c"># examples/arches/eyeriss.yaml（节选）</span>
+arch:
+  extra_attributes_for_all_component_models: {tech_node: 65e-9}
+  nodes:
+  - <span class="k">!Memory</span>  name: MainMemory    component_class: LPDDR4   size: inf
+             tensors: {keep: <span class="s">~Intermediates</span>, may_keep: All}
+  - <span class="k">!Memory</span>  name: GlobalBuffer  component_class: SmartBufferSRAM
+             size: 1024 * 1024   extra_attributes_for_component_model: {n_banks: 32}
+             actions: [{name: read, bits_per_action: 64, throughput: 32 * 200e6}, …]
+             tensors: {keep: <span class="s">~MainMemory</span>, may_keep: All}
+  - <span class="k">!Container</span> name: ProcessingElement
+             spatial:
+             - {name: reuse_weight, fanout: 14, reuse: weight, min_usage: 1}
+             - {name: reuse_output, fanout: 12, reuse: output, min_usage: 1}
+  - <span class="k">!Memory</span>  name: InputScratchpad   size: 12 * 16   tensors: {keep: input}
+  - <span class="k">!Memory</span>  name: WeightScratchpad  size: 192 * 16  tensors: {keep: weight}
+  - <span class="k">!Memory</span>  name: OutputScratchpad  size: 16 * 16   tensors: {keep: output}
+  - <span class="k">!Compute</span> name: MAC  component_class: IntMAC  actions: [{name: compute, throughput: 200e6}]
+             extra_attributes_for_component_model: {multiplier_width: 8, adder_width: 16}</pre>
+      <p>
+        几个值得注意的语法点：<code>tensors: {keep, may_keep}</code> 用集合表达式（<code>~Intermediates</code>、<code>~MainMemory</code>、<code>input</code>）声明每级存储必须 / 可以持有哪些张量，这是 mapper 的 dataplacement 约束来源；<code>Container</code> 上的 <code>spatial</code> 用 <code>reuse: weight</code> 声明该维度上哪个张量被广播复用（Eyeriss 的行固定数据流）；<code>min_usage: 1</code> 要求阵列必须被占满。整个描述只有 56 行，比 Timeloop 的三文件格式紧凑得多。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="架构扁平化">
+          <defs>
+            <marker id="arwE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <text x="20" y="26" font-weight="700" font-size="12" fill="#57534e">异构架构树</text>
+            <rect x="20" y="40" width="120" height="30" rx="5" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="80" y="60" text-anchor="middle" fill="#115e59">DRAM</text>
+            <rect x="20" y="84" width="120" height="30" rx="5" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="80" y="104" text-anchor="middle" fill="#115e59">GLB</text>
+            <path d="M 80 70 L 80 82" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwE)"/>
+
+            <rect x="20" y="128" width="120" height="30" rx="5" fill="#fef3c7" stroke="#d97706"/>
+            <text x="80" y="148" text-anchor="middle" fill="#92400e">Fork: Analog</text>
+            <rect x="160" y="128" width="120" height="30" rx="5" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="220" y="148" text-anchor="middle" fill="#1e3a5f">Array PE ×64</text>
+            <path d="M 80 114 L 80 126" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwE)"/>
+            <path d="M 110 114 L 200 126" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwE)"/>
+
+            <rect x="20" y="172" width="120" height="30" rx="5" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="80" y="192" text-anchor="middle" fill="#9a3412">CiM Compute</text>
+            <rect x="160" y="172" width="120" height="30" rx="5" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="220" y="192" text-anchor="middle" fill="#115e59">Reg</text>
+            <rect x="160" y="212" width="120" height="30" rx="5" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="220" y="232" text-anchor="middle" fill="#9a3412">MAC</text>
+            <path d="M 80 158 L 80 170" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwE)"/>
+            <path d="M 220 158 L 220 170" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwE)"/>
+            <path d="M 220 202 L 220 210" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwE)"/>
+
+            <path d="M 300 130 L 360 130" stroke="#1e3a5f" stroke-width="2" marker-end="url(#arwE)"/>
+            <text x="330" y="120" text-anchor="middle" font-size="10" fill="#1e3a5f">_flatten(compute)</text>
+
+            <text x="380" y="26" font-weight="700" font-size="12" fill="#57534e">FlattenedArch：每个 Compute 一条路径（spec.py:297）</text>
+            <rect x="380" y="40" width="580" height="60" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="396" y="60" font-size="10.5" fill="#9a3412">路径 A（→ CiM Compute）：</text>
+            <g font-family="Consolas, monospace" font-size="10.5" fill="#7c2d12">
+              <text x="396" y="80">[DRAM, GLB, CiM Compute]</text>
+              <text x="620" y="80">fanout 累积 = 1</text>
+            </g>
+            <rect x="380" y="110" width="580" height="60" rx="6" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="396" y="130" font-size="10.5" fill="#115e59">路径 B（→ MAC）：</text>
+            <g font-family="Consolas, monospace" font-size="10.5" fill="#134e4a">
+              <text x="396" y="150">[DRAM, GLB, PE(×64), Reg, MAC]</text>
+              <text x="620" y="150">fanout 累积 = 64 → total_area ×64</text>
+            </g>
+            <rect x="380" y="182" width="580" height="56" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="670" y="202" text-anchor="middle" font-size="10.5" fill="#57534e">mapper 对每个 (Einsum, 路径) 建一个 Job（make_pmappings.py:139）</text>
+            <text x="670" y="220" text-anchor="middle" font-size="10.5" fill="#78716c">→ 异构架构下"选哪个计算单元"自然变成 pmapping 候选集的一部分，无需特殊处理</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 5 · 架构扁平化。树被拆成若干条"从根到某个 Compute"的线性路径，mapper 和 model 后续只处理线性路径。异构（CiM + 数字 MAC）就是多条路径，论文 Table I 里 AccelForge 独有的"Heterogeneous"能力在代码层面只是这一步的副产品。</p>
+    </section>
+
+    <section class="card" id="s6">
+      <h2>6. 工作负载：Einsum 级联、投影与 renames</h2>
+      <p>
+        <code>frontend/workload.py</code> 的 <code>Workload</code> 是一个 Einsum 列表加公共元数据。Einsum 有两种写法：字符串 <code>"Z[m,n] = A[m,k] * B[k,n]"</code>（transformer 示例全部用此法），或显式 <code>tensor_accesses</code> 列表（每项给 <code>name</code>、<code>projection</code>、<code>output</code>）。<code>rank_sizes</code> 或 <code>iteration_space_shape</code>（ISL 表达式）定义迭代空间，<code>bits_per_value</code> 与 <code>persistent_tensors</code> 用集合表达式批量设置。
+      </p>
+      <pre><span class="c"># examples/workloads/transformers/_attention_decode_types/multi_head.yaml（节选）</span>
+workload:
+  rank_sizes: {P: {{N_CONTEXT_TOKENS}}, M: {{N_NEW_TOKENS}}, B: …, H: …, E: …, D: …}
+  bits_per_value: {All: 8}
+  persistent_tensors: weight - Intermediates
+  einsums:
+  - {einsum: <span class="s">"I[b, m, d] = I_in[b, m, d]"</span>, is_copy_operation: True}
+  - <span class="s">"V[b, m, h, e] = I[b, m, d] * WV[h, e, d]"</span>
+  - <span class="s">"K[b, m, h, e] = I[b, m, d] * WK[h, e, d]"</span>
+  - <span class="s">"Q[b, m, h, e] = I[b, m, d] * WQ[h, e, d]"</span>
+  - einsum: <span class="s">"QK[b, m, p, h] = Q[b, m, h, e] * K_cache[b, P: p, h, e]"</span>
+    renames: {input: Q}
+  - <span class="s">"QK_softmax[b, m, p, h] = QK[b, m, p, h]"</span>
+  - <span class="s">"AV[b, m, h, f] = QK_softmax[b, m, p, h] * V_cache[b, P: p, h, E: f]"</span>
+  - <span class="s">"Z[b, m, g] = AV[b, m, h, f] * WZ[h, f, g]"</span></pre>
+      <div class="fig">
+        <svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Einsum 级联与共享张量">
+          <defs>
+            <marker id="arwF" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <text x="20" y="26" font-weight="700" font-size="12" fill="#57534e">three_matmuls_annotated.yaml 的级联：T0 →(W0)→ T1 →(W1)→ T2 →(W2)→ T3</text>
+
+            <rect x="20" y="60" width="80" height="40" rx="6" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="60" y="84" text-anchor="middle" font-weight="700" fill="#1e3a5f">T0</text>
+            <text x="60" y="118" text-anchor="middle" font-size="9.5" fill="#64748b">Inputs</text>
+
+            <rect x="140" y="52" width="130" height="56" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="205" y="74" text-anchor="middle" font-weight="700" fill="#9a3412">Matmul1</text>
+            <text x="205" y="92" text-anchor="middle" font-size="9.5" fill="#7c2d12">[m,n0] × [n0,n1]</text>
+            <rect x="170" y="130" width="70" height="30" rx="5" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="205" y="150" text-anchor="middle" font-size="10" fill="#57534e">W0</text>
+            <path d="M 205 128 L 205 112" stroke="#78716c" stroke-width="1.3" marker-end="url(#arwF)"/>
+
+            <rect x="310" y="60" width="80" height="40" rx="6" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/>
+            <text x="350" y="84" text-anchor="middle" font-weight="700" fill="#115e59">T1</text>
+            <text x="350" y="118" text-anchor="middle" font-size="9.5" fill="#0f766e">Intermediate</text>
+
+            <rect x="430" y="52" width="130" height="56" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="495" y="74" text-anchor="middle" font-weight="700" fill="#9a3412">Matmul2</text>
+            <text x="495" y="92" text-anchor="middle" font-size="9.5" fill="#7c2d12">[m,n1] × [n1,n2]</text>
+            <rect x="460" y="130" width="70" height="30" rx="5" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="495" y="150" text-anchor="middle" font-size="10" fill="#57534e">W1</text>
+            <path d="M 495 128 L 495 112" stroke="#78716c" stroke-width="1.3" marker-end="url(#arwF)"/>
+
+            <rect x="600" y="60" width="80" height="40" rx="6" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/>
+            <text x="640" y="84" text-anchor="middle" font-weight="700" fill="#115e59">T2</text>
+            <text x="640" y="118" text-anchor="middle" font-size="9.5" fill="#0f766e">Intermediate</text>
+
+            <rect x="720" y="52" width="130" height="56" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="785" y="74" text-anchor="middle" font-weight="700" fill="#9a3412">Matmul3</text>
+            <text x="785" y="92" text-anchor="middle" font-size="9.5" fill="#7c2d12">[m,n2] × [n2,n3]</text>
+            <rect x="750" y="130" width="70" height="30" rx="5" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="785" y="150" text-anchor="middle" font-size="10" fill="#57534e">W2</text>
+            <path d="M 785 128 L 785 112" stroke="#78716c" stroke-width="1.3" marker-end="url(#arwF)"/>
+
+            <rect x="890" y="60" width="70" height="40" rx="6" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="925" y="84" text-anchor="middle" font-weight="700" fill="#1e3a5f">T3</text>
+            <text x="925" y="118" text-anchor="middle" font-size="9.5" fill="#64748b">Outputs</text>
+
+            <path d="M 102 80 L 137 80" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwF)"/>
+            <path d="M 272 80 L 307 80" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwF)"/>
+            <path d="M 392 80 L 427 80" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwF)"/>
+            <path d="M 562 80 L 597 80" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwF)"/>
+            <path d="M 682 80 L 717 80" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwF)"/>
+            <path d="M 852 80 L 887 80" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwF)"/>
+
+            <rect x="20" y="180" width="300" height="100" rx="6" fill="#f0fdfa" stroke="#5eead4"/>
+            <text x="170" y="202" text-anchor="middle" font-weight="700" font-size="11.5" fill="#115e59">shared_tensor_names() = {T1, T2}</text>
+            <text x="170" y="222" text-anchor="middle" font-size="10" fill="#134e4a">= 既是某 Einsum 输出又是另一 Einsum 输入</text>
+            <text x="170" y="240" text-anchor="middle" font-size="10" fill="#134e4a">→ job.fusable_tensors（make_pmappings.py:95,148）</text>
+            <text x="170" y="258" text-anchor="middle" font-size="10" fill="#134e4a">→ 只有这些张量能触发融合与 Compatibility 匹配</text>
+
+            <rect x="340" y="180" width="300" height="100" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="490" y="202" text-anchor="middle" font-weight="700" font-size="11.5" fill="#9a3412">renames：按集合表达式起别名</text>
+            <g font-family="Consolas, monospace" font-size="10" fill="#7c2d12">
+              <text x="356" y="224">input  = Inputs &amp; Intermediates</text>
+              <text x="356" y="240">output = Outputs</text>
+              <text x="356" y="256">weight = ~(input | output)</text>
+            </g>
+            <text x="490" y="274" text-anchor="middle" font-size="9.5" fill="#9a3412">架构约束写 keep: weight 即可跨负载复用</text>
+
+            <rect x="660" y="180" width="300" height="100" rx="6" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="810" y="202" text-anchor="middle" font-weight="700" font-size="11.5" fill="#1e3a5f">projection 与索引表达式</text>
+            <text x="810" y="222" text-anchor="middle" font-size="10" fill="#334155">K_cache[b, P: p, h, e] 把 rank P 绑定到变量 p</text>
+            <text x="810" y="240" text-anchor="middle" font-size="10" fill="#334155">conv 的 p + r 这类仿射投影走 _workload_isl</text>
+            <text x="810" y="258" text-anchor="middle" font-size="10" fill="#334155">get_stride_and_halo 为融合 tile 计算 halo</text>
+            <text x="810" y="274" text-anchor="middle" font-size="9.5" fill="#64748b">非仿射索引不被支持</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 6 · 工作负载是 Einsum 级联，中间张量（同时作为输出和输入）是融合的唯一载体。<code>renames</code> 让架构描述用抽象角色（input / output / weight）而不是具体张量名写约束，一份架构 YAML 就能跑所有示例负载。</p>
+    </section>
+
+    <section class="card" id="s7">
+      <h2>7. 映射 IR：节点类型与"融合 = 绕过外层存储"</h2>
+      <p>
+        <code>frontend/mapping/mapping.py</code>（约 1700 行）定义了映射的节点代数。一个 <code>Mapping</code> 就是一个 <code>Nested</code> 节点列表，从外到内依次是存储放置、循环、最后以 <code>Compute</code> 叶子收尾；多 Einsum 用 <code>Sequential</code>（或 <code>Pipeline</code>）分支。
+      </p>
+      <table>
+        <thead><tr><th>节点</th><th>作用</th><th>关键字段</th><th>定义位置</th></tr></thead>
+        <tbody>
+          <tr><td><code>!Storage</code></td><td>声明某组件在此层级持有哪些张量（dataplacement）</td><td><code>tensors</code>、<code>component</code>；内部 <code>_backing</code> 标记首次出现</td><td>mapping.py:652</td></tr>
+          <tr><td><code>!Toll</code></td><td>数据流经一个不存储的组件（计费）</td><td>同上</td><td>:682</td></tr>
+          <tr><td><code>!Temporal</code></td><td>时间循环</td><td><code>rank_variable</code>、<code>tile_shape</code>、<code>tile_pattern</code>（可带 initial / 不完美分块）</td><td>:480</td></tr>
+          <tr><td><code>!Spatial</code></td><td>空间展开到某组件的某维度</td><td>+ <code>component</code>、<code>dimension</code></td><td>:504</td></tr>
+          <tr><td><code>!Compute</code></td><td>叶子：某 Einsum 在某计算单元执行</td><td><code>einsum</code>、<code>component</code></td><td>:702</td></tr>
+          <tr><td><code>!Nested</code></td><td>顺序嵌套的子节点列表</td><td><code>nodes</code></td><td>:1026</td></tr>
+          <tr><td><code>!Sequential</code> / <code>!Pipeline</code></td><td><code>Split</code> 的两种子类：多个 Einsum 依次 / 流水执行</td><td><code>nodes</code>（每项一个 Nested）</td><td>:1561 / :1552</td></tr>
+          <tr><td><code>Reservation</code></td><td>内部节点：为张量在某存储预留空间的占位</td><td><code>resource</code>、<code>tensors</code>、<code>purposes</code></td><td>:1574</td></tr>
+        </tbody>
+      </table>
+      <div class="fig">
+        <svg viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="融合映射树">
+          <defs>
+            <marker id="arwG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <text x="20" y="26" font-weight="700" font-size="12" fill="#57534e">fused_matmuls_to_simple.yaml（N_EINSUMS=2）展开后的映射树</text>
+
+            <rect x="20" y="44" width="420" height="30" rx="5" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="230" y="64" text-anchor="middle" font-size="10.5" fill="#115e59">Storage MainMemory：T0, T2, W1, W2　← 注意没有 T1</text>
+            <rect x="40" y="84" width="400" height="30" rx="5" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="240" y="104" text-anchor="middle" font-size="10.5" fill="#115e59">Storage GlobalBuffer：W1, W2</text>
+            <rect x="60" y="124" width="380" height="30" rx="5" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+            <text x="250" y="144" text-anchor="middle" font-size="10.5" font-weight="700" fill="#92400e">Temporal m, tile_shape=1　← 融合循环（两个 Einsum 共享）</text>
+            <rect x="80" y="164" width="360" height="30" rx="5" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="260" y="184" text-anchor="middle" font-size="10.5" fill="#115e59">Storage GlobalBuffer：T0, T2</text>
+            <rect x="100" y="204" width="340" height="30" rx="5" fill="#ccfbf1" stroke="#0f766e" stroke-width="2"/>
+            <text x="270" y="224" text-anchor="middle" font-size="10.5" font-weight="700" fill="#115e59">Storage GlobalBuffer：T1　← 中间张量只在片上出现</text>
+            <rect x="120" y="244" width="320" height="30" rx="5" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="280" y="264" text-anchor="middle" font-size="10.5" fill="#1e3a5f">Sequential</text>
+
+            <rect x="140" y="290" width="140" height="110" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="210" y="308" text-anchor="middle" font-size="10" font-weight="700" fill="#9a3412">Nested</text>
+            <text x="210" y="326" text-anchor="middle" font-size="9.5" fill="#7c2d12">Temporal n0, 1</text>
+            <text x="210" y="342" text-anchor="middle" font-size="9.5" fill="#7c2d12">Temporal n1, 1</text>
+            <text x="210" y="362" text-anchor="middle" font-size="9.5" fill="#9a3412">Compute Matmul1</text>
+            <text x="210" y="378" text-anchor="middle" font-size="9.5" fill="#9a3412">@ MAC</text>
+
+            <rect x="300" y="290" width="140" height="110" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="370" y="308" text-anchor="middle" font-size="10" font-weight="700" fill="#9a3412">Nested</text>
+            <text x="370" y="326" text-anchor="middle" font-size="9.5" fill="#7c2d12">Temporal n1, 1</text>
+            <text x="370" y="342" text-anchor="middle" font-size="9.5" fill="#7c2d12">Temporal n2, 1</text>
+            <text x="370" y="362" text-anchor="middle" font-size="9.5" fill="#9a3412">Compute Matmul2</text>
+            <text x="370" y="378" text-anchor="middle" font-size="9.5" fill="#9a3412">@ MAC</text>
+
+            <path d="M 230 274 L 210 288" stroke="#78716c" stroke-width="1.3" marker-end="url(#arwG)"/>
+            <path d="M 330 274 L 370 288" stroke="#78716c" stroke-width="1.3" marker-end="url(#arwG)"/>
+
+            <rect x="480" y="44" width="480" height="160" rx="7" fill="#f0fdfa" stroke="#5eead4"/>
+            <text x="720" y="68" text-anchor="middle" font-weight="700" font-size="12" fill="#115e59">融合的表达方式：不是开关，是数据放置</text>
+            <text x="500" y="92" font-size="10.5" fill="#134e4a">· T1 没出现在 MainMemory 的 Storage 里 → 它从不写回片外</text>
+            <text x="500" y="112" font-size="10.5" fill="#134e4a">· T1 的 Storage 在融合循环 m 之下 → 每个 m-tile 算完立即被消费</text>
+            <text x="500" y="132" font-size="10.5" fill="#134e4a">· 融合循环之上的所有节点被两个 Einsum 共享 → Compatibility 要求一致</text>
+            <text x="500" y="152" font-size="10.5" fill="#134e4a">· mapper 里对应 arch 的 tensors: {keep: ~Intermediates} 允许中间张量绕过 DRAM</text>
+            <text x="500" y="172" font-size="10.5" fill="#0f766e">· notebooks/tutorials/mapper.ipynb：要禁用融合，就让 DRAM keep: All</text>
+            <text x="500" y="192" font-size="10" fill="#64748b">（这就是论文 Table I "Fusion" 列在代码里的全部含义）</text>
+
+            <rect x="480" y="220" width="480" height="180" rx="7" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="720" y="244" text-anchor="middle" font-weight="700" font-size="12" fill="#9a3412">Uneven / Hybrid 在哪里</text>
+            <text x="500" y="268" font-size="10.5" fill="#7c2d12">· Uneven：同一 Einsum 内每个张量各自的 Storage 节点可以放在不同循环深度</text>
+            <text x="500" y="288" font-size="10.5" fill="#7c2d12">　（上图 W1/W2 在 m 之上，T0/T2 在 m 之下）→ 各张量 tile 不同</text>
+            <text x="500" y="308" font-size="10.5" fill="#7c2d12">· Hybrid：跨 Einsum 边界的张量（T1）与各 Einsum 私有张量独立选 tile</text>
+            <text x="500" y="328" font-size="10.5" fill="#7c2d12">· tile_pattern 支持 initial_tile_shape ≠ tile_shape（不完美分块）</text>
+            <text x="500" y="348" font-size="10.5" fill="#7c2d12">　仅最外层循环允许余数（timeloop_compare.rst 明确说明）</text>
+            <text x="500" y="372" font-size="10" fill="#9a3412">三种自由度都只是"Storage 节点放在哪一层"这一个决策的不同投影，</text>
+            <text x="500" y="390" font-size="10" fill="#9a3412">mapper 的模板枚举（§8）统一处理它们。</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 7 · 一个两算子融合映射的节点树，以及论文中 Fusion / Uneven / Hybrid 三个概念在映射 IR 里的落点。核心观察：AccelForge 没有"融合模式"，融合只是中间张量的 Storage 节点出现在某个共享循环之下、且不出现在最外层存储——这把跨算子优化压缩成了一个与单算子 dataplacement 同构的决策。</p>
+    </section>
+
+    <section class="card" id="s8">
+      <h2>8. FFM mapper 管线：从模板到 Pareto 前沿</h2>
+      <p>
+        <code>mapper/FFM/</code> 是仓库最复杂的部分。论文把 mapper 分成 Intra-Einsum（TCM）和 Inter-Einsum（FFM）两级，但代码里<strong>没有名为 TCM 的独立模块</strong>——整个 <code>mapper/FFM/</code> 包就是 FFM，其中 <code>_make_pmappings/</code> 子包承担 intra-Einsum 职责，<code>_join_pmappings/</code> 承担 inter-Einsum 职责。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FFM 管线">
+          <defs>
+            <marker id="arwH" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="20" y="14" width="940" height="290" rx="8" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="36" y="36" font-weight="700" font-size="12.5" fill="#9a3412">阶段 A · make_pmappings（intra-Einsum，并行于 Einsum × Compute 路径）　_make_pmappings/</text>
+
+            <rect x="40" y="52" width="200" height="60" rx="6" fill="#fff" stroke="#c2410c"/>
+            <text x="140" y="72" text-anchor="middle" font-weight="700" fill="#9a3412">① get_jobs</text>
+            <text x="140" y="88" text-anchor="middle" font-size="9.5" fill="#7c2d12">每 Einsum 求值 arch + 组件成本</text>
+            <text x="140" y="102" text-anchor="middle" font-size="9.5" fill="#7c2d12">每条 FlattenedArch 一个 Job</text>
+
+            <rect x="270" y="52" width="200" height="60" rx="6" fill="#fff" stroke="#c2410c"/>
+            <text x="370" y="72" text-anchor="middle" font-weight="700" fill="#9a3412">② make_pmapping_templates</text>
+            <text x="370" y="88" text-anchor="middle" font-size="9.5" fill="#7c2d12">make_storages → storage_order</text>
+            <text x="370" y="102" text-anchor="middle" font-size="9.5" fill="#7c2d12">→ make_loops → reservations</text>
+
+            <rect x="500" y="52" width="200" height="60" rx="6" fill="#fff" stroke="#c2410c"/>
+            <text x="600" y="72" text-anchor="middle" font-weight="700" fill="#9a3412">③ 按 Compatibility 分组</text>
+            <text x="600" y="88" text-anchor="middle" font-size="9.5" fill="#7c2d12">SameCompatibilityJobs</text>
+            <text x="600" y="102" text-anchor="middle" font-size="9.5" fill="#7c2d12">同组模板共享融合接口</text>
+
+            <rect x="730" y="52" width="210" height="60" rx="6" fill="#fff" stroke="#c2410c"/>
+            <text x="835" y="72" text-anchor="middle" font-weight="700" fill="#9a3412">④ _allocate_jobs</text>
+            <text x="835" y="88" text-anchor="middle" font-size="9.5" fill="#7c2d12">按最长映射排序，长的先跑</text>
+            <text x="835" y="102" text-anchor="middle" font-size="9.5" fill="#7c2d12">joblib 并行 + 内存/时间上限</text>
+
+            <path d="M 242 82 L 267 82" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwH)"/>
+            <path d="M 472 82 L 497 82" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwH)"/>
+            <path d="M 702 82 L 727 82" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwH)"/>
+            <path d="M 835 112 L 835 128 L 140 128 L 140 142" fill="none" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwH)"/>
+
+            <rect x="40" y="146" width="430" height="68" rx="6" fill="#ffedd5" stroke="#c2410c" stroke-width="1.8"/>
+            <text x="255" y="166" text-anchor="middle" font-weight="700" fill="#9a3412">⑤ make_pmappings_from_templates → make_tile_shapes</text>
+            <text x="255" y="184" text-anchor="middle" font-size="9.5" fill="#7c2d12">run_model 符号化一次 → 单调性剪枝 → 枚举 tile 因子 → lambdify 批量求值</text>
+            <text x="255" y="200" text-anchor="middle" font-size="9.5" fill="#7c2d12">→ makepareto_numpy　（见 §9；make_tile_shapes.py 2700 行，仓库最大文件）</text>
+
+            <rect x="500" y="146" width="200" height="68" rx="6" fill="#fff" stroke="#c2410c"/>
+            <text x="600" y="166" text-anchor="middle" font-weight="700" fill="#9a3412">⑥ PmappingGroup.combine</text>
+            <text x="600" y="184" text-anchor="middle" font-size="9.5" fill="#7c2d12">同 Compatibility 的组合并</text>
+            <text x="600" y="200" text-anchor="middle" font-size="9.5" fill="#7c2d12">再做一次 Pareto</text>
+
+            <rect x="730" y="146" width="210" height="68" rx="6" fill="#fff" stroke="#c2410c"/>
+            <text x="835" y="166" text-anchor="middle" font-weight="700" fill="#9a3412">⑦ drop_less_fused_…</text>
+            <text x="835" y="184" text-anchor="middle" font-size="9.5" fill="#7c2d12">融合度低且各目标都更差的</text>
+            <text x="835" y="200" text-anchor="middle" font-size="9.5" fill="#7c2d12">pmapping 直接丢弃（可关）</text>
+
+            <path d="M 472 180 L 497 180" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwH)"/>
+            <path d="M 702 180 L 727 180" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwH)"/>
+
+            <rect x="40" y="230" width="900" height="60" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="250" text-anchor="middle" font-size="10.5" fill="#57534e">输出 MultiEinsumPmappings：{Einsum → [PmappingGroup(compatibility, PmappingDataframe)]}</text>
+            <text x="490" y="268" text-anchor="middle" font-size="10" fill="#78716c">每个 PmappingDataframe 一行一个 Pareto 最优 pmapping；列 = 目标 + 各存储各层级的 reservation 占比 + 融合循环 tile 符号</text>
+            <text x="490" y="284" text-anchor="middle" font-size="10" fill="#78716c">get_components_to_track 预先剔除"大到装得下全部张量"的存储与"永不跨 Einsum 共享"的组件，减少 join 维度</text>
+
+            <path d="M 490 304 L 490 322" stroke="#0f766e" stroke-width="2" marker-end="url(#arwH)"/>
+
+            <rect x="20" y="326" width="940" height="220" rx="8" fill="#f0fdfa" stroke="#5eead4"/>
+            <text x="36" y="348" font-weight="700" font-size="12.5" fill="#115e59">阶段 B · join_pmappings（inter-Einsum）　_join_pmappings/ + _pareto_df/</text>
+
+            <rect x="40" y="364" width="200" height="60" rx="6" fill="#fff" stroke="#0f766e"/>
+            <text x="140" y="384" text-anchor="middle" font-weight="700" fill="#115e59">⑧ compress_einsum2pmappings</text>
+            <text x="140" y="400" text-anchor="middle" font-size="9.5" fill="#134e4a">去重 / 合并等价行</text>
+            <text x="140" y="414" text-anchor="middle" font-size="9.5" fill="#134e4a">保留 decompress_data</text>
+
+            <rect x="270" y="364" width="200" height="60" rx="6" fill="#fff" stroke="#0f766e"/>
+            <text x="370" y="384" text-anchor="middle" font-weight="700" fill="#115e59">⑨ multi_strategy_join</text>
+            <text x="370" y="400" text-anchor="middle" font-size="9.5" fill="#134e4a">资源容差 0.2 → … → 0</text>
+            <text x="370" y="414" text-anchor="middle" font-size="9.5" fill="#134e4a">× 目标容差 2× → 1×（§10）</text>
+
+            <rect x="500" y="364" width="200" height="60" rx="6" fill="#fff" stroke="#0f766e"/>
+            <text x="600" y="384" text-anchor="middle" font-weight="700" fill="#115e59">⑩ join_pmappings（核心）</text>
+            <text x="600" y="400" text-anchor="middle" font-size="9.5" fill="#134e4a">从左到右逐 Einsum 拼接</text>
+            <text x="600" y="414" text-anchor="middle" font-size="9.5" fill="#134e4a">每步按 Compatibility 配对 + Pareto</text>
+
+            <rect x="730" y="364" width="210" height="60" rx="6" fill="#fff" stroke="#0f766e"/>
+            <text x="835" y="384" text-anchor="middle" font-weight="700" fill="#115e59">⑪ 后处理</text>
+            <text x="835" y="400" text-anchor="middle" font-size="9.5" fill="#134e4a">decompress → EDP 列 → 再 Pareto</text>
+            <text x="835" y="414" text-anchor="middle" font-size="9.5" fill="#134e4a">→ MappingFromRow 还原映射对象</text>
+
+            <path d="M 242 394 L 267 394" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwH)"/>
+            <path d="M 472 394 L 497 394" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwH)"/>
+            <path d="M 702 394 L 727 394" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwH)"/>
+
+            <rect x="40" y="440" width="900" height="92" rx="6" fill="#ccfbf1" stroke="#5eead4"/>
+            <text x="490" y="462" text-anchor="middle" font-weight="700" font-size="11.5" fill="#115e59">输出 Mappings（mapper/FFM/mappings.py）</text>
+            <text x="490" y="482" text-anchor="middle" font-size="10.5" fill="#134e4a">.data：DataFrame，每行一个全负载 Pareto 最优映射；Total&lt;SEP&gt;energy / latency / energy_delay_product 等目标列</text>
+            <text x="490" y="500" text-anchor="middle" font-size="10.5" fill="#134e4a">每行的 Total&lt;SEP&gt;mapping 是 MappingFromRow 惰性对象 → 调用后得到可 render() 成 SVG 的完整 Mapping</text>
+            <text x="490" y="518" text-anchor="middle" font-size="10" fill="#0f766e">main.py 第 ③ 步再对每行调 evaluate_mapping 补细节列（info_metrics），这一步在当前代码里会把 mapping.svg 写到工作目录</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 8 · FFM 的 11 步管线。阶段 A 对每个 Einsum 独立求 Pareto 前沿（并行度 = Einsum 数 × Compute 路径数 × 模板分片数），阶段 B 把它们拼成全负载映射。论文里的"TCM"对应 ⑤，"FFM"对应 ⑧–⑪，但代码里是一个包。</p>
+      <h3>模板枚举（②）在枚举什么</h3>
+      <ol class="steps">
+        <li><strong>make_storages / make_storage_order</strong>：对每个张量决定它在扁平化路径上的哪些存储出现（受 <code>tensors: {keep, may_keep}</code> 约束），以及各张量 Storage 节点的相对顺序——这一步同时产生 Uneven（各张量不同深度）与融合（中间张量跳过外层存储）两类候选。</li>
+        <li><strong>make_loops</strong>：在 Storage 节点之间插入 Temporal / Spatial 循环的<em>骨架</em>（哪个 rank 变量、在哪一层、是否空间展开），tile 形状留作符号。<code>place_missing_temporal_loops</code>（make_pmapping_templates.py:90）保证每个 rank 变量至少有一个循环；<code>remove_unordered_spatial_temporal_loops</code> 剔除等价排列。</li>
+        <li><strong>make_reservations</strong>：为每个张量在每个持有它的存储插入 <code>Reservation</code> 占位，后续模型据此算占用。</li>
+        <li><strong>constraints</strong>（<code>_make_pmappings/contraints/</code>，目录名拼写如此）：把 arch 上的 <code>min_usage</code>、tile 形状、循环边界约束编译成 lambda 过滤器。</li>
+      </ol>
+      <p>
+        模板不含循环边界（文档 <code>definitions.rst</code> 对 "Pmapping Template" 的定义正是如此），所以一个模板对应一个 tile 形状的连续搜索空间。这是把搜索分成"离散结构枚举 + 连续形状优化"两层的关键设计。
+      </p>
+    </section>
+
+    <section class="card" id="s9">
+      <h2>9. 核心技巧一：符号化建模与单调性剪枝</h2>
+      <p>
+        这是代码里最有分量、论文概览稿完全没提的机制。<code>model/run_model.py:34</code> 的 <code>run_model(job)</code> 返回的数据帧里，<code>Total&lt;SEP&gt;energy</code>、<code>Total&lt;SEP&gt;latency</code>、各 reservation 列的值<strong>不是数字而是 sympy 表达式</strong>，自变量是 <code>insert_sympy_symbols</code>（<code>_symbolic.py:161</code>）为每个循环的 tile 形状创建的符号。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="符号化建模流程">
+          <defs>
+            <marker id="arwI" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="20" y="20" width="280" height="90" rx="7" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="160" y="42" text-anchor="middle" font-weight="700" fill="#9a3412">① pmapping 模板</text>
+            <g font-family="Consolas, monospace" font-size="10" fill="#7c2d12">
+              <text x="36" y="62">Storage GLB: A, B</text>
+              <text x="36" y="76">Temporal m, tile = m₁ (符号)</text>
+              <text x="36" y="90">Temporal k, tile = k₁ (符号)</text>
+              <text x="36" y="104">Compute @ MAC</text>
+            </g>
+
+            <path d="M 302 65 L 346 65" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwI)"/>
+
+            <rect x="350" y="20" width="280" height="90" rx="7" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="490" y="42" text-anchor="middle" font-weight="700" fill="#115e59">② run_model 跑一次（符号）</text>
+            <text x="490" y="62" text-anchor="middle" font-size="10" fill="#134e4a">reuse 分析 → BuffetStats(占用、读写次数)</text>
+            <text x="490" y="78" text-anchor="middle" font-size="10" fill="#134e4a">→ 动作计数 × 单位能耗 → 能耗表达式</text>
+            <text x="490" y="94" text-anchor="middle" font-size="10" fill="#134e4a">→ max_nonzero(各组件延迟) → 延迟表达式</text>
+
+            <path d="M 632 65 L 676 65" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwI)"/>
+
+            <rect x="680" y="20" width="280" height="90" rx="7" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="820" y="42" text-anchor="middle" font-weight="700" fill="#1e3a5f">③ 一行"符号数据帧"</text>
+            <g font-family="Consolas, monospace" font-size="9.5" fill="#334155">
+              <text x="696" y="62">energy  = 2·M·K/m₁ + 3·m₁·k₁ + …</text>
+              <text x="696" y="76">latency = Max(M·K·N/P, ceil(M/m₁)·…)</text>
+              <text x="696" y="90">GLB占用 = (m₁·k₁ + k₁·N)·8 / size</text>
+              <text x="696" y="104">symbols = [m₁, k₁]</text>
+            </g>
+
+            <path d="M 820 110 L 820 140" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwI)"/>
+
+            <rect x="20" y="144" width="940" height="110" rx="7" fill="#fef3c7" stroke="#d97706"/>
+            <text x="490" y="166" text-anchor="middle" font-weight="700" font-size="12" fill="#92400e">④ 单调性分析（make_tile_shapes.py:124–320）——把搜索空间砍掉大半的那一步</text>
+            <text x="40" y="190" font-size="10.5" fill="#78350f">diff_geq_leq_zero(f, s, bounds)：对每个目标 f 和每个符号 s 求 ∂f/∂s，在 s 的取值区间上判定符号</text>
+            <text x="40" y="208" font-size="10.5" fill="#78350f">→ ComparisonResult ∈ {ALWAYS_GEQ_THAN_ZERO, ALWAYS_LEQ_THAN_ZERO, ALWAYS_EQUAL_TO_ZERO, UNKNOWN}</text>
+            <text x="40" y="226" font-size="10.5" fill="#78350f">若所有目标对 s 都单调递减且资源占用未超限 → s 直接取最大合法值，不用枚举；partition_heaviside 把分段表达式拆开分别判定</text>
+            <text x="40" y="244" font-size="10" fill="#92400e">依据：docs/modeling/assumptions.rst "所有目标随硬件动作数单调增加" —— 这条建模假设是为了让这一步成立而存在的</text>
+
+            <path d="M 490 254 L 490 282" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwI)"/>
+
+            <rect x="20" y="286" width="300" height="100" rx="7" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="170" y="308" text-anchor="middle" font-weight="700" fill="#9a3412">⑤ 枚举剩余符号的候选值</text>
+            <text x="170" y="328" text-anchor="middle" font-size="10" fill="#7c2d12">_factorize(n)：rank 大小的因子集合</text>
+            <text x="170" y="344" text-anchor="middle" font-size="10" fill="#7c2d12">_factorize_imperfect：允许最外层余数</text>
+            <text x="170" y="360" text-anchor="middle" font-size="10" fill="#7c2d12">get_padded_choices：含填充的候选</text>
+            <text x="170" y="378" text-anchor="middle" font-size="10" fill="#9a3412">coalesce_symbols：合并等价符号</text>
+
+            <path d="M 322 336 L 346 336" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwI)"/>
+
+            <rect x="350" y="286" width="300" height="100" rx="7" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="500" y="308" text-anchor="middle" font-weight="700" fill="#115e59">⑥ lambdify → numpy 向量化求值</text>
+            <text x="500" y="328" text-anchor="middle" font-size="10" fill="#134e4a">compile_dict(symbols, {col: expr})</text>
+            <text x="500" y="344" text-anchor="middle" font-size="10" fill="#134e4a">一次调用算完整个候选矩阵的所有列</text>
+            <text x="500" y="360" text-anchor="middle" font-size="10" fill="#134e4a">symengine 加速符号运算</text>
+            <text x="500" y="378" text-anchor="middle" font-size="10" fill="#0f766e">猴子补丁 sympy Max/Min 的 _is_connected 以提速</text>
+
+            <path d="M 652 336 L 676 336" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwI)"/>
+
+            <rect x="680" y="286" width="280" height="100" rx="7" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="820" y="308" text-anchor="middle" font-weight="700" fill="#1e3a5f">⑦ makepareto_numpy</text>
+            <text x="820" y="328" text-anchor="middle" font-size="10" fill="#334155">对目标列 + 资源列做 Pareto 过滤</text>
+            <text x="820" y="344" text-anchor="middle" font-size="10" fill="#334155">资源列也是目标：占用少 = 给其他</text>
+            <text x="820" y="360" text-anchor="middle" font-size="10" fill="#334155">Einsum 留更多空间，join 时才能配对</text>
+            <text x="820" y="378" text-anchor="middle" font-size="10" fill="#1e3a5f">→ 该模板的 Pareto 最优 tile 集合</text>
+
+            <rect x="20" y="404" width="940" height="52" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="424" text-anchor="middle" font-size="10.5" fill="#57534e">对比 Timeloop：Timeloop 对每个 (模板, tile 组合) 都完整跑一遍 C++ 模型；AccelForge 每个模板只跑一次符号模型，之后是纯 numpy 算术。</text>
+            <text x="490" y="442" text-anchor="middle" font-size="10.5" fill="#78716c">"Python 比 C++ 快"的真正原因是算法把模型调用次数从 O(候选数) 降到了 O(模板数)。</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 9 · 符号化建模管线。②→③ 把成本模型变成关于 tile 符号的闭式表达式，④ 用微积分而不是采样判断哪些维度不需要搜索，⑥ 把剩余搜索变成向量化数值计算。这解释了论文"orders of magnitude less time"的来源，也解释了为什么 <code>make_tile_shapes.py</code> 要 2700 行。</p>
+      <div class="callout warn">
+        这个设计的代价写在 <code>assumptions.rst</code> 里：每个动作能耗恒定、不依赖状态；数据恰好准时到达、无双缓冲；每个 Einsum 内所有延迟完美重叠（总延迟 = 各组件最大值）。这些假设不是建模粗糙，而是<strong>为了让成本函数可微、可单调性分析而必须做的简化</strong>。任何引入状态依赖（如 bank 冲突、缓存命中率）的扩展都会破坏 ④ 的前提。
+      </div>
+    </section>
+
+    <section class="card" id="s10">
+      <h2>10. 核心技巧二：Compatibility 与脏-净两阶段 Join</h2>
+      <p>
+        跨 Einsum 拼接的正确性靠 <code>_join_pmappings/compatibility.py</code> 的 <code>Compatibility</code> 对象保证。文件头部注释（:34–39）给出了三条抽象：每个张量存储在某个循环索引之上；<strong>所有在共享张量之上的循环必须在相邻 PmappingGroup 之间完全匹配</strong>（co-tiled）；物理分布式存储之下的空间循环（数据绑定）也必须匹配。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Compatibility 与 join">
+          <defs>
+            <marker id="arwJ" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <text x="20" y="26" font-weight="700" font-size="12" fill="#57534e">join_pmappings 从左到右逐 Einsum 拼接；每步只配对 Compatibility 相同的组</text>
+
+            <rect x="20" y="44" width="280" height="190" rx="7" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="160" y="66" text-anchor="middle" font-weight="700" fill="#9a3412">Matmul1 的 PmappingGroups</text>
+            <rect x="36" y="80" width="248" height="40" rx="5" fill="#fff" stroke="#c2410c"/>
+            <text x="160" y="96" text-anchor="middle" font-size="10" fill="#9a3412">Compat A：T1 在 [for m] 之下，GLB 持有</text>
+            <text x="160" y="112" text-anchor="middle" font-size="9.5" fill="#78716c">Pareto 集：12 行</text>
+            <rect x="36" y="128" width="248" height="40" rx="5" fill="#fff" stroke="#c2410c"/>
+            <text x="160" y="144" text-anchor="middle" font-size="10" fill="#9a3412">Compat B：T1 在 [for m, for n1] 之下</text>
+            <text x="160" y="160" text-anchor="middle" font-size="9.5" fill="#78716c">Pareto 集：7 行</text>
+            <rect x="36" y="176" width="248" height="40" rx="5" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="160" y="192" text-anchor="middle" font-size="10" fill="#57534e">Compat C：T1 写回 DRAM（不融合）</text>
+            <text x="160" y="208" text-anchor="middle" font-size="9.5" fill="#78716c">Pareto 集：3 行</text>
+
+            <rect x="680" y="44" width="280" height="190" rx="7" fill="#f0fdfa" stroke="#5eead4"/>
+            <text x="820" y="66" text-anchor="middle" font-weight="700" fill="#115e59">Matmul2 的 PmappingGroups</text>
+            <rect x="696" y="80" width="248" height="40" rx="5" fill="#fff" stroke="#0f766e"/>
+            <text x="820" y="96" text-anchor="middle" font-size="10" fill="#115e59">Compat A：T1 在 [for m] 之下，GLB 持有</text>
+            <text x="820" y="112" text-anchor="middle" font-size="9.5" fill="#78716c">Pareto 集：9 行</text>
+            <rect x="696" y="128" width="248" height="40" rx="5" fill="#f5f5f4" stroke="#a8a29e" stroke-dasharray="4 3"/>
+            <text x="820" y="144" text-anchor="middle" font-size="10" fill="#78716c">Compat B'：T1 在 [for m, for n2] 之下</text>
+            <text x="820" y="160" text-anchor="middle" font-size="9.5" fill="#a8a29e">与左侧 B 的循环不同 → 不配对</text>
+            <rect x="696" y="176" width="248" height="40" rx="5" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="820" y="192" text-anchor="middle" font-size="10" fill="#57534e">Compat C：T1 从 DRAM 读（不融合）</text>
+            <text x="820" y="208" text-anchor="middle" font-size="9.5" fill="#78716c">Pareto 集：5 行</text>
+
+            <path d="M 286 100 L 694 100" stroke="#0f766e" stroke-width="2" marker-end="url(#arwJ)"/>
+            <text x="490" y="92" text-anchor="middle" font-size="10" fill="#0f766e">12 × 9 = 108 候选 → Pareto → 保留 ~15</text>
+            <path d="M 286 196 L 694 196" stroke="#78716c" stroke-width="2" marker-end="url(#arwJ)"/>
+            <text x="490" y="188" text-anchor="middle" font-size="10" fill="#57534e">3 × 5 = 15 候选 → Pareto → 保留 ~4</text>
+            <line x1="286" y1="148" x2="694" y2="148" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="6 4"/>
+            <text x="490" y="140" text-anchor="middle" font-size="10" fill="#dc2626">✗ 不兼容，跳过（_skip_invalid=True）</text>
+
+            <rect x="320" y="110" width="340" height="60" rx="6" fill="#fef3c7" stroke="#d97706"/>
+            <text x="490" y="130" text-anchor="middle" font-size="10.5" font-weight="700" fill="#92400e">配对时的资源相加</text>
+            <text x="490" y="146" text-anchor="middle" font-size="10" fill="#78350f">reservation 列按循环层级对齐后求和</text>
+            <text x="490" y="162" text-anchor="middle" font-size="10" fill="#78350f">共享组件的延迟列相加；超过 1.0 的行丢弃</text>
+
+            <rect x="20" y="254" width="940" height="130" rx="7" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="490" y="276" text-anchor="middle" font-weight="700" font-size="12" fill="#1e3a5f">为什么是"最优"：每步保留的是该前缀的完整 Pareto 前沿，而非单点</text>
+            <text x="40" y="300" font-size="10.5" fill="#334155">· 目标列（energy, latency）和资源列（各存储各层级占用、共享组件延迟）一起参与 Pareto 比较</text>
+            <text x="40" y="318" font-size="10.5" fill="#334155">· 一个前缀即使能耗更高，只要它给后续 Einsum 留了更多片上空间，就不会被支配 → 不会错杀后面才显现优势的融合方案</text>
+            <text x="40" y="336" font-size="10.5" fill="#334155">· 资源列在"最后一个用到该资源的 Einsum"拼接完成后被丢弃（memories_track_pmappings_only），维度逐步下降</text>
+            <text x="40" y="354" font-size="10.5" fill="#334155">· JoinStepStatistics 记录每步 n_left × n_right → n_before_pruning → n_after，可用 report_statistics=True 拿到</text>
+            <text x="40" y="374" font-size="10" fill="#64748b">这是动态规划在多目标下的推广：状态 = (前缀, 剩余资源向量)，Pareto 前沿替代了单一最优值。</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 10 · 两个 Einsum 的 join 示意（行数为假想值）。Compatibility 是 join 的"类型签名"：只有共享张量之上的循环结构完全一致的组才能配对。最优性来自每步保留带资源维度的完整 Pareto 前沿，而不是贪心取最好。</p>
+      <h3>脏-净两阶段：先粗后精的容差阶梯</h3>
+      <div class="fig">
+        <svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="脏净 join 阶梯">
+          <defs>
+            <marker id="arwK" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <text x="20" y="26" font-weight="700" font-size="12" fill="#57534e">multi_strategy_join（join_pmappings.py:305）外层：资源占用容差阶梯</text>
+            <g font-family="Consolas, monospace" font-size="10.5">
+              <rect x="20" y="40" width="70" height="34" rx="4" fill="#fecaca" stroke="#dc2626"/><text x="55" y="61" text-anchor="middle" fill="#7f1d1d">0.20</text>
+              <rect x="100" y="40" width="70" height="34" rx="4" fill="#fed7aa" stroke="#ea580c"/><text x="135" y="61" text-anchor="middle" fill="#7c2d12">0.10</text>
+              <rect x="180" y="40" width="70" height="34" rx="4" fill="#fde68a" stroke="#d97706"/><text x="215" y="61" text-anchor="middle" fill="#78350f">0.05</text>
+              <rect x="260" y="40" width="70" height="34" rx="4" fill="#fef3c7" stroke="#ca8a04"/><text x="295" y="61" text-anchor="middle" fill="#713f12">0.02</text>
+              <rect x="340" y="40" width="70" height="34" rx="4" fill="#ecfccb" stroke="#65a30d"/><text x="375" y="61" text-anchor="middle" fill="#365314">0.01</text>
+              <rect x="420" y="40" width="70" height="34" rx="4" fill="#d9f99d" stroke="#65a30d"/><text x="455" y="61" text-anchor="middle" fill="#365314">0.005</text>
+              <rect x="500" y="40" width="70" height="34" rx="4" fill="#bbf7d0" stroke="#16a34a"/><text x="535" y="61" text-anchor="middle" fill="#14532d">0.002</text>
+              <rect x="580" y="40" width="70" height="34" rx="4" fill="#a7f3d0" stroke="#059669"/><text x="615" y="61" text-anchor="middle" fill="#064e3b">0.001</text>
+              <rect x="660" y="40" width="70" height="34" rx="4" fill="#99f6e4" stroke="#0d9488"/><text x="695" y="61" text-anchor="middle" fill="#134e4a">1e-4</text>
+              <rect x="740" y="40" width="70" height="34" rx="4" fill="#5eead4" stroke="#0f766e"/><text x="775" y="61" text-anchor="middle" fill="#134e4a">1e-5</text>
+              <rect x="820" y="40" width="70" height="34" rx="4" fill="#0f766e" stroke="#115e59"/><text x="855" y="61" text-anchor="middle" fill="#fff" font-weight="700">0</text>
+            </g>
+            <text x="920" y="61" font-size="10" fill="#57534e">← 精确</text>
+            <text x="455" y="92" text-anchor="middle" font-size="10" fill="#57534e">每一档：允许 reservation 之和 ≤ (1 + 容差) 快速 join；若结果里任一存储占用 &gt; 100%，降一档重来；否则"Dirty joining mapping(s) valid &amp; optimal! Returning"</text>
+
+            <text x="20" y="126" font-weight="700" font-size="12" fill="#57534e">join_strategy_2（:237）内层：目标容差 + OptimalityThresholder</text>
+            <rect x="20" y="140" width="290" height="80" rx="6" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="165" y="162" text-anchor="middle" font-weight="700" fill="#9a3412">轮 1：objective_tolerance = 1</text>
+            <text x="165" y="180" text-anchor="middle" font-size="10" fill="#7c2d12">各 Einsum 只保留 ≤ 2× 最优的 pmapping</text>
+            <text x="165" y="196" text-anchor="middle" font-size="10" fill="#7c2d12">快速 join → 得到一组"大概最优"的解</text>
+            <text x="165" y="212" text-anchor="middle" font-size="9.5" fill="#9a3412">prune_with_tolerance → "Dirty joining uses x%"</text>
+
+            <path d="M 312 180 L 346 180" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwK)"/>
+
+            <rect x="350" y="140" width="290" height="80" rx="6" fill="#fef3c7" stroke="#d97706"/>
+            <text x="495" y="162" text-anchor="middle" font-weight="700" fill="#92400e">OptimalityThresholder（:138）</text>
+            <text x="495" y="180" text-anchor="middle" font-size="10" fill="#78350f">从轮 1 的解里抽 ≤100 个参考点</text>
+            <text x="495" y="196" text-anchor="middle" font-size="10" fill="#78350f">之后任何 pmapping 若在所有目标上都劣于</text>
+            <text x="495" y="212" text-anchor="middle" font-size="10" fill="#78350f">某参考点 ×(1+1e-5) → 过滤掉（向量化）</text>
+
+            <path d="M 642 180 L 676 180" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwK)"/>
+
+            <rect x="680" y="140" width="280" height="80" rx="6" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="820" y="162" text-anchor="middle" font-weight="700" fill="#115e59">轮 2：objective_tolerance = 0</text>
+            <text x="820" y="180" text-anchor="middle" font-size="10" fill="#134e4a">完整 pmapping 集，但带上一轮的过滤器</text>
+            <text x="820" y="196" text-anchor="middle" font-size="10" fill="#134e4a">"Final clean join." → 精确 Pareto 前沿</text>
+            <text x="820" y="212" text-anchor="middle" font-size="9.5" fill="#0f766e">轮 1 出错则静默跳过，轮 2 出错才抛</text>
+
+            <rect x="20" y="238" width="940" height="48" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="258" text-anchor="middle" font-size="10.5" fill="#57534e">两层阶梯的共同思想：join 的代价是候选数的乘积，所以先用宽松容差把每边的候选砍到很少，拿到一个近似最优上界，</text>
+            <text x="490" y="276" text-anchor="middle" font-size="10.5" fill="#78716c">再用这个上界作为过滤器去做精确 join —— 结果仍是精确 Pareto 前沿（过滤器只删被支配项），但乘积规模小了几个数量级。</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 11 · 脏-净两阶段 join 的双层容差阶梯。外层对资源占用松绑，内层对目标值松绑；每层都是"先宽松求近似解 → 用近似解构造剪枝器 → 再精确求解"。这是论文"fast and optimal"中 fast 的第二个来源。</p>
+    </section>
+
+    <section class="card" id="s11">
+      <h2>11. LoopTree 模型：复用分析、延迟与能耗</h2>
+      <p>
+        <code>model/_looptree/</code> 的命名直接来自 LoopTree 论文。核心是 <code>reuse/</code> 下的复用分析，有两个后端：<code>symbolic/</code>（sympy 闭式，<strong>默认且唯一被 run_model 调用</strong>）和 <code>isl/</code>（多面体精确分析，含 <code>distributed/</code> 分布式存储绑定与 <code>des.py</code>）。<code>timeloop_compare.rst</code> 明确把 ISL 模型列为"Timeloop 有、AccelForge 进行中"，并说 AccelForge "使用更简单更快的解析模型"——所以 <code>islpy</code> 虽是硬依赖，主路径上只用它做负载层面的 rank 边界、张量大小等几何计算（<code>frontend/_workload_isl/</code>）。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="模型内部结构">
+          <defs>
+            <marker id="arwL" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="20" y="20" width="940" height="110" rx="7" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="36" y="42" font-weight="700" font-size="12" fill="#115e59">① reuse/symbolic：analyze_reuse_and_add_reservations_to_mapping(job)　_symbolic.py:151</text>
+            <text x="40" y="64" font-size="10.5" fill="#134e4a">insert_sympy_symbols：每个循环 tile 一个符号 → 自上而下遍历映射，为每个 (存储, 张量) 对维护一个 Buffet</text>
+            <text x="40" y="82" font-size="10.5" fill="#134e4a">Buffet 的 tile 大小 = 该存储之下所有相关循环的 tile 乘积（含 stride / halo 修正）；每次外层循环迭代触发一次 fill</text>
+            <text x="40" y="100" font-size="10.5" fill="#134e4a">空间循环特殊处理（源码注释 :194–210）：同一个空间循环对不同存储作用在不同位置，需按扇出重算</text>
+            <text x="40" y="118" font-size="10" fill="#0f766e">输出 SymbolicAnalysisOutput：buffet_stats{(level, tensor) → BuffetStats}、compute_stats、fanout、network_stats、symbols</text>
+
+            <path d="M 160 130 L 160 150" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwL)"/>
+            <path d="M 490 130 L 490 150" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwL)"/>
+            <path d="M 820 130 L 820 150" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwL)"/>
+
+            <rect x="20" y="154" width="290" height="130" rx="7" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="165" y="176" text-anchor="middle" font-weight="700" fill="#9a3412">② capacity / reservations</text>
+            <text x="30" y="198" font-size="10" fill="#7c2d12">BuffetStats.max_occupancy × bits</text>
+            <text x="30" y="214" font-size="10" fill="#7c2d12">按 n_loops_above 分层累加</text>
+            <text x="30" y="230" font-size="10" fill="#7c2d12">→ reservation&lt;SEP&gt;mem&lt;SEP&gt;level 列</text>
+            <text x="30" y="246" font-size="10" fill="#7c2d12">persistent 张量 × n_instances</text>
+            <text x="30" y="262" font-size="10" fill="#9a3412">超过 size → InvalidMappingError</text>
+            <text x="30" y="278" font-size="9.5" fill="#78716c">run_model.py:165–219</text>
+
+            <rect x="345" y="154" width="290" height="130" rx="7" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="490" y="176" text-anchor="middle" font-weight="700" fill="#1e3a5f">③ latency/memory.py</text>
+            <text x="355" y="198" font-size="10" fill="#334155">component_latency：每组件</text>
+            <text x="355" y="214" font-size="10" fill="#334155">= 动作数 ÷ throughput（+ latency）</text>
+            <text x="355" y="230" font-size="10" fill="#334155">overall = max_nonzero(各组件)</text>
+            <text x="355" y="246" font-size="10" fill="#334155">_use_new_latency_model：共享组件</text>
+            <text x="355" y="262" font-size="10" fill="#334155">按层级拆列，join 时跨 Einsum 累加</text>
+            <text x="355" y="278" font-size="9.5" fill="#64748b">+ communication_latency 升降延迟</text>
+
+            <rect x="670" y="154" width="290" height="130" rx="7" fill="#fef3c7" stroke="#d97706"/>
+            <text x="815" y="176" text-anchor="middle" font-weight="700" fill="#92400e">④ energy.py</text>
+            <text x="680" y="198" font-size="10" fill="#78350f">gather_actions：read / write /</text>
+            <text x="680" y="214" font-size="10" fill="#78350f">update / compute / 网络 hop 计数</text>
+            <text x="680" y="230" font-size="10" fill="#78350f">compute_energy_from_actions：</text>
+            <text x="680" y="246" font-size="10" fill="#78350f">Σ count × action.energy</text>
+            <text x="680" y="262" font-size="10" fill="#78350f">+ leak_power × latency × 未门控比例</text>
+            <text x="680" y="278" font-size="9.5" fill="#92400e">arch._power_gating 算未用阵列比例</text>
+
+            <path d="M 165 284 L 165 304" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwL)"/>
+            <path d="M 490 284 L 490 304" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwL)"/>
+            <path d="M 815 284 L 815 304" stroke="#78716c" stroke-width="1.6" marker-end="url(#arwL)"/>
+
+            <rect x="20" y="308" width="940" height="60" rx="7" fill="#dbeafe" stroke="#1e3a5f" stroke-width="1.8"/>
+            <text x="490" y="330" text-anchor="middle" font-weight="700" font-size="12" fill="#1e3a5f">⑤ 一行数据帧（符号）：Total&lt;SEP&gt;latency · Total&lt;SEP&gt;dynamic_energy · Total&lt;SEP&gt;leak_energy · reservation…· usage…· component_latency…</text>
+            <text x="490" y="352" text-anchor="middle" font-size="10.5" fill="#334155">Metrics 位标志决定哪些列被生成：ACTIONS 加动作计数列，DETAILED_MEMORY_USAGE 加逐张量占用列，RESOURCE_USAGE 让资源列进入 Pareto</text>
+
+            <rect x="20" y="384" width="940" height="28" rx="5" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="403" text-anchor="middle" font-size="10.5" fill="#57534e">reuse/isl/ 后端（mapping_to_isl · temporal · spatial · distributed/bind）存在且有 tests/isl/ 测试，但不在 run_model 主路径上 —— 对应文档里的 WIP 状态</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 12 · 模型内部四个阶段。延迟模型是 roofline 式的 <code>max()</code>：每个组件的忙时 = 动作数 / 吞吐，取最大者；没有排队、没有冲突。能耗 = 动作计数 × 单位能耗 + 漏电 × 时间，漏电按空间阵列实际占用比例做功耗门控折扣。</p>
+      <table>
+        <thead><tr><th>建模假设（assumptions.rst）</th><th>在代码里的体现</th><th>影响</th></tr></thead>
+        <tbody>
+          <tr><td>每动作能耗恒定，与状态无关</td><td><code>energy.py</code> 直接 Σ count × energy</td><td>无法建模 bank 冲突、地址相关功耗</td></tr>
+          <tr><td>内存由映射显式分配，即用即释</td><td>Reservation 按 n_loops_above 分层累加</td><td>无运行时分配器，无碎片</td></tr>
+          <tr><td>数据恰好准时到达，无双缓冲</td><td>latency 不含等待项</td><td>延迟偏乐观；真实设计需额外加 landing zone</td></tr>
+          <tr><td>每 Einsum 内延迟完美重叠，总延迟 = max</td><td><code>run_model.py:78</code> <code>max_nonzero(*latency.values())</code></td><td>这是 Timeloop 的同款假设</td></tr>
+          <tr><td>目标随动作数单调增加</td><td>§9 单调性剪枝的前提</td><td>任何非单调成本项会让剪枝不安全</td></tr>
+          <tr><td>功耗门控：未用空间单元零功耗</td><td><code>arch._power_gating</code></td><td>对 CiM 这类大阵列影响显著</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="s12">
+      <h2>12. hwcomponents 集成与组件成本</h2>
+      <p>
+        AccelForge 自己不含任何电路级模型。<code>Spec.calculate_component_costs()</code>（<code>spec.py:190</code>）调用 <code>hwcomponents.get_models(config.component_models)</code> 拿到模型注册表，然后对架构树里每个 <code>Component</code> 叶子依次调 <code>calculate_area / calculate_action_energy / calculate_action_throughput / calculate_action_latency / calculate_leak_power</code>，把结果写回 <code>Component.area</code>、<code>Action.energy</code> 等字段，并按祖先 <code>Spatialable</code> 的扇出乘积算 <code>total_area</code> 与 <code>total_leak_power</code>。
+      </p>
+      <div class="grid-3">
+        <div class="tile">
+          <h4>component_class 决定模型</h4>
+          <p>YAML 里 <code>component_class: SmartBufferSRAM</code> / <code>LPDDR4</code> / <code>IntMAC</code> 对应 <code>hwcomponents-library</code> 里的类；CiM 示例用 <code>hwcomponents-neurosim</code> 的 RRAM/SRAM 阵列和 <code>-adc</code> 的 ADC 模型；<code>-cacti</code> 给 SRAM 面积功耗。</p>
+        </div>
+        <div class="tile">
+          <h4>属性传递</h4>
+          <p><code>extra_attributes_for_component_model</code>（单组件）和 <code>extra_attributes_for_all_component_models</code>（全局，如 <code>tech_node: 65e-9</code>）原样传给模型构造函数；<code>bits_per_action</code> 把按比特计费换算成按动作。</p>
+        </div>
+        <div class="tile">
+          <h4>手写优先</h4>
+          <p><code>simple.yaml</code> 完全不写 <code>component_class</code>，直接给 <code>energy: 1 / throughput: inf</code>——显式写的值优先，模型只填空缺。这让教学示例和真实技术节点建模用同一套 YAML。</p>
+        </div>
+      </div>
+      <div class="callout navy">
+        一个工程细节：<code>_clear_component_models()</code>（spec.py:72）在并行前把 <code>component_model</code> 置空，因为 hwcomponents 模型对象可能包含动态加载的代码，无法 pickle。<code>_memmap_read</code> 把求值后的 spec 用 joblib memmap 共享给 worker。这些是把 Python 框架做到可并行所必须的"脏活"，也是论文宣称"Python 实现但高性能"背后的工程量。
+      </div>
+    </section>
+
+    <section class="card" id="s13">
+      <h2>13. 生态：示例、notebook、测试与 CI</h2>
+      <table>
+        <thead><tr><th>类别</th><th>内容</th></tr></thead>
+        <tbody>
+          <tr><td>示例架构（23）</td><td>经典数字加速器：<code>eyeriss</code>、<code>simba</code>、<code>nvdla</code>、<code>tpu_v4i</code>、<code>snowcat</code>、<code>simple</code>；扇出变体 5 个（<code>fanout_variations/</code>，教学用）；存内计算 9 个（<code>isaac_isca_2016</code>、<code>raella_isca_2023</code>、<code>neurram_nature_2022</code>、<code>albireo_isca_2021</code>、<code>colonnade_jssc_2021</code>、<code>jia_jssc_2020</code>、<code>sinangil_jssc_2021</code>、<code>wang_vlsi_2022</code>、<code>basic_analog</code>）+ 12 个 <code>memory_cells/</code> 器件文件</td></tr>
+          <tr><td>示例负载（47）</td><td><code>basic/</code>（matmul / matvec 链）；<code>cnns/mobilenet</code>；<code>compute_in_memory/</code>（AlexNet、ResNet18/50、VGG16、DenseNet201、ViT、GPT-2、MobileBERT、DPT、Phi-1.5）；<code>transformers/</code>：GPT-3 6.7B/175B、LLaMA-3 8B、LLaMA-4 Scout/Maverick、DeepSeek-V3 671B、Qwen3 8B/30B-A3B、Mixtral 8x22B、Kimi K3 2.8T、Mamba，由 <code>_attention_decode_types/</code>（MHA / GQA / MLA / chunked）与 <code>_feedforward_types/</code>（dense / GLU / MoE / MoE-shared）组合而成</td></tr>
+          <tr><td>notebook（16）</td><td><code>tutorials/</code>：component_energy_area → model → mapper → design_space_exploration → memory_size_vs_access_tradeoff → access_trace；<code>compute_in_memory/</code>：9 篇 CiM 论文的复现 + tutorial_basic_analog（继承自 CiMLoop）</td></tr>
+          <tr><td>测试</td><td><code>tests/</code> 含 <code>isl/distributed/</code>（分布式存储绑定）、<code>network/</code>（flat / hierarchical / switched / all-to-all 拓扑）、<code>input_files/</code>（conv1d、toll、latency 参考用例）、<code>hwcomponents_expected.json</code>（组件成本回归基线）。未见与 Timeloop 数值对照的回归测试。</td></tr>
+          <tr><td>plotting</td><td><code>roofline</code>、<code>skislope</code>（CiM 常用的能耗-精度图）、<code>accesstrace</code>（张量访问时间线）、<code>latency</code>、<code>mappings</code>（映射树 SVG）、<code>specs</code>；<code>_deprecate/viz/</code> 保留旧版交互式可视化</td></tr>
+          <tr><td>文档</td><td>Sphinx，8 个自定义扩展（<code>include_yaml</code>、<code>include_notebook</code>、<code>pydantic_defaults</code> 等）从源码和示例自动生成；<code>guide/</code> 含 spec / modeling / parsing 三组、<code>timeloop_compare</code>、<code>micro2026_tutorial</code>、<code>faqs</code>、<code>definitions</code> 术语表</td></tr>
+          <tr><td>CI / 发布</td><td><code>.github/workflows/tests_and_publish.yaml</code>（测试 + PyPI 发布）、<code>documentation.yml</code>（GitHub Pages）；<code>Dockerfile</code>、<code>Makefile</code>；版本由 setuptools-scm 自 git tag 推导</td></tr>
+        </tbody>
+      </table>
+      <p>
+        负载库的覆盖面是这个仓库相对 Timeloop 生态最显著的进步：Timeloop 的示例止步于 CNN 层，这里用 Jinja 组合出了 2025–2026 年主流 LLM 的完整 decoder block（含 MLA、MoE、GQA），而且 prefill / decode 用同一文件按 <code>DECODE</code> 变量切换。
+      </p>
+    </section>
+
+    <section class="card" id="s14">
+      <h2>14. 代码质量观察、局限与论文对照</h2>
+      <h3>值得借鉴的设计</h3>
+      <ul>
+        <li><strong>单一数据模型贯穿全程</strong>：frontend 的 Pydantic 对象从 YAML 解析一直活到模型输出，mapper 和 model 不做自己的中间表示。文档 <code>timeloop_compare.rst</code> 把这列为核心优势，代码证实了这一点。</li>
+        <li><strong>模型即单候选 mapper</strong>（§3）：消除了"手写映射的评估结果"与"mapper 找到的映射的评估结果"不一致的可能。</li>
+        <li><strong>用列名约定代替类型系统</strong>：<code>df_convention.py</code> 的 <code>&lt;SEP&gt;</code> 前缀分派让 Pareto、join、资源检查都能在 pandas 上向量化，而不用为每种列写对象。</li>
+        <li><strong>容差阶梯</strong>（§10）：以可控的近似换取数量级的速度，同时保留最终精确性。</li>
+      </ul>
+      <h3>观察到的问题</h3>
+      <ul>
+        <li><strong>调试残留</strong>：<code>make_tile_shapes.py:62</code> 有 <code>DEBUG = getpass.getuser() == "tanner"</code>；<code>mapper/FFM/main.py:113</code> 每次详细评估都把 <code>mapping.svg</code> 写到当前工作目录；同文件 :121–143 与 :155–159 有大段注释掉的调试代码；<code>run_model.py:80–95</code> 同样。</li>
+        <li><strong>目录名拼写</strong>：<code>_make_pmappings/contraints/</code>（应为 constraints），已被 import 路径固化。</li>
+        <li><strong>Python 版本声明不准</strong>：<code>requires-python &gt;= 3.8</code>，但代码用了 <code>typing.Self</code>（3.11）、<code>enum.StrEnum</code>（3.11）、<code>X | Y</code> 运行时联合（3.10）。</li>
+        <li><strong>WIP 功能</strong>（文档自述）：稀疏、P2P 通信、layout 成本、模型侧 skew、ISL 高保真模型都未完成；<code>Pipeline</code> 节点存在但 <code>make_pmappings.py:340</code> 注释 "PIPELINE: This would have to change" 表明 join 尚不支持流水。</li>
+        <li><strong>测试覆盖不均</strong>：ISL 与网络有系统测试，但符号模型与 mapper 主路径的测试主要靠 notebook 执行（dev 依赖含 <code>nbconvert</code>）。</li>
+      </ul>
+      <h3>与论文概览稿的对照</h3>
+      <table>
+        <thead><tr><th>论文说法</th><th>代码实际</th></tr></thead>
+        <tbody>
+          <tr><td>"Intra-Einsum mapper (TCM)" + "Inter-Einsum mapper (FFM)" 两个组件</td><td>一个 <code>mapper/FFM/</code> 包；intra 是 <code>_make_pmappings/</code>，inter 是 <code>_join_pmappings/</code>。没有 "TCM" 字样。</td></tr>
+          <tr><td>"fast mappers … orders of magnitude less time"</td><td>来源有两处：符号模型按模板只跑一次 + 导数单调性剪枝（§9）；脏-净容差阶梯 join（§10）。论文未提及任何一处机制。</td></tr>
+          <tr><td>"optimal mapper"</td><td>在假设成立（目标单调、因子化 tile、仅最外层余数）的前提下，Pareto 前沿逐步拼接是精确的；"optimal" 是相对于这个受限 mapspace 而言。</td></tr>
+          <tr><td>"Heterogeneous architectures"</td><td>= 多条 FlattenedArch 路径 + <code>Fork</code> 节点，每条路径一组 Job（§5）。</td></tr>
+          <tr><td>"+Timing" 组件建模</td><td><code>Action.throughput / latency</code> 字段 + hwcomponents 的 throughput 模型；延迟 = 动作数 / 吞吐。</td></tr>
+          <tr><td>"Composable user-defined models of devices, circuits"</td><td>全部外包给 hwcomponents；AccelForge 只传属性、收结果（§12）。</td></tr>
+          <tr><td>"Python implementations … high performance"</td><td>靠 sympy/symengine + numpy lambdify + joblib + numba，以及把模型调用次数降到 O(模板数)。</td></tr>
+        </tbody>
+      </table>
+      <div class="callout">
+        和 <a href="Charon_论文分析.html">Charon</a> 对照：Charon 的后端对每个算子<strong>查表或预测</strong>一个数，前端做图变换；AccelForge 的后端对每个模板<strong>推导一个公式</strong>，前端做模板枚举。两者都把"搜索"与"成本"解耦，但 AccelForge 因为成本是闭式的，能把搜索的一部分（单调维度）用微积分直接解掉——这在 Charon 那种数据驱动的成本模型上做不到。反过来，Charon 能吃任意 PyTorch 算子，AccelForge 只能吃仿射索引的 Einsum。
+      </div>
+    </section>
+
+    <footer>
+      基于 Accelergy-Project/accelforge main 分支浅克隆的静态阅读（2026-10-10）· 同目录：<a href="AccelForge_论文分析.html">AccelForge 论文分析</a> · <a href="Charon_论文分析.html">Charon 论文分析</a>
+    </footer>
+  </div>
+</body>
+</html>

@@ -7,6 +7,7 @@
 - Memory Cube brief specification：用于 MC 容量、UCIe 和带宽假设的来源追踪；
 - d-Matrix / Tensordyne 等公开资料：用于架构比较和风险分析；
 - `Charon_论文分析.html`：Charon（MLSys 2026 Oral，arXiv:2605.17164v2，ByteDance Seed / UT Austin）的中文分析页，2026-10-09 从外部论文笔记库入库。只作方法参考（执行 trace、链路级通信模型、重叠争用、多引擎回退），页内数字不是本仓库的证据；借鉴方案见 [`24_TRACE_AND_CHARON_ADOPTION_PLAN.md`](../teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md)。
+- `AccelForge_论文分析.html`、`AccelForge_代码分析.html`：AccelForge（arXiv:2609.11906，MIT / NVIDIA）论文与代码仓（github.com/Accelergy-Project/accelforge）的中文分析页，2026-10-10 入库。只作方法参考，页内数字不是本仓库的证据；原文 PDF 不入库，页内链接指向 arXiv。
 - `k3_1000tps_chip_designs.html`：K3 1000 TPS/usr 规格网格搜索页（内部工程材料，2026-09-23 从工作区 `docs/1000tps/` 入库；`HIGH_LEVEL_ARCHITECTURE.md` 第 2 节和 ADR-0019 的 MC/SRAM/算力档位来自此页）。页内脚本引用改为仓库内 `../src/core/`。
 
 如需在本地使用原始文件，请放入 `references/private/`，不要提交到公共 GitHub

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AccelForge 论文分析 | arXiv 2026</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --paper: #fffdf8;
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #e7e0d4;
+      --accent: #9a3412;
+      --accent-soft: #fed7aa;
+      --teal: #0f766e;
+      --navy: #1e3a5f;
+      --shadow: 0 12px 40px rgba(28, 25, 23, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Songti SC", "Source Han Serif SC", "Noto Serif SC", Georgia, serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #fde68a33, transparent 50%),
+        radial-gradient(900px 500px at 100% 0%, #99f6e433, transparent 45%),
+        var(--bg);
+      line-height: 1.75;
+    }
+    a { color: var(--navy); }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 40px 28px 80px; }
+    header.hero {
+      background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow);
+      padding: 42px 48px 36px; margin-bottom: 28px; position: relative; overflow: hidden;
+    }
+    header.hero::before {
+      content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 7px;
+      background: linear-gradient(180deg, #c2410c, #0f766e);
+    }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .badge {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 12px; letter-spacing: 0.04em; padding: 3px 9px; border-radius: 999px;
+      background: #f5f5f4; color: var(--muted); border: 1px solid var(--line);
+    }
+    .badge.hot { background: #ffedd5; color: #9a3412; border-color: #fdba74; }
+    .badge.ok { background: #ccfbf1; color: #115e59; border-color: #5eead4; }
+    .badge.warn { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    h1 { font-size: 30px; line-height: 1.35; margin: 0 0 10px; letter-spacing: -0.02em; }
+    .subtitle { font-size: 16px; color: var(--muted); margin: 0 0 18px; }
+    .meta {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 13.5px; color: var(--muted);
+    }
+    .meta strong { color: var(--ink); }
+    nav.toc {
+      background: var(--paper); border: 1px solid var(--line); padding: 22px 28px; margin-bottom: 28px;
+    }
+    nav.toc h2 {
+      margin: 0 0 10px; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    nav.toc ol { margin: 0; padding-left: 22px; columns: 2; font-size: 14.5px; }
+    nav.toc a { text-decoration: none; }
+    nav.toc a:hover { text-decoration: underline; }
+    section.card {
+      background: var(--paper); border: 1px solid var(--line); box-shadow: var(--shadow);
+      padding: 34px 42px 38px; margin-bottom: 22px;
+    }
+    h2 { margin: 0 0 16px; font-size: 23px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    h3 { margin: 26px 0 10px; font-size: 18px; color: var(--navy); }
+    p { margin: 0 0 14px; }
+    ul, ol { margin: 0 0 14px; padding-left: 22px; }
+    li { margin-bottom: 6px; }
+    .lead { font-size: 17.5px; color: #292524; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 16px 0; }
+    .tile { background: #faf7f2; border: 1px solid var(--line); padding: 16px 16px 14px; }
+    .tile h4 { margin: 0 0 6px; font-size: 15px; }
+    .tile p { margin: 0; font-size: 14px; color: var(--muted); }
+    .callout {
+      border-left: 4px solid var(--accent); background: #fff7ed; padding: 12px 16px;
+      margin: 16px 0 18px; font-size: 15px;
+    }
+    .callout.teal { border-left-color: var(--teal); background: #f0fdfa; }
+    .callout.navy { border-left-color: var(--navy); background: #f0f4f8; }
+    .callout.warn { border-left-color: #d97706; background: #fffbeb; }
+    table {
+      width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 12px 0 18px;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f5f0e6; font-weight: 650; }
+    tr:nth-child(even) td { background: #faf8f4; }
+    td.y { background: #dcfce7 !important; color: #166534; }
+    td.n { background: #fee2e2 !important; color: #991b1b; }
+    footer { margin-top: 10px; color: var(--muted); font-size: 13px; text-align: center; }
+    .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0 8px; }
+    .kpi .n {
+      font-size: 26px; font-weight: 700; color: var(--accent);
+      font-family: "Segoe UI", sans-serif; line-height: 1.15;
+    }
+    .kpi .k { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+    .kpi > div { background: #fff7ed; border: 1px solid #fed7aa; padding: 12px 12px 10px; }
+    .fig {
+      margin: 22px 0 6px; background: #faf8f4; border: 1px solid var(--line);
+      padding: 18px 14px 10px; overflow-x: auto;
+    }
+    .fig svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+    .figcap {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 13px; color: var(--muted); text-align: center; margin: 6px 0 20px; line-height: 1.55;
+    }
+    code { font-family: "Cascadia Code", Consolas, monospace; font-size: 0.92em; background: #f5f0e6; padding: 1px 5px; }
+    .steps { counter-reset: step; list-style: none; padding-left: 0; }
+    .steps li {
+      position: relative; padding: 10px 12px 10px 48px; margin-bottom: 8px;
+      background: #faf7f2; border: 1px solid var(--line);
+    }
+    .steps li::before {
+      counter-increment: step; content: counter(step);
+      position: absolute; left: 12px; top: 12px; width: 24px; height: 24px;
+      border-radius: 50%; background: var(--navy); color: #fff;
+      font: 700 12px/24px "Segoe UI", sans-serif; text-align: center;
+    }
+    @media (max-width: 860px) {
+      header.hero, section.card { padding: 24px 20px; }
+      nav.toc ol, .grid-2, .grid-3, .kpi { columns: 1; grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; }
+      header.hero, section.card, nav.toc { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="badge-row">
+        <span class="badge hot">arXiv cs.AR · 2026-09-10</span>
+        <span class="badge">arXiv:2609.11906v1</span>
+        <span class="badge">加速器建模 · 设计空间探索</span>
+        <span class="badge ok">MIT · Sze / Emer 组</span>
+        <span class="badge ok">Timeloop / Accelergy 谱系</span>
+        <span class="badge warn">3 页框架概览稿 · 设计章节缺失</span>
+      </div>
+      <h1>把 Timeloop 家族收口成一个 Python 框架</h1>
+      <p class="subtitle">AccelForge: Comprehensive Modeling and Co-Design Framework for AI Accelerators</p>
+      <p class="meta">
+        <strong>作者：</strong>Tanner Andrulis*、Michael Gilbert*、Vivienne Sze、Joel S. Emer（MIT / NVIDIA，* 同等贡献）<br />
+        <strong>原文：</strong><a href="https://arxiv.org/abs/2609.11906" target="_blank" rel="noopener">arXiv:2609.11906</a>
+        · 代码：<a href="https://github.com/Accelergy-Project/accelforge" target="_blank" rel="noopener">Accelergy-Project/accelforge</a>
+        · <a href="https://arxiv.org/pdf/2609.11906" target="_blank" rel="noopener">PDF</a>（仓库不附原文，见 README）
+        · <a href="AccelForge_代码分析.html">代码仓分析</a>
+      </p>
+    </header>
+
+    <nav class="toc">
+      <h2>目录</h2>
+      <ol>
+        <li><a href="#s1">一句话结论与阅读须知</a></li>
+        <li><a href="#s2">问题定义：加速器评估管线的四个设计方面</a></li>
+        <li><a href="#s3">三个目标：全面、快且最优、易用易扩展</a></li>
+        <li><a href="#s4">与 TileFlow / ZigZag / Timeloop / CiMLoop 的对比</a></li>
+        <li><a href="#s5">AccelForge 的谱系：六项前序工作如何拼成一个框架</a></li>
+        <li><a href="#s6">映射空间的三层扩展：Fusion / Uneven / Hybrid</a></li>
+        <li><a href="#s7">两级 Mapper：Intra-Einsum 与 Inter-Einsum</a></li>
+        <li><a href="#s8">定位、局限与和 Charon 的对照</a></li>
+      </ol>
+    </nav>
+
+    <section class="card" id="s1">
+      <h2>1. 一句话结论与阅读须知</h2>
+      <p class="lead">
+        AccelForge 是 MIT Sze / Emer 组把 Timeloop、Accelergy、CiMLoop、LoopTree 以及两个 2026 年新 mapper（TCM、FFM）<strong>统一成一个纯 Python 框架</strong>的"收口之作"：声称在设计空间的全面性、mapper 的速度与最优性、以及易用易扩展三个维度上同时超越现有加速器建模工具。
+      </p>
+      <div class="kpi">
+        <div>
+          <div class="n">4</div>
+          <div class="k">同时覆盖的设计方面：器件/电路、架构、工作负载、映射</div>
+        </div>
+        <div>
+          <div class="n">3</div>
+          <div class="k">提出的评估框架目标（全面 / 快且最优 / 易扩展）</div>
+        </div>
+        <div>
+          <div class="n">6</div>
+          <div class="k">被整合进来的前序工作（含 HWComponents 库）</div>
+        </div>
+        <div>
+          <div class="n">数量级</div>
+          <div class="k">声称的 mapper 计算 + 人力时间节省</div>
+        </div>
+      </div>
+      <div class="callout warn">
+        <strong>阅读须知：这是一篇 3 页的框架概览稿，不是完整论文。</strong>正文里"Section ??"（设计章节）的引用是悬空的，引用指南中还留着 <code>TODO: update this</code>；真正描述 AccelForge 如何实现三个目标的章节<strong>在这一版里不存在</strong>。它更像是一份"伞状论文"——给出动机、目标、与竞品的对比表，然后把具体技术内容分别指向六个独立的前序工作。本分析只基于稿件中实际存在的内容，对 TCM / FFM 两个新 mapper 的描述仅限其标题与本稿引用所能支撑的范围。
+      </div>
+    </section>
+
+    <section class="card" id="s2">
+      <h2>2. 问题定义：加速器评估管线的四个设计方面</h2>
+      <p>
+        论文的出发点是经典的后摩尔时代论证：张量代数工作负载（DNN 为代表）在数据中心和边缘都是能耗大户，晶体管缩放已无法贡献效率提升，于是只能靠<strong>跨多个设计方面做协同优化</strong>。作者把一个加速器设计拆成四个方面：
+      </p>
+      <div class="grid-2">
+        <div class="tile">
+          <h4>① 组件（Components）</h4>
+          <p>器件与电路，执行数据搬运、计算等"动作"。例如一次 buffer 读取耗 1 pJ/bit。</p>
+        </div>
+        <div class="tile">
+          <h4>② 架构（Architecture）</h4>
+          <p>把组件组织成系统：多少个 PE、几级存储、怎样互联。</p>
+        </div>
+        <div class="tile">
+          <h4>③ 工作负载（Workload）</h4>
+          <p>数据与作用在数据上的操作（如 MAC），以及操作之间的依赖。</p>
+        </div>
+        <div class="tile">
+          <h4>④ 映射（Mapping）</h4>
+          <p>把工作负载在时间和空间上编排到硬件上——这是 Timeloop 谱系一贯的核心概念。</p>
+        </div>
+      </div>
+      <div class="fig">
+        <svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="加速器评估管线">
+          <defs>
+            <marker id="arwA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11.5">
+            <rect x="20" y="20" width="560" height="96" rx="8" fill="#f0f4f8" stroke="#1e3a5f" stroke-dasharray="6 3"/>
+            <text x="36" y="40" font-weight="700" font-size="12" fill="#1e3a5f">待评估的设计（输入）</text>
+            <rect x="40" y="52" width="150" height="50" rx="6" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="115" y="74" text-anchor="middle" font-weight="700" fill="#1e3a5f">组件</text>
+            <text x="115" y="92" text-anchor="middle" font-size="10.5" fill="#334155">器件 · 电路 · 动作成本</text>
+            <text x="205" y="83" text-anchor="middle" font-size="18" fill="#1e3a5f">+</text>
+            <rect x="220" y="52" width="150" height="50" rx="6" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="295" y="74" text-anchor="middle" font-weight="700" fill="#1e3a5f">架构</text>
+            <text x="295" y="92" text-anchor="middle" font-size="10.5" fill="#334155">PE 数 · 存储层级 · 互联</text>
+            <text x="385" y="83" text-anchor="middle" font-size="18" fill="#1e3a5f">+</text>
+            <rect x="400" y="52" width="160" height="50" rx="6" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="480" y="74" text-anchor="middle" font-weight="700" fill="#1e3a5f">工作负载</text>
+            <text x="480" y="92" text-anchor="middle" font-size="10.5" fill="#334155">张量 · 算子 · 依赖图</text>
+
+            <path d="M 115 102 L 115 150" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+            <path d="M 295 102 L 295 150" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+            <path d="M 480 102 L 480 150" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+
+            <rect x="40" y="154" width="190" height="64" rx="6" fill="#fff" stroke="#78716c"/>
+            <text x="135" y="178" text-anchor="middle" font-weight="700" fill="#44403c">第一步：组件动作成本</text>
+            <text x="135" y="196" text-anchor="middle" font-size="10.5" fill="#57534e">例：buffer 读 = 1 pJ/bit</text>
+            <text x="135" y="210" text-anchor="middle" font-size="10.5" fill="#57534e">（Accelergy / HWComponents）</text>
+
+            <rect x="260" y="154" width="320" height="64" rx="6" fill="#fff" stroke="#78716c"/>
+            <text x="420" y="178" text-anchor="middle" font-weight="700" fill="#44403c">第二步：优化映射（mapspace 搜索）</text>
+            <text x="420" y="196" text-anchor="middle" font-size="10.5" fill="#57534e">在所有合法映射里找最优 → 导出动作计数</text>
+            <text x="420" y="210" text-anchor="middle" font-size="10.5" fill="#57534e">（Timeloop mapper → TCM / FFM）</text>
+
+            <path d="M 232 186 L 257 186" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwA)"/>
+            <text x="244" y="178" text-anchor="middle" font-size="9.5" fill="#78716c">成本</text>
+
+            <path d="M 582 186 L 640 186" stroke="#9a3412" stroke-width="1.8" marker-end="url(#arwA)"/>
+
+            <rect x="646" y="40" width="310" height="60" rx="6" fill="#fee2e2" stroke="#9a3412"/>
+            <text x="801" y="62" text-anchor="middle" font-weight="700" fill="#9a3412">品质指标（输出）</text>
+            <text x="801" y="82" text-anchor="middle" font-size="11" fill="#7f1d1d">延迟 · 能耗</text>
+
+            <rect x="646" y="154" width="310" height="64" rx="6" fill="#fee2e2" stroke="#9a3412"/>
+            <text x="801" y="178" text-anchor="middle" font-weight="700" fill="#9a3412">最优映射（输出）</text>
+            <text x="801" y="196" text-anchor="middle" font-size="10.5" fill="#7f1d1d">动作计数 × 动作成本 = 各组件总开销</text>
+            <text x="801" y="210" text-anchor="middle" font-size="10.5" fill="#7f1d1d">例：buffer 读次数 × 1 pJ/bit</text>
+
+            <path d="M 801 150 L 801 106" stroke="#9a3412" stroke-width="1.8" marker-end="url(#arwA)"/>
+
+            <rect x="20" y="238" width="936" height="46" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="488" y="257" text-anchor="middle" font-size="11" fill="#57534e">映射 = 第四个设计方面，但它不是输入而是被优化出来的中间产物：先算单位动作成本，再在 mapspace 里搜索把负载编排到硬件上的最佳方式，</text>
+            <text x="488" y="274" text-anchor="middle" font-size="11" fill="#78716c">最后用"动作计数 × 单位成本"累加出整机延迟与能耗。找到次优映射会直接误导设计者（例如错误偏向过度配置的硬件资源）。</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 1 · 对应论文 Figure 1 的评估管线：蓝色为输入（组件 + 架构 + 工作负载），白色为两步评估（动作成本建模 → mapspace 搜索），红色为输出（最优映射 + 延迟/能耗）。</p>
+    </section>
+
+    <section class="card" id="s3">
+      <h2>3. 三个目标：全面、快且最优、易用易扩展</h2>
+      <p>
+        作者基于多年使用和扩展 Timeloop / Accelergy 的经验，提炼出一个评估框架应满足的三个目标。这三条也正是 Table I 的三个列组。
+      </p>
+      <ol class="steps">
+        <li>
+          <strong>目标一：在所有方面都支持足够全面的设计空间。</strong>"全面"指能覆盖 state-of-the-art 优化——例如把模拟与数字组件混搭成异构架构（RAELLA、H2-LLM），或者引入 fused / uneven / hybrid 映射。要在<em>所有</em>方面都全面，理由有二：跨方面协同优化能显著降低能耗与延迟；加速器要面对多种工作负载，而延迟和能耗在不同负载间差异巨大，必须能批量评估。
+        </li>
+        <li>
+          <strong>目标二：快且最优的 mapper。</strong>光有大 mapspace 不够，还得搜得到最优解。前序工作已证明次优映射会抬高延迟和能耗，更糟的是会<strong>误导设计者</strong>——比如错误地偏向过度配置硬件资源，而这些资源本可由更好的映射更高效地利用。
+        </li>
+        <li>
+          <strong>目标三：易用且易扩展。</strong>模块化：改一个参数（如张量位宽）只需改输入规格里的一个元素；直观：一眼能看出要扩容内存该改哪里；健壮：规格错误能被识别并给出有信息量的报错；可扩展：未来设计空间无法预测，框架必须容易加入新映射、更快的 mapper、新的硬件特性。
+        </li>
+      </ol>
+      <div class="callout teal">
+        目标三里藏着一个实现层面的取舍：前序框架多用 C++ 来换取搜索 mapspace 所需的性能（即便如此仍然慢且找不到最优），代价是扩展困难。AccelForge 反其道而行——<strong>模型和 mapper 都用 Python 实现</strong>，靠更聪明的 mapper 算法（而非更快的语言）来保住性能。这是整篇稿子里最具体的技术立场。
+      </div>
+    </section>
+
+    <section class="card" id="s4">
+      <h2>4. 与 TileFlow / ZigZag / Timeloop / CiMLoop 的对比</h2>
+      <p>
+        Table I 是本稿的核心内容。目标一拆成四个子列（组件 / 架构 / 工作负载 / 映射），目标二拆成"快"和"最优"两列，目标三一列。"Baseline"表示与 Timeloop 相当的基础能力。
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2">框架</th>
+            <th colspan="4">目标一：全面的设计空间</th>
+            <th colspan="2">目标二：快 + 最优 mapper</th>
+            <th rowspan="2">目标三：易用易扩展</th>
+          </tr>
+          <tr>
+            <th>组件</th><th>架构</th><th>工作负载</th><th>映射</th><th>快</th><th>最优</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>TileFlow (MICRO'23)</td><td class="y">+可配置</td><td rowspan="4">同构</td><td class="y">多算子</td><td class="y">+Fusion</td><td rowspan="4" class="n">否</td><td rowspan="4" class="n">否</td><td class="n">否</td></tr>
+          <tr><td>ZigZag (TC'21)</td><td>Baseline</td><td>单算子</td><td class="y">+Uneven</td><td class="y">是</td></tr>
+          <tr><td>Timeloop (ISPASS'19)</td><td class="y">+可配置</td><td>单算子</td><td>Baseline</td><td class="n">否</td></tr>
+          <tr><td>CiMLoop (ISPASS'24)</td><td class="y">+可配置 +漏电</td><td>单算子</td><td>Baseline</td><td class="n">否</td></tr>
+          <tr>
+            <td><strong>AccelForge</strong></td>
+            <td class="y">+可配置 +漏电 +时序</td>
+            <td class="y">异构</td>
+            <td class="y">多算子</td>
+            <td class="y">+Fusion +Uneven +Hybrid</td>
+            <td class="y">是</td><td class="y">是</td><td class="y">是</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="grid-3">
+        <div class="tile">
+          <h4>术语：组件列</h4>
+          <p><strong>可配置</strong>：组件可被替换；<strong>漏电</strong>：建模静态功耗；<strong>时序</strong>：建模组件延迟与吞吐。</p>
+        </div>
+        <div class="tile">
+          <h4>术语：架构 / 负载列</h4>
+          <p><strong>同构 / 异构</strong>：由相同 / 不同类型单元组成；<strong>单算子 / 多算子</strong>：一个张量操作 vs 带算子间数据依赖的图。</p>
+        </div>
+        <div class="tile">
+          <h4>术语：映射列</h4>
+          <p><strong>Fusion</strong>：算子间数据在片上复用；<strong>Uneven</strong>：每个张量各自选 tile 形状；<strong>Hybrid</strong>：跨算子按张量选 tile 形状。</p>
+        </div>
+      </div>
+      <div class="fig">
+        <svg viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="五个框架的能力覆盖热力图">
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <g font-size="10.5" fill="#57534e" text-anchor="middle">
+              <text x="246" y="40" transform="rotate(-28 246 40)">组件可配置</text>
+              <text x="326" y="40" transform="rotate(-28 326 40)">漏电建模</text>
+              <text x="406" y="40" transform="rotate(-28 406 40)">时序建模</text>
+              <text x="486" y="40" transform="rotate(-28 486 40)">异构架构</text>
+              <text x="566" y="40" transform="rotate(-28 566 40)">多算子负载</text>
+              <text x="646" y="40" transform="rotate(-28 646 40)">Fusion</text>
+              <text x="726" y="40" transform="rotate(-28 726 40)">Uneven</text>
+              <text x="806" y="40" transform="rotate(-28 806 40)">Hybrid</text>
+              <text x="886" y="40" transform="rotate(-28 886 40)">快+最优 mapper</text>
+            </g>
+
+            <g text-anchor="end" font-weight="700" fill="#1c1917">
+              <text x="196" y="86">TileFlow</text>
+              <text x="196" y="136">ZigZag</text>
+              <text x="196" y="186">Timeloop</text>
+              <text x="196" y="236">CiMLoop</text>
+              <text x="196" y="286" fill="#9a3412">AccelForge</text>
+            </g>
+
+            <g stroke="#fff" stroke-width="2">
+              <rect x="210" y="66" width="72" height="34" fill="#86efac"/>
+              <rect x="290" y="66" width="72" height="34" fill="#fecaca"/>
+              <rect x="370" y="66" width="72" height="34" fill="#fecaca"/>
+              <rect x="450" y="66" width="72" height="34" fill="#fecaca"/>
+              <rect x="530" y="66" width="72" height="34" fill="#86efac"/>
+              <rect x="610" y="66" width="72" height="34" fill="#86efac"/>
+              <rect x="690" y="66" width="72" height="34" fill="#fecaca"/>
+              <rect x="770" y="66" width="72" height="34" fill="#fecaca"/>
+              <rect x="850" y="66" width="72" height="34" fill="#fecaca"/>
+
+              <rect x="210" y="116" width="72" height="34" fill="#fde68a"/>
+              <rect x="290" y="116" width="72" height="34" fill="#fecaca"/>
+              <rect x="370" y="116" width="72" height="34" fill="#fecaca"/>
+              <rect x="450" y="116" width="72" height="34" fill="#fecaca"/>
+              <rect x="530" y="116" width="72" height="34" fill="#fecaca"/>
+              <rect x="610" y="116" width="72" height="34" fill="#fecaca"/>
+              <rect x="690" y="116" width="72" height="34" fill="#86efac"/>
+              <rect x="770" y="116" width="72" height="34" fill="#fecaca"/>
+              <rect x="850" y="116" width="72" height="34" fill="#fecaca"/>
+
+              <rect x="210" y="166" width="72" height="34" fill="#86efac"/>
+              <rect x="290" y="166" width="72" height="34" fill="#fecaca"/>
+              <rect x="370" y="166" width="72" height="34" fill="#fecaca"/>
+              <rect x="450" y="166" width="72" height="34" fill="#fecaca"/>
+              <rect x="530" y="166" width="72" height="34" fill="#fecaca"/>
+              <rect x="610" y="166" width="72" height="34" fill="#fecaca"/>
+              <rect x="690" y="166" width="72" height="34" fill="#fecaca"/>
+              <rect x="770" y="166" width="72" height="34" fill="#fecaca"/>
+              <rect x="850" y="166" width="72" height="34" fill="#fecaca"/>
+
+              <rect x="210" y="216" width="72" height="34" fill="#86efac"/>
+              <rect x="290" y="216" width="72" height="34" fill="#86efac"/>
+              <rect x="370" y="216" width="72" height="34" fill="#fecaca"/>
+              <rect x="450" y="216" width="72" height="34" fill="#fecaca"/>
+              <rect x="530" y="216" width="72" height="34" fill="#fecaca"/>
+              <rect x="610" y="216" width="72" height="34" fill="#fecaca"/>
+              <rect x="690" y="216" width="72" height="34" fill="#fecaca"/>
+              <rect x="770" y="216" width="72" height="34" fill="#fecaca"/>
+              <rect x="850" y="216" width="72" height="34" fill="#fecaca"/>
+
+              <rect x="210" y="266" width="72" height="34" fill="#4ade80"/>
+              <rect x="290" y="266" width="72" height="34" fill="#4ade80"/>
+              <rect x="370" y="266" width="72" height="34" fill="#4ade80"/>
+              <rect x="450" y="266" width="72" height="34" fill="#4ade80"/>
+              <rect x="530" y="266" width="72" height="34" fill="#4ade80"/>
+              <rect x="610" y="266" width="72" height="34" fill="#4ade80"/>
+              <rect x="690" y="266" width="72" height="34" fill="#4ade80"/>
+              <rect x="770" y="266" width="72" height="34" fill="#4ade80"/>
+              <rect x="850" y="266" width="72" height="34" fill="#4ade80"/>
+            </g>
+
+            <rect x="20" y="312" width="12" height="12" fill="#86efac"/><text x="38" y="322" font-size="10.5" fill="#57534e">支持</text>
+            <rect x="80" y="312" width="12" height="12" fill="#fde68a"/><text x="98" y="322" font-size="10.5" fill="#57534e">Baseline（仅基础）</text>
+            <rect x="212" y="312" width="12" height="12" fill="#fecaca"/><text x="230" y="322" font-size="10.5" fill="#57534e">不支持</text>
+            <text x="900" y="322" text-anchor="end" font-size="10.5" fill="#9a3412">AccelForge 是唯一一行全绿</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 2 · 把 Table I 展开成能力热力图。前四个框架各自在一两个维度上扩展（TileFlow 做 fusion、ZigZag 做 uneven、CiMLoop 做漏电），但都没有快且最优的 mapper；AccelForge 的主张是"每一列都要"。</p>
+      <div class="callout">
+        这张表有一个值得注意的信号：四个被对比的框架里有两个（Timeloop、CiMLoop）就是本组自己的工作，AccelForge 的对比对象中一半是"自我超越"。这既说明该组在这个领域的积累深度，也意味着 Table I 更像一份路线图总结而非独立评测。
+      </div>
+    </section>
+
+    <section class="card" id="s5">
+      <h2>5. AccelForge 的谱系：六项前序工作如何拼成一个框架</h2>
+      <p>
+        稿件第二节"如何引用 AccelForge"反而是信息量最大的部分——它逐项列出了框架的各个组成部分分别来自哪篇工作，等于给出了一张架构分解图：
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AccelForge 谱系与组成">
+          <defs>
+            <marker id="arwC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <text x="20" y="26" font-weight="700" font-size="12" fill="#57534e">奠基层（2019）</text>
+            <rect x="20" y="36" width="210" height="58" rx="7" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="125" y="58" text-anchor="middle" font-weight="700" fill="#44403c">Timeloop</text>
+            <text x="125" y="76" text-anchor="middle" font-size="10.5" fill="#57534e">ISPASS'19 · 映射空间搜索 · 架构模型</text>
+            <rect x="250" y="36" width="210" height="58" rx="7" fill="#f5f5f4" stroke="#a8a29e"/>
+            <text x="355" y="58" text-anchor="middle" font-weight="700" fill="#44403c">Accelergy</text>
+            <text x="355" y="76" text-anchor="middle" font-size="10.5" fill="#57534e">ICCAD'19 · 组件级能耗估计</text>
+
+            <text x="20" y="134" font-weight="700" font-size="12" fill="#57534e">扩展层（2023–2024）</text>
+            <rect x="20" y="144" width="210" height="58" rx="7" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="125" y="166" text-anchor="middle" font-weight="700" fill="#9a3412">CiMLoop</text>
+            <text x="125" y="184" text-anchor="middle" font-size="10.5" fill="#7c2d12">ISPASS'24 · 存内计算 · 漏电 · 可配置组件</text>
+            <rect x="250" y="144" width="210" height="58" rx="7" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="355" y="166" text-anchor="middle" font-weight="700" fill="#9a3412">LoopTree</text>
+            <text x="355" y="184" text-anchor="middle" font-size="10.5" fill="#7c2d12">ISPASS'23 / TCASAI'24 · 融合层数据流</text>
+            <rect x="480" y="144" width="210" height="58" rx="7" fill="#ffedd5" stroke="#c2410c"/>
+            <text x="585" y="166" text-anchor="middle" font-weight="700" fill="#9a3412">HWComponents</text>
+            <text x="585" y="184" text-anchor="middle" font-size="10.5" fill="#7c2d12">MIT 开源库 · 组件规格与成本模型</text>
+
+            <text x="20" y="242" font-weight="700" font-size="12" fill="#57534e">新 mapper 层（2026-02）</text>
+            <rect x="20" y="252" width="330" height="58" rx="7" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="185" y="274" text-anchor="middle" font-weight="700" fill="#115e59">TCM · Turbo-Charged Mapper</text>
+            <text x="185" y="292" text-anchor="middle" font-size="10.5" fill="#134e4a">arXiv:2602.15172 · Intra-Einsum · 快且最优</text>
+            <rect x="370" y="252" width="320" height="58" rx="7" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="530" y="274" text-anchor="middle" font-weight="700" fill="#115e59">FFM · Fast and Fusiest</text>
+            <text x="530" y="292" text-anchor="middle" font-size="10.5" fill="#134e4a">arXiv:2602.15166 · Inter-Einsum · 融合感知最优</text>
+
+            <path d="M 125 94 L 125 140" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwC)"/>
+            <path d="M 355 94 L 355 140" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwC)"/>
+            <path d="M 400 94 L 560 140" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwC)"/>
+            <path d="M 160 94 L 320 140" stroke="#78716c" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arwC)"/>
+            <path d="M 125 202 L 160 248" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwC)"/>
+            <path d="M 355 202 L 480 248" stroke="#78716c" stroke-width="1.4" marker-end="url(#arwC)"/>
+
+            <rect x="720" y="36" width="240" height="274" rx="9" fill="#f0f4f8" stroke="#1e3a5f" stroke-width="1.8"/>
+            <text x="840" y="64" text-anchor="middle" font-weight="700" font-size="14" fill="#1e3a5f">AccelForge</text>
+            <text x="840" y="82" text-anchor="middle" font-size="10.5" fill="#334155">纯 Python · 模型 + mapper</text>
+            <line x1="740" y1="94" x2="940" y2="94" stroke="#cbd5e1"/>
+            <text x="748" y="116" font-size="11" fill="#1e3a5f">▸ 工作负载规格</text>
+            <text x="748" y="138" font-size="11" fill="#1e3a5f">▸ 架构规格</text>
+            <text x="748" y="160" font-size="11" fill="#1e3a5f">▸ 组件规格 + 成本模型</text>
+            <text x="764" y="176" font-size="10" fill="#64748b">← HWComponents · CiMLoop</text>
+            <text x="748" y="200" font-size="11" fill="#1e3a5f">▸ 映射规格</text>
+            <text x="764" y="216" font-size="10" fill="#64748b">← LoopTree</text>
+            <text x="748" y="240" font-size="11" fill="#1e3a5f">▸ Intra-Einsum mapper</text>
+            <text x="764" y="256" font-size="10" fill="#64748b">← TCM</text>
+            <text x="748" y="280" font-size="11" fill="#1e3a5f">▸ Inter-Einsum mapper</text>
+            <text x="764" y="296" font-size="10" fill="#64748b">← FFM</text>
+
+            <path d="M 694 173 L 716 173" stroke="#1e3a5f" stroke-width="1.8" marker-end="url(#arwC)"/>
+            <path d="M 694 281 L 716 281" stroke="#1e3a5f" stroke-width="1.8" marker-end="url(#arwC)"/>
+
+            <rect x="20" y="336" width="940" height="68" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="358" text-anchor="middle" font-size="11" fill="#57534e">Timeloop / Accelergy 提供"架构模型 + 映射搜索 + 组件能耗"的基本骨架；CiMLoop 把组件模型扩到存内计算、漏电与可配置；</text>
+            <text x="490" y="376" text-anchor="middle" font-size="11" fill="#57534e">LoopTree 把映射表示扩到跨算子融合；TCM 与 FFM 分别在单算子内与跨算子两层给出快且最优的 mapper。</text>
+            <text x="490" y="394" text-anchor="middle" font-size="11" fill="#78716c">AccelForge 把以上全部统一进一个 Python 代码库，Table I 中它"每列全绿"的能力就是这些前序工作能力的并集。</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 3 · 按稿件引用指南重建的 AccelForge 组成谱系。右侧框内每一项规格/mapper 都能对应到左侧一篇具体工作——AccelForge 本身的新增贡献在于"统一与整合"，而不是某个单项算法。</p>
+      <div class="callout navy">
+        一个微妙的细节：稿件说"引用 AccelForge 整体请引用本文"，但紧接着给出的 BibTeX 却是 CiMLoop（ISPASS 2024）的条目并标注 <code>TODO: update this</code>。这进一步印证了本稿的预印本性质——它目前的功能更接近 GitHub 仓库的"配套说明"而非独立论文。
+      </div>
+    </section>
+
+    <section class="card" id="s6">
+      <h2>6. 映射空间的三层扩展：Fusion / Uneven / Hybrid</h2>
+      <p>
+        Table I 映射列里的三个加号是理解 AccelForge "全面性"主张的关键。它们是三种彼此正交的映射自由度，分别来自 LoopTree、ZigZag 以及二者的合并：
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="三种映射自由度示意">
+          <defs>
+            <marker id="arwD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="20" y="20" width="300" height="300" rx="8" fill="#faf8f4" stroke="#e7e0d4"/>
+            <text x="170" y="44" text-anchor="middle" font-weight="700" font-size="12.5" fill="#1e3a5f">Baseline：逐算子映射</text>
+            <rect x="60" y="70" width="90" height="44" rx="5" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="105" y="96" text-anchor="middle" fill="#1e3a5f">算子 A</text>
+            <rect x="190" y="70" width="90" height="44" rx="5" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="235" y="96" text-anchor="middle" fill="#1e3a5f">算子 B</text>
+            <rect x="60" y="160" width="220" height="40" rx="5" fill="#fecaca" stroke="#991b1b"/>
+            <text x="170" y="184" text-anchor="middle" fill="#7f1d1d">DRAM / 片外存储</text>
+            <path d="M 105 114 L 105 156" stroke="#991b1b" stroke-width="1.6" marker-end="url(#arwD)"/>
+            <path d="M 235 156 L 235 118" stroke="#991b1b" stroke-width="1.6" marker-end="url(#arwD)"/>
+            <text x="170" y="230" text-anchor="middle" font-size="10.5" fill="#57534e">A 的输出整张写回片外</text>
+            <text x="170" y="246" text-anchor="middle" font-size="10.5" fill="#57534e">B 再整张读回来</text>
+            <text x="170" y="280" text-anchor="middle" font-size="10.5" fill="#78716c">所有张量统一 tile 形状</text>
+            <text x="170" y="296" text-anchor="middle" font-size="10.5" fill="#78716c">（Timeloop 默认）</text>
+
+            <rect x="340" y="20" width="300" height="300" rx="8" fill="#fff7ed" stroke="#fdba74"/>
+            <text x="490" y="44" text-anchor="middle" font-weight="700" font-size="12.5" fill="#9a3412">+ Fusion：片上复用</text>
+            <rect x="380" y="70" width="90" height="44" rx="5" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="425" y="96" text-anchor="middle" fill="#1e3a5f">算子 A</text>
+            <rect x="510" y="70" width="90" height="44" rx="5" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="555" y="96" text-anchor="middle" fill="#1e3a5f">算子 B</text>
+            <rect x="420" y="128" width="140" height="30" rx="5" fill="#ccfbf1" stroke="#0f766e"/>
+            <text x="490" y="147" text-anchor="middle" font-size="10.5" fill="#115e59">片上 buffer（tile 级）</text>
+            <path d="M 440 114 L 460 128" stroke="#0f766e" stroke-width="1.6" marker-end="url(#arwD)"/>
+            <path d="M 520 128 L 540 114" stroke="#0f766e" stroke-width="1.6" marker-end="url(#arwD)"/>
+            <rect x="380" y="180" width="220" height="30" rx="5" fill="#f5f5f4" stroke="#d6d3d1" stroke-dasharray="4 3"/>
+            <text x="490" y="199" text-anchor="middle" font-size="10.5" fill="#a8a29e">DRAM（中间结果不落地）</text>
+            <text x="490" y="236" text-anchor="middle" font-size="10.5" fill="#57534e">A 算完一个 tile 立刻喂给 B</text>
+            <text x="490" y="252" text-anchor="middle" font-size="10.5" fill="#57534e">省掉中间张量的片外往返</text>
+            <text x="490" y="280" text-anchor="middle" font-size="10.5" fill="#78716c">需要多算子负载 + 依赖图</text>
+            <text x="490" y="296" text-anchor="middle" font-size="10.5" fill="#78716c">（LoopTree / TileFlow）</text>
+
+            <rect x="660" y="20" width="300" height="300" rx="8" fill="#f0fdfa" stroke="#5eead4"/>
+            <text x="810" y="44" text-anchor="middle" font-weight="700" font-size="12.5" fill="#115e59">+ Uneven / Hybrid：按张量选 tile</text>
+            <text x="700" y="76" font-size="10.5" fill="#57534e">输入 X：</text>
+            <rect x="760" y="62" width="40" height="20" fill="#0f766e"/>
+            <rect x="804" y="62" width="40" height="20" fill="#0f766e" opacity="0.7"/>
+            <rect x="848" y="62" width="40" height="20" fill="#0f766e" opacity="0.5"/>
+            <text x="700" y="110" font-size="10.5" fill="#57534e">权重 W：</text>
+            <rect x="760" y="96" width="128" height="20" fill="#9a3412"/>
+            <text x="700" y="144" font-size="10.5" fill="#57534e">输出 Y：</text>
+            <rect x="760" y="130" width="64" height="20" fill="#1e3a5f"/>
+            <rect x="828" y="130" width="60" height="20" fill="#1e3a5f" opacity="0.6"/>
+            <text x="810" y="186" text-anchor="middle" font-size="10.5" fill="#57534e">Uneven：同一算子内各张量</text>
+            <text x="810" y="202" text-anchor="middle" font-size="10.5" fill="#57534e">各自选 tile 形状（ZigZag）</text>
+            <line x1="700" y1="216" x2="920" y2="216" stroke="#5eead4"/>
+            <text x="810" y="240" text-anchor="middle" font-size="10.5" fill="#57534e">Hybrid：跨算子边界也按张量</text>
+            <text x="810" y="256" text-anchor="middle" font-size="10.5" fill="#57534e">独立决定 tile 形状</text>
+            <text x="810" y="280" text-anchor="middle" font-size="10.5" fill="#78716c">= Fusion × Uneven 的笛卡尔积</text>
+            <text x="810" y="296" text-anchor="middle" font-size="10.5" fill="#78716c">（AccelForge 独有）</text>
+
+            <rect x="20" y="332" width="940" height="22" rx="4" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="347" text-anchor="middle" font-size="10.5" fill="#57534e">三个自由度正交叠加 → mapspace 急剧膨胀 → 这正是目标二（快且最优的 mapper）变得不可或缺的原因</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 4 · 映射自由度的三层扩展。Fusion 决定算子间数据是否片上复用；Uneven 让同一算子内各张量独立选 tile 形状；Hybrid 把 Uneven 推广到算子边界之外。前序工作各占一层，AccelForge 的主张是三层全开。</p>
+      <p>
+        三层叠加的代价是 mapspace 指数膨胀：每多一个自由度，合法映射的数量就乘上一个与张量数或算子数相关的因子。这解释了为什么论文把"快且最优的 mapper"单独立为目标二——如果搜索不动，更大的空间只会让结果更次优、更误导。
+      </p>
+    </section>
+
+    <section class="card" id="s7">
+      <h2>7. 两级 Mapper：Intra-Einsum 与 Inter-Einsum</h2>
+      <p>
+        引用指南把 mapper 明确分成两级，这是本稿透露出的最重要的架构信息。"Einsum"是该组近年统一使用的工作负载表示——每个张量操作写成一个爱因斯坦求和表达式，多算子负载就是一个 Einsum 图。
+      </p>
+      <div class="fig">
+        <svg viewBox="0 0 980 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="两级 mapper 分工">
+          <defs>
+            <marker id="arwE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#78716c"/>
+            </marker>
+          </defs>
+          <g font-family="Segoe UI, sans-serif" font-size="11">
+            <rect x="20" y="20" width="940" height="110" rx="8" fill="#f0f4f8" stroke="#1e3a5f"/>
+            <text x="40" y="44" font-weight="700" font-size="12.5" fill="#1e3a5f">Inter-Einsum 层 · FFM（Fast and Fusiest）</text>
+            <text x="40" y="64" font-size="10.5" fill="#334155">决策对象：Einsum 图上的跨算子问题 —— 哪些算子融合、融合组之间如何切分、跨算子的 tile 形状（Hybrid）</text>
+
+            <rect x="60" y="78" width="100" height="36" rx="5" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="110" y="100" text-anchor="middle" fill="#1e3a5f">Einsum 1</text>
+            <rect x="200" y="78" width="100" height="36" rx="5" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="250" y="100" text-anchor="middle" fill="#1e3a5f">Einsum 2</text>
+            <rect x="340" y="78" width="100" height="36" rx="5" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="390" y="100" text-anchor="middle" fill="#1e3a5f">Einsum 3</text>
+            <rect x="480" y="78" width="100" height="36" rx="5" fill="#dbeafe" stroke="#1e3a5f"/>
+            <text x="530" y="100" text-anchor="middle" fill="#1e3a5f">Einsum 4</text>
+            <path d="M 162 96 L 197 96" stroke="#1e3a5f" stroke-width="1.5" marker-end="url(#arwE)"/>
+            <path d="M 302 96 L 337 96" stroke="#1e3a5f" stroke-width="1.5" marker-end="url(#arwE)"/>
+            <path d="M 442 96 L 477 96" stroke="#1e3a5f" stroke-width="1.5" marker-end="url(#arwE)"/>
+            <rect x="52" y="72" width="256" height="48" rx="6" fill="none" stroke="#0f766e" stroke-width="1.8" stroke-dasharray="6 3"/>
+            <text x="180" y="68" text-anchor="middle" font-size="10" fill="#0f766e">融合组 ①</text>
+            <rect x="332" y="72" width="256" height="48" rx="6" fill="none" stroke="#0f766e" stroke-width="1.8" stroke-dasharray="6 3"/>
+            <text x="460" y="68" text-anchor="middle" font-size="10" fill="#0f766e">融合组 ②</text>
+            <text x="760" y="92" text-anchor="middle" font-size="10.5" fill="#334155">输出：融合划分 + 跨算子</text>
+            <text x="760" y="108" text-anchor="middle" font-size="10.5" fill="#334155">数据复用约束，下发给每个算子</text>
+
+            <path d="M 180 130 L 180 166" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwE)"/>
+            <path d="M 460 130 L 460 166" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwE)"/>
+            <path d="M 760 130 L 760 166" stroke="#78716c" stroke-width="1.5" marker-end="url(#arwE)"/>
+            <text x="320" y="154" text-anchor="middle" font-size="10" fill="#78716c">每个 Einsum 在约束下独立求解</text>
+
+            <rect x="20" y="170" width="940" height="100" rx="8" fill="#f0fdfa" stroke="#0f766e"/>
+            <text x="40" y="194" font-weight="700" font-size="12.5" fill="#115e59">Intra-Einsum 层 · TCM（Turbo-Charged Mapper）</text>
+            <text x="40" y="214" font-size="10.5" fill="#134e4a">决策对象：单个 Einsum 内部 —— 循环嵌套顺序、各存储层级的 tile 大小、空间展开方式、按张量的 Uneven tile</text>
+            <rect x="60" y="226" width="240" height="34" rx="5" fill="#ccfbf1" stroke="#14b8a6"/>
+            <text x="180" y="248" text-anchor="middle" font-size="10.5" fill="#115e59">for m … for n … for k … (tile/spatial)</text>
+            <rect x="340" y="226" width="240" height="34" rx="5" fill="#ccfbf1" stroke="#14b8a6"/>
+            <text x="460" y="248" text-anchor="middle" font-size="10.5" fill="#115e59">for m … for n … for k … (tile/spatial)</text>
+            <text x="760" y="240" text-anchor="middle" font-size="10.5" fill="#134e4a">输出：每个算子的最优 loop nest</text>
+            <text x="760" y="256" text-anchor="middle" font-size="10.5" fill="#134e4a">及对应动作计数</text>
+
+            <rect x="20" y="284" width="940" height="36" rx="6" fill="#f5f0e6" stroke="#e7e0d4"/>
+            <text x="490" y="300" text-anchor="middle" font-size="11" fill="#57534e">两级分工把"跨算子融合决策"与"单算子内循环优化"解耦，各层都声称快且最优；具体算法（剪枝、界定、Pareto 维护等）见各自的 arXiv 原文，本稿未展开。</text>
+            <text x="490" y="314" text-anchor="middle" font-size="10.5" fill="#78716c">注：上图中各层"决策对象"的细节是根据 Timeloop / LoopTree 谱系的惯例与两篇 mapper 标题推断的，稿件本身只给出了"Intra / Inter-Einsum"的划分。</text>
+          </g>
+        </svg>
+      </div>
+      <p class="figcap">图 5 · 两级 mapper 的分工：FFM 在 Einsum 图层面决定融合划分与跨算子约束，TCM 在每个 Einsum 内部求解最优 loop nest。这是稿件透露的唯一一条关于 AccelForge 内部结构的具体线索。</p>
+      <div class="callout">
+        这个两级结构和编译器里"图级优化 → 算子级 codegen"的分层是同构的，也和 <a href="Charon_论文分析.html">Charon</a> 的"前端 graph pass → 后端算子级引擎"异曲同工——区别是 AccelForge 的两层都在做<strong>最优化搜索</strong>，而 Charon 的后端只做<strong>成本预测</strong>，搜索放在更外层的设计探索器里。
+      </div>
+    </section>
+
+    <section class="card" id="s8">
+      <h2>8. 定位、局限与和 Charon 的对照</h2>
+      <h3>这篇稿子实际交付了什么</h3>
+      <ul>
+        <li>一份清晰的<strong>问题定义</strong>：加速器评估 = 组件 + 架构 + 负载 → 动作成本 → 映射搜索 → 延迟/能耗。</li>
+        <li>三条可操作的<strong>评估框架设计目标</strong>，以及用这三条标尺给 TileFlow / ZigZag / Timeloop / CiMLoop 打分的 Table I。</li>
+        <li>一张通过引用指南间接给出的<strong>组件分解图</strong>：六项前序工作各自对应 AccelForge 的哪个模块。</li>
+        <li>一个明确的<strong>实现立场</strong>：全 Python，用算法而非语言换性能。</li>
+      </ul>
+      <h3>它没有交付什么</h3>
+      <ul>
+        <li>设计章节（"Section ??"）缺失——没有说明异构架构、时序建模、Hybrid 映射在框架内如何表示。</li>
+        <li>没有任何实验：没有精度验证、没有速度对比、没有案例研究。"数量级时间节省"的说法仅出现在摘要里。</li>
+        <li>TCM 与 FFM 的算法细节完全外置到两篇独立 arXiv 论文。</li>
+      </ul>
+      <div class="callout teal">
+        实用建议：如果目的是<strong>用</strong> AccelForge，直接去 GitHub 仓库看文档比读这篇稿子更有效；如果目的是<strong>理解</strong>其技术内核，应依次阅读 Timeloop（ISPASS'19）→ LoopTree（ISPASS'23）→ TCM（arXiv:2602.15172）→ FFM（arXiv:2602.15166），本稿只适合作为导读。等稿件更新到包含设计与实验章节的版本后，本分析应相应补充。
+      </div>
+      <h3>与 Charon 的对照：同一目录下的两种"模拟器"</h3>
+      <table>
+        <thead>
+          <tr><th></th><th>AccelForge（本稿）</th><th><a href="Charon_论文分析.html">Charon</a>（MLSys'26）</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>建模对象</td><td>单颗加速器芯片内部：PE 阵列、存储层级、器件/电路</td><td>多卡 GPU 集群：算子延迟、集合通信、并行策略</td></tr>
+          <tr><td>核心输出</td><td>给定架构的最优映射 + 延迟/能耗</td><td>给定模型与集群配置的端到端时间 + 显存 + timeline</td></tr>
+          <tr><td>搜索对象</td><td>映射空间（loop nest / fusion / tile），也支持架构协同设计</td><td>系统配置空间（GPU 数、并行策略、并行度）</td></tr>
+          <tr><td>成本来源</td><td>组件动作成本模型（Accelergy / HWComponents）</td><td>Profiling / Prediction / Analytical 多引擎</td></tr>
+          <tr><td>负载表示</td><td>Einsum 图</td><td>PyTorch FX 图</td></tr>
+          <tr><td>精度验证</td><td>本稿无</td><td>&lt;5.35% 端到端误差，对比三个基线</td></tr>
+          <tr><td>设计阶段</td><td>硬件架构定义期（pre-silicon）</td><td>硬件已定、部署配置期</td></tr>
+        </tbody>
+      </table>
+      <p>
+        两者在抽象层次上恰好首尾相接：AccelForge 回答"这颗芯片该怎么设计、负载该怎么映射到它上面"，Charon 回答"拿到这批芯片后，模型该怎么切、集群该怎么配"。前者的输出（单芯片算子延迟/能耗）理论上可以作为后者 analytical 引擎的输入，构成从器件到集群的完整建模链——这也是本仓库把它们放进同一个 <code>simulator/</code> 目录的原因。
+      </p>
+    </section>
+
+    <footer>
+      分析基于 arXiv:2609.11906v1（2026-09-10）· 3 页框架概览稿 · 同目录：<a href="Charon_论文分析.html">Charon 论文分析</a>
+    </footer>
+  </div>
+</body>
+</html>
