@@ -36,7 +36,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "3f6dd7a0dcbd0a4a3a53861fa231f9c412408966d2e44affcadc5a25eb09ba71",
+    "sha256": "40464b8b9697e516290ce219072b2b218bfc34544ce9f6c272b0f995dcd044de",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -94,7 +94,7 @@
   "winners": {
     "compute": {
       "design": "out/detailed/matrix_vector_design.json",
-      "designSha256": "8e534d27977cb62687133d059c4c1e509e126a8cedf6d351e4d967c7ea0bdbac",
+      "designSha256": "ea56218c504f483d7a8bd5f49592611ace119655ac8e90b7369012559785cae6",
       "candidates": "out/detailed/matrix_vector_candidates.json",
       "candidateSetSha256": "457dbdc40aa8c15a566ed1ae7d36549d9cc5ddc35dd3c4871c5747c60d047692",
       "optionId": "vectorLanes=704|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -102,7 +102,7 @@
     },
     "sram": {
       "design": "out/detailed/sram_design.json",
-      "designSha256": "5b4aa235f1a5c2c93b88326a2913c778f38790dc4d4df4a536c106faeacae857",
+      "designSha256": "34ba9240ba67cfad0edd02ac98c166c8e5d63a87cf75f9f07b299f647311ec5f",
       "candidates": "out/detailed/sram_candidates.json",
       "candidateSetSha256": "353b255e7c38fde3bad7c279d4f97e48757a8baa5e741a165a97043ab48b0fbf",
       "optionId": "sharedMiB=16|lBanks=16|hBanks=32|sharedSlices=8|tmaEngines=1|sharedPortScaling=off",
@@ -110,7 +110,7 @@
     },
     "mc": {
       "design": "out/detailed/memory_design.json",
-      "designSha256": "23d690f6259721a4adbf2177f2463dedeedf3d48c6cbace6ed8a4bcf95475b11",
+      "designSha256": "2bef30bfacb0ec6455db0c0fffeaa7768ded376bc4dddf86b4d1331157177ad7",
       "candidates": "out/detailed/memory_candidates.json",
       "candidateSetSha256": "7cc3996cd9394515a56f82991d07e0e464d10a25857008a927dc6bc317bbe390",
       "optionId": "mcGBs=640|cubesPerCard=16|capacityGBPerCube=16|route=mcX|eccOverhead=0",
@@ -118,15 +118,15 @@
     },
     "comm": {
       "design": "out/detailed/comm_core_design.json",
-      "designSha256": "492a64017b226aa5d774032a62f4c71b8ef8111f8ac136be6bdebbdd436802cd",
+      "designSha256": "1eeb0bc996952301b5bad822dfa700d742badad172aa33db2fdb284fa35c0f56",
       "candidates": "out/detailed/comm_candidates.json",
-      "candidateSetSha256": "b3d8ec99aee82a704e14ac409516df05b463655e1dd5ade4ea3e1229bfe008a8",
+      "candidateSetSha256": "99fe7ca7ba39aa7eedf8db97d2eb9809e14a90548a39c1388f78c3828ac667f9",
       "optionId": "placement=spare23|trigger=counterCompare|wqeGeneration=templatePatch|txLanes=2|doorbell=directPush|commitCounting=hwCounters|signal=putWithSignal|graphStore=localSram|localSramKiB=64|managementCores=1",
       "landed": null
     },
     "physical": {
       "design": "out/detailed/physical_design.json",
-      "designSha256": "1f256189199f85992061272fd24312585ae10ab0fa2345acfec7b9198a125c88",
+      "designSha256": "d5148619afe3df6d75d4b64462668222082a3daee0923d0571aba3a9b49bb094",
       "candidates": "out/detailed/physical_candidates.json",
       "candidateSetSha256": "a765f744abd76ad23d4cf475496accc873aa6a214863865aca9525955d0adc3f",
       "optionId": "process=SF4|matrixTFPerMm2=3.2|cooling=liquid|reserveFraction=0.1254",
@@ -186,7 +186,7 @@
     "note": "each domain alone replays with the other domains at the published point; the composed point is all five winners at once"
   },
   "backflow": null,
-  "candidateSetSha256": "b572284e25c3a117825d0219f836d1f9d0575b728dc7d170bc281d83805297cd",
+  "candidateSetSha256": "1c127910344aa5ec993275f3bafed3ab42c2c7e136d334c88662089b37421772",
   "candidates": [
     {
       "rank": 1,
@@ -255,7 +255,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -396,7 +396,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -537,7 +537,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.038173826173826,
+          "latencyUs": 1.088173826173826,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -674,7 +674,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -812,7 +812,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0359042467948718,
+          "latencyUs": 1.0859042467948716,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -833,7 +833,7 @@
       "tauSweep": [
         {
           "tauUs": 1,
-          "tpsPerUser": 1079.1273210693575,
+          "tpsPerUser": 1077.593607275028,
           "meetsTarget": true
         },
         {
@@ -852,7 +852,7 @@
           "meetsTarget": false
         }
       ],
-      "tauHeadroomUs": 0.1140957532051281,
+      "tauHeadroomUs": 0.06409575320512828,
       "x": {
         "nL": 8,
         "nH": 4,
@@ -973,7 +973,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0352906936813187,
+          "latencyUs": 1.0852906936813185,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -994,7 +994,7 @@
       "tauSweep": [
         {
           "tauUs": 1,
-          "tpsPerUser": 1089.7563189710202,
+          "tpsPerUser": 1088.192173455862,
           "meetsTarget": true
         },
         {
@@ -1013,7 +1013,7 @@
           "meetsTarget": false
         }
       ],
-      "tauHeadroomUs": 0.11470930631868126,
+      "tauHeadroomUs": 0.06470930631868144,
       "x": {
         "nL": 8,
         "nH": 4,
@@ -1133,7 +1133,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -1270,7 +1270,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -1369,9 +1369,9 @@
       ],
       "chosen": false,
       "lostOn": "infeasible: clause:B-TAU",
-      "tpsPerUser": 1028.7843964722126,
-      "rawLatencyUs": 830.7871480474384,
-      "commUs": 452.44129499666724,
+      "tpsPerUser": 1027.3005499023895,
+      "rawLatencyUs": 831.9871480474388,
+      "commUs": 453.6412949966674,
       "dieAreaMm2": 319.6071758925793,
       "area": {
         "die": 319.503290027122,
@@ -1397,7 +1397,7 @@
       "clauses": {
         "B-SERIAL-CMP": {
           "through": "contract target",
-          "tpsPerUser": 1028.7843964722126,
+          "tpsPerUser": 1027.3005499023895,
           "target": 1000,
           "holds": true
         },
@@ -1413,7 +1413,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.17047062486125,
+          "latencyUs": 1.2204706248612498,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": false
@@ -1552,7 +1552,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -1651,9 +1651,9 @@
       ],
       "chosen": false,
       "lostOn": "infeasible: clause:B-TAU",
-      "tpsPerUser": 1003.8045072000613,
-      "rawLatencyUs": 851.4614634326505,
-      "commUs": 452.44129499666724,
+      "tpsPerUser": 1002.9467427842848,
+      "rawLatencyUs": 852.1896709371786,
+      "commUs": 453.6412949966674,
       "dieAreaMm2": 332.68683975812553,
       "area": {
         "die": 332.58295389266823,
@@ -1679,7 +1679,7 @@
       "clauses": {
         "B-SERIAL-CMP": {
           "through": "contract target",
-          "tpsPerUser": 1003.8045072000613,
+          "tpsPerUser": 1002.9467427842848,
           "target": 1000,
           "holds": true
         },
@@ -1695,7 +1695,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.17047062486125,
+          "latencyUs": 1.2204706248612498,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": false
@@ -1838,7 +1838,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.038173826173826,
+          "latencyUs": 1.088173826173826,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -1981,7 +1981,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -2124,7 +2124,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.038173826173826,
+          "latencyUs": 1.088173826173826,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -2265,7 +2265,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -2407,7 +2407,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -2546,7 +2546,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0243515772422023,
+          "latencyUs": 1.0743515772422023,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -2685,7 +2685,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -2820,7 +2820,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -2841,7 +2841,7 @@
       "tauSweep": [
         {
           "tauUs": 1,
-          "tpsPerUser": 1066.7930576843864,
+          "tpsPerUser": 1065.2941794117269,
           "meetsTarget": true
         },
         {
@@ -2860,7 +2860,7 @@
           "meetsTarget": false
         }
       ],
-      "tauHeadroomUs": 0.11337064498002003,
+      "tauHeadroomUs": 0.06337064498001999,
       "x": {
         "nL": 8,
         "nH": 4,
@@ -2984,7 +2984,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -3127,7 +3127,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0258960483960484,
+          "latencyUs": 1.0758960483960485,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -3270,7 +3270,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.038173826173826,
+          "latencyUs": 1.088173826173826,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -3409,7 +3409,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.038173826173826,
+          "latencyUs": 1.088173826173826,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -3552,7 +3552,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -3695,7 +3695,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -3838,7 +3838,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -3981,7 +3981,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0243515772422023,
+          "latencyUs": 1.0743515772422023,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -4124,7 +4124,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -4263,7 +4263,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -4406,7 +4406,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0352906936813187,
+          "latencyUs": 1.0852906936813185,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -4427,7 +4427,7 @@
       "tauSweep": [
         {
           "tauUs": 1,
-          "tpsPerUser": 1041.9160201492807,
+          "tpsPerUser": 1040.3940795739577,
           "meetsTarget": true
         },
         {
@@ -4446,7 +4446,7 @@
           "meetsTarget": false
         }
       ],
-      "tauHeadroomUs": 0.11470930631868126,
+      "tauHeadroomUs": 0.06470930631868144,
       "x": {
         "nL": 8,
         "nH": 4,
@@ -4572,7 +4572,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -4711,7 +4711,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -4854,7 +4854,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0243515772422023,
+          "latencyUs": 1.0743515772422023,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -4997,7 +4997,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -5136,7 +5136,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -5279,7 +5279,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0243515772422023,
+          "latencyUs": 1.0743515772422023,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -5422,7 +5422,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0359042467948718,
+          "latencyUs": 1.0859042467948716,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -5443,7 +5443,7 @@
       "tauSweep": [
         {
           "tauUs": 1,
-          "tpsPerUser": 1032.1619915039735,
+          "tpsPerUser": 1030.6683927997608,
           "meetsTarget": true
         },
         {
@@ -5462,7 +5462,7 @@
           "meetsTarget": false
         }
       ],
-      "tauHeadroomUs": 0.1140957532051281,
+      "tauHeadroomUs": 0.06409575320512828,
       "x": {
         "nL": 8,
         "nH": 4,
@@ -5585,7 +5585,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -5606,7 +5606,7 @@
       "tauSweep": [
         {
           "tauUs": 1,
-          "tpsPerUser": 1020.867379798265,
+          "tpsPerUser": 1019.406267037153,
           "meetsTarget": true
         },
         {
@@ -5625,7 +5625,7 @@
           "meetsTarget": false
         }
       ],
-      "tauHeadroomUs": 0.11337064498002003,
+      "tauHeadroomUs": 0.06337064498001999,
       "x": {
         "nL": 8,
         "nH": 4,
@@ -5749,7 +5749,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -5891,7 +5891,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -6032,7 +6032,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -6174,7 +6174,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -6274,9 +6274,9 @@
       ],
       "chosen": false,
       "lostOn": "infeasible: clause:B-TAU, hKernelExposed",
-      "tpsPerUser": 1007.1058477225157,
-      "rawLatencyUs": 848.6703325511297,
-      "commUs": 452.44129499666724,
+      "tpsPerUser": 1006.1723319102848,
+      "rawLatencyUs": 849.4577197110444,
+      "commUs": 453.6412949966674,
       "dieAreaMm2": 335.956755724512,
       "area": {
         "die": 335.8528698590547,
@@ -6302,7 +6302,7 @@
       "clauses": {
         "B-SERIAL-CMP": {
           "through": "contract target",
-          "tpsPerUser": 1007.1058477225157,
+          "tpsPerUser": 1006.1723319102848,
           "target": 1000,
           "holds": true
         },
@@ -6318,7 +6318,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.17047062486125,
+          "latencyUs": 1.2204706248612498,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": false
@@ -6418,9 +6418,9 @@
       ],
       "chosen": false,
       "lostOn": "infeasible: belowContractTarget, clause:B-TAU",
-      "tpsPerUser": 993.5864856777305,
-      "rawLatencyUs": 860.2178743583241,
-      "commUs": 452.1466283300004,
+      "tpsPerUser": 992.2023679129323,
+      "rawLatencyUs": 861.4178743583249,
+      "commUs": 453.3466283300004,
       "dieAreaMm2": 328.23975404383975,
       "area": {
         "die": 328.13586817838245,
@@ -6446,7 +6446,7 @@
       "clauses": {
         "B-SERIAL-CMP": {
           "through": "contract target",
-          "tpsPerUser": 993.5864856777305,
+          "tpsPerUser": 992.2023679129323,
           "target": 1000,
           "holds": false
         },
@@ -6462,7 +6462,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.1581928470834721,
+          "latencyUs": 1.2081928470834722,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": false
@@ -6562,9 +6562,9 @@
       ],
       "chosen": false,
       "lostOn": "infeasible: belowContractTarget, clause:B-TAU",
-      "tpsPerUser": 992.2911337104554,
-      "rawLatencyUs": 861.3408158802025,
-      "commUs": 452.44129499666724,
+      "tpsPerUser": 991.4529249004376,
+      "rawLatencyUs": 862.0690233847305,
+      "commUs": 453.6412949966674,
       "dieAreaMm2": 319.6071758925793,
       "area": {
         "die": 319.503290027122,
@@ -6590,7 +6590,7 @@
       "clauses": {
         "B-SERIAL-CMP": {
           "through": "contract target",
-          "tpsPerUser": 992.2911337104554,
+          "tpsPerUser": 991.4529249004376,
           "target": 1000,
           "holds": false
         },
@@ -6606,7 +6606,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.17047062486125,
+          "latencyUs": 1.2204706248612498,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": false
@@ -6702,9 +6702,9 @@
       ],
       "chosen": false,
       "lostOn": "infeasible: belowContractTarget, clause:B-TAU",
-      "tpsPerUser": 992.222384678404,
-      "rawLatencyUs": 861.4004963996833,
-      "commUs": 452.44129499666724,
+      "tpsPerUser": 991.3842919627672,
+      "rawLatencyUs": 862.1287039042113,
+      "commUs": 453.6412949966674,
       "dieAreaMm2": 316.3372599261927,
       "area": {
         "die": 316.2333740607354,
@@ -6730,7 +6730,7 @@
       "clauses": {
         "B-SERIAL-CMP": {
           "through": "contract target",
-          "tpsPerUser": 992.222384678404,
+          "tpsPerUser": 991.3842919627672,
           "target": 1000,
           "holds": false
         },
@@ -6746,7 +6746,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.17047062486125,
+          "latencyUs": 1.2204706248612498,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": false
@@ -6887,7 +6887,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0374994848901098,
+          "latencyUs": 1.0874994848901098,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -6908,7 +6908,7 @@
       "tauSweep": [
         {
           "tauUs": 1,
-          "tpsPerUser": 1051.3475177566731,
+          "tpsPerUser": 1049.8916986168429,
           "meetsTarget": true
         },
         {
@@ -6927,7 +6927,7 @@
           "meetsTarget": false
         }
       ],
-      "tauHeadroomUs": 0.11250051510989012,
+      "tauHeadroomUs": 0.06250051510989008,
       "x": {
         "nL": 8,
         "nH": 4,
@@ -7055,7 +7055,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -7197,7 +7197,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -7343,7 +7343,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -7488,7 +7488,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -7630,7 +7630,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -7773,7 +7773,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -7917,7 +7917,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0374994848901098,
+          "latencyUs": 1.0874994848901098,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -7938,7 +7938,7 @@
       "tauSweep": [
         {
           "tauUs": 1,
-          "tpsPerUser": 1006.8173967596118,
+          "tpsPerUser": 1005.3961972232828,
           "meetsTarget": true
         },
         {
@@ -7957,7 +7957,7 @@
           "meetsTarget": false
         }
       ],
-      "tauHeadroomUs": 0.11250051510989012,
+      "tauHeadroomUs": 0.06250051510989008,
       "x": {
         "nL": 8,
         "nH": 4,
@@ -8083,7 +8083,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -8228,7 +8228,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -8374,7 +8374,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -8519,7 +8519,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -8661,7 +8661,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -8807,7 +8807,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -8952,7 +8952,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -9097,7 +9097,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -9243,7 +9243,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -9386,7 +9386,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -9531,7 +9531,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -9677,7 +9677,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -9822,7 +9822,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -9968,7 +9968,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -10114,7 +10114,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -10261,7 +10261,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -10408,7 +10408,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -10554,7 +10554,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -10701,7 +10701,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -10848,7 +10848,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -10995,7 +10995,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true
@@ -11142,7 +11142,7 @@
         },
         "B-TAU": {
           "slowest": "LSE merge / output reduce-scatter",
-          "latencyUs": 1.0366293550199799,
+          "latencyUs": 1.08662935501998,
           "tauUs": 1.15,
           "max": 1.15,
           "holds": true

@@ -52,7 +52,7 @@
 | 比对 | 做法 | 差异分类 |
 | --- | --- | --- |
 | K1–K8 逐 kernel | PMU 实测 vs `KERNEL_SPEC.md` 时长 | 单元级（哪一类 kernel 偏了） |
-| 时间账分量 | 实测 vs 21 号文档 §3 的时间账（kernel 224.84 / tmaFill 134.77 / memoryTransport 192.37 / tauFloor 183.00 …） | 类别级（计算 / 访存 / 通信 / 发射） |
+| 时间账分量 | 实测 vs 21 号文档 §3 的时间账（kernel 224.84 / tmaFill 134.77 / memoryTransport 192.37 / tauFloor 163.35 …） | 类别级（计算 / 访存 / 通信 / 发射） |
 | 集合通信 | 393 次分类计数（五类协议） | 协议级 |
 | 总 TPS | 由以上推出 | — |
 

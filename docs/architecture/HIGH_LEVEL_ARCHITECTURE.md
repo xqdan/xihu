@@ -636,7 +636,7 @@ MC 颗数、每颗带宽、SRAM 常驻或归约延迟一变，Stage 的两项都
 | B-001 | 正式 K3 逐层结构和 dtype 未冻结 | FLOP、byte、容量、tile 全部可能变化 | 模型 manifest |
 | B-002 | MC 档位未选定：320 为基线，480 为默认上限，560/640 为激进（ADR-0019） | 发布点使用 640 GB/s，不能作为承诺；1M、16 卡路线 A 约 883 TPS | 选定颗数与每颗带宽的供应商规格 |
 | B-003 | Final Tuning 仍含经验缩放因子 | 性能可能高估 | 精确 tile/transaction 模型 |
-| B-004 | 卡内拓扑口径冲突 | 带宽、hop、封装无法签核 | 统一拓扑和 packet 模型 |
+| B-004 | 卡内拓扑未定；2026-10-10 起模型按 8 Die 双向环计算（ADR-0016，`ASSUMPTION`） | 封装、packet 级时延无法签核；τ 推导与 Comm Core 余量按环口径 | 硬件评审选定拓扑并给出 packet 模型 |
 | B-005 | 选定 PP×TP 的跨卡拓扑未定义 | 归约延迟档位和互联 200/400 GB/s 的可实现性未知 | PHY、布线、功耗和 P99 方案 |
 | B-006 | 频率、面积、功耗未回标 | PPA 可能不收敛 | synthesis/floorplan/IP macro |
 

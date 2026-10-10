@@ -69,9 +69,10 @@ function collective(name,logicalPayload,p,x,c=MEM,trace=false){
   }
   reduceUs=Math.max(reduceOps/(activeNICs*p.reduceTOP*1e6),reduceRead/(activeNICs*p.sharedRead*1e6),reduceWrite/(activeNICs*p.sharedWrite*1e6));
  }
- // Deliberately retain the previous intra-card merge budget; direct SRAM
- // does not eliminate reduction/redistribution between the eight dies.
- const cardLocal=6*A.TECH.ucieHopUs+logicalPayload*2/(p.dieCutGB*1000)+logicalPayload/4*2/(D*p.reduceTOP*1e6)+p.meshSide*A.TECH.routerCycles/(x.ghz*1000);
+ // Intra-card stage: direct SRAM does not eliminate reduction/redistribution between the
+ // eight dies. On the die ring (A.dieRing, B-004) the card partial is collected and the result
+ // redistributed, diameter hops each way, and the payload crosses the ring cut both ways.
+ const cardLocal=A.dieRing(D).allReduceHops*A.TECH.ucieHopUs+logicalPayload*2/(p.dieCutGB*1000)+logicalPayload/4*2/(D*p.reduceTOP*1e6)+p.meshSide*A.TECH.routerCycles/(x.ghz*1000);
  const memoryTransport=phases.reduce((s,a)=>s+a.duration,0);
  const tx=phases.reduce((s,a)=>s+a.wireBytes,0),reads=phases.reduce((s,a)=>s+a.readBytes,0)+reduceRead+logicalPayload*2;
  const writes=phases.reduce((s,a)=>s+a.writeBytes,0)+reduceWrite+logicalPayload*2;

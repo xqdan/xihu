@@ -20,6 +20,16 @@ const BASE={nL:8,nH:8,lRows:16,lCols:128,lEngines:1,hRows:64,hCols:64,hEngines:4
 // out/rdma/k3_rdma_final_tuning_results.json, and adding a key there would
 // churn a generated artifact for no modelling gain.
 const SHARED_WRITE_READ_RATIO=.5;
+// In-card die topology (B-004, ADR-0016 basis 2026-10-10, ASSUMPTION until hardware review):
+// the D dies sit on one bidirectional ring. Every in-card hop count and cut bandwidth is read
+// from here. cutLinks: links across a bisection. diameter: farthest die. allReduceHops: a
+// reduce-scatter then all-gather with each die owning 1/D of the payload, every partial sent
+// toward its owner along the shorter arc (diameter steps) and back. gatherHops: partials
+// gathered into one die along both arcs. meanHops: mean distance to a uniformly placed die.
+function dieRing(D=LIMITS.dies){
+ const diameter=Math.floor(D/2),meanHops=Array.from({length:D},(_,k)=>Math.min(k,D-k)).reduce((a,b)=>a+b,0)/D;
+ return {dies:D,cutLinks:2,diameter,allReduceHops:2*diameter,gatherHops:diameter,meanHops,dist:(a,b)=>Math.min(((a-b)%D+D)%D,((b-a)%D+D)%D)};
+}
 // `dies` is the package's die count. It defaults to LIMITS.dies, so every existing caller
 // (mappedPlan, the RDMA tuning search, the morphology-free path) is unchanged. The parametrized
 // form exists for the L2 arch.direction morphology axis: a shape that changes the die count
@@ -38,7 +48,7 @@ function physical(x,dies){
  const coreTma=x.tmaEngines*x.tmaBytes*f/1000*.8;
  const uciePortGB=x.ucieLanes*x.ucieGbps/8*TECH.ucieUtil;
  const mcDieGB=2*Math.min(x.mcGBs*TECH.mcUtil,uciePortGB);
- const dieCutGB=2*uciePortGB; // Eight-die bidirectional ring: two links across the cut, NOT 8x injection.
+ const dieCutGB=dieRing(D).cutLinks*uciePortGB; // Bidirectional die ring: two links across the cut, NOT 8x injection.
  const rdmaDieGB=x.rdmaLanes*112/8*TECH.rdmaUtil,rdmaCardGB=Math.min(D*rdmaDieGB,LIMITS.networkGBs);
  const reduceTOP=x.reduceLanes*f/1000*TECH.reduceUtil;
  const area={matrix:(lTF+hTF)/f/TECH.matrixTFPerMm2,vector:n*x.vectorLanes*TECH.vectorLaneArea,sram:totalMiB/TECH.sramMiBPerMm2,
@@ -147,7 +157,7 @@ function mappedPlan(x,batch,p=physical(x),basis){
  const extra=Object.fromEntries(SIM_KEYS.filter(k=>b0[k]!==undefined).map(k=>[k,b0[k]]));
  const pvMerge=b0.pvMerge||'tile',softmaxFusion=!!b0.softmaxFusion,epilogueFusion=!!b0.epilogueFusion;
  if(!['tile','layer'].includes(pvMerge))throw Error('Invalid pvMerge '+pvMerge);
- const D=LIMITS.dies,NL=D*x.nL,NH=D*x.nH,B=batch;
+ const D=LIMITS.dies,NL=D*x.nL,NH=D*x.nH,B=batch,ring=dieRing(D);
  // Shared SRAM holds backing objects; LOCAL SRAM is never added to this pool.
  // Keep physical capacity reserve separate from timing/imbalance margin.
  // The simulator itself accounts for scratch and live-object peaks.
@@ -188,7 +198,7 @@ function mappedPlan(x,batch,p=physical(x),basis){
  const dmaPeak=Math.min(D*p.mcDieGB/1000,D*p.nocTB,remoteTB,D*p.sharedWrite);
  const reads=plan.jobs.filter(j=>['weight','expert','prediction','kv','state'].includes(j.kind));
  const meanBytes=reads.reduce((s,j)=>s+j.bytes,0)/reads.length;
- const dmaStartup=2*TECH.ucieHopUs+meshLatency;
+ const dmaStartup=ring.meanHops*TECH.ucieHopUs+meshLatency; // a remote MC is on average meanHops ring hops away
  plan.c.memTBs=1/(1/dmaPeak+dmaStartup*1e6/meanBytes);
  const seenKV=new Set(),services={},limiters={};
  function stageTime(bytes,cores,localRead){return bytes? tmaSetup+meshLatency+Math.max(bytes/(D*p.nocTB*1e6),bytes/(D*p.sharedRead*1e6),bytes/(cores*p.coreTma*1e6),bytes/(cores*localRead*.5*1e6)):0;}
@@ -207,7 +217,8 @@ function mappedPlan(x,batch,p=physical(x),basis){
    const payload=o.linkBytes/2,isGather=o.name.includes('all-gather'),factor=isGather?31/32:2*31/32;
    const wire=payload*factor,steps=isGather?5:10;
    const network=steps*TECH.rdmaStepUs+wire/(p.rdmaCardGB*1000);
-   const dieMerge=6*TECH.ucieHopUs+payload*2/(p.dieCutGB*1000);
+   // In-card stage on the die ring: reduce-scatter and all-gather, the payload crossing the cut both ways.
+   const dieMerge=ring.allReduceHops*TECH.ucieHopUs+payload*2/(p.dieCutGB*1000);
    const localReduce=payload/4*2/(D*p.reduceTOP*1e6);
    const ports=Math.max(wire/(D*p.sharedRead*1e6),wire/(D*p.sharedWrite*1e6));
    o.read=o.write=wire;o.linkBytes=wire+payload*2;o.costSource=CP.ANALYTICAL.source;o.costEvidence=CP.ANALYTICAL.evidence;
@@ -230,7 +241,7 @@ function mappedPlan(x,batch,p=physical(x),basis){
     reduceUs=Math.max(sharedW/4*8/(D*p.reduceTOP*1e6),reduceRead/(D*p.sharedRead*1e6),reduceWrite/(D*p.sharedWrite*1e6));
     if(pvMerge==='tile'){
      const ringBytes=Math.max(0,D-B)*part;
-     dieUs=ringBytes?3*TECH.ucieHopUs+ringBytes/(p.dieCutGB*1000):0;
+     dieUs=ringBytes?ring.gatherHops*TECH.ucieHopUs+ringBytes/(p.dieCutGB*1000):0;
     }else{
      // Bidirectional-ring reduce-scatter: D-1 steps, each moving part/D split over both directions.
      dieUs=B<D?(D-1)*(TECH.ucieHopUs+part/D/2/(p.uciePortGB*1000)):0;
@@ -347,4 +358,4 @@ function search({samples=192,generations=4,offspring=48,polish=2,seed=20260919}=
  for(const id of new Set(Object.values(selected))){const detailed=evaluate(rows[id].x,{details:true});rows[id]=Object.assign(detailed,{id});}
  return {version:'2026-09-19',seed,options:{samples,generations,offspring,polish},elapsedSeconds:(Date.now()-start)/1000,limits:LIMITS,tech:TECH,space:SPACE,baseline,attempted,physicalReject,mappingReject,rejected,history,selected,frontIds:front.map(r=>r.id),rows};
 }
-module.exports={LIMITS,TECH,SPACE,BASE,EPILOGUE_OPS,RULES,selectRules,checkRules,physical,mappedPlan,evaluate,dominates,pareto,rng,search};
+module.exports={LIMITS,TECH,dieRing,SPACE,BASE,EPILOGUE_OPS,RULES,selectRules,checkRules,physical,mappedPlan,evaluate,dominates,pareto,rng,search};

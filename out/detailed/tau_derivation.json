@@ -11,20 +11,20 @@
     "O-018"
   ],
   "candidatesStatus": "ASSUMPTION",
-  "method": "tau = memoryTransport (phase chain per step with per-path one-way latency and the busiest-link floor) + tpReduce (model) + cardLocal (model, 6 die hops at ucieHopUs) + portTail (model floor) + controlPath (Comm Core). bottomUp replays with OPT.tauUs = 0, specFloor with 1.15 us; optimistic / pessimistic put every parameter at the low / high end of its range.",
+  "method": "tau = memoryTransport (phase chain per step with per-path one-way latency and the busiest-link floor) + tpReduce (model) + cardLocal (model, 8 die hops on the in-card ring at ucieHopUs) + portTail (model floor) + controlPath (Comm Core). bottomUp replays with OPT.tauUs = 0, specFloor with 1.15 us; optimistic / pessimistic put every parameter at the low / high end of its range.",
   "provenance": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "baselineSha256": "5b4c8ff39f873b5c17edc0d33384c699b4dc24dc0059f60c3cdc32c2d6523ca5",
     "candidates": "teams/hardware/inputs/scaleout_topology_candidates.json",
-    "candidatesSha256": "9bc9838459cb58464d4f7dc0f7dccc01b4253bd19744181c0899487c044d085d",
+    "candidatesSha256": "49bdced075e7a7d3ee898a3581fbe7a389e2cb8dc7509b05cb8dbe5ba224caec",
     "commCore": "out/detailed/comm_core_design.json",
-    "commCoreSha256": "492a64017b226aa5d774032a62f4c71b8ef8111f8ac136be6bdebbdd436802cd",
+    "commCoreSha256": "1eeb0bc996952301b5bad822dfa700d742badad172aa33db2fdb284fa35c0f56",
     "sources": {
-      "integration/detailed/collective_topology.js": "d45bcd5340365e98dd632becdcbcfb631008f3cc4436456383dc6c7cd9f492d0",
-      "integration/detailed/k3_sram_memory_rdma_model.js": "68314a43ca69a40d170ac1f1f266c09124ee8f34afe8946ff6301fa8b61df187",
-      "integration/detailed/k3_rdma_final_tuning_model.js": "54b7ae2e6c3f6736f332fa87d1cd75b9f9c18ba9642487e01aa56e667d9d49de",
+      "integration/detailed/collective_topology.js": "48c8a2bfc458ae4f5b10b59486c88697b2e689bd54d5984bf506ed74be99c5a8",
+      "integration/detailed/k3_sram_memory_rdma_model.js": "ef7b58287a7352eed73ed4ef8f8e8a10424cad0876e875742caa60ae77f6a3cc",
+      "integration/detailed/k3_rdma_final_tuning_model.js": "36dee594dc340272de22f6a50e677ea9182a37c9667d9013a39f84d18823ba12",
       "integration/detailed/k3_operator_sram_sim.js": "49580d74ff1f93c70ad8185d99cca679bc3d28ab2a61b889c6c8c3ef45343355",
-      "integration/detailed/k3_architecture_search.js": "45731fa500ddd256e6e7fb98815564f6de9a1e3eb4938e93bc9853e65752273a",
+      "integration/detailed/k3_architecture_search.js": "b8689699d8ed807fa9e6cad71843ce077eb09961af748ad389862a19957a40bd",
       "integration/detailed/cost_provider.js": "9a737e30a235e8e9c30f8eab40e198df47667525ca5c27cb5ce16d176dbec413",
       "teams/vv/inputs/operator_cost_observations.json": "aa535b0adf152419b1452c2bc73e1ba356ec3dfc35f7f16754140af1423ee5b2",
       "integration/detailed/k3_physical_basis.js": "c93f516e1ecdbd35190f714c06deac1ada09d64656fcd75332a7a2214a2f3c90"
@@ -40,24 +40,24 @@
     "uniformTauSweep": [
       {
         "tauUs": 0,
-        "rawUs": 771.6327155806549,
-        "tpsPerUser": 1107.652432877591,
-        "commUs": 268.9526861263738,
-        "dmaWaitUs": 170.4052374607937
+        "rawUs": 773.639215749268,
+        "tpsPerUser": 1104.7796405629188,
+        "commUs": 288.6026861263737,
+        "dmaWaitUs": 157.10046330512955
       },
       {
         "tauUs": 0.5,
         "rawUs": 773.639215749268,
         "tpsPerUser": 1104.7796405629188,
-        "commUs": 275.2607994505493,
-        "dmaWaitUs": 167.68065263627534
+        "commUs": 290.3107994505498,
+        "dmaWaitUs": 155.61284876547762
       },
       {
         "tauUs": 0.9,
         "rawUs": 775.7369204710001,
         "tpsPerUser": 1101.7921567815936,
-        "commUs": 355.5834162087901,
-        "dmaWaitUs": 103.1531292741929
+        "commUs": 356.78341620878984,
+        "dmaWaitUs": 101.95312927419359
       },
       {
         "tauUs": 1.15,
@@ -90,7 +90,7 @@
     ],
     "abstractWire": {
       "bottomUpTpsAtModelOneWay": 1104.7796405629188,
-      "oneWayBudgetUs": 0.2344378471374512
+      "oneWayBudgetUs": 0.2197725296020508
     }
   },
   "anchor": {
@@ -182,7 +182,7 @@
       "high": 0.05,
       "unit": "us per die hop",
       "evidence": "ASSUMPTION",
-      "meaning": "One die-to-die hop inside the card (A.TECH.ucieHopUs is 0.025). Also rescales the 6 die hops inside cardLocal."
+      "meaning": "One die-to-die hop inside the card (A.TECH.ucieHopUs is 0.025). Also rescales the 8 die hops inside cardLocal (collect and redistribute on the in-card ring, 4 hops each way)."
     },
     {
       "key": "controlScale",
@@ -326,12 +326,12 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 0.8286666666666667,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.3116185325091576,
+          "tauUs": 1.3616185325091574,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         },
         {
           "name": "Attention output all-reduce",
@@ -342,10 +342,10 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 1.1333333333333335,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.3598365384615387,
+          "tauUs": 1.4098365384615386,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -358,10 +358,10 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 0.5442857142857144,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 0.757433550824176,
+          "tauUs": 0.8074335508241759,
           "withinSpecTau": true,
           "withinBreakEvenTau": true
         },
@@ -374,10 +374,10 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 1.0893333333333337,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.3045849358974364,
+          "tauUs": 1.3545849358974362,
           "withinSpecTau": false,
           "withinBreakEvenTau": true
         },
@@ -390,22 +390,22 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 1.1333333333333335,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.3598365384615387,
+          "tauUs": 1.4098365384615386,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 1.3598365384615387,
-      "meanTauUs": 1.2029371632926025,
-      "collectiveUs": 472.75430517399275,
+      "maxTauUs": 1.4098365384615386,
+      "meanTauUs": 1.2529371632926023,
+      "collectiveUs": 492.4043051739927,
       "tpsPerUser": {
-        "bottomUp": 1075.0504227847857,
-        "specFloor": 1028.336025102022,
+        "bottomUp": 1049.120418394619,
+        "specFloor": 1010.0466509255018,
         "optimistic": 1104.7796405629188,
-        "pessimistic": 641.8954636509031
+        "pessimistic": 623.4930686512702
       },
       "meetsTarget": {
         "bottomUp": true,
@@ -428,11 +428,11 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 0.6235238095238095,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.1064756753663005,
-          "withinSpecTau": true,
+          "tauUs": 1.1564756753663004,
+          "withinSpecTau": false,
           "withinBreakEvenTau": true
         },
         {
@@ -444,10 +444,10 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 0.6953333333333335,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 0.9218365384615388,
+          "tauUs": 0.9718365384615387,
           "withinSpecTau": true,
           "withinBreakEvenTau": true
         },
@@ -460,10 +460,10 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 0.32528571428571434,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 0.5384335508241759,
+          "tauUs": 0.5884335508241759,
           "withinSpecTau": true,
           "withinBreakEvenTau": true
         },
@@ -476,10 +476,10 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 0.6513333333333335,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 0.8665849358974361,
+          "tauUs": 0.9165849358974362,
           "withinSpecTau": true,
           "withinBreakEvenTau": true
         },
@@ -492,22 +492,22 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 0.6953333333333335,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 0.9218365384615388,
+          "tauUs": 0.9718365384615387,
           "withinSpecTau": true,
           "withinBreakEvenTau": true
         }
       ],
-      "maxTauUs": 1.1064756753663005,
-      "meanTauUs": 0.8304246223983821,
-      "collectiveUs": 326.35687660256417,
+      "maxTauUs": 1.1564756753663004,
+      "meanTauUs": 0.880424622398382,
+      "collectiveUs": 346.00687660256415,
       "tpsPerUser": {
         "bottomUp": 1104.7796405629188,
         "specFloor": 1101.771070241925,
-        "optimistic": 1107.7833693777116,
-        "pessimistic": 851.85124154719
+        "optimistic": 1107.652432877591,
+        "pessimistic": 820.2898576523932
       },
       "meetsTarget": {
         "bottomUp": true,
@@ -530,10 +530,10 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 6.774285714285714,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 7.257237580128204,
+          "tauUs": 7.307237580128204,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -546,10 +546,10 @@
           "worstOneWayUs": 0.19000000000000003,
           "memoryTransportUs": 4.682476190476191,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.908979395604396,
+          "tauUs": 4.958979395604396,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -562,10 +562,10 @@
           "worstOneWayUs": 0.19000000000000003,
           "memoryTransportUs": 2.049428571428572,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 2.2625764079670336,
+          "tauUs": 2.3125764079670335,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -578,10 +578,10 @@
           "worstOneWayUs": 0.19000000000000003,
           "memoryTransportUs": 4.185714285714286,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.400965888278389,
+          "tauUs": 4.450965888278389,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -594,22 +594,22 @@
           "worstOneWayUs": 0.19000000000000003,
           "memoryTransportUs": 4.682476190476191,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.908979395604396,
+          "tauUs": 4.958979395604396,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 7.257237580128204,
-      "meanTauUs": 4.313946008560991,
-      "collectiveUs": 1695.3807813644692,
+      "maxTauUs": 7.307237580128204,
+      "meanTauUs": 4.36394600856099,
+      "collectiveUs": 1715.0307813644688,
       "tpsPerUser": {
-        "bottomUp": 400.79895441928045,
-        "specFloor": 400.79895441928045,
-        "optimistic": 606.131686849676,
-        "pessimistic": 233.737823632703
+        "bottomUp": 397.1394854812289,
+        "specFloor": 397.1394854812289,
+        "optimistic": 601.1057441466294,
+        "pessimistic": 231.2524383136004
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -632,10 +632,10 @@
           "worstOneWayUs": 0.21500000000000002,
           "memoryTransportUs": 5.754285714285714,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 6.237237580128204,
+          "tauUs": 6.287237580128204,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -648,10 +648,10 @@
           "worstOneWayUs": 0.19000000000000003,
           "memoryTransportUs": 2.9924761904761907,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 3.2189793956043955,
+          "tauUs": 3.2689793956043958,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -664,10 +664,10 @@
           "worstOneWayUs": 0.19000000000000003,
           "memoryTransportUs": 1.2044285714285716,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 1.4175764079670332,
+          "tauUs": 1.4675764079670333,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -680,10 +680,10 @@
           "worstOneWayUs": 0.19000000000000003,
           "memoryTransportUs": 2.4957142857142856,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.710965888278388,
+          "tauUs": 2.7609658882783883,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -696,22 +696,22 @@
           "worstOneWayUs": 0.19000000000000003,
           "memoryTransportUs": 2.9924761904761907,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 3.2189793956043955,
+          "tauUs": 3.2689793956043958,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 6.237237580128204,
-      "meanTauUs": 2.862673743929946,
-      "collectiveUs": 1125.0307813644688,
+      "maxTauUs": 6.287237580128204,
+      "meanTauUs": 2.9126737439299464,
+      "collectiveUs": 1144.6807813644689,
       "tpsPerUser": {
-        "bottomUp": 547.133652213843,
-        "specFloor": 547.133652213843,
-        "optimistic": 721.3907144938493,
-        "pessimistic": 361.8754475904692
+        "bottomUp": 543.1924622082466,
+        "specFloor": 543.1924622082466,
+        "optimistic": 714.2828289680564,
+        "pessimistic": 355.95261150218465
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -734,10 +734,10 @@
           "worstOneWayUs": 0.16500000000000004,
           "memoryTransportUs": 16.164285714285725,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 16.647237580128216,
+          "tauUs": 16.697237580128217,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -750,10 +750,10 @@
           "worstOneWayUs": 0.11500000000000002,
           "memoryTransportUs": 17.672952380952392,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 17.8994555860806,
+          "tauUs": 17.949455586080596,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -766,10 +766,10 @@
           "worstOneWayUs": 0.11500000000000002,
           "memoryTransportUs": 8.52942857142857,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 8.74257640796703,
+          "tauUs": 8.79257640796703,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -782,10 +782,10 @@
           "worstOneWayUs": 0.11500000000000002,
           "memoryTransportUs": 17.153333333333343,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 17.368584935897445,
+          "tauUs": 17.418584935897446,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -798,22 +798,22 @@
           "worstOneWayUs": 0.11500000000000002,
           "memoryTransportUs": 17.672952380952392,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 17.8994555860806,
+          "tauUs": 17.949455586080596,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 17.8994555860806,
-      "meanTauUs": 15.555114068660357,
-      "collectiveUs": 6113.15982898352,
+      "maxTauUs": 17.949455586080596,
+      "meanTauUs": 15.605114068660352,
+      "collectiveUs": 6132.809828983519,
       "tpsPerUser": {
-        "bottomUp": 130.48326608430108,
-        "specFloor": 130.48326608430108,
-        "optimistic": 278.4149090611147,
-        "pessimistic": 63.058735017056435
+        "bottomUp": 130.09300326731793,
+        "specFloor": 130.09300326731793,
+        "optimistic": 277.3497366419009,
+        "pessimistic": 62.87642459163588
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -836,10 +836,10 @@
           "worstOneWayUs": 0.16500000000000004,
           "memoryTransportUs": 10.92528571428572,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 11.40823758012821,
+          "tauUs": 11.458237580128209,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -852,10 +852,10 @@
           "worstOneWayUs": 0.11500000000000002,
           "memoryTransportUs": 10.294952380952388,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 10.521455586080593,
+          "tauUs": 10.571455586080594,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -868,10 +868,10 @@
           "worstOneWayUs": 0.11500000000000002,
           "memoryTransportUs": 4.840428571428572,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 5.053576407967034,
+          "tauUs": 5.103576407967034,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -884,10 +884,10 @@
           "worstOneWayUs": 0.11500000000000002,
           "memoryTransportUs": 9.775333333333323,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 9.990584935897425,
+          "tauUs": 10.040584935897424,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -900,22 +900,22 @@
           "worstOneWayUs": 0.11500000000000002,
           "memoryTransportUs": 10.294952380952388,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 10.521455586080593,
+          "tauUs": 10.571455586080594,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 11.40823758012821,
-      "meanTauUs": 9.171322720059841,
-      "collectiveUs": 3604.3298289835175,
+      "maxTauUs": 11.458237580128209,
+      "meanTauUs": 9.22132272005984,
+      "collectiveUs": 3623.979828983517,
       "tpsPerUser": {
-        "bottomUp": 211.4841441929218,
-        "specFloor": 211.4841441929218,
-        "optimistic": 373.3203722050013,
-        "pessimistic": 112.74303377198935
+        "bottomUp": 210.46085694271423,
+        "specFloor": 210.46085694271423,
+        "optimistic": 371.4077363070837,
+        "pessimistic": 112.16158392207176
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -938,10 +938,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 1.2375238095238097,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.7204756753663004,
+          "tauUs": 1.7704756753663005,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -954,10 +954,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 1.9843809523809526,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.2108841575091573,
+          "tauUs": 2.2608841575091576,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -970,10 +970,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 0.9582857142857144,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 1.171433550824176,
+          "tauUs": 1.221433550824176,
           "withinSpecTau": false,
           "withinBreakEvenTau": true
         },
@@ -986,10 +986,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 1.9173333333333336,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.132584935897436,
+          "tauUs": 2.182584935897436,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1002,22 +1002,22 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 1.9843809523809526,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.2108841575091573,
+          "tauUs": 2.2608841575091576,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 2.2108841575091573,
-      "meanTauUs": 1.9192740104996786,
-      "collectiveUs": 754.2746861263737,
+      "maxTauUs": 2.2608841575091576,
+      "meanTauUs": 1.9692740104996787,
+      "collectiveUs": 773.9246861263737,
       "tpsPerUser": {
-        "bottomUp": 722.68450906426,
-        "specFloor": 722.68450906426,
+        "bottomUp": 710.8734335462634,
+        "specFloor": 710.8734335462634,
         "optimistic": 1101.7921567815936,
-        "pessimistic": 415.456200846174
+        "pessimistic": 407.66847268188144
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1040,12 +1040,12 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 0.8335238095238096,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.3164756753663005,
+          "tauUs": 1.3664756753663003,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         },
         {
           "name": "Attention output all-reduce",
@@ -1056,10 +1056,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 1.1763809523809527,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.402884157509158,
+          "tauUs": 1.452884157509158,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1072,10 +1072,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 0.5542857142857144,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 0.767433550824176,
+          "tauUs": 0.8174335508241759,
           "withinSpecTau": true,
           "withinBreakEvenTau": true
         },
@@ -1088,12 +1088,12 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 1.1093333333333337,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.3245849358974364,
+          "tauUs": 1.3745849358974362,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         },
         {
           "name": "Wup + Shared output all-reduce",
@@ -1104,26 +1104,26 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 1.1763809523809527,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.402884157509158,
+          "tauUs": 1.452884157509158,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 1.402884157509158,
-      "meanTauUs": 1.2305208298381014,
-      "collectiveUs": 483.59468612637386,
+      "maxTauUs": 1.452884157509158,
+      "meanTauUs": 1.2805208298381012,
+      "collectiveUs": 503.2446861263738,
       "tpsPerUser": {
-        "bottomUp": 1060.5220742177873,
-        "specFloor": 1016.206846845186,
+        "bottomUp": 1035.3046528414336,
+        "specFloor": 998.3426254410978,
         "optimistic": 1104.7796405629188,
-        "pessimistic": 618.1985357339593
+        "pessimistic": 601.1117030225093
       },
       "meetsTarget": {
         "bottomUp": true,
-        "specFloor": true,
+        "specFloor": false,
         "optimistic": true,
         "pessimistic": false
       }
@@ -1142,10 +1142,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 4.562857142857143,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 5.045809008699633,
+          "tauUs": 5.095809008699634,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1158,10 +1158,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 8.615619047619049,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 8.842122252747254,
+          "tauUs": 8.892122252747255,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1174,10 +1174,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 4.234857142857143,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 4.448004979395605,
+          "tauUs": 4.4980049793956045,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1190,10 +1190,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 8.491428571428573,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 8.706680173992675,
+          "tauUs": 8.756680173992674,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1206,22 +1206,22 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 8.615619047619049,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 8.842122252747254,
+          "tauUs": 8.892122252747255,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 8.842122252747254,
-      "meanTauUs": 7.549931468393779,
-      "collectiveUs": 2967.123067078755,
+      "maxTauUs": 8.892122252747255,
+      "meanTauUs": 7.599931468393779,
+      "collectiveUs": 2986.773067078755,
       "tpsPerUser": {
-        "bottomUp": 251.06987381208506,
-        "specFloor": 251.06987381208506,
-        "optimistic": 501.0983165201754,
-        "pessimistic": 114.99496110899385
+        "bottomUp": 249.62896005353133,
+        "specFloor": 249.62896005353133,
+        "optimistic": 497.6583524380212,
+        "pessimistic": 114.39011385253009
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1244,10 +1244,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 2.542857142857143,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 3.025809008699634,
+          "tauUs": 3.075809008699634,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1260,10 +1260,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 4.575619047619048,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.802122252747253,
+          "tauUs": 4.852122252747253,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1276,10 +1276,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 2.214857142857143,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 2.4280049793956042,
+          "tauUs": 2.4780049793956045,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1292,10 +1292,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 4.451428571428572,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.666680173992675,
+          "tauUs": 4.716680173992675,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1308,22 +1308,22 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 4.575619047619048,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.802122252747253,
+          "tauUs": 4.852122252747253,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 4.802122252747253,
-      "meanTauUs": 4.10616556508589,
-      "collectiveUs": 1613.7230670787549,
+      "maxTauUs": 4.852122252747253,
+      "meanTauUs": 4.15616556508589,
+      "collectiveUs": 1633.3730670787545,
       "tpsPerUser": {
-        "bottomUp": 416.75749146710183,
-        "specFloor": 416.75749146710183,
-        "optimistic": 723.6829024293465,
-        "pessimistic": 208.33115439948978
+        "bottomUp": 412.80224201451705,
+        "specFloor": 412.80224201451705,
+        "optimistic": 716.5299990803562,
+        "pessimistic": 206.35442861939362
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1346,10 +1346,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 26.3175238095238,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 26.80047567536629,
+          "tauUs": 26.85047567536629,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1362,10 +1362,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 52.12723809523808,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 52.35374130036628,
+          "tauUs": 52.403741300366285,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1378,10 +1378,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 25.98685714285714,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 26.2000049793956,
+          "tauUs": 26.2500049793956,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1394,10 +1394,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 51.99733333333328,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 52.21258493589738,
+          "tauUs": 52.26258493589739,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1410,22 +1410,22 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 52.12723809523808,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 52.35374130036628,
+          "tauUs": 52.403741300366285,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 52.35374130036628,
-      "meanTauUs": 44.63768913227356,
-      "collectiveUs": 17542.611828983507,
+      "maxTauUs": 52.403741300366285,
+      "meanTauUs": 44.687689132273555,
+      "collectiveUs": 17562.261828983508,
       "tpsPerUser": {
-        "bottomUp": 47.536929125522306,
-        "specFloor": 47.536929125522306,
-        "optimistic": 112.88926486002704,
-        "pessimistic": 20.080560375022294
+        "bottomUp": 47.48503283906879,
+        "specFloor": 47.48503283906879,
+        "optimistic": 112.7137438186319,
+        "pessimistic": 20.062036610183863
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1448,10 +1448,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 13.79352380952382,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 14.276475675366312,
+          "tauUs": 14.32647567536631,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1464,10 +1464,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 27.079238095238072,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 27.30574130036628,
+          "tauUs": 27.355741300366276,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1480,10 +1480,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 13.46285714285714,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 13.676004979395602,
+          "tauUs": 13.7260049793956,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1496,10 +1496,10 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 26.949333333333378,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 27.16458493589748,
+          "tauUs": 27.21458493589748,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1512,22 +1512,22 @@
           "worstOneWayUs": 0.4,
           "memoryTransportUs": 27.079238095238072,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 27.30574130036628,
+          "tauUs": 27.355741300366276,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 27.30574130036628,
-      "meanTauUs": 23.286340531764672,
-      "collectiveUs": 9151.531828983516,
+      "maxTauUs": 27.355741300366276,
+      "meanTauUs": 23.33634053176467,
+      "collectiveUs": 9171.181828983516,
       "tpsPerUser": {
-        "bottomUp": 89.1367825232892,
-        "specFloor": 89.1367825232892,
-        "optimistic": 195.4690426583479,
-        "pessimistic": 38.995001397319015
+        "bottomUp": 88.95448816198683,
+        "specFloor": 88.95448816198683,
+        "optimistic": 194.94340532792697,
+        "pessimistic": 38.925207365483026
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1550,10 +1550,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 2.4175238095238094,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.9004756753663004,
+          "tauUs": 2.9504756753663,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1566,10 +1566,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 4.344380952380953,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.570884157509158,
+          "tauUs": 4.620884157509158,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1582,10 +1582,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 2.1382857142857143,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 2.3514335508241757,
+          "tauUs": 2.401433550824176,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1598,10 +1598,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 4.277333333333334,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.492584935897437,
+          "tauUs": 4.542584935897437,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1614,22 +1614,22 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 4.344380952380953,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.570884157509158,
+          "tauUs": 4.620884157509158,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 4.570884157509158,
-      "meanTauUs": 3.9309788451052765,
-      "collectiveUs": 1544.8746861263737,
+      "maxTauUs": 4.620884157509158,
+      "meanTauUs": 3.9809788451052768,
+      "collectiveUs": 1564.5246861263738,
       "tpsPerUser": {
-        "bottomUp": 431.2344198674707,
-        "specFloor": 431.2344198674707,
-        "optimistic": 749.0160509647756,
-        "pessimistic": 207.40843872128318
+        "bottomUp": 427.00100595900284,
+        "specFloor": 427.00100595900284,
+        "optimistic": 741.3562454675559,
+        "pessimistic": 205.44910198292234
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1652,10 +1652,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 1.4235238095238094,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.9064756753663004,
+          "tauUs": 1.9564756753663002,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1668,10 +1668,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 2.3563809523809525,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.5828841575091572,
+          "tauUs": 2.6328841575091575,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1684,10 +1684,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 1.1442857142857144,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 1.357433550824176,
+          "tauUs": 1.407433550824176,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1700,10 +1700,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 2.2893333333333334,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.504584935897436,
+          "tauUs": 2.554584935897436,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1716,22 +1716,22 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 2.3563809523809525,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.5828841575091572,
+          "tauUs": 2.6328841575091575,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 2.5828841575091572,
-      "meanTauUs": 2.2363732471408992,
-      "collectiveUs": 878.8946861263735,
+      "maxTauUs": 2.6328841575091575,
+      "meanTauUs": 2.2863732471408995,
+      "collectiveUs": 898.5446861263736,
       "tpsPerUser": {
-        "bottomUp": 653.7934416270334,
-        "specFloor": 653.7934416270334,
-        "optimistic": 1101.0911149504796,
-        "pessimistic": 352.73343754279296
+        "bottomUp": 644.1117730135052,
+        "specFloor": 644.1117730135052,
+        "optimistic": 1085.1922669134624,
+        "pessimistic": 347.1037492711058
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1754,10 +1754,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 6.9228571428571435,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 7.4058090086996335,
+          "tauUs": 7.455809008699633,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1770,10 +1770,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 13.335619047619048,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 13.562122252747253,
+          "tauUs": 13.612122252747254,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1786,10 +1786,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 6.594857142857142,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 6.808004979395604,
+          "tauUs": 6.858004979395604,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1802,10 +1802,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 13.211428571428572,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 13.426680173992674,
+          "tauUs": 13.476680173992673,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1818,22 +1818,22 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 13.335619047619048,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 13.562122252747253,
+          "tauUs": 13.612122252747254,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 13.562122252747253,
-      "meanTauUs": 11.573341137604972,
-      "collectiveUs": 4548.323067078754,
+      "maxTauUs": 13.612122252747254,
+      "meanTauUs": 11.623341137604974,
+      "collectiveUs": 4567.973067078755,
       "tpsPerUser": {
-        "bottomUp": 171.43957403364232,
-        "specFloor": 171.43957403364232,
-        "optimistic": 363.879784238588,
-        "pessimistic": 73.93793405569564
+        "bottomUp": 170.7665010244544,
+        "specFloor": 170.7665010244544,
+        "optimistic": 362.06242388337716,
+        "pessimistic": 73.68741598931577
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1856,10 +1856,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 3.7228571428571433,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.205809008699634,
+          "tauUs": 4.255809008699634,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1872,10 +1872,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 6.935619047619047,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 7.162122252747253,
+          "tauUs": 7.212122252747252,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1888,10 +1888,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 3.394857142857143,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 3.608004979395605,
+          "tauUs": 3.6580049793956046,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1904,10 +1904,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 6.811428571428571,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 7.026680173992674,
+          "tauUs": 7.076680173992674,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1920,22 +1920,22 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 6.935619047619047,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 7.162122252747253,
+          "tauUs": 7.212122252747252,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 7.162122252747253,
-      "meanTauUs": 6.117870399691488,
-      "collectiveUs": 2404.323067078755,
+      "maxTauUs": 7.212122252747252,
+      "meanTauUs": 6.1678703996914885,
+      "collectiveUs": 2423.973067078755,
       "tpsPerUser": {
-        "bottomUp": 300.79901574989395,
-        "specFloor": 300.79901574989395,
-        "optimistic": 565.6677914531348,
-        "pessimistic": 138.6104704466927
+        "bottomUp": 298.73312094556354,
+        "specFloor": 298.73312094556354,
+        "optimistic": 561.1421423362955,
+        "pessimistic": 137.73263863074456
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1958,10 +1958,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 62.897523809523854,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 63.38047567536635,
+          "tauUs": 63.430475675366345,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1974,10 +1974,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 125.2872380952383,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 125.5137413003665,
+          "tauUs": 125.5637413003665,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -1990,10 +1990,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 62.56685714285719,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 62.78000497939565,
+          "tauUs": 62.830004979395646,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2006,10 +2006,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 125.15733333333323,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 125.37258493589734,
+          "tauUs": 125.42258493589733,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2022,22 +2022,22 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 125.2872380952383,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 125.5137413003665,
+          "tauUs": 125.5637413003665,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 125.5137413003665,
-      "meanTauUs": 107.0005390050472,
-      "collectiveUs": 42051.21182898355,
+      "maxTauUs": 125.5637413003665,
+      "meanTauUs": 107.05053900504718,
+      "collectiveUs": 42070.86182898354,
       "tpsPerUser": {
-        "bottomUp": 20.116134947194727,
-        "specFloor": 20.116134947194727,
-        "optimistic": 48.72660280284185,
-        "pessimistic": 8.022708819353747
+        "bottomUp": 20.106835937700033,
+        "specFloor": 20.106835937700033,
+        "optimistic": 48.69387324627338,
+        "pessimistic": 8.019750396193405
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2060,10 +2060,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 32.08352380952379,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 32.566475675366284,
+          "tauUs": 32.61647567536628,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2076,10 +2076,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 63.65923809523808,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 63.885741300366284,
+          "tauUs": 63.93574130036629,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2092,10 +2092,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 31.75285714285714,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 31.9660049793956,
+          "tauUs": 32.0160049793956,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2108,10 +2108,10 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 63.52933333333325,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 63.74458493589735,
+          "tauUs": 63.794584935897355,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2124,22 +2124,22 @@
           "worstOneWayUs": 0.9900000000000001,
           "memoryTransportUs": 63.65923809523808,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 63.885741300366284,
+          "tauUs": 63.93574130036629,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 63.885741300366284,
-      "meanTauUs": 54.46776546815142,
-      "collectiveUs": 21405.831828983508,
+      "maxTauUs": 63.93574130036629,
+      "meanTauUs": 54.51776546815142,
+      "collectiveUs": 21425.481828983506,
       "tpsPerUser": {
-        "bottomUp": 39.12938034255937,
-        "specFloor": 39.12938034255937,
-        "optimistic": 91.33991959926092,
-        "pessimistic": 15.855977378340993
+        "bottomUp": 39.094211033203415,
+        "specFloor": 39.094211033203415,
+        "optimistic": 91.2249788395983,
+        "pessimistic": 15.844425624392608
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2162,10 +2162,10 @@
           "worstOneWayUs": 0.9050000000000001,
           "memoryTransportUs": 2.2972442396313366,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.7801961054738276,
+          "tauUs": 2.8301961054738274,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2178,10 +2178,10 @@
           "worstOneWayUs": 0.8800000000000001,
           "memoryTransportUs": 3.773142857142858,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 3.999646062271063,
+          "tauUs": 4.049646062271063,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2194,10 +2194,10 @@
           "worstOneWayUs": 0.8800000000000001,
           "memoryTransportUs": 1.8662857142857145,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 2.0794335508241764,
+          "tauUs": 2.129433550824176,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2210,10 +2210,10 @@
           "worstOneWayUs": 0.8800000000000001,
           "memoryTransportUs": 3.7333333333333343,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 3.9485849358974368,
+          "tauUs": 3.998584935897437,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2226,22 +2226,22 @@
           "worstOneWayUs": 0.8800000000000001,
           "memoryTransportUs": 3.773142857142858,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 3.999646062271063,
+          "tauUs": 4.049646062271063,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 3.999646062271063,
-      "meanTauUs": 3.4637071980404754,
-      "collectiveUs": 1361.236928829907,
+      "maxTauUs": 4.049646062271063,
+      "meanTauUs": 3.5137071980404757,
+      "collectiveUs": 1380.886928829907,
       "tpsPerUser": {
-        "bottomUp": 475.2697696944554,
-        "specFloor": 475.2697696944554,
-        "optimistic": 839.6965846524399,
-        "pessimistic": 214.1023010379721
+        "bottomUp": 470.13277477482484,
+        "specFloor": 470.13277477482484,
+        "optimistic": 830.0817259426068,
+        "pessimistic": 212.0150892540754
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2264,10 +2264,10 @@
           "worstOneWayUs": 0.9050000000000001,
           "memoryTransportUs": 1.3882442396313366,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 1.8711961054738275,
+          "tauUs": 1.9211961054738274,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2280,10 +2280,10 @@
           "worstOneWayUs": 0.8800000000000001,
           "memoryTransportUs": 2.0051428571428573,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.231646062271062,
+          "tauUs": 2.2816460622710624,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2296,10 +2296,10 @@
           "worstOneWayUs": 0.8800000000000001,
           "memoryTransportUs": 0.9822857142857144,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 1.195433550824176,
+          "tauUs": 1.245433550824176,
           "withinSpecTau": false,
           "withinBreakEvenTau": true
         },
@@ -2312,10 +2312,10 @@
           "worstOneWayUs": 0.8800000000000001,
           "memoryTransportUs": 1.9653333333333336,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.180584935897436,
+          "tauUs": 2.230584935897436,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2328,22 +2328,22 @@
           "worstOneWayUs": 0.8800000000000001,
           "memoryTransportUs": 2.0051428571428573,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 2.231646062271062,
+          "tauUs": 2.2816460622710624,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 2.231646062271062,
-      "meanTauUs": 1.9551066891346223,
-      "collectiveUs": 768.3569288299066,
+      "maxTauUs": 2.2816460622710624,
+      "meanTauUs": 2.0051066891346228,
+      "collectiveUs": 788.0069288299067,
       "tpsPerUser": {
-        "bottomUp": 714.1806798453548,
-        "specFloor": 714.1806798453548,
+        "bottomUp": 702.643712111597,
+        "specFloor": 702.643712111597,
         "optimistic": 1101.7921567815936,
-        "pessimistic": 365.26600503591504
+        "pessimistic": 359.23258733499426
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2366,10 +2366,10 @@
           "worstOneWayUs": 0.65,
           "memoryTransportUs": 4.298285714285715,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.781237580128205,
+          "tauUs": 4.831237580128205,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2382,10 +2382,10 @@
           "worstOneWayUs": 0.65,
           "memoryTransportUs": 7.125142857142858,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 7.3516460622710635,
+          "tauUs": 7.401646062271063,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2398,10 +2398,10 @@
           "worstOneWayUs": 0.65,
           "memoryTransportUs": 3.487142857142858,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 3.7002906936813194,
+          "tauUs": 3.7502906936813196,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2414,10 +2414,10 @@
           "worstOneWayUs": 0.65,
           "memoryTransportUs": 6.996761904761906,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 7.2120135073260085,
+          "tauUs": 7.262013507326008,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2430,22 +2430,22 @@
           "worstOneWayUs": 0.65,
           "memoryTransportUs": 7.125142857142858,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 7.3516460622710635,
+          "tauUs": 7.401646062271063,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 7.3516460622710635,
-      "meanTauUs": 6.307216819175313,
-      "collectiveUs": 2478.736209935898,
+      "maxTauUs": 7.401646062271063,
+      "meanTauUs": 6.357216819175312,
+      "collectiveUs": 2498.3862099358976,
       "tpsPerUser": {
-        "bottomUp": 293.1225528659244,
-        "specFloor": 293.1225528659244,
-        "optimistic": 555.5820567259349,
-        "pessimistic": 134.05347610855577
+        "bottomUp": 291.16041292870057,
+        "specFloor": 291.16041292870057,
+        "optimistic": 554.4725607743834,
+        "pessimistic": 133.2322441620736
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2468,10 +2468,10 @@
           "worstOneWayUs": 0.65,
           "memoryTransportUs": 2.6282857142857146,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 3.1112375801282055,
+          "tauUs": 3.1612375801282053,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2484,10 +2484,10 @@
           "worstOneWayUs": 0.65,
           "memoryTransportUs": 3.835142857142858,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.061646062271063,
+          "tauUs": 4.111646062271062,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2500,10 +2500,10 @@
           "worstOneWayUs": 0.65,
           "memoryTransportUs": 1.8421428571428575,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 2.055290693681319,
+          "tauUs": 2.105290693681319,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2516,10 +2516,10 @@
           "worstOneWayUs": 0.65,
           "memoryTransportUs": 3.706761904761905,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 3.9220135073260076,
+          "tauUs": 3.972013507326008,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2532,22 +2532,22 @@
           "worstOneWayUs": 0.65,
           "memoryTransportUs": 3.835142857142858,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 4.061646062271063,
+          "tauUs": 4.111646062271062,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 4.061646062271063,
-      "meanTauUs": 3.5012371754094085,
-      "collectiveUs": 1375.9862099358975,
+      "maxTauUs": 4.111646062271062,
+      "meanTauUs": 3.5512371754094088,
+      "collectiveUs": 1395.6362099358976,
       "tpsPerUser": {
-        "bottomUp": 471.40352151669697,
-        "specFloor": 471.40352151669697,
-        "optimistic": 777.5169728618572,
-        "pessimistic": 238.69523948159906
+        "bottomUp": 466.34931961937286,
+        "specFloor": 466.34931961937286,
+        "optimistic": 769.2663585565355,
+        "pessimistic": 236.10389398840292
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2570,10 +2570,10 @@
           "worstOneWayUs": 0.19250000000000003,
           "memoryTransportUs": 13.653285714285712,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 14.136237580128203,
+          "tauUs": 14.186237580128202,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2586,10 +2586,10 @@
           "worstOneWayUs": 0.19250000000000003,
           "memoryTransportUs": 26.397238095238073,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 26.62374130036628,
+          "tauUs": 26.673741300366277,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2602,10 +2602,10 @@
           "worstOneWayUs": 0.19250000000000003,
           "memoryTransportUs": 13.12185714285715,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 13.335004979395611,
+          "tauUs": 13.38500497939561,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2618,10 +2618,10 @@
           "worstOneWayUs": 0.19250000000000003,
           "memoryTransportUs": 26.2673333333333,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 26.482584935897403,
+          "tauUs": 26.532584935897404,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2634,22 +2634,22 @@
           "worstOneWayUs": 0.19250000000000003,
           "memoryTransportUs": 26.397238095238073,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 26.62374130036628,
+          "tauUs": 26.673741300366277,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 26.62374130036628,
-      "meanTauUs": 22.717252200248847,
-      "collectiveUs": 8927.880114697797,
+      "maxTauUs": 26.673741300366277,
+      "meanTauUs": 22.767252200248844,
+      "collectiveUs": 8947.530114697796,
       "tpsPerUser": {
-        "bottomUp": 91.26551836117706,
-        "specFloor": 91.26551836117706,
-        "optimistic": 187.25732239107703,
-        "pessimistic": 43.80000916906205
+        "bottomUp": 91.07442237429188,
+        "specFloor": 91.07442237429188,
+        "optimistic": 186.7748672791525,
+        "pessimistic": 43.711974641231016
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2672,10 +2672,10 @@
           "worstOneWayUs": 0.19250000000000003,
           "memoryTransportUs": 7.561785714285715,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 8.044737580128206,
+          "tauUs": 8.094737580128205,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2688,10 +2688,10 @@
           "worstOneWayUs": 0.19250000000000003,
           "memoryTransportUs": 14.214238095238072,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 14.440741300366277,
+          "tauUs": 14.490741300366277,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2704,10 +2704,10 @@
           "worstOneWayUs": 0.19250000000000003,
           "memoryTransportUs": 7.030357142857146,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 7.243504979395608,
+          "tauUs": 7.293504979395608,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2720,10 +2720,10 @@
           "worstOneWayUs": 0.19250000000000003,
           "memoryTransportUs": 14.084333333333337,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 14.299584935897439,
+          "tauUs": 14.349584935897438,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2736,22 +2736,22 @@
           "worstOneWayUs": 0.19250000000000003,
           "memoryTransportUs": 14.214238095238072,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 14.440741300366277,
+          "tauUs": 14.490741300366277,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 14.440741300366277,
-      "meanTauUs": 12.33225220024885,
-      "collectiveUs": 4846.575114697798,
+      "maxTauUs": 14.490741300366277,
+      "meanTauUs": 12.38225220024885,
+      "collectiveUs": 4866.225114697798,
       "tpsPerUser": {
-        "bottomUp": 161.76220226109064,
-        "specFloor": 161.76220226109064,
-        "optimistic": 297.6436954513804,
-        "pessimistic": 82.21689403611659
+        "bottomUp": 161.16283864547572,
+        "specFloor": 161.16283864547572,
+        "optimistic": 296.42663101282415,
+        "pessimistic": 81.90725063681698
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2774,10 +2774,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 5.527880184331798,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 6.0108320501742885,
+          "tauUs": 6.060832050174289,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2790,10 +2790,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 9.86272196620584,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 10.089225171334045,
+          "tauUs": 10.139225171334045,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2806,10 +2806,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 4.908506912442397,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 5.121654748980859,
+          "tauUs": 5.171654748980859,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2822,10 +2822,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 9.817849462365594,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 10.033101064929696,
+          "tauUs": 10.083101064929695,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2838,22 +2838,22 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 9.86272196620584,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 10.089225171334045,
+          "tauUs": 10.139225171334045,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 10.089225171334045,
-      "meanTauUs": 8.664132724632957,
-      "collectiveUs": 3405.004160780752,
+      "maxTauUs": 10.139225171334045,
+      "meanTauUs": 8.714132724632957,
+      "collectiveUs": 3424.654160780752,
       "tpsPerUser": {
-        "bottomUp": 222.45575910618038,
-        "specFloor": 222.45575910618038,
-        "optimistic": 476.1203634330557,
-        "pessimistic": 87.03596602865346
+        "bottomUp": 221.32382735587564,
+        "specFloor": 221.32382735587564,
+        "optimistic": 473.0137288731268,
+        "pessimistic": 86.68903643946196
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2876,10 +2876,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 3.118880184331798,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 3.601832050174289,
+          "tauUs": 3.651832050174289,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2892,10 +2892,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 5.044721966205839,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 5.271225171334044,
+          "tauUs": 5.321225171334044,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2908,10 +2908,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 2.499506912442397,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 2.7126547489808583,
+          "tauUs": 2.7626547489808586,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2924,10 +2924,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 4.999849462365593,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 5.215101064929696,
+          "tauUs": 5.265101064929696,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2940,22 +2940,22 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 5.044721966205839,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 5.271225171334044,
+          "tauUs": 5.321225171334044,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 5.271225171334044,
-      "meanTauUs": 4.557186159747461,
-      "collectiveUs": 1790.9741607807523,
+      "maxTauUs": 5.321225171334044,
+      "meanTauUs": 4.607186159747461,
+      "collectiveUs": 1810.6241607807522,
       "tpsPerUser": {
-        "bottomUp": 383.6031528592215,
-        "specFloor": 383.6031528592215,
-        "optimistic": 721.5970599739073,
-        "pessimistic": 162.6542973710798
+        "bottomUp": 380.24964443931543,
+        "specFloor": 380.24964443931543,
+        "optimistic": 714.4851276533674,
+        "pessimistic": 161.44683531965208
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2978,10 +2978,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 10.484428571428573,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 10.967380437271064,
+          "tauUs": 11.017380437271063,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -2994,10 +2994,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 19.27171428571429,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 19.498217490842496,
+          "tauUs": 19.548217490842493,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3010,10 +3010,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 9.550523809523812,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 9.763671646062273,
+          "tauUs": 9.813671646062271,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3026,10 +3026,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 19.126952380952385,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 19.342203983516487,
+          "tauUs": 19.392203983516488,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3042,22 +3042,22 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 19.27171428571429,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 19.498217490842496,
+          "tauUs": 19.548217490842493,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 19.498217490842496,
-      "meanTauUs": 16.66190311506772,
-      "collectiveUs": 6548.127924221613,
+      "maxTauUs": 19.548217490842493,
+      "meanTauUs": 16.711903115067717,
+      "collectiveUs": 6567.777924221612,
       "tpsPerUser": {
-        "bottomUp": 122.358125247555,
-        "specFloor": 122.358125247555,
-        "optimistic": 282.3739913122907,
-        "pessimistic": 47.055018414789814
+        "bottomUp": 122.01488827933902,
+        "specFloor": 122.01488827933902,
+        "optimistic": 281.27836943606354,
+        "pessimistic": 46.9534282494621
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3080,10 +3080,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 5.711928571428572,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 6.194880437271062,
+          "tauUs": 6.244880437271062,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3096,10 +3096,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 9.926714285714286,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 10.153217490842492,
+          "tauUs": 10.203217490842492,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3112,10 +3112,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 4.87802380952381,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 5.091171646062272,
+          "tauUs": 5.141171646062272,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3128,10 +3128,10 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 9.781952380952383,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 9.997203983516485,
+          "tauUs": 10.047203983516484,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3144,22 +3144,22 @@
           "worstOneWayUs": 2.4050000000000007,
           "memoryTransportUs": 9.926714285714286,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 10.153217490842492,
+          "tauUs": 10.203217490842492,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 10.153217490842492,
-      "meanTauUs": 8.68995655018222,
-      "collectiveUs": 3415.1529242216125,
+      "maxTauUs": 10.203217490842492,
+      "meanTauUs": 8.739956550182217,
+      "collectiveUs": 3434.8029242216116,
       "tpsPerUser": {
-        "bottomUp": 221.8697010462182,
-        "specFloor": 221.8697010462182,
-        "optimistic": 459.2018455820683,
-        "pessimistic": 90.1658140536846
+        "bottomUp": 220.74371047727598,
+        "specFloor": 220.74371047727598,
+        "optimistic": 456.31140123559936,
+        "pessimistic": 89.79353774187169
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3182,10 +3182,10 @@
           "worstOneWayUs": 0.11750000000000002,
           "memoryTransportUs": 8.802523809523812,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 9.285475675366303,
+          "tauUs": 9.335475675366302,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3198,10 +3198,10 @@
           "worstOneWayUs": 0.11750000000000002,
           "memoryTransportUs": 17.097238095238122,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 17.32374130036633,
+          "tauUs": 17.373741300366326,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3214,10 +3214,10 @@
           "worstOneWayUs": 0.11750000000000002,
           "memoryTransportUs": 8.47185714285715,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 8.685004979395611,
+          "tauUs": 8.73500497939561,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3230,10 +3230,10 @@
           "worstOneWayUs": 0.11750000000000002,
           "memoryTransportUs": 16.967333333333336,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 17.182584935897438,
+          "tauUs": 17.23258493589744,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3246,22 +3246,22 @@
           "worstOneWayUs": 0.11750000000000002,
           "memoryTransportUs": 17.097238095238122,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 17.32374130036633,
+          "tauUs": 17.373741300366326,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 17.32374130036633,
-      "meanTauUs": 14.77751101522525,
-      "collectiveUs": 5807.561828983523,
+      "maxTauUs": 17.373741300366326,
+      "meanTauUs": 14.827511015225248,
+      "collectiveUs": 5827.2118289835225,
       "tpsPerUser": {
-        "bottomUp": 136.8687758158523,
-        "specFloor": 136.8687758158523,
-        "optimistic": 317.70977363426596,
-        "pessimistic": 64.37020363038148
+        "bottomUp": 136.4394443281804,
+        "specFloor": 136.4394443281804,
+        "optimistic": 316.3234595237354,
+        "pessimistic": 64.18024254204413
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3284,10 +3284,10 @@
           "worstOneWayUs": 0.11750000000000002,
           "memoryTransportUs": 5.036023809523807,
           "tpReduceUs": 0.03338095238095238,
-          "cardLocalUs": 0.4075709134615385,
+          "cardLocalUs": 0.45757091346153844,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 5.518975675366297,
+          "tauUs": 5.568975675366298,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3300,10 +3300,10 @@
           "worstOneWayUs": 0.11750000000000002,
           "memoryTransportUs": 9.56423809523809,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 9.790741300366296,
+          "tauUs": 9.840741300366297,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3316,10 +3316,10 @@
           "worstOneWayUs": 0.11750000000000002,
           "memoryTransportUs": 4.705357142857146,
           "tpReduceUs": 0,
-          "cardLocalUs": 0.17314783653846155,
+          "cardLocalUs": 0.22314783653846154,
           "portTailUs": 0,
           "controlPathUs": 0.04,
-          "tauUs": 4.918504979395608,
+          "tauUs": 4.9685049793956075,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3332,10 +3332,10 @@
           "worstOneWayUs": 0.11750000000000002,
           "memoryTransportUs": 9.434333333333338,
           "tpReduceUs": 0.0023333333333333335,
-          "cardLocalUs": 0.17091826923076928,
+          "cardLocalUs": 0.22091826923076927,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 9.64958493589744,
+          "tauUs": 9.69958493589744,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         },
@@ -3348,22 +3348,22 @@
           "worstOneWayUs": 0.11750000000000002,
           "memoryTransportUs": 9.56423809523809,
           "tpReduceUs": 0.004666666666666667,
-          "cardLocalUs": 0.17983653846153852,
+          "cardLocalUs": 0.2298365384615385,
           "portTailUs": 0,
           "controlPathUs": 0.042,
-          "tauUs": 9.790741300366296,
+          "tauUs": 9.840741300366297,
           "withinSpecTau": false,
           "withinBreakEvenTau": false
         }
       ],
-      "maxTauUs": 9.790741300366296,
-      "meanTauUs": 8.3562514732405,
-      "collectiveUs": 3284.0068289835162,
+      "maxTauUs": 9.840741300366297,
+      "meanTauUs": 8.4062514732405,
+      "collectiveUs": 3303.656828983517,
       "tpsPerUser": {
-        "bottomUp": 229.68921628281421,
-        "specFloor": 229.68921628281421,
-        "optimistic": 442.3714202872344,
-        "pessimistic": 117.47874695933109
+        "bottomUp": 228.48267469372917,
+        "specFloor": 228.48267469372917,
+        "optimistic": 439.6883522290735,
+        "pessimistic": 116.84756094226718
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3379,10 +3379,10 @@
       "ackDrain": "phase",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 1075.0504227847857,
-        "specFloor": 1028.336025102022,
+        "bottomUp": 1049.120418394619,
+        "specFloor": 1010.0466509255018,
         "optimistic": 1104.7796405629188,
-        "pessimistic": 641.8954636509031
+        "pessimistic": 623.4930686512702
       },
       "meetsTarget": {
         "bottomUp": true,
@@ -3390,22 +3390,27 @@
         "optimistic": true,
         "pessimistic": false
       },
-      "maxTauUs": 1.3598365384615387,
+      "maxTauUs": 1.4098365384615386,
       "mustHold": [
         {
           "param": "ucieHopUs",
-          "atMost": 0.03273094654083253,
+          "atMost": 0.02970571041107178,
           "nominal": 0.025
         },
         {
           "param": "fecUs",
-          "atMost": 0.09452796936035157,
+          "atMost": 0.07986385345458985,
           "nominal": 0.05
         },
         {
           "param": "macUs",
-          "atMost": 0.08452804565429689,
+          "atMost": 0.06986381530761719,
           "nominal": 0.04
+        },
+        {
+          "param": "phyUs",
+          "atMost": 0.049863853454589845,
+          "nominal": 0.02
         }
       ],
       "failsAcrossRange": [],
@@ -3419,11 +3424,11 @@
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 784.4834641769587
+            "tpsPerUser": 757.1712857090114
           },
-          "swing": 317.30869260463487,
+          "swing": 344.6208710725822,
           "verdict": "straddles",
-          "breakEven": 0.03273094654083253
+          "breakEven": 0.02970571041107178
         },
         {
           "param": "fecUs",
@@ -3434,53 +3439,54 @@
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 864.5244577284968
+            "tpsPerUser": 846.2319331326337
           },
-          "swing": 237.26769905309675,
+          "swing": 255.5602236489599,
           "verdict": "straddles",
-          "breakEven": 0.09452796936035157
+          "breakEven": 0.07986385345458985
         },
         {
           "param": "macUs",
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 1101.7921567815936
+            "tpsPerUser": 1084.5095497873385
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 976.3175361085697
+            "tpsPerUser": 875.2518508005181
           },
-          "swing": 125.47462067302388,
+          "swing": 209.2576989868204,
           "verdict": "straddles",
-          "breakEven": 0.08452804565429689
+          "breakEven": 0.06986381530761719
         },
         {
           "param": "phyUs",
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 1092.8714627008073
+            "tpsPerUser": 1065.5331467266578
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 1023.3079593696492
+            "tpsPerUser": 999.7866178357268
           },
-          "swing": 69.56350333115813,
-          "verdict": "passes across range"
+          "swing": 65.74652889093102,
+          "verdict": "straddles",
+          "breakEven": 0.049863853454589845
         },
         {
           "param": "controlScale",
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 1075.0504227847857
+            "tpsPerUser": 1049.120418394619
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 1053.423678476691
+            "tpsPerUser": 1028.5143596180883
           },
-          "swing": 21.626744308094658,
+          "swing": 20.606058776530745,
           "verdict": "passes across range"
         },
         {
@@ -3488,13 +3494,13 @@
           "nominal": 1,
           "low": {
             "value": 0.5,
-            "tpsPerUser": 1079.4962753905236
+            "tpsPerUser": 1053.45224296646
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 1064.935714381229
+            "tpsPerUser": 1040.5627729606692
           },
-          "swing": 14.560561009294588,
+          "swing": 12.889470005790827,
           "verdict": "passes across range"
         }
       ]
@@ -3506,8 +3512,8 @@
       "tpsPerUser": {
         "bottomUp": 1104.7796405629188,
         "specFloor": 1101.771070241925,
-        "optimistic": 1107.7833693777116,
-        "pessimistic": 851.85124154719
+        "optimistic": 1107.652432877591,
+        "pessimistic": 820.2898576523932
       },
       "meetsTarget": {
         "bottomUp": true,
@@ -3515,7 +3521,7 @@
         "optimistic": true,
         "pessimistic": false
       },
-      "maxTauUs": 1.1064756753663005,
+      "maxTauUs": 1.1564756753663004,
       "mustHold": [],
       "failsAcrossRange": [],
       "tornado": [
@@ -3528,9 +3534,23 @@
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 1101.771070241925
+            "tpsPerUser": 1050.5776137796613
           },
-          "swing": 3.00857032099384,
+          "swing": 54.20202678325745,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 1104.7796405629188
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 1101.7913299161396
+          },
+          "swing": 2.988310646779155,
           "verdict": "passes across range"
         },
         {
@@ -3562,20 +3582,6 @@
           "verdict": "passes across range"
         },
         {
-          "param": "phyUs",
-          "nominal": 0.02,
-          "low": {
-            "value": 0.01,
-            "tpsPerUser": 1104.7796405629188
-          },
-          "high": {
-            "value": 0.05,
-            "tpsPerUser": 1104.7796405629188
-          },
-          "swing": 0,
-          "verdict": "passes across range"
-        },
-        {
           "param": "controlScale",
           "nominal": 1,
           "low": {
@@ -3584,9 +3590,9 @@
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 1104.7796405629188
+            "tpsPerUser": 1101.7921567815936
           },
-          "swing": 0,
+          "swing": 2.9874837813251816,
           "verdict": "passes across range"
         },
         {
@@ -3610,10 +3616,10 @@
       "ackDrain": "phase",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 722.68450906426,
-        "specFloor": 722.68450906426,
+        "bottomUp": 710.8734335462634,
+        "specFloor": 710.8734335462634,
         "optimistic": 1101.7921567815936,
-        "pessimistic": 415.456200846174
+        "pessimistic": 407.66847268188144
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3621,14 +3627,14 @@
         "optimistic": true,
         "pessimistic": false
       },
-      "maxTauUs": 2.2108841575091573,
+      "maxTauUs": 2.2608841575091576,
       "mustHold": [],
       "failsAcrossRange": [
         "switchUs",
         "fecUs",
+        "ucieHopUs",
         "macUs",
         "phyUs",
-        "ucieHopUs",
         "cableM",
         "controlScale"
       ],
@@ -3638,13 +3644,13 @@
           "nominal": 0.2,
           "low": {
             "value": 0.1,
-            "tpsPerUser": 818.6176751117683
+            "tpsPerUser": 803.4955437487884
           },
           "high": {
             "value": 0.5,
-            "tpsPerUser": 536.4051878243697
+            "tpsPerUser": 529.8707038933903
           },
-          "swing": 282.21248728739863,
+          "swing": 273.624839855398,
           "verdict": "fails across range"
         },
         {
@@ -3652,41 +3658,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 818.6176751117683
+            "tpsPerUser": 803.4955437487884
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 623.7440625532739
+            "tpsPerUser": 614.9259094850447
           },
-          "swing": 194.87361255849441,
-          "verdict": "fails across range"
-        },
-        {
-          "param": "macUs",
-          "nominal": 0.04,
-          "low": {
-            "value": 0.02,
-            "tpsPerUser": 742.3929919055173
-          },
-          "high": {
-            "value": 0.1,
-            "tpsPerUser": 676.6826188169498
-          },
-          "swing": 65.71037308856751,
-          "verdict": "fails across range"
-        },
-        {
-          "param": "phyUs",
-          "nominal": 0.02,
-          "low": {
-            "value": 0.01,
-            "tpsPerUser": 742.3929919055173
-          },
-          "high": {
-            "value": 0.05,
-            "tpsPerUser": 676.6826188169498
-          },
-          "swing": 65.71037308856751,
+          "swing": 188.56963426374364,
           "verdict": "fails across range"
         },
         {
@@ -3694,13 +3672,41 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 740.3223906093103
+            "tpsPerUser": 729.9614413297676
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 688.3728174959493
+            "tpsPerUser": 667.2528822126276
           },
-          "swing": 51.949573113361,
+          "swing": 62.70855911714,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 727.0801574137471
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 666.3165511604153
+          },
+          "swing": 60.76360625333177,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 727.0801574137471
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 666.3165511604153
+          },
+          "swing": 60.76360625333177,
           "verdict": "fails across range"
         },
         {
@@ -3708,13 +3714,13 @@
           "nominal": 2,
           "low": {
             "value": 1,
-            "tpsPerUser": 730.9665410590762
+            "tpsPerUser": 718.8854650295053
           },
           "high": {
             "value": 5,
-            "tpsPerUser": 698.9274457411142
+            "tpsPerUser": 687.8742073527224
           },
-          "swing": 32.03909531796205,
+          "swing": 31.011257676782975,
           "verdict": "fails across range"
         },
         {
@@ -3722,13 +3728,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 722.68450906426
+            "tpsPerUser": 710.8734335462634
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 712.846571857136
+            "tpsPerUser": 701.3523197189612
           },
-          "swing": 9.837937207124014,
+          "swing": 9.521113827302202,
           "verdict": "fails across range"
         }
       ]
@@ -3738,33 +3744,43 @@
       "ackDrain": "deferred",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 1060.5220742177873,
-        "specFloor": 1016.206846845186,
+        "bottomUp": 1035.3046528414336,
+        "specFloor": 998.3426254410978,
         "optimistic": 1104.7796405629188,
-        "pessimistic": 618.1985357339593
+        "pessimistic": 601.1117030225093
       },
       "meetsTarget": {
         "bottomUp": true,
-        "specFloor": true,
+        "specFloor": false,
         "optimistic": true,
         "pessimistic": false
       },
-      "maxTauUs": 1.402884157509158,
+      "maxTauUs": 1.452884157509158,
       "mustHold": [
         {
           "param": "switchUs",
-          "atMost": 0.27287635803222665,
+          "atMost": 0.24354782104492184,
           "nominal": 0.2
         },
         {
           "param": "fecUs",
-          "atMost": 0.08643814086914062,
+          "atMost": 0.0717740249633789,
           "nominal": 0.05
         },
         {
           "param": "ucieHopUs",
-          "atMost": 0.045707011222839364,
+          "atMost": 0.034280247688293464,
           "nominal": 0.025
+        },
+        {
+          "param": "macUs",
+          "atMost": 0.08354804992675782,
+          "nominal": 0.04
+        },
+        {
+          "param": "phyUs",
+          "atMost": 0.04177402496337891,
+          "nominal": 0.02
         }
       ],
       "failsAcrossRange": [],
@@ -3774,86 +3790,88 @@
           "nominal": 0.2,
           "low": {
             "value": 0.1,
-            "tpsPerUser": 1101.7921567815936
+            "tpsPerUser": 1101.7921567815938
           },
           "high": {
             "value": 0.5,
-            "tpsPerUser": 771.1135473744145
+            "tpsPerUser": 757.6811590811408
           },
-          "swing": 330.6786094071791,
+          "swing": 344.110997700453,
           "verdict": "straddles",
-          "breakEven": 0.27287635803222665
+          "breakEven": 0.24354782104492184
         },
         {
           "param": "fecUs",
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 1101.7921567815936
+            "tpsPerUser": 1101.7921567815938
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 853.5185352526095
+            "tpsPerUser": 837.245801126815
           },
-          "swing": 248.2736215289841,
+          "swing": 264.54635565477884,
           "verdict": "straddles",
-          "breakEven": 0.08643814086914062
+          "breakEven": 0.0717740249633789
         },
         {
           "param": "ucieHopUs",
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 1091.9999079246413
+            "tpsPerUser": 1076.3360409377606
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 988.294957283081
+            "tpsPerUser": 849.4497237286217
           },
-          "swing": 103.70495064156034,
+          "swing": 226.88631720913884,
           "verdict": "straddles",
-          "breakEven": 0.045707011222839364
+          "breakEven": 0.034280247688293464
         },
         {
           "param": "macUs",
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 1078.4689791198855
+            "tpsPerUser": 1052.4269944288385
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 1010.1967508141729
+            "tpsPerUser": 987.2675330478819
           },
-          "swing": 68.27222830571259,
-          "verdict": "passes across range"
+          "swing": 65.1594613809566,
+          "verdict": "straddles",
+          "breakEven": 0.08354804992675782
         },
         {
           "param": "phyUs",
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 1078.4689791198855
+            "tpsPerUser": 1052.4269944288385
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 1010.1967508141729
+            "tpsPerUser": 987.2675330478819
           },
-          "swing": 68.27222830571259,
-          "verdict": "passes across range"
+          "swing": 65.1594613809566,
+          "verdict": "straddles",
+          "breakEven": 0.04177402496337891
         },
         {
           "param": "cableM",
           "nominal": 2,
           "low": {
             "value": 1,
-            "tpsPerUser": 1068.1182546222894
+            "tpsPerUser": 1043.8155420835376
           },
           "high": {
             "value": 5,
-            "tpsPerUser": 1034.7434178294425
+            "tpsPerUser": 1010.7343286557157
           },
-          "swing": 33.37483679284696,
+          "swing": 33.08121342782192,
           "verdict": "passes across range"
         },
         {
@@ -3861,13 +3879,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 1060.5220742177873
+            "tpsPerUser": 1035.3046528414336
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 1039.5190532822762
+            "tpsPerUser": 1015.2702602511723
           },
-          "swing": 21.00302093551113,
+          "swing": 20.03439259026129,
           "verdict": "passes across range"
         }
       ]
@@ -3877,10 +3895,10 @@
       "ackDrain": "phase",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 431.2344198674707,
-        "specFloor": 431.2344198674707,
-        "optimistic": 749.0160509647756,
-        "pessimistic": 207.40843872128318
+        "bottomUp": 427.00100595900284,
+        "specFloor": 427.00100595900284,
+        "optimistic": 741.3562454675559,
+        "pessimistic": 205.44910198292234
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3888,15 +3906,15 @@
         "optimistic": false,
         "pessimistic": false
       },
-      "maxTauUs": 4.570884157509158,
+      "maxTauUs": 4.620884157509158,
       "mustHold": [],
       "failsAcrossRange": [
         "switchUs",
         "fecUs",
         "spineCableM",
         "phyUs",
-        "macUs",
         "ucieHopUs",
+        "macUs",
         "cableM",
         "controlScale"
       ],
@@ -3906,13 +3924,13 @@
           "nominal": 0.2,
           "low": {
             "value": 0.1,
-            "tpsPerUser": 540.9544855076635
+            "tpsPerUser": 534.3093790885541
           },
           "high": {
             "value": 0.5,
-            "tpsPerUser": 268.1005141547447
+            "tpsPerUser": 266.4581289003209
           },
-          "swing": 272.85397135291885,
+          "swing": 267.8512501882332,
           "verdict": "fails across range"
         },
         {
@@ -3920,13 +3938,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 498.66249805762305
+            "tpsPerUser": 493.0103804710428
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 362.59362908123455
+            "tpsPerUser": 359.5959620474002
           },
-          "swing": 136.0688689763885,
+          "swing": 133.41441842364264,
           "verdict": "fails across range"
         },
         {
@@ -3934,13 +3952,13 @@
           "nominal": 5,
           "low": {
             "value": 2,
-            "tpsPerUser": 440.16208648552185
+            "tpsPerUser": 435.75246913370756
           },
           "high": {
             "value": 20,
-            "tpsPerUser": 391.5282131548808
+            "tpsPerUser": 388.03534043921115
           },
-          "swing": 48.63387333064105,
+          "swing": 47.71712869449641,
           "verdict": "fails across range"
         },
         {
@@ -3948,27 +3966,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 443.2206909511638
+            "tpsPerUser": 438.74988868710744
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 398.87352413745316
+            "tpsPerUser": 395.2489717970567
           },
-          "swing": 44.34716681371066,
-          "verdict": "fails across range"
-        },
-        {
-          "param": "macUs",
-          "nominal": 0.04,
-          "low": {
-            "value": 0.02,
-            "tpsPerUser": 437.1454067131095
-          },
-          "high": {
-            "value": 0.1,
-            "tpsPerUser": 414.4231940536339
-          },
-          "swing": 22.722212659475588,
+          "swing": 43.500916890050746,
           "verdict": "fails across range"
         },
         {
@@ -3976,13 +3980,27 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 436.42665495449114
+            "tpsPerUser": 433.8150017911492
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 418.7787322807873
+            "tpsPerUser": 410.86713033178614
           },
-          "swing": 17.647922673703818,
+          "swing": 22.947871459363057,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 432.7957267901543
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 410.51192004209366
+          },
+          "swing": 22.283806748060613,
           "verdict": "fails across range"
         },
         {
@@ -3990,13 +4008,13 @@
           "nominal": 2,
           "low": {
             "value": 1,
-            "tpsPerUser": 434.16979550057215
+            "tpsPerUser": 429.87883920714984
           },
           "high": {
             "value": 5,
-            "tpsPerUser": 422.6617078245023
+            "tpsPerUser": 418.59414314497695
           },
-          "swing": 11.508087676069863,
+          "swing": 11.284696062172884,
           "verdict": "fails across range"
         },
         {
@@ -4004,13 +4022,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 431.2344198674707
+            "tpsPerUser": 427.00100595900284
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 427.71213702569116
+            "tpsPerUser": 423.5472629958766
           },
-          "swing": 3.5222828417795427,
+          "swing": 3.453742963126217,
           "verdict": "fails across range"
         }
       ]
@@ -4020,10 +4038,10 @@
       "ackDrain": "deferred",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 653.7934416270334,
-        "specFloor": 653.7934416270334,
-        "optimistic": 1101.0911149504796,
-        "pessimistic": 352.73343754279296
+        "bottomUp": 644.1117730135052,
+        "specFloor": 644.1117730135052,
+        "optimistic": 1085.1922669134624,
+        "pessimistic": 347.1037492711058
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -4031,14 +4049,14 @@
         "optimistic": true,
         "pessimistic": false
       },
-      "maxTauUs": 2.5828841575091572,
+      "maxTauUs": 2.6328841575091575,
       "mustHold": [],
       "failsAcrossRange": [
         "switchUs",
         "fecUs",
         "spineCableM",
-        "phyUs",
         "ucieHopUs",
+        "phyUs",
         "macUs",
         "cableM",
         "controlScale"
@@ -4049,13 +4067,13 @@
           "nominal": 0.2,
           "low": {
             "value": 0.1,
-            "tpsPerUser": 775.8030901618229
+            "tpsPerUser": 762.2082665784999
           },
           "high": {
             "value": 0.5,
-            "tpsPerUser": 445.3871295738794
+            "tpsPerUser": 440.8727369994751
           },
-          "swing": 330.41596058794346,
+          "swing": 321.3355295790248,
           "verdict": "fails across range"
         },
         {
@@ -4063,13 +4081,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 728.4620680508924
+            "tpsPerUser": 716.4629562573847
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 568.5835568235821
+            "tpsPerUser": 561.2469256389973
           },
-          "swing": 159.87851122731036,
+          "swing": 155.21603061838744,
           "verdict": "fails across range"
         },
         {
@@ -4077,27 +4095,13 @@
           "nominal": 5,
           "low": {
             "value": 2,
-            "tpsPerUser": 664.0026553370527
+            "tpsPerUser": 654.0185693685721
           },
           "high": {
             "value": 20,
-            "tpsPerUser": 607.1202797514903
+            "tpsPerUser": 598.7627500103724
           },
-          "swing": 56.882375585562386,
-          "verdict": "fails across range"
-        },
-        {
-          "param": "phyUs",
-          "nominal": 0.02,
-          "low": {
-            "value": 0.01,
-            "tpsPerUser": 667.4769508376066
-          },
-          "high": {
-            "value": 0.05,
-            "tpsPerUser": 615.9140840064596
-          },
-          "swing": 51.56286683114706,
+          "swing": 55.25581935819969,
           "verdict": "fails across range"
         },
         {
@@ -4105,13 +4109,27 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 665.8026883333015
+            "tpsPerUser": 659.743418712579
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 625.5839146236458
+            "tpsPerUser": 608.0921594797953
           },
-          "swing": 40.21877370965569,
+          "swing": 51.65125923278367,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 657.3889047036504
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 607.3144070895129
+          },
+          "swing": 50.0744976141375,
           "verdict": "fails across range"
         },
         {
@@ -4119,13 +4137,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 660.5643407793464
+            "tpsPerUser": 650.6826161793134
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 634.2887327981106
+            "tpsPerUser": 625.1720888480518
           },
-          "swing": 26.275607981235794,
+          "swing": 25.510527331261642,
           "verdict": "fails across range"
         },
         {
@@ -4133,13 +4151,13 @@
           "nominal": 2,
           "low": {
             "value": 1,
-            "tpsPerUser": 657.1614510982419
+            "tpsPerUser": 647.3805216866922
           },
           "high": {
             "value": 5,
-            "tpsPerUser": 643.8934127574593
+            "tpsPerUser": 634.5006261970364
           },
-          "swing": 13.268038340782596,
+          "swing": 12.879895489655837,
           "verdict": "fails across range"
         },
         {
@@ -4147,13 +4165,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 653.7934416270334
+            "tpsPerUser": 644.1117730135052
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 645.7312778143951
+            "tpsPerUser": 636.2851883741531
           },
-          "swing": 8.062163812638346,
+          "swing": 7.826584639352063,
           "verdict": "fails across range"
         }
       ]
@@ -4163,10 +4181,10 @@
       "ackDrain": "phase",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 475.2697696944554,
-        "specFloor": 475.2697696944554,
-        "optimistic": 839.6965846524399,
-        "pessimistic": 214.1023010379721
+        "bottomUp": 470.13277477482484,
+        "specFloor": 470.13277477482484,
+        "optimistic": 830.0817259426068,
+        "pessimistic": 212.0150892540754
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -4174,7 +4192,7 @@
         "optimistic": false,
         "pessimistic": false
       },
-      "maxTauUs": 3.999646062271063,
+      "maxTauUs": 4.049646062271063,
       "mustHold": [],
       "failsAcrossRange": [
         "fecUs",
@@ -4191,13 +4209,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 615.8497953234405
+            "tpsPerUser": 607.2519010388668
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 361.98516089966313
+            "tpsPerUser": 358.99750474258605
           },
-          "swing": 253.86463442377737,
+          "swing": 248.25439629628073,
           "verdict": "fails across range"
         },
         {
@@ -4205,13 +4223,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0.03,
-            "tpsPerUser": 513.5346732685957
+            "tpsPerUser": 507.5424149057638
           },
           "high": {
             "value": 0.2,
-            "tpsPerUser": 304.8856540592776
+            "tpsPerUser": 302.7634416986685
           },
-          "swing": 208.6490192093181,
+          "swing": 204.7789732070953,
           "verdict": "fails across range"
         },
         {
@@ -4219,13 +4237,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 500.6187694523839
+            "tpsPerUser": 497.18536369971685
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 415.2983665790752
+            "tpsPerUser": 407.51649908143173
           },
-          "swing": 85.3204028733087,
+          "swing": 89.66886461828511,
           "verdict": "fails across range"
         },
         {
@@ -4233,13 +4251,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 497.5123929086815
+            "tpsPerUser": 491.8861700372422
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 419.06367923598094
+            "tpsPerUser": 415.06474479358116
           },
-          "swing": 78.44871367270053,
+          "swing": 76.82142524366105,
           "verdict": "fails across range"
         },
         {
@@ -4247,13 +4265,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 482.4596530908093
+            "tpsPerUser": 477.16692299470606
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 454.9308675492107
+            "tpsPerUser": 450.22195643759443
           },
-          "swing": 27.52878554159861,
+          "swing": 26.944966557111627,
           "verdict": "fails across range"
         },
         {
@@ -4261,13 +4279,13 @@
           "nominal": 1.5,
           "low": {
             "value": 0.5,
-            "tpsPerUser": 486.1367929796435
+            "tpsPerUser": 480.7635259992613
           },
           "high": {
             "value": 3,
-            "tpsPerUser": 459.8506297326819
+            "tpsPerUser": 455.03985919763227
           },
-          "swing": 26.286163246961564,
+          "swing": 25.723666801629008,
           "verdict": "fails across range"
         },
         {
@@ -4275,13 +4293,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 475.2697696944554
+            "tpsPerUser": 470.13277477482484
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 470.9949707232648
+            "tpsPerUser": 465.94947878619666
           },
-          "swing": 4.274798971190592,
+          "swing": 4.183295988628174,
           "verdict": "fails across range"
         }
       ]
@@ -4291,10 +4309,10 @@
       "ackDrain": "deferred",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 714.1806798453548,
-        "specFloor": 714.1806798453548,
+        "bottomUp": 702.643712111597,
+        "specFloor": 702.643712111597,
         "optimistic": 1101.7921567815936,
-        "pessimistic": 365.26600503591504
+        "pessimistic": 359.23258733499426
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -4302,7 +4320,7 @@
         "optimistic": true,
         "pessimistic": false
       },
-      "maxTauUs": 2.231646062271062,
+      "maxTauUs": 2.2816460622710624,
       "mustHold": [],
       "failsAcrossRange": [
         "fecUs",
@@ -4319,13 +4337,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 861.7013996723055
+            "tpsPerUser": 843.4711492482049
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 578.2205489774118
+            "tpsPerUser": 567.484142340757
           },
-          "swing": 283.48085069489366,
+          "swing": 275.98700690744795,
           "verdict": "fails across range"
         },
         {
@@ -4333,13 +4351,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0.03,
-            "tpsPerUser": 759.3378459267782
+            "tpsPerUser": 746.3091122490537
           },
           "high": {
             "value": 0.2,
-            "tpsPerUser": 500.419456239706
+            "tpsPerUser": 494.7276671137657
           },
-          "swing": 258.9183896870722,
+          "swing": 251.581445135288,
           "verdict": "fails across range"
         },
         {
@@ -4347,13 +4365,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 753.146288619735
+            "tpsPerUser": 745.402211238972
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 629.3308954823888
+            "tpsPerUser": 611.6319406042919
           },
-          "swing": 123.81539313734618,
+          "swing": 133.77027063468006,
           "verdict": "fails across range"
         },
         {
@@ -4361,13 +4379,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 741.8331246448191
+            "tpsPerUser": 726.5431396080869
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 648.799634025314
+            "tpsPerUser": 639.2642231297779
           },
-          "swing": 93.03349061950507,
+          "swing": 87.27891647830904,
           "verdict": "fails across range"
         },
         {
@@ -4375,13 +4393,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 722.2678586711247
+            "tpsPerUser": 710.4702869797197
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 690.97044763204
+            "tpsPerUser": 680.1655043386106
           },
-          "swing": 31.29741103908475,
+          "swing": 30.304782641109114,
           "verdict": "fails across range"
         },
         {
@@ -4389,13 +4407,13 @@
           "nominal": 1.5,
           "low": {
             "value": 0.5,
-            "tpsPerUser": 726.3393881132057
+            "tpsPerUser": 714.4095307266975
           },
           "high": {
             "value": 3,
-            "tpsPerUser": 696.6304137040797
+            "tpsPerUser": 685.6491383359041
           },
-          "swing": 29.70897440912597,
+          "swing": 28.760392390793413,
           "verdict": "fails across range"
         },
         {
@@ -4403,13 +4421,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 714.1806798453548
+            "tpsPerUser": 702.643712111597
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 704.5713672202721
+            "tpsPerUser": 693.3403299271087
           },
-          "swing": 9.60931262508268,
+          "swing": 9.303382184488328,
           "verdict": "fails across range"
         }
       ]
@@ -4419,10 +4437,10 @@
       "ackDrain": "phase",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 222.45575910618038,
-        "specFloor": 222.45575910618038,
-        "optimistic": 476.1203634330557,
-        "pessimistic": 87.03596602865346
+        "bottomUp": 221.32382735587564,
+        "specFloor": 221.32382735587564,
+        "optimistic": 473.0137288731268,
+        "pessimistic": 86.68903643946196
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -4430,7 +4448,7 @@
         "optimistic": false,
         "pessimistic": false
       },
-      "maxTauUs": 10.089225171334045,
+      "maxTauUs": 10.139225171334045,
       "mustHold": [],
       "failsAcrossRange": [
         "fecUs",
@@ -4447,13 +4465,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 308.5433325965617
+            "tpsPerUser": 306.370076396066
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 159.9689828385882
+            "tpsPerUser": 159.38281001549305
           },
-          "swing": 148.5743497579735,
+          "swing": 146.98726638057295,
           "verdict": "fails across range"
         },
         {
@@ -4461,13 +4479,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0.03,
-            "tpsPerUser": 248.45116520075567
+            "tpsPerUser": 247.0400682513975
           },
           "high": {
             "value": 0.2,
-            "tpsPerUser": 124.64436092657013
+            "tpsPerUser": 124.28819617487879
           },
-          "swing": 123.80680427418554,
+          "swing": 122.75187207651872,
           "verdict": "fails across range"
         },
         {
@@ -4475,13 +4493,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 235.60301577471415
+            "tpsPerUser": 234.33371647029853
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 190.55532201119541
+            "tpsPerUser": 189.724147704821
           },
-          "swing": 45.04769376351874,
+          "swing": 44.60956876547752,
           "verdict": "fails across range"
         },
         {
@@ -4489,13 +4507,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 236.26601916459148
+            "tpsPerUser": 235.49850026841384
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 194.09288615878563
+            "tpsPerUser": 192.37601010493825
           },
-          "swing": 42.17313300580585,
+          "swing": 43.12249016347559,
           "verdict": "fails across range"
         },
         {
@@ -4503,13 +4521,13 @@
           "nominal": 1.5,
           "low": {
             "value": 0.5,
-            "tpsPerUser": 228.8407103891739
+            "tpsPerUser": 227.6430433796048
           },
           "high": {
             "value": 3,
-            "tpsPerUser": 213.51955231932396
+            "tpsPerUser": 212.4765218025825
           },
-          "swing": 15.321158069849929,
+          "swing": 15.16652157702228,
           "verdict": "fails across range"
         },
         {
@@ -4517,13 +4535,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 224.01835947271564
+            "tpsPerUser": 222.87051079734948
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 217.8960727840349
+            "tpsPerUser": 216.80995471690733
           },
-          "swing": 6.122286688680731,
+          "swing": 6.060556080442154,
           "verdict": "fails across range"
         },
         {
@@ -4531,13 +4549,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 222.45575910618038
+            "tpsPerUser": 221.32382735587564
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 221.5147247287025
+            "tpsPerUser": 220.3923251794585
           },
-          "swing": 0.9410343774778767,
+          "swing": 0.9315021764171263,
           "verdict": "fails across range"
         }
       ]
@@ -4547,10 +4565,10 @@
       "ackDrain": "deferred",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 383.6031528592215,
-        "specFloor": 383.6031528592215,
-        "optimistic": 721.5970599739073,
-        "pessimistic": 162.6542973710798
+        "bottomUp": 380.24964443931543,
+        "specFloor": 380.24964443931543,
+        "optimistic": 714.4851276533674,
+        "pessimistic": 161.44683531965208
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -4558,7 +4576,7 @@
         "optimistic": false,
         "pessimistic": false
       },
-      "maxTauUs": 5.271225171334044,
+      "maxTauUs": 5.321225171334044,
       "mustHold": [],
       "failsAcrossRange": [
         "fecUs",
@@ -4575,13 +4593,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 505.1166440054367
+            "tpsPerUser": 499.3181204912103
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 286.9581473891228
+            "tpsPerUser": 285.0774030203515
           },
-          "swing": 218.15849661631387,
+          "swing": 214.24071747085884,
           "verdict": "fails across range"
         },
         {
@@ -4589,13 +4607,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0.03,
-            "tpsPerUser": 421.64013290481415
+            "tpsPerUser": 417.59211294193784
           },
           "high": {
             "value": 0.2,
-            "tpsPerUser": 228.79966642133334
+            "tpsPerUser": 227.60242786707883
           },
-          "swing": 192.8404664834808,
+          "swing": 189.989685074859,
           "verdict": "fails across range"
         },
         {
@@ -4603,13 +4621,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 406.2254632673422
+            "tpsPerUser": 403.96182444093904
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 336.72360772644515
+            "tpsPerUser": 331.58964236317934
           },
-          "swing": 69.50185554089705,
+          "swing": 72.3721820777597,
           "verdict": "fails across range"
         },
         {
@@ -4617,13 +4635,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 402.99234018546247
+            "tpsPerUser": 399.29289336635503
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 335.21806980135256
+            "tpsPerUser": 332.6543588649353
           },
-          "swing": 67.77427038410991,
+          "swing": 66.63853450141971,
           "verdict": "fails across range"
         },
         {
@@ -4631,13 +4649,13 @@
           "nominal": 1.5,
           "low": {
             "value": 0.5,
-            "tpsPerUser": 393.05877961463835
+            "tpsPerUser": 389.5386675295217
           },
           "high": {
             "value": 3,
-            "tpsPerUser": 370.2430146180864
+            "tpsPerUser": 367.118079086278
           },
-          "swing": 22.815764996551934,
+          "swing": 22.42058844324373,
           "verdict": "fails across range"
         },
         {
@@ -4645,13 +4663,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 385.9241509622134
+            "tpsPerUser": 382.5301183681007
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 376.8046953316253
+            "tpsPerUser": 373.5684981986552
           },
-          "swing": 9.119455630588106,
+          "swing": 8.961620169445496,
           "verdict": "fails across range"
         },
         {
@@ -4659,13 +4677,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 383.6031528592215
+            "tpsPerUser": 380.24964443931543
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 380.81347719945194
+            "tpsPerUser": 377.50835671221597
           },
-          "swing": 2.789675659769557,
+          "swing": 2.7412877270994613,
           "verdict": "fails across range"
         }
       ]

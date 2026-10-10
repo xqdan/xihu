@@ -79,8 +79,8 @@ function portDies(port, lanes, lanesPerDie) {
   const first = Math.floor(port * lanes / lanesPerDie), last = Math.floor(((port + 1) * lanes - 1) / lanesPerDie);
   return Array.from({length: last - first + 1}, (_, i) => first + i);
 }
-const ringDist = (a, b, n) => Math.min(Math.abs(a - b), n - Math.abs(a - b));
-const setDist = (as, bs, n) => Math.min(...as.flatMap(a => bs.map(b => ringDist(a, b, n))));
+// Die hops on the in-card die ring (A.dieRing, B-004).
+const setDist = (as, bs, n) => Math.min(...as.flatMap(a => bs.map(b => A.dieRing(n).dist(a, b))));
 
 // A topology instance: route(src, dst, nicDie) -> {links: [{id, lanes, cableM}], switches, relays, dieHops}.
 // `params` supplies cableM / spineCableM. The abstract `published` wire has no route, only oneWayUs.
@@ -229,7 +229,7 @@ function derive(name, payload, q, cell, ctx) {
     count++; worstOneWayUs = Math.max(worstOneWayUs, r.worstOneWayUs);
   }
   const D = card.dies;
-  const cardLocal = q.timing.cardLocal + 6 * (P.ucieHopUs - A.TECH.ucieHopUs);
+  const cardLocal = q.timing.cardLocal + A.dieRing(D).allReduceHops * (P.ucieHopUs - A.TECH.ucieHopUs);
   const floor = Math.max(q.readBytes / (D * p.sharedRead * 1e6), q.writeBytes / (D * p.sharedWrite * 1e6), q.nocBytes / (D * p.nocTB * 1e6));
   const raw = memoryTransport + q.timing.tpReduce + cardLocal;
   const portTail = Math.max(0, floor - raw);
@@ -393,7 +393,7 @@ function build() {
     plan: 'teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md',
     issues: ['B-008', 'B-005', 'B-004', 'O-018'],
     candidatesStatus: spec.status,
-    method: 'tau = memoryTransport (phase chain per step with per-path one-way latency and the busiest-link floor) + tpReduce (model) + cardLocal (model, 6 die hops at ucieHopUs) + portTail (model floor) + controlPath (Comm Core). bottomUp replays with OPT.tauUs = 0, specFloor with 1.15 us; optimistic / pessimistic put every parameter at the low / high end of its range.',
+    method: 'tau = memoryTransport (phase chain per step with per-path one-way latency and the busiest-link floor) + tpReduce (model) + cardLocal (model, 8 die hops on the in-card ring at ucieHopUs) + portTail (model floor) + controlPath (Comm Core). bottomUp replays with OPT.tauUs = 0, specFloor with 1.15 us; optimistic / pessimistic put every parameter at the low / high end of its range.',
     provenance: {
       baseline: BASELINE_FILE, baselineSha256: hashFile(BASELINE_FILE),
       candidates: CANDIDATES_FILE, candidatesSha256: hashFile(CANDIDATES_FILE),

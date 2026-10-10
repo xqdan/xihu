@@ -22,7 +22,7 @@ pie title "每 token 集合通信 451.95 µs（393 × 1.15 µs）"
   "LSE merge ×24" : 27.60
 ```
 
-1. **通信时间 = 次数 × τ。** 五类集合通信的协议模型时间都低于 τ（0.43–0.98 µs），全部按 τ = 1.15 µs 下限计费，
+1. **通信时间 = 次数 × τ。** 五类集合通信的协议模型时间都低于 τ（0.48–1.03 µs），全部按 τ = 1.15 µs 下限计费，
    所以 comm = 393 × 1.15 = 451.95 µs，占 raw 775.75 µs 的 58%。
 2. **B=1 下每次集合通信都在依赖主链上。** 唯一的重叠是 shared 专家与 `Wdown + Router all-gather` 并行（`commOverlap`，26.27 µs）。
 3. **次数是口径，不是优化。** reference-393 相对 repo-510 少的 117 次是计数对齐（ADR-0004）；回退到 repo-510 为 941.74 TPS/usr。
@@ -32,11 +32,11 @@ pie title "每 token 集合通信 451.95 µs（393 × 1.15 µs）"
 
 | 集合通信 | 次数 | 出现位置 | 协议 kind | 协议模型均值 µs | 计入 µs | workspace B |
 | --- | ---: | --- | --- | ---: | ---: | ---: |
-| LSE merge / output reduce-scatter | 24 | 每个 softmax MLA 层（0、4、…、92） | LSE reduce-scatter | 0.98 | 27.60 | 1325568 |
-| Attention output all-reduce | 93 | 每层 | FP32 reduce-scatter + BF16 all-gather | 0.77 | 106.95 | 276480 |
-| Wdown + Router all-gather | 92 | 每个 MoE 层（1–92） | all-gather | 0.43 | 105.80 | 186880 |
-| Routed latent merge | 92 | 每个 MoE 层 | FP32 reduce-scatter + BF16 all-gather | 0.69 | 105.80 | 204800 |
-| Wup + Shared output all-reduce | 92 | 每个 MoE 层 | FP32 reduce-scatter + BF16 all-gather | 0.77 | 105.80 | 276480 |
+| LSE merge / output reduce-scatter | 24 | 每个 softmax MLA 层（0、4、…、92） | LSE reduce-scatter | 1.03 | 27.60 | 1325568 |
+| Attention output all-reduce | 93 | 每层 | FP32 reduce-scatter + BF16 all-gather | 0.82 | 106.95 | 276480 |
+| Wdown + Router all-gather | 92 | 每个 MoE 层（1–92） | all-gather | 0.48 | 105.80 | 186880 |
+| Routed latent merge | 92 | 每个 MoE 层 | FP32 reduce-scatter + BF16 all-gather | 0.74 | 105.80 | 204800 |
+| Wup + Shared output all-reduce | 92 | 每个 MoE 层 | FP32 reduce-scatter + BF16 all-gather | 0.82 | 105.80 | 276480 |
 | **合计** | **393** | | | | **451.95** | |
 
 ```text
@@ -51,7 +51,7 @@ xychart-beta
   title "协议模型时间 vs τ（µs）"
   x-axis ["LSE merge", "Attn AR", "Wdown+Router AG", "Latent merge", "Wup+Shared AR"]
   y-axis "µs" 0 --> 1.4
-  bar [0.98, 0.77, 0.43, 0.69, 0.77]
+  bar [1.03, 0.82, 0.48, 0.74, 0.82]
   line [1.15, 1.15, 1.15, 1.15, 1.15]
 ```
 
@@ -267,7 +267,7 @@ kernel 侧 lowering 见 [`MULTI_MODEL_LOWERING.md`](MULTI_MODEL_LOWERING.md)。
 | # | 缺口 | 责任 |
 | --- | --- | --- |
 | 1 | τ = 1.15 µs 是下限口径，无链路/协议推导（B-008） | HW Collective + SW-05 |
-| 2 | TP32 跨卡拓扑未定义（B-005），卡内拓扑口径冲突（B-004） | HW |
+| 2 | TP32 跨卡拓扑未定义（B-005），卡内拓扑未定（B-004），定案前按 8 Die 双向环计（ADR-0016 2026-10-10，ASSUMPTION） | HW |
 | 3 | top-k 合并的树形 vs all-gather 选择未量化 | SW-05 |
 | 4 | 无集合通信 trace（contract 的 `schedule trace` 字段） | SW-06 |
 | 5 | B>1 下的请求间交错未建模 | SW-05 + SW-06 |

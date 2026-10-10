@@ -91,9 +91,9 @@ TPS = 1e6 / (raw × 1.17)
 | `launch` | 11.17 | kernel 发射，已乘 `launchScale` 0.45 |
 | `dieLink` | 6.73 | 算子内的跨 Die 传输 |
 | `memoryTransport` | 192.37 | 集合通信：协议模型给出的内存搬运 |
-| `cardLocal` | 74.71 | 集合通信：卡内 8 Die 阶段 |
+| `cardLocal` | 94.36 | 集合通信：卡内 8 Die 阶段（8 Die 双向环，每次 8 跳，B-004） |
 | `tpReduce` | 1.88 | 集合通信：TP32 归约计算 |
-| `tauFloor` | 183.00 | 把每次集合通信补足到 τ = 1.15 µs 的时间 |
+| `tauFloor` | 163.35 | 把每次集合通信补足到 τ = 1.15 µs 的时间 |
 | `assumedGain` | 0.00 | GAIN 表的净折扣（GAIN 全为 1） |
 | `commOverlap` | −26.27 | shared 专家在集合通信期间计算 |
 | `tmaHidden` | −106.91 | 被集合通信或前一个 kernel 掩盖的 TMA 装载 |
@@ -120,13 +120,13 @@ TPS = 1e6 / (raw × 1.17)
 
 | 集合通信 | 次数 | 计入时间 µs | 协议模型均值 µs | workspace B |
 | --- | ---: | ---: | ---: | ---: |
-| LSE merge / output reduce-scatter | 24 | 27.60 | 0.98 | 1325568 |
-| Attention output all-reduce | 93 | 106.95 | 0.77 | 276480 |
-| Wdown + Router all-gather | 92 | 105.80 | 0.43 | 186880 |
-| Routed latent merge | 92 | 105.80 | 0.69 | 204800 |
-| Wup + Shared output all-reduce | 92 | 105.80 | 0.77 | 276480 |
+| LSE merge / output reduce-scatter | 24 | 27.60 | 1.03 | 1325568 |
+| Attention output all-reduce | 93 | 106.95 | 0.82 | 276480 |
+| Wdown + Router all-gather | 92 | 105.80 | 0.48 | 186880 |
+| Routed latent merge | 92 | 105.80 | 0.74 | 204800 |
+| Wup + Shared output all-reduce | 92 | 105.80 | 0.82 | 276480 |
 
-UCIe 回到 128 lane 后，LSE merge 的协议时间降到 0.98 µs，五类都低于 τ，全部按 1.15 µs 计。
+UCIe 回到 128 lane 后，LSE merge 的协议时间降到 0.98 µs；2026-10-10 卡内阶段按 8 Die 环计 8 跳（ADR-0016、B-004，原 6 跳），五类各多 0.05 µs，LSE merge 为 1.03 µs，仍都低于 τ，全部按 1.15 µs 计。
 因此通信时间完全由 τ × 次数决定（ADR-0004、B-008）。
 
 ## 3. 硬件设计（每 Compute Die，除非注明）
@@ -180,7 +180,7 @@ Shared SRAM 端口放大（`localWriteRatio` 1、`tmaDedicatedPort` ×1.55、`sh
 | --- | --- | ---: | --- |
 | TMA | 每 core 4 engine × 512 B/cycle | 1.64 TB/s/core | `MODEL`（O-007） |
 | 片上 NoC | 6×6 抽象 mesh，256 B/cycle × 4 lane | 7.99 TB/s | `OPEN`（O-003） |
-| UCIe（Die 间） | 每端口 128 lane × 64 Gbps | 819.20 GB/s/端口；环切面 1638.40 GB/s | `BLOCKER`（B-004） |
+| UCIe（Die 间） | 每端口 128 lane × 64 Gbps，8 Die 双向环（ADR-0016 口径） | 819.20 GB/s/端口；环切面 1638.40 GB/s | `ASSUMPTION`（B-004，待硬件评审） |
 | MC 接口 | 2 × 640 GB/s，利用率 0.7；UCIe 端口 819.20 GB/s 不再截断 | 896.00 GB/s/Die | `BLOCKER`（B-002） |
 | RDMA（scale-out） | 16 lane × 112 Gbps | 168.00 GB/s/Die；800.00 GB/s/卡（上限） | `BLOCKER`（B-005） |
 
@@ -307,7 +307,7 @@ TMA 通道与 DMA、算子和集合通信共享 shared 读口和 fabric，与同
 | `dmaPreempt` | 调度/DMA | `false` | 1041.66 | 820.52 | `MODEL` |
 | `commOverlap` | 调度/集合通信 | `false` | 1073.24 | 796.37 | `MODEL` |
 | `epilogueFusion` | kernel 映射 | `false` | 1077.23 | 793.43 | `MODEL` |
-| `pvMerge` | kernel 映射 | `'tile'` | 1082.21 | 789.77 | `MODEL` |
+| `pvMerge` | kernel 映射 | `'tile'` | 1081.42 | 790.35 | `MODEL` |
 | `launchBatching` | runtime | `false` | 1088.47 | 785.23 | `ASSUMPTION` |
 | `sharedPortScaling` | 硬件/SRAM 端口 | 四个端口参数全部回到 1 / `false` / 0 | 1101.71 | 775.79 | `MODEL`（O-007） |
 | `kvCache` | 模型格式 | `'bf16'` | 不可行（H local tile） | — | `MODEL`（B-001） |
@@ -318,8 +318,8 @@ TMA 通道与 DMA、算子和集合通信共享 shared 读口和 fabric，与同
   | 一起回退的机制 | TPS/usr | raw µs |
   | --- | ---: | ---: |
   | 调度类：`tmaLane`、`kvPrefetch`、`dmaPreempt`、`commOverlap` | 843.49 | 1013.29 |
-  | kernel 映射类：`softmaxFusion`、`epilogueFusion`、`pvMerge`、`launchBatching` | 976.39 | 875.37 |
-  | 两类全部 | 755.45 | 1131.37 |
+  | kernel 映射类：`softmaxFusion`、`epilogueFusion`、`pvMerge`、`launchBatching` | 975.72 | 875.97 |
+  | 两类全部 | 755.05 | 1131.97 |
 
   所以 1000 TPS/usr 要求这些机制同时成立，而它们都是 `MODEL`（`launchBatching` 是 `ASSUMPTION`），没有 trace 或 RTL 证据。
   测试要求每个联合回退都比组内任何一项单独回退更低。
@@ -433,7 +433,7 @@ Stage A/B 的 18 个槽位用规划 token time，它的 5 个因子在**一个**
 - 接受率与草稿代价是**假设**，扫描而非测量：每步期望 token 数 (1−a^k)/(1−a)；每个草稿 token 付 d 个 k=1 的平均层时间（d=1 是一层 MoE，d=2 另含 LM head 与采样）；
 - 回滚、被拒 token 的 KV 失效、草稿头的 SRAM 占用、数据相关步长的调度开销**没有建模**。
 
-步时间（BF16 稠密，MC640，µs，未乘 1.17 余量）：k=1 为 775.8（等于发布值），k=2 为 1011.7，k=3 为 1343.6，k=4 为 1697.9。
+步时间（BF16 稠密，MC640，µs，未乘 1.17 余量）：k=1 为 775.8（等于发布值），k=2 为 1012.9，k=3 为 1345.1，k=4 为 1700.6。
 一步验证 2 个 token 要多付 30%，因为路由专家并集翻倍；所以 MTP 只在接受率足够高时才赚钱。
 
 **达到 1000 TPS/usr 所需的最小每 token 接受率**（`worst` / `expected` 并集；d=1；0 表示 k=1 已经够）：
@@ -445,7 +445,7 @@ Stage A/B 的 18 个槽位用规划 token time，它的 5 个因子在**一个**
 
 读法：
 
-1. 在已发布的 MC640 上，MTP 不是达标的条件，而是裕量：接受率 0.4 / 0.6 / 0.8 时 BF16 为 1173 / 1341 / 1533 TPS/usr（`model_profiles.json` 的 `reportedMtpAcceptanceGainMax` 是 0.2，在这个值上最优仍是 k=1）；
+1. 在已发布的 MC640 上，MTP 不是达标的条件，而是裕量：接受率 0.4 / 0.6 / 0.8 时 BF16 为 1172 / 1339 / 1531 TPS/usr（`model_profiles.json` 的 `reportedMtpAcceptanceGainMax` 是 0.2，在这个值上最优仍是 k=1）；
 2. 在 MC480 上要 0.4 的接受率才够，MC400 要 0.65，MC320 要 0.8——这些接受率都没有测量，所以 MTP **不能替代**带宽，只能给带宽落空留一点余地；
 3. 与 FP8 稠密（第 6.1.1 节与 `04_MEMORY_SUBSYSTEM_MC.md` 的条件路线）叠加后，MC400 已不需要 MTP；MC320 需要 0.45–0.5 的接受率。
 4. 草稿代价 d=2 时最小接受率最多抬高 0.05（BF16 的 `worst` 并集：MC400 由 0.65 变 0.7，MC480 由 0.4 变 0.45）。
@@ -468,7 +468,7 @@ Stage A/B 的 18 个槽位用规划 token time，它的 5 个因子在**一个**
 | --- | --- | ---: | ---: | ---: | ---: |
 | `reduceLanes` | 4096 → 3072 | −5.5 | −4.7 | −10.5 | −8.2 |
 | `tmaEngines` | 4 → 3 | −0.5 | −1.0 | −5.4 | −1.0 |
-| `rdmaLanes` | 16 → 12 | 0.0 | 0.0 | −1.4 | −1.7 |
+| `rdmaLanes` | 16 → 12 | 0.0 | −0.4 | −1.4 | −1.7 |
 | `vectorLanes` | 512 → 640 | 0.0 | +28.4 | +2.9 | +2.0 |
 | `vectorLanes` | 512 → 384 | −40.1 | −64.6 | −2.9 | −2.0 |
 | `hEngines` | 5 → 4 | −51.7 | −54.5 | −19.6 | −23.6 |
@@ -485,17 +485,17 @@ Stage A/B 的 18 个槽位用规划 token time，它的 5 个因子在**一个**
 | `rdmaLanes` | 16 | 12 |
 | `hRows` × `hEngines` | 48 × 5 | 40 × 6（H 阵列规模不变，只是换形） |
 | 名义 TPS/usr | 1101.77 | 1101.57 |
-| 联合悲观点（计算） | 921.63 | 999.16 |
-| 联合悲观点（全部未测量，留出点） | 906.51 | 981.41 |
+| 联合悲观点（计算） | 921.63 | 998.91 |
+| 联合悲观点（全部未测量，留出点） | 906.51 | 981.18 |
 | Die 面积 / 功耗 | 365.3 mm² / 283.3 W | 375.7 mm² / 289.6 W |
 | 卡功耗（余量） | 2744.9 W（55.1 W） | 2795.3 W（4.7 W） |
 
 结论：
 
-1. 名义不变（−0.2 TPS）的情况下，悲观点由 921.6 抬到 999.2（+77.5），留出点（同时压 mcUtil、prediction、launch）由 906.5 抬到 981.4（+74.9）。留出点同向，说明增益不只是对调参点的过拟合；
+1. 名义不变（−0.2 TPS）的情况下，悲观点由 921.6 抬到 998.9（+77.3），留出点（同时压 mcUtil、prediction、launch）由 906.5 抬到 981.2（+74.7）。留出点同向，说明增益不只是对调参点的过拟合；
 2. 增益几乎全部来自 `vectorLanes` 512→1024（配合 `rdmaLanes` 16→12 压回卡功耗）。`hRows`×`hEngines` 那一步只带来 +3.1 TPS（0.3%），阵列规模不变，在模型颗粒度之内，**不要当成证据**；
 3. 代价：卡功耗余量从 55.1 W 缩到 4.7 W（0.17%），Die 功耗余量 16.7 W → 10.4 W。这换来的是对"向量利用率没达到 0.35"这类风险的保险，花掉的是散热和功耗裕量，两者不是免费的；
-4. 即使如此，悲观点仍低于 1000（999.2），所以这是**缩小缺口**，不是消除缺口；
+4. 即使如此，悲观点仍低于 1000（998.9），所以这是**缩小缺口**，不是消除缺口；
 5. `reduceLanes` 4096→2048 在名义上仅 −18.2 TPS（−1.7%）却省 131 W 卡功耗，是另一个可用的功耗来源，这个爬山没有选它（它换来的功耗没有被用在悲观点增益更大的位置上）；
 6. 爬山是贪心的、一步最多动两个字段，不保证全局最优。
 
@@ -512,7 +512,7 @@ Stage A/B 的 18 个槽位用规划 token time，它的 5 个因子在**一个**
 | MC 持续效率 0.7、矩阵/向量利用率、预测命中率 | `ASSUMPTION` | B-003、B-006：第 6.1 节；MC 持续效率的盈亏点只有 0.63 |
 | GLM-5.2、DeepSeek-V4-Pro、K3 TP8/TP16 的规划 TPS | `ASSUMPTION` | 第 6.2 节：没有详细模型，是 K3 因子的外推；第 6.3 节：注意力权重切分与每层集合通信次数未定 |
 | launchScale、预测命中率 0.8 | `ASSUMPTION` | B-003：runtime trace、专家预测实测 |
-| 卡内拓扑、scale-out、UCIe 128 lane | `BLOCKER` | B-004、B-005：统一拓扑与 PHY 方案 |
+| 卡内拓扑（按 8 Die 双向环计）、scale-out、UCIe 128 lane | `BLOCKER` | B-004：环口径待硬件评审与 packet 模型；B-005：scale-out 拓扑与 PHY 方案 |
 | 频率 1.0 GHz（固定）、面积、功耗系数 | `MODEL` | B-006：synthesis/floorplan/IP 回标 |
 | SF4 面积折算（逻辑 ×1.277、SRAM ×1.248、PHY ×1） | `ASSUMPTION` | B-006：SF4 PDK/标准单元/memory compiler 数据；SF4/SF4X 节距未公开，按 SF4E 取 |
 | 矩阵密度 3.2 TF/mm² | `ASSUMPTION` | B-006：MAC 阵列宏的面积数据 |

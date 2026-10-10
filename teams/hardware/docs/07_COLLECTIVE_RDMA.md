@@ -111,14 +111,14 @@ flowchart LR
 | partial-ready | Attention 20%、LSE 25%、Router 18% | `MODEL`（只经 GAIN 起作用，GAIN = 1 时无效） |
 | group ACK/ready counter | enabled | `BASELINE`（同上） |
 
-这些参数只影响超过 τ 的集合通信；发布点五类集合通信的协议时间都低于 τ（0.43–0.98 µs），全部按 1.15 µs 计。
+这些参数只影响超过 τ 的集合通信；发布点五类集合通信的协议时间都低于 τ（0.48–1.03 µs），全部按 1.15 µs 计。
 
 ```mermaid
 xychart-beta
   title "五类集合通信：协议模型均值 vs τ（µs）"
   x-axis ["LSE merge", "Attn AR", "Wdown+Router AG", "Latent merge", "Wup+Shared AR"]
   y-axis "µs" 0 --> 1.3
-  bar [0.98, 0.77, 0.43, 0.69, 0.77]
+  bar [1.03, 0.82, 0.48, 0.74, 0.82]
   line [1.15, 1.15, 1.15, 1.15, 1.15]
 ```
 

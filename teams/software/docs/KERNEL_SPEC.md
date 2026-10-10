@@ -174,7 +174,7 @@ sequenceDiagram
 
 - **softmaxFusion**：softmax 只暴露一个块，或超出 QK 本体的部分；FP8 反量化的向量时间从可掩盖预算中扣除。
   单独回退后 1033.22 TPS/usr。
-- **pvMerge**：`'tile'` 时每个 KV tile 都合并一次；发布点 `'layer'`。单独回退后 1082.21。
+- **pvMerge**：`'tile'` 时每个 KV tile 都合并一次；发布点 `'layer'`。单独回退后 1081.42。
 - **FP8 KV**：QK 与 PV 都在 kernel 内反量化 latent（与权重 unpack 同速率），精度见 PRECISION_POLICY。
 
 ### 3.3 K6：KDA recurrent state update
