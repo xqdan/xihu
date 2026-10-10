@@ -1,7 +1,7 @@
 # 执行 Trace 导出与 Charon 方法借鉴（建议稿）
 
-版本：2026-10-09
-状态：`PROPOSAL`，未实现；不改动已落地的任何机制，也不改变发布点 1101.77 TPS/usr
+版本：2026-10-10
+状态：阶段一已实现（2026-10-10，见 §2.1）；阶段二至四仍是 `PROPOSAL`。不改动已落地的任何机制，也不改变发布点 1101.77 TPS/usr
 
 前置文档：[`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md)、
 [`10_TILE_SIMULATION.md`](../../../docs/architecture/10_TILE_SIMULATION.md)、
@@ -150,6 +150,23 @@ Charon 在第 2–4 点上各有现成方法：按链路分层的通信模型、
 |---|---|
 | 内容 | (1) 用现有 `mapped(x, {tokens, seqs})` 扫出 TPS/usr 与 TPS/卡 的 Pareto 前沿，回答"为 B=1 优化的设计在 batch 场景下损失多少"；(2) 短上下文扫描（如 8K / 128K），回答 24 次 LSE 归约和按上下文切分在短序列下是否划算，对应 Charon 的动态 SP 案例 |
 | 约束 | 只作附加视角，不改 ADR-0009 的目标 |
+
+### 2.1 阶段一实现记录（2026-10-10）
+
+| 工作包 | 落点 |
+|---|---|
+| ARCH-TR-01 | `integration/detailed/execution_trace.js`（构建与对账）、`integration/pipelines/generate_execution_trace.js`（`npm run trace:published`）→ `out/trace/k3_published_point.trace.json`、`out/trace/README.md` |
+| VV-TR-01 | 契约 [`EXECUTION_TRACE.md`](../../../docs/architecture/contracts/EXECUTION_TRACE.md)；`tests/regression/test_execution_trace.js`；`trace:published` 已加入 `REGENERATE_SCRIPTS` |
+| ARCH-TR-02 | `npm run trace:published -- --diff <机制 \| JSON 补丁> [--traces]` → `scratch/trace/` |
+| HW-TR-01 | 5 类集合通信各抽样一次，嵌套在 COMM 切片下 |
+
+与上文的差异：
+
+- **provenance 不记 `sourceCommit`**，改记基线文件和 6 个模拟器源文件的 sha256。trace 因此只随输入变化，再生成测试不必钉提交。
+- **模拟器改动**：只在 `if(trace)` 分支给 `op` 事件补了 `unit`、`async`、`filled`，并新增 `wait`、`TMA exposed` 两类事件（守恒对账需要逐段的等待和暴露 fill）。COMM 的起点原本就在 `op` 事件里；算子的 timing 拆解在构建 trace 时从 plan 读取，不进事件。测试比较了 `{trace:true}` 与默认调用的全部标量结果。
+- **计算槽的口径**：模拟器把完整服务时间计入 `computeUs`，计算槽上实际占用的是 `computeUs − tmaHiddenUs`（kernel 本体 + 暴露的 fill）。守恒表按这个口径写，见契约 §5。
+- **体积**：13229 个事件，约 3.35 MB，高于预估的 2–3 MB，主要来自逐算子的 timing 拆解和逐 peer 异步切片。按 D1 只提交发布点这一份明文 JSON；仓库里已有 7.6 MB 的 `out/rdma/` 结果文件，暂不压缩。
+- **对比的归因口径**：每个算子拥有从它发出到下一个算子发出的 advance，advance 之和恰为 `rawUs`，所以逐算子、逐层的差值之和等于总差值。`tmaLane` 回退的差值 +92.67 µs 与 `tpsDesign.software.mechanisms` 的记录一致。
 
 ## 3. 阶段与顺序
 

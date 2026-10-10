@@ -13,6 +13,7 @@
 ## Current contracts
 
 - [`TILE_IR.md`](TILE_IR.md)：Tile IR / tile descriptor，编译器（Software）与片上调度器（Hardware）之间的接口；
+- [`EXECUTION_TRACE.md`](EXECUTION_TRACE.md)：详细模拟器执行 trace（Chrome Trace Event JSON）的轨道、事件、必填字段和守恒口径，证据等级 MODEL；
 - [`CONTRACT_PACK.md`](CONTRACT_PACK.md)：contract 生命周期与生成规则。
 
 接口变更必须由三团队 review，并由 Architecture Council 记录 ADR；V&V 必须增加回归测试。
