@@ -27,7 +27,7 @@ const COPY_EXCLUDE = new Set(['.git', 'archive', 'node_modules', 'scratch', 'cov
 // to check that the driver notices. It is not part of the repository's content, and when the
 // test files run in parallel the copy below must not race its creation and removal.
 const COPY_EXCLUDE_FILES = new Set([path.join(root, 'tests/regression/__driver_write_probe.txt')]);
-const REGENERATE_SCRIPTS = ['workload:requirements', 'aicore:search', 'commcore:search', 'memory:search', 'sram:search', 'physical:search', 'coupling:search', 'model:planning', 'trace:published', 'contention:delta', 'cost:coverage'];
+const REGENERATE_SCRIPTS = ['workload:requirements', 'aicore:search', 'commcore:search', 'memory:search', 'sram:search', 'physical:search', 'coupling:search', 'model:planning', 'trace:published', 'contention:delta', 'cost:coverage', 'tau:derivation'];
 
 const readJson = (base, relativePath) => JSON.parse(fs.readFileSync(path.join(base, relativePath), 'utf8'));
 

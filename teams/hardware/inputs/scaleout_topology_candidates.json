@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "scaleout-topology-candidates-v0.1",
+  "owner": "HW-05 NoC/Die-to-Die (scale-out topology), co-sign HW-07 Comm-Core and SW-05 Collective",
+  "status": "ASSUMPTION",
+  "provenance": "Chosen by the architecture agent on 2026-10-10 at the user's request, in place of decision point D4 of teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md (the hardware team was to supply 2-3 B-005 candidates). Common scale-out shapes for a 32-rank TP group; pending review by the Collective/RDMA and NoC owners. Replacing or adding a candidate is an edit to this file and a rerun of npm run tau:derivation.",
+  "document": "teams/hardware/docs/06_MULTIDIE_AND_SCALEOUT.md section 6",
+  "consumer": "integration/detailed/collective_topology.js (HW-CH-01) -> out/detailed/tau_derivation.json",
+  "evidence": "Every latency below is an ASSUMPTION with a sensitivity range: order-of-magnitude figures for 112G PAM4 SerDes, FEC, cut-through switches and copper cable, none measured on this design. Bandwidths come from the published spec (16 lanes x 112 Gbps per die, p.rdmaDieGB effective, 800 GB/s per card).",
+  "card": {
+    "ranks": 32,
+    "dies": 8,
+    "lanesPerDie": 16,
+    "dieTopology": "ring",
+    "dieTopologyNote": "Die hops between the sending NIC and the die that owns a scale-out port are counted on the 8-die bidirectional ring, the bandwidth basis of the model (dieCutGB = 2 x uciePortGB). B-004 is open; the 4x2 mesh of 06 section 3 has the same worst case (4 hops) and is shorter on average.",
+    "nicDies": [0, 1, 2, 3, 4, 5, 6, 7],
+    "nicDiesNote": "The k-th active NIC of a collective (activeNICs = 1 or 3 at the published point) sits on die nicDies[k].",
+    "portLaneAllocation": "Ports take their lanes in order from die 0 upward, 16 lanes per die; a port owns every die its lanes touch."
+  },
+  "parameters": [
+    {"key": "macUs", "nominal": 0.04, "low": 0.02, "high": 0.10, "unit": "us per path", "evidence": "ASSUMPTION",
+     "meaning": "NIC MAC/PCS framing at the two endpoints, once per path."},
+    {"key": "phyUs", "nominal": 0.02, "low": 0.01, "high": 0.05, "unit": "us per link", "evidence": "ASSUMPTION",
+     "meaning": "SerDes TX + RX (PMA, CDR, DSP) of one 112G PAM4 link."},
+    {"key": "fecUs", "nominal": 0.05, "low": 0.00, "high": 0.12, "unit": "us per link", "evidence": "ASSUMPTION",
+     "meaning": "FEC decode per link (every link terminates FEC). 0 = short reach without FEC; 0.12 is about an RS(544,514) KP4 decode."},
+    {"key": "switchUs", "nominal": 0.20, "low": 0.10, "high": 0.50, "unit": "us per switch", "evidence": "ASSUMPTION",
+     "meaning": "Cut-through port-to-port latency of one switch traversal, excluding its two links."},
+    {"key": "relayUs", "nominal": 0.05, "low": 0.03, "high": 0.20, "unit": "us per relay card", "evidence": "ASSUMPTION",
+     "meaning": "Cut-through forwarding through an intermediate card's NIC/router (torus, ring), excluding the die hops between its in-port and out-port."},
+    {"key": "ucieHopUs", "nominal": 0.025, "low": 0.015, "high": 0.05, "unit": "us per die hop", "evidence": "ASSUMPTION",
+     "meaning": "One die-to-die hop inside the card (A.TECH.ucieHopUs is 0.025). Also rescales the 6 die hops inside cardLocal."},
+    {"key": "controlScale", "nominal": 1, "low": 1, "high": 2, "unit": "x", "evidence": "ASSUMPTION",
+     "meaning": "Multiplier on the Comm Core control path of each collective class (out/detailed/comm_core_design.json controlPath.classes[].controlUs, O-018)."}
+  ],
+  "propagationUsPerM": 0.005,
+  "propagationNote": "Signal propagation in copper twinax or fiber, about 5 ns/m; physics, not varied.",
+  "topologies": [
+    {
+      "key": "fullMesh",
+      "name": "Direct full mesh (backplane)",
+      "candidateIn06": 1,
+      "kind": "fullMesh",
+      "lanesPerPort": 4,
+      "cableM": {"nominal": 1.0, "low": 0.5, "high": 2.0},
+      "description": "Every card has a direct link to each of the 31 others: 31 ports x 4 lanes = 124 of 128 lanes. One hop, no switch; a NIC reaches the ports on other dies through the in-card die ring.",
+      "risks": "31 ports per card and 496 cables or backplane traces; 4-lane links give 42 GB/s per peer."
+    },
+    {
+      "key": "singleSwitch",
+      "name": "Single-level rail switch",
+      "candidateIn06": 3,
+      "kind": "railSwitch",
+      "lanesPerPort": 16,
+      "levels": 1,
+      "cableM": {"nominal": 2.0, "low": 1.0, "high": 5.0},
+      "description": "Eight switch planes, one per die rail: die k of every card connects its 16 lanes to plane k (32 ports x 16 lanes x 112G, a 51.2T-class switch). Two links and one switch; no die forwarding.",
+      "risks": "Eight switch chips per TP group (power, single point of failure per rail); switch latency is on every collective."
+    },
+    {
+      "key": "leafSpine",
+      "name": "Two-level leaf-spine rail switch",
+      "candidateIn06": 3,
+      "kind": "railSwitch",
+      "lanesPerPort": 16,
+      "levels": 2,
+      "leafCards": 8,
+      "spines": 4,
+      "cableM": {"nominal": 2.0, "low": 1.0, "high": 5.0},
+      "spineCableM": {"nominal": 5.0, "low": 2.0, "high": 20.0},
+      "description": "Each rail plane built from 4 leaves of 8 cards and 4 spines (non-blocking: 128 lanes down, 4 x 32 lanes up per leaf), for switch radix below 32 x 16 lanes. Up to 4 links and 3 switches; spine chosen by destination.",
+      "risks": "Three switch traversals on 24 of 31 peers; spine links may need optics."
+    },
+    {
+      "key": "torus4x8",
+      "name": "4 x 8 torus",
+      "candidateIn06": 2,
+      "kind": "torus",
+      "dims": [4, 8],
+      "lanesPerPort": 32,
+      "cableM": {"nominal": 1.5, "low": 0.5, "high": 3.0},
+      "description": "Each card has 4 neighbours (x+, x-, y+, y-, 32 lanes each); dimension-order routing, shortest direction, ties to +. Worst 6 hops with 5 relay cards.",
+      "risks": "Relay forwarding breaks the one-hop remote SRAM write; hops x relay latency go straight into tau."
+    },
+    {
+      "key": "ring32",
+      "name": "Bidirectional ring of 32 cards",
+      "candidateIn06": null,
+      "kind": "torus",
+      "dims": [32],
+      "lanesPerPort": 64,
+      "cableM": {"nominal": 1.5, "low": 0.5, "high": 3.0},
+      "description": "Two ports of 64 lanes (clockwise, counter-clockwise); shortest direction, ties clockwise. Worst 16 hops. The lower bound on wiring, and the topology the ring algorithm assumes.",
+      "risks": "Worst-case path of 16 hops; included as the low-wiring reference, not expected to meet tau."
+    }
+  ],
+  "notModelled": [
+    "8-card pod with an inter-pod layer (06 section 6 candidate 4): a hybrid of fullMesh and leafSpine; add it here if the hardware team shortlists it.",
+    "Optics latency: every link is electrical; a DSP-retimed optical module adds tens of ns per end.",
+    "Packet loss, retransmission, link-level replay and congestion control: the model is lossless and credit-based.",
+    "MTU segmentation: one message is one packet, as in k3_sram_memory_rdma_model.phase."
+  ]
+}

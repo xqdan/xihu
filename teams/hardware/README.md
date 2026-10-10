@@ -21,6 +21,7 @@
 |---|---|
 | `docs/` | 硬件单元设计：02 AI Core、03 TMA/SRAM、04 MC、05 NoC、06 多 Die/Scale-out、07 Collective/RDMA、08 片上调度器与 PMU、09 封装/功耗/RAS（编号沿用原 docs/architecture/ 序号）、10 Comm Core；后端与物理层：11 布局/面积、12 时钟复位电源域、13 DFT、14 时序签核、15 RTL 验证、PROCESS_AND_LIBRARY 工艺与库、PACKAGE_SUBSTRATE 封装与基板、POWER_BUDGET 卡功耗逐项分配 |
 | `inputs/k3_mc_baseline.json` | 唯一硬件规格（P1，ADR-0021），含 `package` 面积约束。**混合文件**：规格字段手工维护；`computeDieCandidate`、`modelResults`、`collectiveCount`、`tauBasis`、`sramAccounting`、`acceptance.reason`、`tpsDesign`、`designPoint` 由 `integration/pipelines/sync_baseline_spec.js` 从 Final Tuning 结果重写（`npm run baseline:sync`），不要手改这些字段。默认同步发布点（`--point published`）；`--point joint --adr <ADR 文件>` 改从联合点同步，把它的 OPT / 模型补丁写进这份基线并留下一块 `designPoint`，这需要 ADR——搬基线是决定，不是落盘文件的副作用 |
+| `inputs/scaleout_topology_candidates.json` | TP32 scale-out 拓扑候选（全互联、单层 rail 交换、leaf-spine、4×8 torus、环）与链路延迟参数，全部 `ASSUMPTION`，带敏感区间。2026-10-10 由架构 agent 代 D4 先选，待 HW-05 / HW-07 / SW-05 评审替换；`npm run tau:derivation` 读它给出链路级 τ 推导（HW-CH-01，[06](docs/06_MULTIDIE_AND_SCALEOUT.md) 第 6.1 节） |
 | `src/resource_profiles.js` | P1 × MC320/MC640 资源 profile，从上面的 spec 推导 |
 | `src/k3_compute_node.js` | Compute Node 模型 |
 | `contract.json` | 对外 resource contract 的静态部分；合成到 `out/contracts/hardware_resource_contract.json` |

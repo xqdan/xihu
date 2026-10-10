@@ -1,7 +1,7 @@
 # 执行 Trace 导出与 Charon 方法借鉴（建议稿）
 
 版本：2026-10-10
-状态（2026-10-10）：阶段一已实现（§2.1）；ARCH-CH-01 已实现，差值为零（§2.2）；HW-CH-01 按 D4 等待拓扑候选（§2.3）；
+状态（2026-10-10）：阶段一已实现（§2.1）；ARCH-CH-01 已实现，差值为零（§2.2）；HW-CH-01 已用自选的 5 个拓扑候选（`ASSUMPTION`）实现，名义参数下只有直连全互联达标（§2.3）；
 ARCH-CH-02 已实现，实测表为空（§2.4）；阶段四仍是 `PROPOSAL`。不改动已落地的任何机制，也不改变发布点 1101.77 TPS/usr
 
 前置文档：[`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md)、
@@ -198,9 +198,87 @@ Charon 在第 2–4 点上各有现成方法：按链路分层的通信模型、
   - 量级可以忽略，但它是映射器的不一致，应交给 SW-CH-01 或 mapper 负责人处理，不应记在争用名下。
 - **局限**：争用只覆盖 shared 侧的三项资源。local SRAM 写口仍只约束 TMA fill（`fillSpeeds()`），MC 带宽只约束 DMA。若将来让更多算子标记 `overlapComm`，需要重跑本报告。
 
-### 2.3 HW-CH-01 状态
+### 2.3 HW-CH-01 实现记录（2026-10-10）
 
-未开工。按决策点 D4，需要硬件团队（Collective/RDMA、NoC 负责人）先给出 B-005 的 2–3 个 scale-out 拓扑候选。HW-TR-01 的协议 trace 已经可以作为核对视图：5 类集合通信的协议时间在 0.43–0.98 µs 之间，其余部分由 τ 下限补齐。
+D4 原定由硬件团队给候选。2026-10-10 按用户指示，由架构 agent 先选 5 个常见的 scale-out 拓扑开工。
+候选文件状态为 `ASSUMPTION`，等 Collective/RDMA、NoC 负责人评审；替换或增加候选只需改输入文件并重跑。
+
+| 项 | 落点 |
+|---|---|
+| 候选与参数 | `teams/hardware/inputs/scaleout_topology_candidates.json`。拓扑：直连全互联 `fullMesh`（31 端口 × 4 lane）、单层 rail 交换 `singleSwitch`（每 Die 一个交换平面）、两级 leaf-spine `leafSpine`、`torus4x8`、32 卡双向环 `ring32`。参数：MAC、PHY、FEC、交换、中继、UCIe 每跳、线缆长度、控制路径倍数，全部 `ASSUMPTION`，带名义值和区间 |
+| 模块 | `integration/detailed/collective_topology.js`：逐拓扑给出路由（链路、交换、中继卡、卡内 Die 跳数），逐算法拆成若干步，每步沿用 `phase()` 的发出、窗口、串行化链 |
+| 报告 | `npm run tau:derivation` → `out/detailed/tau_derivation.json`，已加入 `REGENERATE_SCRIPTS` |
+| 测试 | `tests/regression/test_tau_derivation.js`：各拓扑最坏跳数与 lane 预算；锚点；τ 各项之和；延迟越大 TPS 越低；报告与重新生成一致并绑定源文件 |
+
+**τ 的构成**：
+
+- 公式：τ = memoryTransport + tpReduce + cardLocal + portTail + controlPath。
+- memoryTransport：用路径单程延迟替换模型里固定的 `oneWayUs`，再加一个链路下限。
+  - 路径单程延迟 = MAC + 每条链路（PHY + FEC + 线缆传播）+ 交换 + 中继 + 卡内 Die 跳。
+  - 链路下限：32 个 rank 同时执行一步时，最忙的有向链路必须按其 lane 带宽送完。
+- 其余各项：
+  - tpReduce 沿用模型。
+  - cardLocal 沿用模型，其中 6 跳 Die 时延按 `ucieHopUs` 重算。
+  - portTail 按模型的端口下限重算。
+  - controlPath 取 `comm_core_design.json` 的逐类值。
+- 算法：
+  - `oneShot`：现模型的 31 peer 直写。
+  - `halvingDoubling`：5 + 5 步，代表树类算法。
+  - `ring`：31 + 31 步。
+- ACK 语义：
+  - `phase`：每步等最后一个 ACK 返回，即现模型的口径。
+  - `deferred`：数据可见就进入下一步，ACK 交给 epoch 双缓冲槽回收。
+- **锚点**：抽象线 + `oneShot` + `phase` + 无控制路径时，5 类集合通信的 memoryTransport 与模型逐位相等，TPS/usr 等于发布点。
+
+**结果**：名义参数，无 τ 下限（`bottomUp`），各拓扑取最好的算法，三种算法中都是 `oneShot` 最好。
+
+| 拓扑 | 名义单程 µs（最近 / 最远） | ACK `phase`：max τ µs / TPS/usr | ACK `deferred`：max τ µs / TPS/usr | 区间两端 TPS/usr（`phase`） |
+|---|---|---|---|---|
+| fullMesh | 0.115 / 0.215 | 1.360 / **1075.05** | 1.106 / **1104.78** | 1104.78 – 641.90 |
+| singleSwitch | 0.400 / 0.400 | 2.211 / 722.68 | 1.403 / **1060.52** | 1101.79 – 415.46 |
+| leafSpine | 0.400 / 0.990 | 4.571 / 431.23 | 2.583 / 653.79 | 749.02 – 207.41 |
+| torus4x8 | 0.118 / 0.955 | 4.000 / 475.27 | 2.232 / 714.18 | 839.70 – 214.10 |
+| ring32 | 0.118 / 2.455 | 10.089 / 222.46 | 5.271 / 383.60 | 476.12 – 87.04 |
+
+发现：
+
+1. **模型的 `oneWayUs = 0.05 µs` 在任何候选上都达不到**。
+   - 名义参数下，直连最近一跳的单程也要 0.115 µs，单层交换要 0.40 µs。
+   - 在抽象线上反解，满足 1000 TPS/usr 的单程预算是 0.234 µs（含控制路径，无下限）。
+   - 全互联的最远路径 0.215 µs 在预算内，单层交换不在。
+2. **按现模型的 ACK 口径，只有全互联在名义值下达标**：1075.05 TPS/usr。
+   - 两类 all-reduce 的 τ 为 1.360 µs，略高于统一 τ 的盈亏点 1.355 µs；靠其余三类较低才达标。
+   - 需同时满足：`ucieHopUs` ≤ 0.033、`fecUs` ≤ 0.095、`macUs` ≤ 0.085 µs，这 3 个参数的区间跨过 1000。
+   - 区间悲观端只有 641.90。
+3. **单层交换需要改 ACK 语义才达标**：
+   - ACK 推迟到 epoch 槽回收时，名义 1060.52 TPS/usr。条件为 `switchUs` ≤ 0.273、`fecUs` ≤ 0.086、`ucieHopUs` ≤ 0.046 µs。
+   - 按现模型的 `phase` 口径只有 722.68。
+   - `deferred` 要求一个 epoch 槽在下一次复用前 ACK 已经收齐，需 HW-07 确认 Mailbox 语义允许。
+4. **leaf-spine、torus、环在名义值下任何算法都不达标**。
+   - 只有参数全部取乐观端加上 `deferred`，leaf-spine 与 torus 才回到约 1101。
+   - 06 号文档 §6 的担心（"跳数 × 每跳时延直接压 τ"）在这里定量成立：torus 最远 6 跳，单程约 0.96 µs。
+5. **ring 和 halving-doubling 算法总是输给 one-shot**。
+   - 发布点的消息只有 0.3–6 KB，属于时延主导，带宽不是瓶颈。
+   - 31 步或 10 步串行，每步付一次单程时延，代价远大于省下的带宽。
+6. **TPS 对 τ 高度非线性**（统一 τ 扫描，报告 `published.uniformTauSweep`）：
+
+   | 统一 τ（µs） | 0 | 1.15 | 1.35 | 1.5 |
+   |---|---|---|---|---|
+   | TPS/usr | 1107.65 | 1101.77 | 1002.19 | 843.48 |
+
+   - τ 低于 1.15 时 DMA 等待接替成为瓶颈，τ 再降收益很小。
+   - τ 高于约 1.35 后，集合通信不再掩盖 DMA，TPS 急剧下降。
+   - 因此 τ 的物理推导只要落在 1.35 µs 以内就够，不必追求更低。
+
+**局限**：
+
+- 链路无损、无重传，一条消息即一个包。
+- 卡内 Die 跳数按 8 Die 环计（B-004 未定）。
+- 链路下限把最忙链路的时间平摊到经过它的消息上，没有逐包仲裁。
+- `ring` 算法只走单向。
+- 光模块、8 卡 pod 方案（06 §6 候选 4）未建模。
+
+**不改 `OPT.tauUs`**。若要按某个拓扑把 τ 从规格值换成推导值，走 ADR 修订 ADR-0004。
 
 ### 2.4 ARCH-CH-02 实现记录（2026-10-10）
 
@@ -287,7 +365,7 @@ flowchart LR
 | D1 | 时间线 trace（约 2–3 MB）是否提交进 `out/`？ | 提交发布点这一份，作为默认可视化；diff 和其他设计点的 trace 只写到 `scratch/`。若嫌体积大，可只提交 `.gz`，测试解压后核对 |
 | D2 | 是否允许离线 Python 工具（MODEL-CH-01）进入仓库？ | 允许，放在 `tools/`，不进 `npm test`；产物 JSON 入库后由 Node 侧对账 |
 | D3 | ARCH-CH-01 的差值若不为零，是否改默认值？ | 由 ADR 决定；在此之前 21 号文档的时间账注明"未计前台争用，上界 26.27 µs" |
-| D4 | HW-CH-01 的拓扑候选由谁提供？ | 硬件团队（Collective/RDMA、NoC 负责人）先给出 B-005 的 2–3 个候选，没有候选不开工 |
+| D4 | HW-CH-01 的拓扑候选由谁提供？ | 硬件团队（Collective/RDMA、NoC 负责人）先给出 B-005 的 2–3 个候选，没有候选不开工。2026-10-10 按用户指示改为架构 agent 先选 5 个常见候选开工（`ASSUMPTION`），待硬件团队评审替换（§2.3） |
 
 ## 6. 风险
 
