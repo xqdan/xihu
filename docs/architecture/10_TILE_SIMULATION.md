@@ -42,7 +42,10 @@
 - 链路级 τ 推导（2026-10-10，HW-CH-01）：[`collective_topology.js`](../../integration/detailed/collective_topology.js)
   把集合通信协议模型里固定的单程时延换成各 scale-out 拓扑候选的路径（链路、交换、中继、卡内 Die 跳），
   按 one-shot / halving-doubling / ring 和两种 ACK 语义自底向上算出每类集合通信的 τ，并回放发布点。
-  `npm run tau:derivation` → `out/detailed/tau_derivation.json`，候选与延迟均为 `ASSUMPTION`，不改 `OPT.tauUs`。
+  `npm run tau:derivation` → `out/detailed/tau_derivation.json`，候选与延迟均为 `ASSUMPTION`，不改 `OPT.tauUs`；
+- 负载形态扫描（2026-10-10，ARCH-CH-03）：`O.mapped(x, {tokens, context})` 可以给出 1M 以外的上下文（默认仍是 `LIMITS.context`）。
+  [`workload_shape.js`](../../integration/detailed/workload_shape.js) 在发布硬件上扫 batch（每点重选映射参数）和短上下文，
+  `npm run shape:explore` → `out/detailed/workload_shape.json`，只作附加视角，不改 ADR-0009 的目标。
 
 这是良好起点，但还不是签核级模型。
 

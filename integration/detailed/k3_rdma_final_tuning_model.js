@@ -113,6 +113,12 @@ const LINEAR_ROUTER_OPS=/Linear|Expert|Wup|Wdown|Router/;
 const ATTN_FUSION_OPS=/^Attention RMSNorm$/;
 const MOE_OPS=/Router|Expert|Routed/;
 const WUP_OPS=/Wup|Wdown/;
+// The GAIN-scaled fusion switches as rules (SW-CH-01, alongside A.RULES): an op the pattern
+// matches has its duration scaled by GAIN[key] when OPT[key] is on. With every GAIN neutral they
+// change nothing; the precondition for a factor other than 1 is evidence better than ASSUMPTION
+// (B-003), which checkGainRules reports.
+const GAIN_RULES=[{key:'attentionFusion',match:ATTN_FUSION_OPS},{key:'moeTokenPacking',match:MOE_OPS},{key:'wupRouterFusion',match:WUP_OPS}];
+const checkGainRules=(c=OPT)=>GAIN_RULES.filter(r=>c[r.key]&&GAIN[r.key]!==1).map(r=>({key:r.key,gain:GAIN[r.key],unmet:'a factor other than 1 needs evidence better than ASSUMPTION (B-003)'}));
 
 function collective(name,payload,p,x,c=OPT){
   const q=R.collective(name,payload,p,x,{...R.MEM,...c});
@@ -161,9 +167,9 @@ function chargeSharedPortCost(p,x,extraCardTBs,dies=A.LIMITS.dies){
 // `step` = {tokens, seqs}: tokens per step and the distinct sequences they belong to. The default
 // (one token, one sequence) is the published Batch=1 decode and is what every baseline uses.
 function mapped(x,step={}){
-  const {tokens=1,seqs=tokens,union}=step;
+  const {tokens=1,seqs=tokens,union,context}=step;
   const c=OPT,p0=P.resize(A.physical(x));if(!p0.feasible)return {feasible:false,reasons:p0.reasons};
-  const m=A.mappedPlan(x,tokens,p0,{seqs,union,countBasis:c.countBasis,commOverlap:c.commOverlap,tmaLane:c.tmaLane,kvPrefetch:c.kvPrefetch,dmaPreempt:c.dmaPreempt,pvMerge:c.pvMerge,softmaxFusion:c.softmaxFusion,epilogueFusion:c.epilogueFusion,kvCache:c.kvCache});if(!m.feasible)return m;
+  const m=A.mappedPlan(x,tokens,p0,{seqs,union,context,countBasis:c.countBasis,commOverlap:c.commOverlap,tmaLane:c.tmaLane,kvPrefetch:c.kvPrefetch,dmaPreempt:c.dmaPreempt,pvMerge:c.pvMerge,softmaxFusion:c.softmaxFusion,epilogueFusion:c.epilogueFusion,kvCache:c.kvCache});if(!m.feasible)return m;
   let reserve=0,wire=0,req=0,ph=0;const protocol={};
   for(const o of m.plan.ops)if(o.unit==='COMM'){
     const q=collective(o.name,o.mapping.payload,p0,x,c);reserve=Math.max(reserve,q.workspace);
@@ -197,9 +203,7 @@ function mapped(x,step={}){
     if(c.launchBatching){const saved=o.timing.launch*(1-c.launchScale);o.timing.launch-=saved;o.duration-=saved;}
     if(ATTN_OPS.test(o.name))o.duration*=GAIN.kernelAttention;else if(LINEAR_OPS.test(o.name))o.duration*=GAIN.kernelLinear;
     if(c.tilePartialReady){if(ATTN_OPS.test(o.name))o.duration*=GAIN.partialReadyAttention;else if(LINEAR_ROUTER_OPS.test(o.name))o.duration*=GAIN.partialReadyLinear;}
-    if(c.attentionFusion&&ATTN_FUSION_OPS.test(o.name))o.duration*=GAIN.attentionFusion;
-    if(c.moeTokenPacking&&MOE_OPS.test(o.name))o.duration*=GAIN.moeTokenPacking;
-    if(c.wupRouterFusion&&WUP_OPS.test(o.name))o.duration*=GAIN.wupRouterFusion;
+    for(const r of GAIN_RULES)if(c[r.key]&&r.match.test(o.name))o.duration*=GAIN[r.key];
   }
   // GAIN scales o.duration, while the per-field timing scalings above only move
   // attribution between fields. Book the net difference as its own service line
@@ -215,8 +219,8 @@ function mapped(x,step={}){
     rdmaReserveMiB:reserve/MiB,wireBytes:wire,requests:req,phases:ph,protocol:Object.values(protocol)};
 }
 
-function evaluate(x,{detail=false,tokens=1,seqs=tokens,union}={}){
-  const m=mapped(x,{tokens,seqs,union});if(!m.feasible)return m;
+function evaluate(x,{detail=false,tokens=1,seqs=tokens,union,context}={}){
+  const m=mapped(x,{tokens,seqs,union,context});if(!m.feasible)return m;
   const r=simulate(m.plan,m.window);if(!r.feasible)return r;
   const {layerStats,events,occupancy,...stats}=r;
   // Overlap and hidden TMA are known only after scheduling; book them so services + wait = raw.
@@ -226,4 +230,4 @@ function evaluate(x,{detail=false,tokens=1,seqs=tokens,union}={}){
   if(detail){o.layers=layerStats;o.micro=m.plan.ops.filter(a=>a.layer===4).map(a=>({name:a.name,unit:a.unit,duration:a.duration,timing:a.timing,read:a.read,write:a.write}));}
   return o;
 }
-module.exports={OPT,GAIN,mapped,evaluate,sharedPortScaling,chargeSharedPortCost};
+module.exports={OPT,GAIN,GAIN_RULES,checkGainRules,mapped,evaluate,sharedPortScaling,chargeSharedPortCost};

@@ -10,10 +10,11 @@
 // the committed artifacts (K3_SOURCE_COMMIT), so the comparison is exact: any
 // difference is a real difference.
 //
-// Not covered, on purpose: `search:final` (about a minute) and `baseline:sync`
-// (rewrites a hardware input). Their outputs enter the regeneration as inputs, and
-// tests/regression/test_k3_rdma_final_tuning.js and test_design_baseline.js
-// check them.
+// Not covered, on purpose: `search:final` (about a minute), `shape:explore` (about a
+// minute; tests/regression/test_workload_shape.js binds it to its sources and replays
+// points of it) and `baseline:sync` (rewrites a hardware input). Their outputs enter
+// the regeneration as inputs, and tests/regression/test_k3_rdma_final_tuning.js and
+// test_design_baseline.js check them.
 
 const assert = require('assert');
 const fs = require('fs');
