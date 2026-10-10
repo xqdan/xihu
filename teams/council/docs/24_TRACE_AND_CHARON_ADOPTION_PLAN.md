@@ -2,7 +2,7 @@
 
 版本：2026-10-10
 状态（2026-10-10）：阶段一已实现（§2.1）；ARCH-CH-01 已实现，差值为零（§2.2）；HW-CH-01 已用自选的 5 个拓扑候选（`ASSUMPTION`）实现，名义参数下只有直连全互联达标（§2.3）；
-ARCH-CH-02 已实现，实测表为空（§2.4）；D2 已批准（[ADR-0025](../adr/ADR-0025-offline-python-tools.md)）；MODEL-CH-01 已实现，GLM-5.2 账本已生成，对账无 `MISMATCH`（§2.5）；SW-CH-01、ARCH-CH-03 仍是 `PROPOSAL`。不改动已落地的任何机制，也不改变发布点 1101.77 TPS/usr
+ARCH-CH-02 已实现，实测表为空（§2.4）；D2 已批准（[ADR-0025](../adr/ADR-0025-offline-python-tools.md)）；MODEL-CH-01 已实现，GLM-5.2 账本已生成，对账无 `MISMATCH`（§2.5）；ARCH-CH-03 已实现，作为附加视角，不改目标（§2.7）；SW-CH-01 已实现，`out/` 数值不变，另列出 4 项映射器的合法性发现（§2.8）。不改动已落地的任何机制，也不改变发布点 1101.77 TPS/usr
 
 前置文档：[`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md)、
 [`10_TILE_SIMULATION.md`](../../../docs/architecture/10_TILE_SIMULATION.md)、
@@ -353,6 +353,75 @@ npm test
 
 改了 `tools/trace_operator_ledger.py` 就要重跑工具，否则 `test_traced_operator_ledger.js` 报账本过期。
 
+### 2.7 ARCH-CH-03 实现记录（2026-10-10）
+
+| 项 | 落点 |
+|---|---|
+| 模型改动 | `k3_architecture_search.js` 的 `SIM_KEYS` 增加 `context`，默认 `LIMITS.context`（1M）。上下文短于 TP × kvTile 时，`mappedPlan` 里 KV 类算子的 H 填充、H 本地 tile 和 softmax 融合改按有效 tile `min(kvTile, context / TP)` 计。`k3_rdma_final_tuning_model.js` 的 `mapped` / `evaluate` 透传 `context`。默认上下文下仍按 `x.kvTile` 计，即使它超过 context / TP（归因报告的压力项 kvTile 65536 因此仍按 65536 核算，并被 H 本地 tile 拒绝）。发布点和全部 search 产物的数值都不变，只有绑定源文件 sha256 的产物重新生成 |
+| 生成器 | `integration/detailed/workload_shape.js`、`integration/pipelines/generate_workload_shape.js`（`npm run shape:explore`，约 1 分钟）→ `out/detailed/workload_shape.json`。证据等级 `MODEL`，head-parallel 列为 `PLANNING_ESTIMATE` |
+| 测试 | `tests/regression/test_workload_shape.js`：`context` 默认值不改变任何标量；短上下文只缩短 KV tile 和 KV 存储，Linear recurrent 算子不变；Pareto 前沿；入库报告绑定当前源文件（否则报过期），抽样回放（全部 B = 1 行、全部 8K 行、短上下文扫描点和 1M 点），摘要与行一致。完整重建不在再生成测试里，与 `search:final` 同理 |
+
+做法：硬件固定为 `tpsDesign.hardware.x`。batch 扫描取 B 条独立序列（tokens = seqs = B），每个 (context, B) 在 `mappingGrid` 的 120 个映射（kvTile × headTile × weightTileMiB × depth，发布映射在其中）里取 TPS/usr 最高者。发布映射按 B = 1 选定，B ≥ 2 时多数情况放不进 H 本地 tile 或共享窗口，所以要重选。TPS/卡 = B × TPS/usr / TP，一张卡即一个 TP rank。专家并集用两种口径：worst 为 min(E, B·K)，是模拟器默认；expected 为 E·(1 − (1 − K/E)^B)。
+
+batch 结果（worst 并集，括号内是 expected 并集）：
+
+| context | B = 1 TPS/usr / 卡 | TPS/卡 最高点 | 卡效率倍数 | 此时 TPS/usr 为 B = 1 的 | 每多一条序列的 µs | B = 32 可行映射 |
+|---|---|---|---|---|---|---|
+| 1M | 1101.77 / 34.43 | B = 16：162.29 / 81.14（169.80 / 84.90） | 2.36×（2.47×） | 14.7% | 236–425 | 10 / 120 |
+| 128K | 1201.91 / 37.56 | B = 16：277.26 / 138.63（300.28 / 150.14） | 3.69×（4.00×） | 23.1% | 138–207 | 10 / 120 |
+| 8K | 1218.99 / 38.09 | B = 16：306.61 / 153.30（334.93 / 167.46） | 4.02×（4.40×） | 25.2% | 124–177 | 60 / 120 |
+
+- 回答"为 B = 1 优化的设计在 batch 场景下损失多少"：1M 下 batch 能把单卡吞吐提到 2.4 倍，代价是 TPS/usr 降到约 1/7。B = 32 时 TPS/卡 反而下降，三种上下文都在 B = 16 处见顶。
+- 1M 下限制 batch 的是 attention：每条序列的 KV 都要单独读，无法摊薄。B = 1 / 2 / 16 时 attention 为 194.5 / 373.0 / 2694.7 µs，routed 专家为 55.4 / 106.8 / 1039.4 µs，集合通信为 451.9 / 463.3 / 841.2 µs。1M 下专家并集口径对 TPS/卡 最高点的影响在 5% 以内。
+- 1M 的 B = 1 最优映射就是发布映射；128K、8K 的 B = 1 重选映射比发布映射略高（1201.91 对 1200.69，1218.99 对 1215.32），所选映射为更小的 kvTile（2048 / 1024）配 headTile 48、depth 2。
+
+短上下文扫描（B = 1，发布映射）：
+
+| context | TPS/usr | raw µs | 24 次 LSE µs（占 raw） | attention 占 raw | head-parallel TPS/usr（KV 全暴露 .. 全隐藏） |
+|---|---|---|---|---|---|
+| 2K | 1216.06 | 702.84 | 27.60（3.9%） | 5.5% | 1256.61 .. 1265.77 |
+| 8K | 1215.32 | 703.27 | 27.60（3.9%） | 5.6% | 1229.15 .. 1264.96 |
+| 16K | 1214.33 | 703.84 | 27.60（3.9%） | 5.8% | 1194.35 .. 1263.89 |
+| 128K | 1200.69 | 711.84 | 27.60（3.9%） | 7.9% | 855.70 .. 1249.12 |
+| 1M | 1101.77 | 775.75 | 27.60（3.6%） | 25.1% | 263.64 .. 1142.42 |
+
+- 短上下文的 TPS/usr 在约 1216 处见顶，此时 raw 主要是 451.9 µs 的集合通信和权重读取。每次 LSE 归约是 1.15 µs，即 τ 下限，与上下文无关。
+- head-parallel（96 个头分到 32 个 rank，不再按上下文切分）是 `PLANNING_ESTIMATE`，没有模拟。它省掉 24 次 LSE 归约，但每个 rank 要多读、多存 (TP − 1) 倍的 KV。全暴露时的盈亏平衡点约 11.5K；1M 下每 rank 多存 15.99 GB。结论：1M 下按上下文切分是对的；只有在约 8–11K 以下，head-parallel 最多能多出约 4%。这与 Charon 的动态 SP 结论方向一致，只在短序列下值得切换。卡内 PV 的部分归约两种切分都有，不计入节省。
+- 不建模：head 切分后 H core 的形状变化，以及复制的 KV append。
+
+发现（交 SW-CH-01 / mapper 负责人）：
+
+- **Linear recurrent 算子的 H 填充取自 `kvTile`**。`mappedPlan` 用 `tokensPerCore = ceil(SQ · kvTile / NH)` 同时给 KV 算子和 Linear recurrent 状态更新定 H 填充，而后者不读 KV。实现 `context` 时若全局改用有效 tile，2K 上下文下这个算子会涨到约 700 µs。所以这里只让 KV 算子用有效 tile，Linear 算子保持原状。修正会改变 search 产物的数值，因此没有修，交给 mapper 负责人（§2.8 发现 4）。
+
+### 2.8 SW-CH-01 实现记录（2026-10-10）
+
+| 项 | 落点 |
+|---|---|
+| 规则表 | `k3_architecture_search.js` 的 `RULES`（`epilogueFusion`、`softmaxFusion`、`pvMerge`、`countBasis`），`k3_rdma_final_tuning_model.js` 的 `GAIN_RULES`（`attentionFusion`、`moeTokenPacking`、`wupRouterFusion`）。规则表放在原文件里，没有另建模块：这两个文件的 sha256 已经被各产物的 provenance 绑定，新文件则要改动所有源文件清单 |
+| 规则的字段 | `match`：可改写哪些算子；`legal`：mapper 强制的前提，只看 plan 的结构，不看成本；`effect`：选中后 `mappedPlan` 做什么；`assumes`：mapper **不**强制的前提，每条带一个对映射后 plan 的检验 |
+| 接口 | `selectRules(key, ops, value)` 返回规则改写的算子集合，`mappedPlan` 只改写这个集合。`checkRules(plan, basis)` 是 software contract 输出里的 "fusion legality report"：对每个开启的开关，给出匹配、应用、拒绝（匹配但前提不满足）的算子数，以及每条未满足的 `assumes`。`checkGainRules()` 报告不为 1 的 GAIN 因子（B-003） |
+| countBasis | 由 `build()` 应用，因为两种口径的 DAG 不同；它的规则只检验 `build()` 的结果：合并的 all-reduce 必须在本层每个 Shared down 之后（B-007） |
+| 验收 | 重构前后逐算子比较 mapper 和模拟器的输出：8 种开关组合，每种覆盖 3 种 step 形态和 4 组 tile，另加 BASE。结果完全一致。唯一的差别是第 0 个算子的 `mapping.fused` 从 `undefined` 变为 `false`，这个字段不进入任何产物。重新生成后，`out/` 的变更行只有 sha256 |
+| 测试 | `tests/regression/test_mapping_rules.js`：每条规则在发布点、repo-510、小 tile 和 BASE 上选中的算子与原来的内联条件逐个相同；`legal` 能拒绝破坏前提的算子，`assumes` 能标出违例；锁定发布点的报告 |
+
+发布点的报告：
+
+| 规则 | 匹配 / 应用 | 拒绝 | 未满足的 assumes |
+|---|---|---|---|
+| epilogueFusion | 693 / 692 | `Attention RMSNorm` 1 个（step 的第一个算子，前面没有 kernel 可以并入） | 融合后（只剩 kernel 时间）shared 字节超过端口上限：`KV append source` 24 个、`Dispatch local pack` 92 个。与 §2.2 争用报告的 over-cap 发现相同 |
+| softmaxFusion | 24 / 24 | 无 | 无 |
+| pvMerge（layer） | 24 / 24 | 无 | 无 |
+| countBasis（reference-393） | 92 / 92 | 无 | 无 |
+
+repo-510 口径下，`Q / new-KV all-gather` 是集合通信，所以 24 个 `RoPE` 被 `epilogueFusion` 拒绝。
+
+发现（未修，修正会改变 search 产物的数值；交 mapper 负责人）：
+
+1. **pvMerge 'layer' 只为一个 head tile 预留了累加器**。一层的 PV 按"上下文 tile 在外、head tile 在内"的顺序发出，所以 headTile < 96 时，H core 要同时持有 96 / headTile 个 head tile 的 m/l/O 累加器，而 `hLocalBytes` 只预留 `headTile × 512 × 4` 字节。每个 core 少计 (96 − headTile) × 2 KiB × 1.15：headTile 16 少计约 188 KB，headTile 48 少计约 113 KB。发布点 headTile 为 96，满足前提；`out/rdma/` 的搜索结果里有 headTile 16 / 32 / 48 的设计，它们的 H 本地 tile 检查偏松。
+2. **epilogue 融合不检查端口上限**（见上表）。量级约 0.15 µs（§2.2）。
+3. **epilogue 融合不检查数据依赖**：`legal` 只要求前一个算子不是集合通信，不要求它产生本算子读的数据。plan 里这两个算子之间没有数据边，所以无法检验。`Dispatch local pack` 前面是 `Top-k / route resolve`，读的却是 `Wdown + Router all-gather` 之后的 latent。
+4. **Linear recurrent 的 H 填充取自 `kvTile`**（§2.7）。这是映射公式的问题，不是开关，所以没有写成规则。
+
 ## 3. 阶段与顺序
 
 ```mermaid
@@ -386,7 +455,7 @@ flowchart LR
 | 二 | ARCH-CH-01 | M–L | 可能下降，上界 26.27 µs | 改默认值时需要 | `contention_delta.json` 落盘并入评审 |
 | 二 | HW-CH-01 | L | 不改基线 | 改 τ 口径时需要（修订 ADR-0004） | `tau_derivation.json` 落盘；B-008 关闭证据栏可引用 |
 | 三 | ARCH-CH-02 | M | 无（实测表为空） | 否 | 算子带 `costSource`；报告给出 raw 按证据等级的分解 |
-| 四 | MODEL-CH-01 / SW-CH-01 / ARCH-CH-03 | M / M / S | 无或仅附加视角 | 视结论而定 | 各自的对账报告（MODEL-CH-01：GLM-5.2 账本已入库，对账无 `MISMATCH`，§2.5） |
+| 四 | MODEL-CH-01 / SW-CH-01 / ARCH-CH-03 | M / M / S | 无或仅附加视角 | 视结论而定 | 各自的对账报告（MODEL-CH-01：GLM-5.2 账本已入库，对账无 `MISMATCH`，§2.5；ARCH-CH-03：`workload_shape.json` 已入库，§2.7；SW-CH-01：fusion legality report 由 `checkRules` 给出，§2.8） |
 
 规模口径：S 约一个工作日以内，M 约数个工作日，L 需要跨团队输入（拓扑候选、Comm Core 周期）。
 

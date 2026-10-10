@@ -82,8 +82,66 @@ function physical(x,dies){
 //   the FP8 latent in-kernel on the H-core vector lanes (same rate as weight
 //   unpack), overlapped with the BF16 matrix work. That vector time is taken out
 //   of the budget the fused online softmax may hide under QK.
-const SIM_KEYS=['seqs','union','countBasis','commOverlap','tmaLane','kvPrefetch','dmaPreempt','kvCache','softmaxOpsPerScore'];
+//  context (forwarded to the simulator, default LIMITS.context): the KV length one decode token
+//   attends over, for the workload-shape scan (workload_shape.js, ARCH-CH-03). The design limits
+//   and every published number stay at LIMITS.context.
+const SIM_KEYS=['seqs','union','countBasis','commOverlap','tmaLane','kvPrefetch','dmaPreempt','kvCache','softmaxOpsPerScore','context'];
 const EPILOGUE_OPS=/^(Attention RMSNorm|MoE RMSNorm|SiLU x up|Shared SiLU x up|Expert weighted sum|Dispatch local pack|RoPE|KV append source)$/;
+// The mapping switches as declarative rules (SW-CH-01, teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md
+// §2.8). Per rule: match, the ops of a plan it may rewrite; legal, the precondition the mapper
+// enforces, from the plan's structure alone; effect, what mappedPlan then does to a selected op;
+// assumes, preconditions the mapper does NOT enforce, each with a test on the mapped plan, which
+// checkRules reports (the "fusion legality report" of teams/software/contract.json). mappedPlan
+// rewrites exactly selectRules(key, ops, value). countBasis is applied by build() itself, since
+// the DAG differs per basis; its rule only checks the plan build() returned.
+const pvGroup=o=>o.layer+'|'+o.detail.split(';')[1];
+const RULES={
+ epilogueFusion:{
+  match:o=>EPILOGUE_OPS.test(o.name),
+  legal:(o,ops)=>!!ops[o.id-1]&&ops[o.id-1].unit!=='COMM',
+  effect:'no shared->local stage or launch of its own; the flush stays only when a collective reads the result next. Vector time and shared-SRAM bytes stay booked',
+  assumes:[{what:'its shared-SRAM bytes fit the read, write and fabric caps over its fused (kernel-only) time',
+   test:(o,ops,c)=>o.read<=c.sramReadTBs*1e6*o.duration&&o.write<=c.sramWriteTBs*1e6*o.duration&&o.linkBytes<=c.fabricTBs*1e6*o.duration}]},
+ softmaxFusion:{
+  match:o=>o.name==='Online softmax',
+  legal:(o,ops)=>ops[o.id-1].name.startsWith('QK')&&ops[o.id-1].detail===o.detail,
+  effect:'pipelined by score blocks of hCols tokens under the QK of the same tile: kernel = max(kernel / blocks, kernel - (QK matrix time - QK dequant))',
+  assumes:[]},
+ // pvMerge 'tile' merges on every PV; 'layer' on the last PV of each (layer, head tile).
+ pvMerge:{values:['tile','layer'],
+  context:ops=>{const last=new Map();for(const o of ops)if(o.name.startsWith('PV'))last.set(pvGroup(o),o.id);return last;},
+  match:o=>o.name.startsWith('PV'),
+  legal:(o,ops,value,last)=>value==='tile'||last.get(pvGroup(o))===o.id,
+  effect:'this PV carries the m/l/O partial merge and the cross-die step (tile: ring gather onto one die; layer: bidirectional-ring reduce-scatter by heads)',
+  assumes:[{what:'layer: the H local tile holds the accumulator of every head tile the layer interleaves (hLocalBytes reserves one head tile)',
+   test:(o,ops,c,value,last)=>value==='tile'||![...last.keys()].some(k=>k!==pvGroup(o)&&k.startsWith(o.layer+'|'))}]},
+ countBasis:{values:['reference-393','repo-510'],build:true,
+  match:o=>o.name==='Wup + Shared output all-reduce',
+  legal:()=>true,
+  effect:'reference-393 (applied by build()): the shared-expert output folds into the Wup all-reduce, and the Q / new-KV all-gather and the sampling broadcast stay local ops',
+  assumes:[{what:'the fold follows every Shared down of its layer (B-007)',
+   test:(o,ops)=>ops.every(q=>q.layer!==o.layer||q.name!=='Shared down'||q.id<o.id)}]}
+};
+function selectRules(key,ops,value){
+ const r=RULES[key],ctx=r.context?r.context(ops):null,out=new Set();
+ for(const o of ops)if(r.match(o)&&r.legal(o,ops,value,ctx))out.add(o.id);
+ return out;
+}
+// Per switch that is on in `basis` (or, for countBasis, at the plan's own basis): the ops the rule
+// matched, applied and refused (matched, precondition not met), and each unmet assumption.
+function checkRules(plan,basis={}){
+ const ops=plan.ops,out=[];
+ for(const[key,r]of Object.entries(RULES)){
+  const value=key==='countBasis'?plan.c.countBasis:basis[key];
+  if(!value||(key==='countBasis'&&value!=='reference-393'))continue;
+  const ctx=r.context?r.context(ops):null,matched=ops.filter(o=>r.match(o)),applied=selectRules(key,ops,value),refused={};
+  for(const o of matched)if(!applied.has(o.id))refused[o.name]=(refused[o.name]||0)+1;
+  const unmet=r.assumes.map(a=>{const names={};for(const o of matched)if(applied.has(o.id)&&!a.test(o,ops,plan.c,value,ctx))names[o.name]=(names[o.name]||0)+1;return {what:a.what,ops:names};})
+   .filter(u=>Object.keys(u.ops).length);
+  out.push({key,value,matched:matched.length,applied:applied.size,refused,unmet});
+ }
+ return out;
+}
 function mappedPlan(x,batch,p=physical(x),basis){
  const b0=typeof basis==='string'?{countBasis:basis}:(basis||{});
  const extra=Object.fromEntries(SIM_KEYS.filter(k=>b0[k]!==undefined).map(k=>[k,b0[k]]));
@@ -102,9 +160,15 @@ function mappedPlan(x,batch,p=physical(x),basis){
  // FULL batch share, not an unmodelled smaller batch tile: otherwise
  // claiming one shared->local KV read would hide actual reload traffic.
  const SQ=extra.seqs===undefined?B:extra.seqs;
- const tokensPerCore=Math.ceil(SQ*x.kvTile/NH),scoreTokensPerCore=Math.ceil(B*x.kvTile/NH),ht=x.headTile;
+ // A context shorter than TP x kvTile fills only part of a tile (the simulator's last tile is
+ // min(kvTile, context/TP - pos)). At LIMITS.context the tile stays x.kvTile as before, even above
+ // context/TP (the attribution stress kvTile 65536 is sized, and refused, at the full 65536; see
+ // 24_TRACE_AND_CHARON_ADOPTION_PLAN.md §2.7). tokensPerCore stays on the full tile: it also sets the
+ // H fill of the Linear recurrent op (below), which reads no KV.
+ const kvT=plan.c.context===LIMITS.context?x.kvTile:Math.min(x.kvTile,plan.c.context/LIMITS.tp);
+ const tokensPerCore=Math.ceil(SQ*x.kvTile/NH),kvTokensPerCore=Math.ceil(SQ*kvT/NH),scoreTokensPerCore=Math.ceil(B*kvT/NH),ht=x.headTile;
  // Two KV slabs, FP32 double score, output accumulator and Q/work/control.
- const hLocalBytes=(2*tokensPerCore*plan.kvBytesPerToken+2*ht*scoreTokensPerCore*4+ht*512*4+ht*576*2+65536)*TECH.layoutImbalance;
+ const hLocalBytes=(2*kvTokensPerCore*plan.kvBytesPerToken+2*ht*scoreTokensPerCore*4+ht*512*4+ht*576*2+65536)*TECH.layoutImbalance;
  let lLocalBytes=0;
  for(const o of plan.ops)if(o.unit==='L'){
   const w=o.inputs.reduce((a,id)=>a+plan.jobs[id].bytes,0),activation=Math.max(0,o.read-w);
@@ -133,9 +197,9 @@ function mappedPlan(x,batch,p=physical(x),basis){
   o.duration=Object.values(timing).reduce((a,b)=>a+b,0);
   for(const[k,v]of Object.entries(timing))services[k]=(services[k]||0)+v;
  }
- // pvMerge 'layer': the last PV op of each (layer, head tile) carries the merge.
- const lastPV=new Set();
- if(pvMerge==='layer'){const last={};for(const o of plan.ops)if(o.name.startsWith('PV'))last[o.layer+'|'+o.detail.split(';')[1]]=o.id;for(const id of Object.values(last))lastPV.add(id);}
+ // The ops each switch rewrites (RULES above); an off switch rewrites none.
+ const none=new Set(),pvMergeOps=selectRules('pvMerge',plan.ops,pvMerge);
+ const softmaxOps=softmaxFusion?selectRules('softmaxFusion',plan.ops):none,epilogueOps=epilogueFusion?selectRules('epilogueFusion',plan.ops):none;
  let qkKernel=0,qkDequant=0;
  for(const o of plan.ops){
   const oldRead=o.read,oldWrite=o.write;
@@ -158,7 +222,7 @@ function mappedPlan(x,batch,p=physical(x),basis){
   const kv=o.inputs.find(id=>plan.jobs[id].kind==='kv');
   if(kv!==undefined){
    sharedR=seenKV.has(kv)?0:plan.jobs[kv].bytes;seenKV.add(kv);sharedW=0;
-   if(o.name.startsWith('PV')&&(pvMerge==='tile'||lastPV.has(o.id))){
+   if(pvMergeOps.has(o.id)){
     // Token partition across cores => explicit FP32 m/l/O partial merge.
     const part=ht*(512+2)*4;
     sharedW=Math.max(B,NH)*part;
@@ -179,7 +243,7 @@ function mappedPlan(x,batch,p=physical(x),basis){
    fill=Math.min(1,rows/x.lRows);peak=D*p.lTF*TECH.matrixUtil*fill;
   }else if(o.unit==='H'){
    const m=o.name.startsWith('Linear')?1:ht;
-   const n=o.name.startsWith('PV')?512:Math.max(1,tokensPerCore);
+   const n=o.name.startsWith('PV')?512:Math.max(1,o.name.startsWith('Linear')?tokensPerCore:kvTokensPerCore);
    fill=Math.min(1,m/x.hRows)*Math.min(1,n/x.hCols);peak=D*p.hTF*TECH.matrixUtil*fill*cores/NH;
   }else{
    peak=cores*x.vectorLanes*2*x.ghz/1000*TECH.vectorUtil;
@@ -190,9 +254,9 @@ function mappedPlan(x,batch,p=physical(x),basis){
   const unpack=wparams/(NL*x.vectorLanes*TECH.unpackParamsPerLaneCycle*x.ghz*1000)+kvDequant/(cores*x.vectorLanes*TECH.unpackParamsPerLaneCycle*x.ghz*1000);
   o.costShape={flops:o.flops,readBytes:oldRead,writeBytes:oldWrite};const cost=CP.kernelCost(o.name,o.costShape,x,Math.max(alu,readTime,writeTime,unpack)*TECH.layoutImbalance);let kernel=cost.us;o.costSource=cost.source;o.costEvidence=cost.evidence;if(cost.observations)o.costObservations=cost.observations; // ARCH-CH-02: measured -> fitted -> analytical
   if(o.name.startsWith('QK')){qkKernel=kernel;qkDequant=kvDequant?unpack*TECH.layoutImbalance:0;}
-  if(softmaxFusion&&o.name==='Online softmax')kernel=Math.max(kernel/Math.max(1,Math.ceil(tokensPerCore/x.hCols)),kernel-(qkKernel-qkDequant));
-  const prev=plan.ops[o.id-1],next=plan.ops[o.id+1];
-  const fused=epilogueFusion&&EPILOGUE_OPS.test(o.name)&&prev&&prev.unit!=='COMM';
+  if(softmaxOps.has(o.id))kernel=Math.max(kernel/Math.max(1,Math.ceil(kvTokensPerCore/x.hCols)),kernel-(qkKernel-qkDequant));
+  const next=plan.ops[o.id+1];
+  const fused=epilogueOps.has(o.id);
   const names=['matrix/vector','local SRAM read','local SRAM write','unpack'];const times=[alu,readTime,writeTime,unpack];const limiter=names[times.indexOf(Math.max(...times))];limiters[limiter]=(limiters[limiter]||0)+kernel;
   // The global op stays serialized; local double-buffer chunks pipeline only within it.
   const chunkMiB=domain==='H'?x.hMiB:x.lMiB;
@@ -283,4 +347,4 @@ function search({samples=192,generations=4,offspring=48,polish=2,seed=20260919}=
  for(const id of new Set(Object.values(selected))){const detailed=evaluate(rows[id].x,{details:true});rows[id]=Object.assign(detailed,{id});}
  return {version:'2026-09-19',seed,options:{samples,generations,offspring,polish},elapsedSeconds:(Date.now()-start)/1000,limits:LIMITS,tech:TECH,space:SPACE,baseline,attempted,physicalReject,mappingReject,rejected,history,selected,frontIds:front.map(r=>r.id),rows};
 }
-module.exports={LIMITS,TECH,SPACE,BASE,EPILOGUE_OPS,physical,mappedPlan,evaluate,dominates,pareto,rng,search};
+module.exports={LIMITS,TECH,SPACE,BASE,EPILOGUE_OPS,RULES,selectRules,checkRules,physical,mappedPlan,evaluate,dominates,pareto,rng,search};

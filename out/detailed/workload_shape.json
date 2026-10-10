@@ -1,0 +1,1908 @@
+{
+  "format": "k3-workload-shape/1",
+  "status": "MODEL: supplementary view of the published hardware under batch and shorter contexts. Changes no target (ADR-0009) and feeds no gate or baseline",
+  "evidenceClass": "MODEL",
+  "workItem": "ARCH-CH-03",
+  "plan": "teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md",
+  "method": {
+    "batchSweep": "tokens = seqs = B independent sequences at each context and expert union (worst: min(E, B x K) distinct experts, the simulator default; expected: E x (1 - (1 - K/E)^B)); hardware fixed at tpsDesign.hardware.x, mapping knobs re-chosen from mappingGrid (the published mapping first; a later mapping replaces it only if strictly better). TPS/card = B x TPS/usr / TP (one card is one TP rank).",
+    "contextScan": "B = 1, published mapping, context as given (the KV tiles of one rank cover context / TP). LSE and attention times are op service times from the mapped plan.",
+    "headParallel": "PLANNING_ESTIMATE, not simulated. Heads split over the TP ranks instead of the context: the 24 LSE merges go away (saved = their service time, all on the serial path), every rank reads (TP - 1) x more KV, costed between 0 (hidden) and its bytes at the plan's effective DMA rate (exposed). Same attention FLOPs; the head-sharded H-core shape and the replicated KV append are not modelled."
+  },
+  "mappingGrid": {
+    "kvTile": [
+      1024,
+      2048,
+      4096,
+      8192,
+      16384,
+      32768
+    ],
+    "headTile": [
+      8,
+      16,
+      32,
+      48,
+      96
+    ],
+    "weightTileMiB": [
+      4,
+      8
+    ],
+    "depth": [
+      2,
+      4
+    ]
+  },
+  "provenance": {
+    "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
+    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "publishedX": {
+      "nL": 8,
+      "nH": 4,
+      "lRows": 1,
+      "lCols": 256,
+      "lEngines": 8,
+      "hRows": 48,
+      "hCols": 128,
+      "hEngines": 5,
+      "ghz": 1,
+      "vectorLanes": 512,
+      "lMiB": 1,
+      "hMiB": 4,
+      "lBanks": 64,
+      "hBanks": 64,
+      "bankBytes": 64,
+      "sharedMiB": 16,
+      "sharedSlices": 16,
+      "tmaEngines": 4,
+      "tmaBytes": 512,
+      "nocBytes": 256,
+      "nocLanes": 4,
+      "reduceLanes": 4096,
+      "ucieLanes": 128,
+      "ucieGbps": 64,
+      "mcGBs": 640,
+      "rdmaLanes": 16,
+      "weightTileMiB": 8,
+      "kvTile": 32768,
+      "headTile": 96,
+      "depth": 4,
+      "windowFraction": 1
+    },
+    "sources": {
+      "integration/detailed/workload_shape.js": "5abe7252b0030a1e56bd5d68490658d85785f1f542dddfe4559546c456129aa7",
+      "integration/detailed/k3_operator_sram_sim.js": "49580d74ff1f93c70ad8185d99cca679bc3d28ab2a61b889c6c8c3ef45343355",
+      "integration/detailed/k3_architecture_search.js": "45731fa500ddd256e6e7fb98815564f6de9a1e3eb4938e93bc9853e65752273a",
+      "integration/detailed/cost_provider.js": "9a737e30a235e8e9c30f8eab40e198df47667525ca5c27cb5ce16d176dbec413",
+      "teams/vv/inputs/operator_cost_observations.json": "aa535b0adf152419b1452c2bc73e1ba356ec3dfc35f7f16754140af1423ee5b2",
+      "integration/detailed/k3_physical_basis.js": "c93f516e1ecdbd35190f714c06deac1ada09d64656fcd75332a7a2214a2f3c90",
+      "integration/detailed/k3_sram_memory_rdma_model.js": "68314a43ca69a40d170ac1f1f266c09124ee8f34afe8946ff6301fa8b61df187",
+      "integration/detailed/k3_rdma_final_tuning_model.js": "54b7ae2e6c3f6736f332fa87d1cd75b9f9c18ba9642487e01aa56e667d9d49de"
+    }
+  },
+  "batchSweep": [
+    {
+      "context": 1048576,
+      "union": "worst",
+      "rows": [
+        {
+          "batch": 1,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 1,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 1101.771070241925,
+            "tpsPerCard": 34.430345945060154,
+            "rawUs": 775.7517671190814,
+            "computeUs": 434.6247662105369,
+            "commUs": 451.94999999999703,
+            "waitUs": 22.353084639818142,
+            "attentionUs": 194.48231407967032,
+            "kvGBPerRank": 0.515899392,
+            "backingGB": 49.198161184
+          }
+        },
+        {
+          "batch": 2,
+          "mappings": 120,
+          "feasible": 108,
+          "infeasible": {
+            "H local tile": 12
+          },
+          "best": {
+            "batch": 2,
+            "mapping": {
+              "kvTile": 16384,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 844.4674443268042,
+            "tpsPerCard": 52.77921527042526,
+            "rawUs": 1012.1181822257322,
+            "computeUs": 683.9502500549119,
+            "commUs": 463.31083241757966,
+            "waitUs": 28.470403489730778,
+            "attentionUs": 372.9920151785708,
+            "kvGBPerRank": 1.031798784,
+            "backingGB": 49.720843552
+          }
+        },
+        {
+          "batch": 4,
+          "mappings": 120,
+          "feasible": 88,
+          "infeasible": {
+            "H local tile + shared window": 12,
+            "H local tile": 20
+          },
+          "best": {
+            "batch": 4,
+            "mapping": {
+              "kvTile": 4096,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 540.2799999301004,
+            "tpsPerCard": 67.53499999126255,
+            "rawUs": 1581.9590856804489,
+            "computeUs": 1212.485197524264,
+            "commUs": 570.7170842490838,
+            "waitUs": 30.781146837999014,
+            "attentionUs": 739.078221771987,
+            "kvGBPerRank": 2.063597568,
+            "backingGB": 50.766208288
+          }
+        },
+        {
+          "batch": 8,
+          "mappings": 120,
+          "feasible": 68,
+          "infeasible": {
+            "H local tile + shared window": 32,
+            "H local tile": 20
+          },
+          "best": {
+            "batch": 8,
+            "mapping": {
+              "kvTile": 4096,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 301.39896519831467,
+            "tpsPerCard": 75.34974129957867,
+            "rawUs": 2835.7789952546063,
+            "computeUs": 2204.7534201415115,
+            "commUs": 684.1283003662982,
+            "waitUs": 242.1097104062012,
+            "attentionUs": 1385.5189626373667,
+            "kvGBPerRank": 4.127195136,
+            "backingGB": 52.85693776
+          }
+        },
+        {
+          "batch": 16,
+          "mappings": 120,
+          "feasible": 48,
+          "infeasible": {
+            "H local tile + shared window": 52,
+            "H local tile": 20
+          },
+          "best": {
+            "batch": 16,
+            "mapping": {
+              "kvTile": 2048,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 162.28769006549805,
+            "tpsPerCard": 81.14384503274903,
+            "rawUs": 5266.578471576643,
+            "computeUs": 4320.894377051886,
+            "commUs": 841.1929816849744,
+            "waitUs": 561.143954871138,
+            "attentionUs": 2694.7109098901265,
+            "kvGBPerRank": 8.254390272,
+            "backingGB": 57.038396704
+          }
+        },
+        {
+          "batch": 32,
+          "mappings": 120,
+          "feasible": 10,
+          "infeasible": {
+            "H local tile + L local tile + shared window": 40,
+            "L local tile": 14,
+            "SRAM window after joint optimization": 4,
+            "H local tile": 6,
+            "H local tile + L local tile": 6,
+            "H local tile + shared window": 40
+          },
+          "best": {
+            "batch": 32,
+            "mapping": {
+              "kvTile": 1024,
+              "headTile": 96,
+              "weightTileMiB": 4,
+              "depth": 2
+            },
+            "tpsPerUser": 61.23213561167417,
+            "tpsPerCard": 61.23213561167417,
+            "rawUs": 13958.370815632674,
+            "computeUs": 10121.08661153531,
+            "commUs": 1284.7166300366289,
+            "waitUs": 2933.4797281930246,
+            "attentionUs": 5370.906004395568,
+            "kvGBPerRank": 16.508780544,
+            "backingGB": 65.401314592
+          }
+        }
+      ],
+      "paretoFront": [
+        {
+          "batch": 1,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 1101.771070241925,
+          "tpsPerCard": 34.430345945060154
+        },
+        {
+          "batch": 2,
+          "mapping": {
+            "kvTile": 16384,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 844.4674443268042,
+          "tpsPerCard": 52.77921527042526
+        },
+        {
+          "batch": 4,
+          "mapping": {
+            "kvTile": 4096,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 540.2799999301004,
+          "tpsPerCard": 67.53499999126255
+        },
+        {
+          "batch": 8,
+          "mapping": {
+            "kvTile": 4096,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 301.39896519831467,
+          "tpsPerCard": 75.34974129957867
+        },
+        {
+          "batch": 16,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 162.28769006549805,
+          "tpsPerCard": 81.14384503274903
+        }
+      ],
+      "summary": {
+        "batch1": {
+          "tpsPerUser": 1101.771070241925,
+          "tpsPerCard": 34.430345945060154,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          }
+        },
+        "maxTpsPerCard": {
+          "batch": 16,
+          "tpsPerUser": 162.28769006549805,
+          "tpsPerCard": 81.14384503274903,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          }
+        },
+        "cardGainOverBatch1": 2.3567536951916983,
+        "userRatioAtMaxCard": 0.14729710594948114,
+        "marginalUsPerSequence": [
+          {
+            "batch": 2,
+            "us": 236.36641510665083
+          },
+          {
+            "batch": 4,
+            "us": 268.7357728537892
+          },
+          {
+            "batch": 8,
+            "us": 294.28960401936075
+          },
+          {
+            "batch": 16,
+            "us": 299.38844696383745
+          },
+          {
+            "batch": 32,
+            "us": 425.245775758503
+          }
+        ],
+        "largestFeasibleBatch": 32
+      }
+    },
+    {
+      "context": 1048576,
+      "union": "expected",
+      "rows": [
+        {
+          "batch": 1,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 1,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 1101.7710702419247,
+            "tpsPerCard": 34.43034594506015,
+            "rawUs": 775.7517671190815,
+            "computeUs": 434.6247662105369,
+            "commUs": 451.94999999999703,
+            "waitUs": 22.353084639818142,
+            "attentionUs": 194.48231407967032,
+            "kvGBPerRank": 0.515899392,
+            "backingGB": 49.198161184
+          }
+        },
+        {
+          "batch": 2,
+          "mappings": 120,
+          "feasible": 108,
+          "infeasible": {
+            "H local tile": 12
+          },
+          "best": {
+            "batch": 2,
+            "mapping": {
+              "kvTile": 16384,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 844.7639840211849,
+            "tpsPerCard": 52.79774900132406,
+            "rawUs": 1011.7628957526917,
+            "computeUs": 683.1809000549118,
+            "commUs": 463.31083241757966,
+            "waitUs": 28.480058376449584,
+            "attentionUs": 372.9920151785708,
+            "kvGBPerRank": 1.031798784,
+            "backingGB": 49.720843552
+          }
+        },
+        {
+          "batch": 4,
+          "mappings": 120,
+          "feasible": 88,
+          "infeasible": {
+            "H local tile + shared window": 12,
+            "H local tile": 20
+          },
+          "best": {
+            "batch": 4,
+            "mapping": {
+              "kvTile": 4096,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 544.6665325836861,
+            "tpsPerCard": 68.08331657296077,
+            "rawUs": 1569.2186017864663,
+            "computeUs": 1207.9238057672535,
+            "commUs": 570.7170842490838,
+            "waitUs": 26.227820004350775,
+            "attentionUs": 739.078221771987,
+            "kvGBPerRank": 2.063597568,
+            "backingGB": 50.766208288
+          }
+        },
+        {
+          "batch": 8,
+          "mappings": 120,
+          "feasible": 68,
+          "infeasible": {
+            "H local tile + shared window": 32,
+            "H local tile": 20
+          },
+          "best": {
+            "batch": 8,
+            "mapping": {
+              "kvTile": 4096,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 307.78638661065025,
+            "tpsPerCard": 76.94659665266256,
+            "rawUs": 2776.9287138162194,
+            "computeUs": 2183.9640402996047,
+            "commUs": 684.1283003662982,
+            "waitUs": 204.9527989461286,
+            "attentionUs": 1385.5189626373667,
+            "kvGBPerRank": 4.127195136,
+            "backingGB": 52.85693776
+          }
+        },
+        {
+          "batch": 16,
+          "mappings": 120,
+          "feasible": 48,
+          "infeasible": {
+            "H local tile + shared window": 52,
+            "H local tile": 20
+          },
+          "best": {
+            "batch": 16,
+            "mapping": {
+              "kvTile": 2048,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 169.803965454184,
+            "tpsPerCard": 84.901982727092,
+            "rawUs": 5033.456388457946,
+            "computeUs": 4179.234904104165,
+            "commUs": 841.1929816849744,
+            "waitUs": 466.9390740714393,
+            "attentionUs": 2694.7109098901265,
+            "kvGBPerRank": 8.254390272,
+            "backingGB": 57.038396704
+          }
+        },
+        {
+          "batch": 32,
+          "mappings": 120,
+          "feasible": 10,
+          "infeasible": {
+            "H local tile + L local tile + shared window": 40,
+            "L local tile": 14,
+            "SRAM window after joint optimization": 4,
+            "H local tile": 6,
+            "H local tile + L local tile": 6,
+            "H local tile + shared window": 40
+          },
+          "best": {
+            "batch": 32,
+            "mapping": {
+              "kvTile": 1024,
+              "headTile": 96,
+              "weightTileMiB": 4,
+              "depth": 2
+            },
+            "tpsPerUser": 65.38934079057964,
+            "tpsPerCard": 65.38934079057964,
+            "rawUs": 13070.950775267454,
+            "computeUs": 9304.1882733851,
+            "commUs": 1284.7166300366289,
+            "waitUs": 2826.5227781195827,
+            "attentionUs": 5370.906004395568,
+            "kvGBPerRank": 16.508780544,
+            "backingGB": 65.401314592
+          }
+        }
+      ],
+      "paretoFront": [
+        {
+          "batch": 1,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 1101.7710702419247,
+          "tpsPerCard": 34.43034594506015
+        },
+        {
+          "batch": 2,
+          "mapping": {
+            "kvTile": 16384,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 844.7639840211849,
+          "tpsPerCard": 52.79774900132406
+        },
+        {
+          "batch": 4,
+          "mapping": {
+            "kvTile": 4096,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 544.6665325836861,
+          "tpsPerCard": 68.08331657296077
+        },
+        {
+          "batch": 8,
+          "mapping": {
+            "kvTile": 4096,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 307.78638661065025,
+          "tpsPerCard": 76.94659665266256
+        },
+        {
+          "batch": 16,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 169.803965454184,
+          "tpsPerCard": 84.901982727092
+        }
+      ],
+      "summary": {
+        "batch1": {
+          "tpsPerUser": 1101.7710702419247,
+          "tpsPerCard": 34.43034594506015,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          }
+        },
+        "maxTpsPerCard": {
+          "batch": 16,
+          "tpsPerUser": 169.803965454184,
+          "tpsPerCard": 84.901982727092,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          }
+        },
+        "cardGainOverBatch1": 2.4659055956791285,
+        "userRatioAtMaxCard": 0.15411909972994553,
+        "marginalUsPerSequence": [
+          {
+            "batch": 2,
+            "us": 236.01112863361027
+          },
+          {
+            "batch": 4,
+            "us": 264.4889448891283
+          },
+          {
+            "batch": 8,
+            "us": 285.882420956734
+          },
+          {
+            "batch": 16,
+            "us": 283.84697475592424
+          },
+          {
+            "batch": 32,
+            "us": 396.6193228434959
+          }
+        ],
+        "largestFeasibleBatch": 32
+      }
+    },
+    {
+      "context": 131072,
+      "union": "worst",
+      "rows": [
+        {
+          "batch": 1,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 1,
+            "mapping": {
+              "kvTile": 2048,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 1201.9125231147507,
+            "tpsPerCard": 37.55976634733596,
+            "rawUs": 711.1173552680036,
+            "computeUs": 323.4294123643826,
+            "commUs": 451.94999999999703,
+            "waitUs": 47.855692428662685,
+            "attentionUs": 72.34886792582421,
+            "kvGBPerRank": 0.064487424,
+            "backingGB": 48.746749216
+          }
+        },
+        {
+          "batch": 2,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 2,
+            "mapping": {
+              "kvTile": 4096,
+              "headTile": 32,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 1006.8138254242806,
+            "tpsPerCard": 62.92586408901754,
+            "rawUs": 848.9164859656908,
+            "computeUs": 415.1287335714002,
+            "commUs": 463.31083241757966,
+            "waitUs": 93.96172248570218,
+            "attentionUs": 104.17049869505509,
+            "kvGBPerRank": 0.128974848,
+            "backingGB": 48.818019616
+          }
+        },
+        {
+          "batch": 4,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 4,
+            "mapping": {
+              "kvTile": 4096,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 751.1725371651854,
+            "tpsPerCard": 93.89656714564818,
+            "rawUs": 1137.8222877081873,
+            "computeUs": 593.7109821396407,
+            "commUs": 570.7170842490838,
+            "waitUs": 129.0218474239652,
+            "attentionUs": 120.30400638736269,
+            "kvGBPerRank": 0.257949696,
+            "backingGB": 48.960560416
+          }
+        },
+        {
+          "batch": 8,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 8,
+            "mapping": {
+              "kvTile": 2048,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 502.3519919826252,
+            "tpsPerCard": 125.5879979956563,
+            "rawUs": 1701.398358803395,
+            "computeUs": 1017.038905855795,
+            "commUs": 684.1283003662982,
+            "waitUs": 229.0588429935404,
+            "attentionUs": 197.80444835164784,
+            "kvGBPerRank": 0.515899392,
+            "backingGB": 49.245642016
+          }
+        },
+        {
+          "batch": 16,
+          "mappings": 120,
+          "feasible": 72,
+          "infeasible": {
+            "H local tile": 48
+          },
+          "best": {
+            "batch": 16,
+            "mapping": {
+              "kvTile": 2048,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 277.25557012188494,
+            "tpsPerCard": 138.62778506094247,
+            "rawUs": 3082.718425909776,
+            "computeUs": 1988.3645308979792,
+            "commUs": 841.1929816849744,
+            "waitUs": 561.2743816534329,
+            "attentionUs": 362.18106373626284,
+            "kvGBPerRank": 1.031798784,
+            "backingGB": 49.815805216
+          }
+        },
+        {
+          "batch": 32,
+          "mappings": 120,
+          "feasible": 10,
+          "infeasible": {
+            "H local tile + L local tile + shared window": 40,
+            "L local tile": 14,
+            "SRAM window after joint optimization": 4,
+            "H local tile": 6,
+            "H local tile + L local tile": 6,
+            "H local tile + shared window": 40
+          },
+          "best": {
+            "batch": 32,
+            "mapping": {
+              "kvTile": 1024,
+              "headTile": 96,
+              "weightTileMiB": 4,
+              "depth": 2
+            },
+            "tpsPerUser": 119.83875731541153,
+            "tpsPerCard": 119.83875731541153,
+            "rawUs": 7132.090434243333,
+            "computeUs": 5439.647473074391,
+            "commUs": 1284.7166300366289,
+            "waitUs": 778.3079600467906,
+            "attentionUs": 689.4668659340674,
+            "kvGBPerRank": 2.063597568,
+            "backingGB": 50.956131616
+          }
+        }
+      ],
+      "paretoFront": [
+        {
+          "batch": 1,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 1201.9125231147507,
+          "tpsPerCard": 37.55976634733596
+        },
+        {
+          "batch": 2,
+          "mapping": {
+            "kvTile": 4096,
+            "headTile": 32,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 1006.8138254242806,
+          "tpsPerCard": 62.92586408901754
+        },
+        {
+          "batch": 4,
+          "mapping": {
+            "kvTile": 4096,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 751.1725371651854,
+          "tpsPerCard": 93.89656714564818
+        },
+        {
+          "batch": 8,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 502.3519919826252,
+          "tpsPerCard": 125.5879979956563
+        },
+        {
+          "batch": 16,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 277.25557012188494,
+          "tpsPerCard": 138.62778506094247
+        }
+      ],
+      "summary": {
+        "batch1": {
+          "tpsPerUser": 1201.9125231147507,
+          "tpsPerCard": 37.55976634733596,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          }
+        },
+        "maxTpsPerCard": {
+          "batch": 16,
+          "tpsPerUser": 277.25557012188494,
+          "tpsPerCard": 138.62778506094247,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          }
+        },
+        "cardGainOverBatch1": 3.690858558037198,
+        "userRatioAtMaxCard": 0.2306786598773249,
+        "marginalUsPerSequence": [
+          {
+            "batch": 2,
+            "us": 137.79913069768713
+          },
+          {
+            "batch": 4,
+            "us": 142.23497748006125
+          },
+          {
+            "batch": 8,
+            "us": 141.4687147907702
+          },
+          {
+            "batch": 16,
+            "us": 158.10673804278485
+          },
+          {
+            "batch": 32,
+            "us": 207.12816383791386
+          }
+        ],
+        "largestFeasibleBatch": 32
+      }
+    },
+    {
+      "context": 131072,
+      "union": "expected",
+      "rows": [
+        {
+          "batch": 1,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 1,
+            "mapping": {
+              "kvTile": 2048,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 1201.9125231147507,
+            "tpsPerCard": 37.55976634733596,
+            "rawUs": 711.1173552680036,
+            "computeUs": 323.4294123643826,
+            "commUs": 451.94999999999703,
+            "waitUs": 47.85569242866275,
+            "attentionUs": 72.34886792582421,
+            "kvGBPerRank": 0.064487424,
+            "backingGB": 48.746749216
+          }
+        },
+        {
+          "batch": 2,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 2,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 1009.3020930646196,
+            "tpsPerCard": 63.081380816538726,
+            "rawUs": 846.8236225545342,
+            "computeUs": 385.9278758790911,
+            "commUs": 463.31083241757966,
+            "waitUs": 115.57391351232015,
+            "attentionUs": 75.73899100274724,
+            "kvGBPerRank": 0.128974848,
+            "backingGB": 48.818019616
+          }
+        },
+        {
+          "batch": 4,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 4,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 759.5400893653169,
+            "tpsPerCard": 94.94251117066462,
+            "rawUs": 1125.2873504215631,
+            "computeUs": 584.1755903826263,
+            "commUs": 570.7170842490838,
+            "waitUs": 127.2059939405984,
+            "attentionUs": 115.33000638736267,
+            "kvGBPerRank": 0.257949696,
+            "backingGB": 48.960560416
+          }
+        },
+        {
+          "batch": 8,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 8,
+            "mapping": {
+              "kvTile": 2048,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 518.2695229636187,
+            "tpsPerCard": 129.56738074090467,
+            "rawUs": 1649.1435765186848,
+            "computeUs": 996.2495260138867,
+            "commUs": 684.1283003662982,
+            "waitUs": 199.86003356079055,
+            "attentionUs": 197.80444835164784,
+            "kvGBPerRank": 0.515899392,
+            "backingGB": 49.245642016
+          }
+        },
+        {
+          "batch": 16,
+          "mappings": 120,
+          "feasible": 72,
+          "infeasible": {
+            "H local tile": 48
+          },
+          "best": {
+            "batch": 16,
+            "mapping": {
+              "kvTile": 2048,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 300.27617786331245,
+            "tpsPerCard": 150.13808893165623,
+            "rawUs": 2846.382489555731,
+            "computeUs": 1846.7050579502381,
+            "commUs": 841.1929816849744,
+            "waitUs": 461.49457239705566,
+            "attentionUs": 362.18106373626284,
+            "kvGBPerRank": 1.031798784,
+            "backingGB": 49.815805216
+          }
+        },
+        {
+          "batch": 32,
+          "mappings": 120,
+          "feasible": 10,
+          "infeasible": {
+            "H local tile + L local tile + shared window": 40,
+            "L local tile": 14,
+            "SRAM window after joint optimization": 4,
+            "H local tile": 6,
+            "H local tile + L local tile": 6,
+            "H local tile + shared window": 40
+          },
+          "best": {
+            "batch": 32,
+            "mapping": {
+              "kvTile": 1024,
+              "headTile": 96,
+              "weightTileMiB": 4,
+              "depth": 2
+            },
+            "tpsPerUser": 136.80109063414608,
+            "tpsPerCard": 136.80109063414608,
+            "rawUs": 6247.76345523899,
+            "computeUs": 4622.74913492354,
+            "commUs": 1284.7166300366289,
+            "waitUs": 674.7844231425122,
+            "attentionUs": 689.4668659340674,
+            "kvGBPerRank": 2.063597568,
+            "backingGB": 50.956131616
+          }
+        }
+      ],
+      "paretoFront": [
+        {
+          "batch": 1,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 1201.9125231147507,
+          "tpsPerCard": 37.55976634733596
+        },
+        {
+          "batch": 2,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 1009.3020930646196,
+          "tpsPerCard": 63.081380816538726
+        },
+        {
+          "batch": 4,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 759.5400893653169,
+          "tpsPerCard": 94.94251117066462
+        },
+        {
+          "batch": 8,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 518.2695229636187,
+          "tpsPerCard": 129.56738074090467
+        },
+        {
+          "batch": 16,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 300.27617786331245,
+          "tpsPerCard": 150.13808893165623
+        }
+      ],
+      "summary": {
+        "batch1": {
+          "tpsPerUser": 1201.9125231147507,
+          "tpsPerCard": 37.55976634733596,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          }
+        },
+        "maxTpsPerCard": {
+          "batch": 16,
+          "tpsPerUser": 300.27617786331245,
+          "tpsPerCard": 150.13808893165623,
+          "mapping": {
+            "kvTile": 2048,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 4
+          }
+        },
+        "cardGainOverBatch1": 3.997311579184124,
+        "userRatioAtMaxCard": 0.24983197369900775,
+        "marginalUsPerSequence": [
+          {
+            "batch": 2,
+            "us": 135.70626728653053
+          },
+          {
+            "batch": 4,
+            "us": 138.0566650511865
+          },
+          {
+            "batch": 8,
+            "us": 134.00374589295444
+          },
+          {
+            "batch": 16,
+            "us": 142.35100895251514
+          },
+          {
+            "batch": 32,
+            "us": 178.60148709583825
+          }
+        ],
+        "largestFeasibleBatch": 32
+      }
+    },
+    {
+      "context": 8192,
+      "union": "worst",
+      "rows": [
+        {
+          "batch": 1,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 1,
+            "mapping": {
+              "kvTile": 1024,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 1218.993526656686,
+            "tpsPerCard": 38.09354770802144,
+            "rawUs": 701.1529068944517,
+            "computeUs": 317.39445412262415,
+            "commUs": 451.94999999999703,
+            "waitUs": 40.94695454661097,
+            "attentionUs": 44.43772506868133,
+            "kvGBPerRank": 0.004030464,
+            "backingGB": 48.686292256
+          }
+        },
+        {
+          "batch": 2,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 2,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 1036.3177119054292,
+            "tpsPerCard": 64.76985699408932,
+            "rawUs": 824.7478981415419,
+            "computeUs": 351.52485664832085,
+            "commUs": 463.31083241757966,
+            "waitUs": 125.97054073509592,
+            "attentionUs": 40.566621771978056,
+            "kvGBPerRank": 0.008060928,
+            "backingGB": 48.697105696
+          }
+        },
+        {
+          "batch": 4,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 4,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 779.5173381345313,
+            "tpsPerCard": 97.43966726681641,
+            "rawUs": 1096.4488060602291,
+            "computeUs": 516.1793909308494,
+            "commUs": 570.7170842490838,
+            "waitUs": 154.35854628063004,
+            "attentionUs": 42.772415178571414,
+            "kvGBPerRank": 0.016121856,
+            "backingGB": 48.718732576
+          }
+        },
+        {
+          "batch": 8,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 8,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 529.6468387078543,
+            "tpsPerCard": 132.41170967696357,
+            "rawUs": 1613.7184105280683,
+            "computeUs": 859.6886157459055,
+            "commUs": 684.1283003662982,
+            "waitUs": 275.78180263133197,
+            "attentionUs": 40.454158241758215,
+            "kvGBPerRank": 0.032243712,
+            "backingGB": 48.761986336
+          }
+        },
+        {
+          "batch": 16,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 16,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 306.60954566972924,
+            "tpsPerCard": 153.30477283486462,
+            "rawUs": 2787.587231943239,
+            "computeUs": 1675.4607990298496,
+            "commUs": 841.1929816849744,
+            "waitUs": 556.9956780035328,
+            "attentionUs": 49.2773318681319,
+            "kvGBPerRank": 0.064487424,
+            "backingGB": 48.848493856
+          }
+        },
+        {
+          "batch": 32,
+          "mappings": 120,
+          "feasible": 60,
+          "infeasible": {
+            "L local tile": 60
+          },
+          "best": {
+            "batch": 32,
+            "mapping": {
+              "kvTile": 1024,
+              "headTile": 96,
+              "weightTileMiB": 4,
+              "depth": 2
+            },
+            "tpsPerUser": 137.85595794839372,
+            "tpsPerCard": 137.85595794839372,
+            "rawUs": 6199.955862776794,
+            "computeUs": 4819.317139008623,
+            "commUs": 1284.7166300366289,
+            "waitUs": 467.923112815687,
+            "attentionUs": 69.13653186813184,
+            "kvGBPerRank": 0.128974848,
+            "backingGB": 49.021508896
+          }
+        }
+      ],
+      "paretoFront": [
+        {
+          "batch": 1,
+          "mapping": {
+            "kvTile": 1024,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 1218.993526656686,
+          "tpsPerCard": 38.09354770802144
+        },
+        {
+          "batch": 2,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 1036.3177119054292,
+          "tpsPerCard": 64.76985699408932
+        },
+        {
+          "batch": 4,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 779.5173381345313,
+          "tpsPerCard": 97.43966726681641
+        },
+        {
+          "batch": 8,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 529.6468387078543,
+          "tpsPerCard": 132.41170967696357
+        },
+        {
+          "batch": 16,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 306.60954566972924,
+          "tpsPerCard": 153.30477283486462
+        }
+      ],
+      "summary": {
+        "batch1": {
+          "tpsPerUser": 1218.993526656686,
+          "tpsPerCard": 38.09354770802144,
+          "mapping": {
+            "kvTile": 1024,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          }
+        },
+        "maxTpsPerCard": {
+          "batch": 16,
+          "tpsPerUser": 306.60954566972924,
+          "tpsPerCard": 153.30477283486462,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          }
+        },
+        "cardGainOverBatch1": 4.024428861546621,
+        "userRatioAtMaxCard": 0.2515268038466638,
+        "marginalUsPerSequence": [
+          {
+            "batch": 2,
+            "us": 123.5949912470902
+          },
+          {
+            "batch": 4,
+            "us": 131.7652997219258
+          },
+          {
+            "batch": 8,
+            "us": 130.36650051908808
+          },
+          {
+            "batch": 16,
+            "us": 139.09562166991915
+          },
+          {
+            "batch": 32,
+            "us": 177.3807405123336
+          }
+        ],
+        "largestFeasibleBatch": 32
+      }
+    },
+    {
+      "context": 8192,
+      "union": "expected",
+      "rows": [
+        {
+          "batch": 1,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 1,
+            "mapping": {
+              "kvTile": 1024,
+              "headTile": 48,
+              "weightTileMiB": 8,
+              "depth": 2
+            },
+            "tpsPerUser": 1218.993526656686,
+            "tpsPerCard": 38.09354770802144,
+            "rawUs": 701.1529068944517,
+            "computeUs": 317.3944541226242,
+            "commUs": 451.94999999999703,
+            "waitUs": 40.946954546610975,
+            "attentionUs": 44.43772506868133,
+            "kvGBPerRank": 0.004030464,
+            "backingGB": 48.686292256
+          }
+        },
+        {
+          "batch": 2,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 2,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 1038.8160835565247,
+            "tpsPerCard": 64.9260052222828,
+            "rawUs": 822.7643643855348,
+            "computeUs": 350.755506648321,
+            "commUs": 463.31083241757966,
+            "waitUs": 125.54637296223403,
+            "attentionUs": 40.566621771978056,
+            "kvGBPerRank": 0.008060928,
+            "backingGB": 48.697105696
+          }
+        },
+        {
+          "batch": 4,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 4,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 787.8966941773666,
+            "tpsPerCard": 98.48708677217083,
+            "rawUs": 1084.7879690537825,
+            "computeUs": 511.61799917383405,
+            "commUs": 570.7170842490838,
+            "waitUs": 149.08462746299028,
+            "attentionUs": 42.772415178571414,
+            "kvGBPerRank": 0.016121856,
+            "backingGB": 48.718732576
+          }
+        },
+        {
+          "batch": 8,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 8,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 546.2546136108357,
+            "tpsPerCard": 136.56365340270892,
+            "rawUs": 1564.6565418480168,
+            "computeUs": 838.8992359039972,
+            "commUs": 684.1283003662982,
+            "waitUs": 248.69071336323697,
+            "attentionUs": 40.454158241758215,
+            "kvGBPerRank": 0.032243712,
+            "backingGB": 48.761986336
+          }
+        },
+        {
+          "batch": 16,
+          "mappings": 120,
+          "feasible": 120,
+          "infeasible": {},
+          "best": {
+            "batch": 16,
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "weightTileMiB": 8,
+              "depth": 4
+            },
+            "tpsPerUser": 334.92511490767816,
+            "tpsPerCard": 167.46255745383908,
+            "rawUs": 2551.916284141463,
+            "computeUs": 1533.8013260821112,
+            "commUs": 841.1929816849744,
+            "waitUs": 459.0393147734821,
+            "attentionUs": 49.2773318681319,
+            "kvGBPerRank": 0.064487424,
+            "backingGB": 48.848493856
+          }
+        },
+        {
+          "batch": 32,
+          "mappings": 120,
+          "feasible": 60,
+          "infeasible": {
+            "L local tile": 60
+          },
+          "best": {
+            "batch": 32,
+            "mapping": {
+              "kvTile": 1024,
+              "headTile": 96,
+              "weightTileMiB": 4,
+              "depth": 4
+            },
+            "tpsPerUser": 160.5467591178284,
+            "tpsPerCard": 160.5467591178284,
+            "rawUs": 5323.68799842028,
+            "computeUs": 4002.4188008574833,
+            "commUs": 1284.7166300366289,
+            "waitUs": 367.97315654369345,
+            "attentionUs": 69.13653186813184,
+            "kvGBPerRank": 0.128974848,
+            "backingGB": 49.021508896
+          }
+        }
+      ],
+      "paretoFront": [
+        {
+          "batch": 1,
+          "mapping": {
+            "kvTile": 1024,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          },
+          "tpsPerUser": 1218.993526656686,
+          "tpsPerCard": 38.09354770802144
+        },
+        {
+          "batch": 2,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 1038.8160835565247,
+          "tpsPerCard": 64.9260052222828
+        },
+        {
+          "batch": 4,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 787.8966941773666,
+          "tpsPerCard": 98.48708677217083
+        },
+        {
+          "batch": 8,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 546.2546136108357,
+          "tpsPerCard": 136.56365340270892
+        },
+        {
+          "batch": 16,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          },
+          "tpsPerUser": 334.92511490767816,
+          "tpsPerCard": 167.46255745383908
+        }
+      ],
+      "summary": {
+        "batch1": {
+          "tpsPerUser": 1218.993526656686,
+          "tpsPerCard": 38.09354770802144,
+          "mapping": {
+            "kvTile": 1024,
+            "headTile": 48,
+            "weightTileMiB": 8,
+            "depth": 2
+          }
+        },
+        "maxTpsPerCard": {
+          "batch": 16,
+          "tpsPerUser": 334.92511490767816,
+          "tpsPerCard": 167.46255745383908,
+          "mapping": {
+            "kvTile": 32768,
+            "headTile": 96,
+            "weightTileMiB": 8,
+            "depth": 4
+          }
+        },
+        "cardGainOverBatch1": 4.396087199265406,
+        "userRatioAtMaxCard": 0.27475544995408785,
+        "marginalUsPerSequence": [
+          {
+            "batch": 2,
+            "us": 121.61145749108312
+          },
+          {
+            "batch": 4,
+            "us": 127.87835405311027
+          },
+          {
+            "batch": 8,
+            "us": 123.35766213622358
+          },
+          {
+            "batch": 16,
+            "us": 123.38422514980077
+          },
+          {
+            "batch": 32,
+            "us": 149.11403521051056
+          }
+        ],
+        "largestFeasibleBatch": 32
+      }
+    }
+  ],
+  "contextScan": [
+    {
+      "context": 2048,
+      "feasible": true,
+      "tpsPerUser": 1216.0601579354995,
+      "rawUs": 702.8442212529,
+      "computeUs": 278.78218928745866,
+      "commUs": 451.94999999999703,
+      "waitUs": 76.19600370603115,
+      "lse": {
+        "count": 24,
+        "us": 27.599999999999987,
+        "shareOfRaw": 0.03926901462005313
+      },
+      "attentionUs": 38.639737156593384,
+      "attentionShareOfRaw": 0.05497624649700277,
+      "kvGBPerRank": 0.001007616,
+      "headParallel": {
+        "evidenceClass": "PLANNING_ESTIMATE",
+        "savedUs": 27.599999999999987,
+        "extraKvGBPerRank": 0.031236096,
+        "extraKvExposedUs": 4.9224552354364075,
+        "tpsPerUser": {
+          "kvHidden": 1265.7655227540893,
+          "kvExposed": 1256.6050120444431
+        },
+        "extraKvStoreGBPerRank": 0.031236096,
+        "breakEvenContext": 11483.050083032129
+      }
+    },
+    {
+      "context": 4096,
+      "feasible": true,
+      "tpsPerUser": 1215.8130381312835,
+      "rawUs": 702.9870776962043,
+      "computeUs": 279.0568519248213,
+      "commUs": 451.94999999999703,
+      "waitUs": 76.0890413328833,
+      "lse": {
+        "count": 24,
+        "us": 27.599999999999987,
+        "shareOfRaw": 0.039261034627335385
+      },
+      "attentionUs": 38.91439979395601,
+      "attentionShareOfRaw": 0.055355782529437694,
+      "kvGBPerRank": 0.002015232,
+      "headParallel": {
+        "evidenceClass": "PLANNING_ESTIMATE",
+        "savedUs": 27.599999999999987,
+        "extraKvGBPerRank": 0.062472192,
+        "extraKvExposedUs": 9.844687180243792,
+        "tpsPerUser": {
+          "kvHidden": 1265.4977907132945,
+          "kvExposed": 1247.3164533680997
+        },
+        "extraKvStoreGBPerRank": 0.062472192,
+        "breakEvenContext": 11483.31053391586
+      }
+    },
+    {
+      "context": 8192,
+      "feasible": true,
+      "tpsPerUser": 1215.3191043907689,
+      "rawUs": 703.2727878735276,
+      "computeUs": 279.6061771995468,
+      "commUs": 451.94999999999703,
+      "waitUs": 75.87510872687457,
+      "lse": {
+        "count": 24,
+        "us": 27.599999999999987,
+        "shareOfRaw": 0.039245084518986686
+      },
+      "attentionUs": 39.46372506868128,
+      "attentionShareOfRaw": 0.05611439223748012,
+      "kvGBPerRank": 0.004030464,
+      "headParallel": {
+        "evidenceClass": "PLANNING_ESTIMATE",
+        "savedUs": 27.599999999999987,
+        "extraKvGBPerRank": 0.124944384,
+        "extraKvExposedUs": 19.688481727477985,
+        "tpsPerUser": {
+          "kvHidden": 1264.9626713409061,
+          "kvExposed": 1229.1464768972212
+        },
+        "extraKvStoreGBPerRank": 0.124944384,
+        "breakEvenContext": 11483.831162280398
+      }
+    },
+    {
+      "context": 16384,
+      "feasible": true,
+      "tpsPerUser": 1214.3324585909727,
+      "rawUs": 703.8441974058657,
+      "computeUs": 280.70482774899733,
+      "commUs": 451.94999999999703,
+      "waitUs": 75.44721211934569,
+      "lse": {
+        "count": 24,
+        "us": 27.599999999999987,
+        "shareOfRaw": 0.039213223752819666
+      },
+      "attentionUs": 40.56237561813185,
+      "attentionShareOfRaw": 0.057629764893468195,
+      "kvGBPerRank": 0.008060928,
+      "headParallel": {
+        "evidenceClass": "PLANNING_ESTIMATE",
+        "savedUs": 27.599999999999987,
+        "extraKvGBPerRank": 0.249888768,
+        "extraKvExposedUs": 39.37339715311434,
+        "tpsPerUser": {
+          "kvHidden": 1263.89380933628,
+          "kvExposed": 1194.3541651286382
+        },
+        "extraKvStoreGBPerRank": 0.249888768,
+        "breakEvenContext": 11484.871326736205
+      }
+    },
+    {
+      "context": 32768,
+      "feasible": true,
+      "tpsPerUser": 1212.3640394360618,
+      "rawUs": 704.9869733008774,
+      "computeUs": 282.9021288478985,
+      "commUs": 451.94999999999703,
+      "waitUs": 74.59129366892836,
+      "lse": {
+        "count": 24,
+        "us": 27.599999999999987,
+        "shareOfRaw": 0.03914965956146929
+      },
+      "attentionUs": 42.75967671703296,
+      "attentionShareOfRaw": 0.06065314443588137,
+      "kvGBPerRank": 0.016121856,
+      "headParallel": {
+        "evidenceClass": "PLANNING_ESTIMATE",
+        "savedUs": 27.599999999999987,
+        "extraKvGBPerRank": 0.499777536,
+        "extraKvExposedUs": 78.73256284703152,
+        "tpsPerUser": {
+          "kvHidden": 1261.7615755672634,
+          "kvExposed": 1130.3779545958746
+        },
+        "extraKvStoreGBPerRank": 0.499777536,
+        "breakEvenContext": 11486.947297233808
+      }
+    },
+    {
+      "context": 131072,
+      "feasible": true,
+      "tpsPerUser": 1200.6882615819734,
+      "rawUs": 711.8424340842134,
+      "computeUs": 296.08593544130497,
+      "commUs": 451.94999999999703,
+      "waitUs": 70.3332784180269,
+      "lse": {
+        "count": 24,
+        "us": 27.599999999999987,
+        "shareOfRaw": 0.03877262534300507
+      },
+      "attentionUs": 55.94348331043959,
+      "attentionShareOfRaw": 0.07858969995573667,
+      "kvGBPerRank": 0.064487424,
+      "headParallel": {
+        "evidenceClass": "PLANNING_ESTIMATE",
+        "savedUs": 27.599999999999987,
+        "extraKvGBPerRank": 1.999110144,
+        "extraKvExposedUs": 314.59243187090624,
+        "tpsPerUser": {
+          "kvHidden": 1249.1199202586463,
+          "kvExposed": 855.6978574066504
+        },
+        "extraKvStoreGBPerRank": 1.999110144,
+        "breakEvenContext": 11499.282352362767
+      }
+    },
+    {
+      "context": 524288,
+      "feasible": true,
+      "tpsPerUser": 1156.1811556666632,
+      "rawUs": 739.2447546059748,
+      "computeUs": 355.45972005669006,
+      "commUs": 451.94999999999703,
+      "waitUs": 54.58275201588795,
+      "lse": {
+        "count": 24,
+        "us": 27.599999999999987,
+        "shareOfRaw": 0.037335401878787866
+      },
+      "attentionUs": 115.31726792582424,
+      "attentionShareOfRaw": 0.155993352955598,
+      "kvGBPerRank": 0.257949696,
+      "headParallel": {
+        "evidenceClass": "PLANNING_ESTIMATE",
+        "savedUs": 27.599999999999987,
+        "extraKvGBPerRank": 7.996440576,
+        "extraKvExposedUs": 1253.2088060509086,
+        "tpsPerUser": {
+          "kvHidden": 1201.0217867397726,
+          "kvExposed": 434.9946844970543
+        },
+        "extraKvStoreGBPerRank": 7.996440576,
+        "breakEvenContext": 11546.638301719826
+      }
+    },
+    {
+      "context": 1048576,
+      "feasible": true,
+      "tpsPerUser": 1101.771070241925,
+      "rawUs": 775.7517671190814,
+      "computeUs": 434.6247662105369,
+      "commUs": 451.94999999999703,
+      "waitUs": 22.353084639818142,
+      "lse": {
+        "count": 24,
+        "us": 27.599999999999987,
+        "shareOfRaw": 0.03557839140025222
+      },
+      "attentionUs": 194.48231407967032,
+      "attentionShareOfRaw": 0.2507017351722209,
+      "kvGBPerRank": 0.515899392,
+      "headParallel": {
+        "evidenceClass": "PLANNING_ESTIMATE",
+        "savedUs": 27.599999999999987,
+        "extraKvGBPerRank": 15.992881152,
+        "extraKvExposedUs": 2493.762409711677,
+        "tpsPerUser": {
+          "kvHidden": 1142.4164083606504,
+          "kvExposed": 263.6408023411638
+        },
+        "extraKvStoreGBPerRank": 15.992881152,
+        "breakEvenContext": 11605.234519252395
+      }
+    }
+  ]
+}
