@@ -1,0 +1,4674 @@
+{
+  "format": "k3-tau-derivation/1",
+  "status": "MODEL: bottom-up tau per collective class on self-chosen scale-out topology candidates (ASSUMPTION latencies), with the TPS/usr each implies. Feeds no gate or baseline; OPT.tauUs stays 1.15 us (ADR-0004)",
+  "evidenceClass": "MODEL",
+  "workItem": "HW-CH-01",
+  "plan": "teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md",
+  "issues": [
+    "B-008",
+    "B-005",
+    "B-004",
+    "O-018"
+  ],
+  "candidatesStatus": "ASSUMPTION",
+  "method": "tau = memoryTransport (phase chain per step with per-path one-way latency and the busiest-link floor) + tpReduce (model) + cardLocal (model, 6 die hops at ucieHopUs) + portTail (model floor) + controlPath (Comm Core). bottomUp replays with OPT.tauUs = 0, specFloor with 1.15 us; optimistic / pessimistic put every parameter at the low / high end of its range.",
+  "provenance": {
+    "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
+    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "candidates": "teams/hardware/inputs/scaleout_topology_candidates.json",
+    "candidatesSha256": "9bc9838459cb58464d4f7dc0f7dccc01b4253bd19744181c0899487c044d085d",
+    "commCore": "out/detailed/comm_core_design.json",
+    "commCoreSha256": "966aa30153694b2fe1bafe70e9ed911202d6ce1f780ef34bb319d4f61cd14162",
+    "sources": {
+      "integration/detailed/collective_topology.js": "d45bcd5340365e98dd632becdcbcfb631008f3cc4436456383dc6c7cd9f492d0",
+      "integration/detailed/k3_sram_memory_rdma_model.js": "68314a43ca69a40d170ac1f1f266c09124ee8f34afe8946ff6301fa8b61df187",
+      "integration/detailed/k3_rdma_final_tuning_model.js": "0410f9cf6db81716fce488916905a87e66626af92c8b554bf83109ee3fade12c",
+      "integration/detailed/k3_operator_sram_sim.js": "49580d74ff1f93c70ad8185d99cca679bc3d28ab2a61b889c6c8c3ef45343355",
+      "integration/detailed/k3_architecture_search.js": "6dfb8062f990495e75d78e158f7d8ad035da99ce02d3936211fc61afc6b9dab8",
+      "integration/detailed/cost_provider.js": "9a737e30a235e8e9c30f8eab40e198df47667525ca5c27cb5ce16d176dbec413",
+      "teams/vv/inputs/operator_cost_observations.json": "aa535b0adf152419b1452c2bc73e1ba356ec3dfc35f7f16754140af1423ee5b2",
+      "integration/detailed/k3_physical_basis.js": "c93f516e1ecdbd35190f714c06deac1ada09d64656fcd75332a7a2214a2f3c90"
+    }
+  },
+  "targetTpsPerUser": 1000,
+  "published": {
+    "rawUs": 775.7517671190814,
+    "tpsPerUser": 1101.771070241925,
+    "specTauUs": 1.15,
+    "modelOneWayUs": 0.05,
+    "tauBreakEvenUs": 1.3547626018524173,
+    "uniformTauSweep": [
+      {
+        "tauUs": 0,
+        "rawUs": 771.6327155806549,
+        "tpsPerUser": 1107.652432877591,
+        "commUs": 268.9526861263738,
+        "dmaWaitUs": 170.4052374607937
+      },
+      {
+        "tauUs": 0.5,
+        "rawUs": 773.639215749268,
+        "tpsPerUser": 1104.7796405629188,
+        "commUs": 275.2607994505493,
+        "dmaWaitUs": 167.68065263627534
+      },
+      {
+        "tauUs": 0.9,
+        "rawUs": 775.7369204710001,
+        "tpsPerUser": 1101.7921567815936,
+        "commUs": 355.5834162087901,
+        "dmaWaitUs": 103.1531292741929
+      },
+      {
+        "tauUs": 1.15,
+        "rawUs": 775.7517671190814,
+        "tpsPerUser": 1101.771070241925,
+        "commUs": 451.94999999999703,
+        "dmaWaitUs": 22.353084639818142
+      },
+      {
+        "tauUs": 1.35,
+        "rawUs": 852.8289663695537,
+        "tpsPerUser": 1002.1949164546669,
+        "commUs": 530.5500000000038,
+        "dmaWaitUs": 21.817940347604164
+      },
+      {
+        "tauUs": 1.5,
+        "rawUs": 1013.3034967496102,
+        "tpsPerUser": 843.4796262348767,
+        "commUs": 589.5,
+        "dmaWaitUs": 113.10513739433442
+      },
+      {
+        "tauUs": 2,
+        "rawUs": 1214.4002487598466,
+        "tpsPerUser": 703.8049074624951,
+        "commUs": 786,
+        "dmaWaitUs": 117.23655607123322
+      }
+    ],
+    "abstractWire": {
+      "bottomUpTpsAtModelOneWay": 1104.7796405629188,
+      "oneWayBudgetUs": 0.2344378471374512
+    }
+  },
+  "anchor": {
+    "topology": "published (abstract wire, OPT.oneWayUs)",
+    "algorithm": "oneShot",
+    "ackDrain": "phase",
+    "controlScale": 0,
+    "ucieHopUs": 0.025,
+    "classes": [
+      {
+        "name": "LSE merge / output reduce-scatter",
+        "modelMemoryTransportUs": 0.5375238095238095,
+        "derivedMemoryTransportUs": 0.5375238095238095
+      },
+      {
+        "name": "Attention output all-reduce",
+        "modelMemoryTransportUs": 0.5843809523809524,
+        "derivedMemoryTransportUs": 0.5843809523809524
+      },
+      {
+        "name": "Wdown + Router all-gather",
+        "modelMemoryTransportUs": 0.25828571428571434,
+        "derivedMemoryTransportUs": 0.25828571428571434
+      },
+      {
+        "name": "Routed latent merge",
+        "modelMemoryTransportUs": 0.5173333333333334,
+        "derivedMemoryTransportUs": 0.5173333333333334
+      },
+      {
+        "name": "Wup + Shared output all-reduce",
+        "modelMemoryTransportUs": 0.5843809523809524,
+        "derivedMemoryTransportUs": 0.5843809523809524
+      }
+    ],
+    "tpsPerUser": 1101.771070241925,
+    "publishedTpsPerUser": 1101.771070241925
+  },
+  "parameters": [
+    {
+      "key": "macUs",
+      "nominal": 0.04,
+      "low": 0.02,
+      "high": 0.1,
+      "unit": "us per path",
+      "evidence": "ASSUMPTION",
+      "meaning": "NIC MAC/PCS framing at the two endpoints, once per path."
+    },
+    {
+      "key": "phyUs",
+      "nominal": 0.02,
+      "low": 0.01,
+      "high": 0.05,
+      "unit": "us per link",
+      "evidence": "ASSUMPTION",
+      "meaning": "SerDes TX + RX (PMA, CDR, DSP) of one 112G PAM4 link."
+    },
+    {
+      "key": "fecUs",
+      "nominal": 0.05,
+      "low": 0,
+      "high": 0.12,
+      "unit": "us per link",
+      "evidence": "ASSUMPTION",
+      "meaning": "FEC decode per link (every link terminates FEC). 0 = short reach without FEC; 0.12 is about an RS(544,514) KP4 decode."
+    },
+    {
+      "key": "switchUs",
+      "nominal": 0.2,
+      "low": 0.1,
+      "high": 0.5,
+      "unit": "us per switch",
+      "evidence": "ASSUMPTION",
+      "meaning": "Cut-through port-to-port latency of one switch traversal, excluding its two links."
+    },
+    {
+      "key": "relayUs",
+      "nominal": 0.05,
+      "low": 0.03,
+      "high": 0.2,
+      "unit": "us per relay card",
+      "evidence": "ASSUMPTION",
+      "meaning": "Cut-through forwarding through an intermediate card's NIC/router (torus, ring), excluding the die hops between its in-port and out-port."
+    },
+    {
+      "key": "ucieHopUs",
+      "nominal": 0.025,
+      "low": 0.015,
+      "high": 0.05,
+      "unit": "us per die hop",
+      "evidence": "ASSUMPTION",
+      "meaning": "One die-to-die hop inside the card (A.TECH.ucieHopUs is 0.025). Also rescales the 6 die hops inside cardLocal."
+    },
+    {
+      "key": "controlScale",
+      "nominal": 1,
+      "low": 1,
+      "high": 2,
+      "unit": "x",
+      "evidence": "ASSUMPTION",
+      "meaning": "Multiplier on the Comm Core control path of each collective class (out/detailed/comm_core_design.json controlPath.classes[].controlUs, O-018)."
+    }
+  ],
+  "topologies": [
+    {
+      "key": "fullMesh",
+      "name": "Direct full mesh (backplane)",
+      "candidateIn06": 1,
+      "description": "Every card has a direct link to each of the 31 others: 31 ports x 4 lanes = 124 of 128 lanes. One hop, no switch; a NIC reaches the ports on other dies through the in-card die ring.",
+      "risks": "31 ports per card and 496 cables or backplane traces; 4-lane links give 42 GB/s per peer.",
+      "ports": 31,
+      "lanesPerPort": 4,
+      "lanesUsed": 124,
+      "linkGBs": 42,
+      "worst": {
+        "links": 1,
+        "switches": 0,
+        "relays": 0,
+        "dieHops": 4
+      },
+      "oneWayUs": {
+        "min": 0.11500000000000002,
+        "mean": 0.165,
+        "max": 0.21500000000000002
+      },
+      "nearestPeerOneWayUs": 0.11500000000000002
+    },
+    {
+      "key": "singleSwitch",
+      "name": "Single-level rail switch",
+      "candidateIn06": 3,
+      "description": "Eight switch planes, one per die rail: die k of every card connects its 16 lanes to plane k (32 ports x 16 lanes x 112G, a 51.2T-class switch). Two links and one switch; no die forwarding.",
+      "risks": "Eight switch chips per TP group (power, single point of failure per rail); switch latency is on every collective.",
+      "ports": 8,
+      "lanesPerPort": 16,
+      "lanesUsed": 128,
+      "linkGBs": 168,
+      "worst": {
+        "links": 2,
+        "switches": 1,
+        "relays": 0,
+        "dieHops": 0
+      },
+      "oneWayUs": {
+        "min": 0.4,
+        "mean": 0.40000000000000135,
+        "max": 0.4
+      },
+      "nearestPeerOneWayUs": 0.4
+    },
+    {
+      "key": "leafSpine",
+      "name": "Two-level leaf-spine rail switch",
+      "candidateIn06": 3,
+      "description": "Each rail plane built from 4 leaves of 8 cards and 4 spines (non-blocking: 128 lanes down, 4 x 32 lanes up per leaf), for switch radix below 32 x 16 lanes. Up to 4 links and 3 switches; spine chosen by destination.",
+      "risks": "Three switch traversals on 24 of 31 peers; spine links may need optics.",
+      "ports": 8,
+      "lanesPerPort": 16,
+      "lanesUsed": 128,
+      "linkGBs": 168,
+      "worst": {
+        "links": 4,
+        "switches": 3,
+        "relays": 0,
+        "dieHops": 0
+      },
+      "oneWayUs": {
+        "min": 0.4,
+        "mean": 0.8567741935483896,
+        "max": 0.9900000000000001
+      },
+      "nearestPeerOneWayUs": 0.4
+    },
+    {
+      "key": "torus4x8",
+      "name": "4 x 8 torus",
+      "candidateIn06": 2,
+      "description": "Each card has 4 neighbours (x+, x-, y+, y-, 32 lanes each); dimension-order routing, shortest direction, ties to +. Worst 6 hops with 5 relay cards.",
+      "risks": "Relay forwarding breaks the one-hop remote SRAM write; hops x relay latency go straight into tau.",
+      "ports": 4,
+      "lanesPerPort": 32,
+      "lanesUsed": 128,
+      "linkGBs": 336,
+      "worst": {
+        "links": 6,
+        "switches": 0,
+        "relays": 5,
+        "dieHops": 9
+      },
+      "oneWayUs": {
+        "min": 0.11750000000000002,
+        "mean": 0.49088709677419357,
+        "max": 0.9550000000000001
+      },
+      "nearestPeerOneWayUs": 0.11750000000000002
+    },
+    {
+      "key": "ring32",
+      "name": "Bidirectional ring of 32 cards",
+      "candidateIn06": null,
+      "description": "Two ports of 64 lanes (clockwise, counter-clockwise); shortest direction, ties clockwise. Worst 16 hops. The lower bound on wiring, and the topology the ring algorithm assumes.",
+      "risks": "Worst-case path of 16 hops; included as the low-wiring reference, not expected to meet tau.",
+      "ports": 2,
+      "lanesPerPort": 64,
+      "lanesUsed": 128,
+      "linkGBs": 672,
+      "worst": {
+        "links": 16,
+        "switches": 0,
+        "relays": 15,
+        "dieHops": 17
+      },
+      "oneWayUs": {
+        "min": 0.11750000000000002,
+        "mean": 1.2431048387096777,
+        "max": 2.455000000000001
+      },
+      "nearestPeerOneWayUs": 0.11750000000000002
+    }
+  ],
+  "cells": [
+    {
+      "topology": "fullMesh",
+      "algorithm": "oneShot",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 1,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 0.8286666666666667,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.3116185325091576,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 1.1333333333333335,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.3598365384615387,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 1,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 0.5442857142857144,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 0.757433550824176,
+          "withinSpecTau": true,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 1.0893333333333337,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.3045849358974364,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 1.1333333333333335,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.3598365384615387,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 1.3598365384615387,
+      "meanTauUs": 1.2029371632926025,
+      "collectiveUs": 472.75430517399275,
+      "tpsPerUser": {
+        "bottomUp": 1075.0504227847857,
+        "specFloor": 1028.336025102022,
+        "optimistic": 1104.7796405629188,
+        "pessimistic": 641.8954636509031
+      },
+      "meetsTarget": {
+        "bottomUp": true,
+        "specFloor": true,
+        "optimistic": true,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "fullMesh",
+      "algorithm": "oneShot",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 1,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 0.6235238095238095,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.1064756753663005,
+          "withinSpecTau": true,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 0.6953333333333335,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 0.9218365384615388,
+          "withinSpecTau": true,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 1,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 0.32528571428571434,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 0.5384335508241759,
+          "withinSpecTau": true,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 0.6513333333333335,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 0.8665849358974361,
+          "withinSpecTau": true,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 0.6953333333333335,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 0.9218365384615388,
+          "withinSpecTau": true,
+          "withinBreakEvenTau": true
+        }
+      ],
+      "maxTauUs": 1.1064756753663005,
+      "meanTauUs": 0.8304246223983821,
+      "collectiveUs": 326.35687660256417,
+      "tpsPerUser": {
+        "bottomUp": 1104.7796405629188,
+        "specFloor": 1101.771070241925,
+        "optimistic": 1107.7833693777116,
+        "pessimistic": 851.85124154719
+      },
+      "meetsTarget": {
+        "bottomUp": true,
+        "specFloor": true,
+        "optimistic": true,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "fullMesh",
+      "algorithm": "halvingDoubling",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 5,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 6.774285714285714,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 7.257237580128204,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.19000000000000003,
+          "memoryTransportUs": 4.682476190476191,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.908979395604396,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 5,
+          "worstOneWayUs": 0.19000000000000003,
+          "memoryTransportUs": 2.049428571428572,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 2.2625764079670336,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.19000000000000003,
+          "memoryTransportUs": 4.185714285714286,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.400965888278389,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.19000000000000003,
+          "memoryTransportUs": 4.682476190476191,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.908979395604396,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 7.257237580128204,
+      "meanTauUs": 4.313946008560991,
+      "collectiveUs": 1695.3807813644692,
+      "tpsPerUser": {
+        "bottomUp": 400.79895441928045,
+        "specFloor": 400.79895441928045,
+        "optimistic": 606.131686849676,
+        "pessimistic": 233.737823632703
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "fullMesh",
+      "algorithm": "halvingDoubling",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 5,
+          "worstOneWayUs": 0.21500000000000002,
+          "memoryTransportUs": 5.754285714285714,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 6.237237580128204,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.19000000000000003,
+          "memoryTransportUs": 2.9924761904761907,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 3.2189793956043955,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 5,
+          "worstOneWayUs": 0.19000000000000003,
+          "memoryTransportUs": 1.2044285714285716,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 1.4175764079670332,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.19000000000000003,
+          "memoryTransportUs": 2.4957142857142856,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.710965888278388,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.19000000000000003,
+          "memoryTransportUs": 2.9924761904761907,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 3.2189793956043955,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 6.237237580128204,
+      "meanTauUs": 2.862673743929946,
+      "collectiveUs": 1125.0307813644688,
+      "tpsPerUser": {
+        "bottomUp": 547.133652213843,
+        "specFloor": 547.133652213843,
+        "optimistic": 721.3907144938493,
+        "pessimistic": 361.8754475904692
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "fullMesh",
+      "algorithm": "ring",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 31,
+          "worstOneWayUs": 0.16500000000000004,
+          "memoryTransportUs": 16.164285714285725,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 16.647237580128216,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11500000000000002,
+          "memoryTransportUs": 17.672952380952392,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 17.8994555860806,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 31,
+          "worstOneWayUs": 0.11500000000000002,
+          "memoryTransportUs": 8.52942857142857,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 8.74257640796703,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11500000000000002,
+          "memoryTransportUs": 17.153333333333343,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 17.368584935897445,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11500000000000002,
+          "memoryTransportUs": 17.672952380952392,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 17.8994555860806,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 17.8994555860806,
+      "meanTauUs": 15.555114068660357,
+      "collectiveUs": 6113.15982898352,
+      "tpsPerUser": {
+        "bottomUp": 130.48326608430108,
+        "specFloor": 130.48326608430108,
+        "optimistic": 278.4149090611147,
+        "pessimistic": 63.058735017056435
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "fullMesh",
+      "algorithm": "ring",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 31,
+          "worstOneWayUs": 0.16500000000000004,
+          "memoryTransportUs": 10.92528571428572,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 11.40823758012821,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11500000000000002,
+          "memoryTransportUs": 10.294952380952388,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 10.521455586080593,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 31,
+          "worstOneWayUs": 0.11500000000000002,
+          "memoryTransportUs": 4.840428571428572,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 5.053576407967034,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11500000000000002,
+          "memoryTransportUs": 9.775333333333323,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 9.990584935897425,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11500000000000002,
+          "memoryTransportUs": 10.294952380952388,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 10.521455586080593,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 11.40823758012821,
+      "meanTauUs": 9.171322720059841,
+      "collectiveUs": 3604.3298289835175,
+      "tpsPerUser": {
+        "bottomUp": 211.4841441929218,
+        "specFloor": 211.4841441929218,
+        "optimistic": 373.3203722050013,
+        "pessimistic": 112.74303377198935
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "singleSwitch",
+      "algorithm": "oneShot",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 1,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 1.2375238095238097,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.7204756753663004,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 1.9843809523809526,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.2108841575091573,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 1,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 0.9582857142857144,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 1.171433550824176,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 1.9173333333333336,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.132584935897436,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 1.9843809523809526,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.2108841575091573,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 2.2108841575091573,
+      "meanTauUs": 1.9192740104996786,
+      "collectiveUs": 754.2746861263737,
+      "tpsPerUser": {
+        "bottomUp": 722.68450906426,
+        "specFloor": 722.68450906426,
+        "optimistic": 1101.7921567815936,
+        "pessimistic": 415.456200846174
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": true,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "singleSwitch",
+      "algorithm": "oneShot",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 1,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 0.8335238095238096,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.3164756753663005,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 1.1763809523809527,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.402884157509158,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 1,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 0.5542857142857144,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 0.767433550824176,
+          "withinSpecTau": true,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 1.1093333333333337,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.3245849358974364,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 1.1763809523809527,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.402884157509158,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 1.402884157509158,
+      "meanTauUs": 1.2305208298381014,
+      "collectiveUs": 483.59468612637386,
+      "tpsPerUser": {
+        "bottomUp": 1060.5220742177873,
+        "specFloor": 1016.206846845186,
+        "optimistic": 1104.7796405629188,
+        "pessimistic": 618.1985357339593
+      },
+      "meetsTarget": {
+        "bottomUp": true,
+        "specFloor": true,
+        "optimistic": true,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "singleSwitch",
+      "algorithm": "halvingDoubling",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 5,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 4.562857142857143,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 5.045809008699633,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 8.615619047619049,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 8.842122252747254,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 5,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 4.234857142857143,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 4.448004979395605,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 8.491428571428573,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 8.706680173992675,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 8.615619047619049,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 8.842122252747254,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 8.842122252747254,
+      "meanTauUs": 7.549931468393779,
+      "collectiveUs": 2967.123067078755,
+      "tpsPerUser": {
+        "bottomUp": 251.06987381208506,
+        "specFloor": 251.06987381208506,
+        "optimistic": 501.0983165201754,
+        "pessimistic": 114.99496110899385
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "singleSwitch",
+      "algorithm": "halvingDoubling",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 5,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 2.542857142857143,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 3.025809008699634,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 4.575619047619048,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.802122252747253,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 5,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 2.214857142857143,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 2.4280049793956042,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 4.451428571428572,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.666680173992675,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 4.575619047619048,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.802122252747253,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 4.802122252747253,
+      "meanTauUs": 4.10616556508589,
+      "collectiveUs": 1613.7230670787549,
+      "tpsPerUser": {
+        "bottomUp": 416.75749146710183,
+        "specFloor": 416.75749146710183,
+        "optimistic": 723.6829024293465,
+        "pessimistic": 208.33115439948978
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "singleSwitch",
+      "algorithm": "ring",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 31,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 26.3175238095238,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 26.80047567536629,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 52.12723809523808,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 52.35374130036628,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 31,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 25.98685714285714,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 26.2000049793956,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 51.99733333333328,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 52.21258493589738,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 52.12723809523808,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 52.35374130036628,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 52.35374130036628,
+      "meanTauUs": 44.63768913227356,
+      "collectiveUs": 17542.611828983507,
+      "tpsPerUser": {
+        "bottomUp": 47.536929125522306,
+        "specFloor": 47.536929125522306,
+        "optimistic": 112.88926486002704,
+        "pessimistic": 20.080560375022294
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "singleSwitch",
+      "algorithm": "ring",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 31,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 13.79352380952382,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 14.276475675366312,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 27.079238095238072,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 27.30574130036628,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 31,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 13.46285714285714,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 13.676004979395602,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 26.949333333333378,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 27.16458493589748,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.4,
+          "memoryTransportUs": 27.079238095238072,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 27.30574130036628,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 27.30574130036628,
+      "meanTauUs": 23.286340531764672,
+      "collectiveUs": 9151.531828983516,
+      "tpsPerUser": {
+        "bottomUp": 89.1367825232892,
+        "specFloor": 89.1367825232892,
+        "optimistic": 195.4690426583479,
+        "pessimistic": 38.995001397319015
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "leafSpine",
+      "algorithm": "oneShot",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 1,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 2.4175238095238094,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.9004756753663004,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 4.344380952380953,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.570884157509158,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 1,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 2.1382857142857143,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 2.3514335508241757,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 4.277333333333334,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.492584935897437,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 4.344380952380953,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.570884157509158,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 4.570884157509158,
+      "meanTauUs": 3.9309788451052765,
+      "collectiveUs": 1544.8746861263737,
+      "tpsPerUser": {
+        "bottomUp": 431.2344198674707,
+        "specFloor": 431.2344198674707,
+        "optimistic": 749.0160509647756,
+        "pessimistic": 207.40843872128318
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "leafSpine",
+      "algorithm": "oneShot",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 1,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 1.4235238095238094,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.9064756753663004,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 2.3563809523809525,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.5828841575091572,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 1,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 1.1442857142857144,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 1.357433550824176,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 2.2893333333333334,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.504584935897436,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 2.3563809523809525,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.5828841575091572,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 2.5828841575091572,
+      "meanTauUs": 2.2363732471408992,
+      "collectiveUs": 878.8946861263735,
+      "tpsPerUser": {
+        "bottomUp": 653.7934416270334,
+        "specFloor": 653.7934416270334,
+        "optimistic": 1101.0911149504796,
+        "pessimistic": 352.73343754279296
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": true,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "leafSpine",
+      "algorithm": "halvingDoubling",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 5,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 6.9228571428571435,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 7.4058090086996335,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 13.335619047619048,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 13.562122252747253,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 5,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 6.594857142857142,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 6.808004979395604,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 13.211428571428572,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 13.426680173992674,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 13.335619047619048,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 13.562122252747253,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 13.562122252747253,
+      "meanTauUs": 11.573341137604972,
+      "collectiveUs": 4548.323067078754,
+      "tpsPerUser": {
+        "bottomUp": 171.43957403364232,
+        "specFloor": 171.43957403364232,
+        "optimistic": 363.879784238588,
+        "pessimistic": 73.93793405569564
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "leafSpine",
+      "algorithm": "halvingDoubling",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 5,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 3.7228571428571433,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.205809008699634,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 6.935619047619047,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 7.162122252747253,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 5,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 3.394857142857143,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 3.608004979395605,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 6.811428571428571,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 7.026680173992674,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 6.935619047619047,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 7.162122252747253,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 7.162122252747253,
+      "meanTauUs": 6.117870399691488,
+      "collectiveUs": 2404.323067078755,
+      "tpsPerUser": {
+        "bottomUp": 300.79901574989395,
+        "specFloor": 300.79901574989395,
+        "optimistic": 565.6677914531348,
+        "pessimistic": 138.6104704466927
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "leafSpine",
+      "algorithm": "ring",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 31,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 62.897523809523854,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 63.38047567536635,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 125.2872380952383,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 125.5137413003665,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 31,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 62.56685714285719,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 62.78000497939565,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 125.15733333333323,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 125.37258493589734,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 125.2872380952383,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 125.5137413003665,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 125.5137413003665,
+      "meanTauUs": 107.0005390050472,
+      "collectiveUs": 42051.21182898355,
+      "tpsPerUser": {
+        "bottomUp": 20.116134947194727,
+        "specFloor": 20.116134947194727,
+        "optimistic": 48.72660280284185,
+        "pessimistic": 8.022708819353747
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "leafSpine",
+      "algorithm": "ring",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 31,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 32.08352380952379,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 32.566475675366284,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 63.65923809523808,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 63.885741300366284,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 31,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 31.75285714285714,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 31.9660049793956,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 63.52933333333325,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 63.74458493589735,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.9900000000000001,
+          "memoryTransportUs": 63.65923809523808,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 63.885741300366284,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 63.885741300366284,
+      "meanTauUs": 54.46776546815142,
+      "collectiveUs": 21405.831828983508,
+      "tpsPerUser": {
+        "bottomUp": 39.12938034255937,
+        "specFloor": 39.12938034255937,
+        "optimistic": 91.33991959926092,
+        "pessimistic": 15.855977378340993
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "torus4x8",
+      "algorithm": "oneShot",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 1,
+          "worstOneWayUs": 0.9050000000000001,
+          "memoryTransportUs": 2.2972442396313366,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.7801961054738276,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.8800000000000001,
+          "memoryTransportUs": 3.773142857142858,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 3.999646062271063,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 1,
+          "worstOneWayUs": 0.8800000000000001,
+          "memoryTransportUs": 1.8662857142857145,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 2.0794335508241764,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.8800000000000001,
+          "memoryTransportUs": 3.7333333333333343,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 3.9485849358974368,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.8800000000000001,
+          "memoryTransportUs": 3.773142857142858,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 3.999646062271063,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 3.999646062271063,
+      "meanTauUs": 3.4637071980404754,
+      "collectiveUs": 1361.236928829907,
+      "tpsPerUser": {
+        "bottomUp": 475.2697696944554,
+        "specFloor": 475.2697696944554,
+        "optimistic": 839.6965846524399,
+        "pessimistic": 214.1023010379721
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "torus4x8",
+      "algorithm": "oneShot",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 1,
+          "worstOneWayUs": 0.9050000000000001,
+          "memoryTransportUs": 1.3882442396313366,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 1.8711961054738275,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.8800000000000001,
+          "memoryTransportUs": 2.0051428571428573,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.231646062271062,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 1,
+          "worstOneWayUs": 0.8800000000000001,
+          "memoryTransportUs": 0.9822857142857144,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 1.195433550824176,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": true
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.8800000000000001,
+          "memoryTransportUs": 1.9653333333333336,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.180584935897436,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 0.8800000000000001,
+          "memoryTransportUs": 2.0051428571428573,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 2.231646062271062,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 2.231646062271062,
+      "meanTauUs": 1.9551066891346223,
+      "collectiveUs": 768.3569288299066,
+      "tpsPerUser": {
+        "bottomUp": 714.1806798453548,
+        "specFloor": 714.1806798453548,
+        "optimistic": 1101.7921567815936,
+        "pessimistic": 365.26600503591504
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": true,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "torus4x8",
+      "algorithm": "halvingDoubling",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 5,
+          "worstOneWayUs": 0.65,
+          "memoryTransportUs": 4.298285714285715,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.781237580128205,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.65,
+          "memoryTransportUs": 7.125142857142858,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 7.3516460622710635,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 5,
+          "worstOneWayUs": 0.65,
+          "memoryTransportUs": 3.487142857142858,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 3.7002906936813194,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.65,
+          "memoryTransportUs": 6.996761904761906,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 7.2120135073260085,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.65,
+          "memoryTransportUs": 7.125142857142858,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 7.3516460622710635,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 7.3516460622710635,
+      "meanTauUs": 6.307216819175313,
+      "collectiveUs": 2478.736209935898,
+      "tpsPerUser": {
+        "bottomUp": 293.1225528659244,
+        "specFloor": 293.1225528659244,
+        "optimistic": 555.5820567259349,
+        "pessimistic": 134.05347610855577
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "torus4x8",
+      "algorithm": "halvingDoubling",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 5,
+          "worstOneWayUs": 0.65,
+          "memoryTransportUs": 2.6282857142857146,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 3.1112375801282055,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.65,
+          "memoryTransportUs": 3.835142857142858,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.061646062271063,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 5,
+          "worstOneWayUs": 0.65,
+          "memoryTransportUs": 1.8421428571428575,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 2.055290693681319,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.65,
+          "memoryTransportUs": 3.706761904761905,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 3.9220135073260076,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 0.65,
+          "memoryTransportUs": 3.835142857142858,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 4.061646062271063,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 4.061646062271063,
+      "meanTauUs": 3.5012371754094085,
+      "collectiveUs": 1375.9862099358975,
+      "tpsPerUser": {
+        "bottomUp": 471.40352151669697,
+        "specFloor": 471.40352151669697,
+        "optimistic": 777.5169728618572,
+        "pessimistic": 238.69523948159906
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "torus4x8",
+      "algorithm": "ring",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 31,
+          "worstOneWayUs": 0.19250000000000003,
+          "memoryTransportUs": 13.653285714285712,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 14.136237580128203,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.19250000000000003,
+          "memoryTransportUs": 26.397238095238073,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 26.62374130036628,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 31,
+          "worstOneWayUs": 0.19250000000000003,
+          "memoryTransportUs": 13.12185714285715,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 13.335004979395611,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.19250000000000003,
+          "memoryTransportUs": 26.2673333333333,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 26.482584935897403,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.19250000000000003,
+          "memoryTransportUs": 26.397238095238073,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 26.62374130036628,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 26.62374130036628,
+      "meanTauUs": 22.717252200248847,
+      "collectiveUs": 8927.880114697797,
+      "tpsPerUser": {
+        "bottomUp": 91.26551836117706,
+        "specFloor": 91.26551836117706,
+        "optimistic": 187.25732239107703,
+        "pessimistic": 43.80000916906205
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "torus4x8",
+      "algorithm": "ring",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 31,
+          "worstOneWayUs": 0.19250000000000003,
+          "memoryTransportUs": 7.561785714285715,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 8.044737580128206,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.19250000000000003,
+          "memoryTransportUs": 14.214238095238072,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 14.440741300366277,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 31,
+          "worstOneWayUs": 0.19250000000000003,
+          "memoryTransportUs": 7.030357142857146,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 7.243504979395608,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.19250000000000003,
+          "memoryTransportUs": 14.084333333333337,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 14.299584935897439,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.19250000000000003,
+          "memoryTransportUs": 14.214238095238072,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 14.440741300366277,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 14.440741300366277,
+      "meanTauUs": 12.33225220024885,
+      "collectiveUs": 4846.575114697798,
+      "tpsPerUser": {
+        "bottomUp": 161.76220226109064,
+        "specFloor": 161.76220226109064,
+        "optimistic": 297.6436954513804,
+        "pessimistic": 82.21689403611659
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "ring32",
+      "algorithm": "oneShot",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 1,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 5.527880184331798,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 6.0108320501742885,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 9.86272196620584,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 10.089225171334045,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 1,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 4.908506912442397,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 5.121654748980859,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 9.817849462365594,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 10.033101064929696,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 9.86272196620584,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 10.089225171334045,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 10.089225171334045,
+      "meanTauUs": 8.664132724632957,
+      "collectiveUs": 3405.004160780752,
+      "tpsPerUser": {
+        "bottomUp": 222.45575910618038,
+        "specFloor": 222.45575910618038,
+        "optimistic": 476.1203634330557,
+        "pessimistic": 87.03596602865346
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "ring32",
+      "algorithm": "oneShot",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 1,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 3.118880184331798,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 3.601832050174289,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 5.044721966205839,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 5.271225171334044,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 1,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 2.499506912442397,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 2.7126547489808583,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 4.999849462365593,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 5.215101064929696,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 2,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 5.044721966205839,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 5.271225171334044,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 5.271225171334044,
+      "meanTauUs": 4.557186159747461,
+      "collectiveUs": 1790.9741607807523,
+      "tpsPerUser": {
+        "bottomUp": 383.6031528592215,
+        "specFloor": 383.6031528592215,
+        "optimistic": 721.5970599739073,
+        "pessimistic": 162.6542973710798
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "ring32",
+      "algorithm": "halvingDoubling",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 5,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 10.484428571428573,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 10.967380437271064,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 19.27171428571429,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 19.498217490842496,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 5,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 9.550523809523812,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 9.763671646062273,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 19.126952380952385,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 19.342203983516487,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 19.27171428571429,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 19.498217490842496,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 19.498217490842496,
+      "meanTauUs": 16.66190311506772,
+      "collectiveUs": 6548.127924221613,
+      "tpsPerUser": {
+        "bottomUp": 122.358125247555,
+        "specFloor": 122.358125247555,
+        "optimistic": 282.3739913122907,
+        "pessimistic": 47.055018414789814
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "ring32",
+      "algorithm": "halvingDoubling",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 5,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 5.711928571428572,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 6.194880437271062,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 9.926714285714286,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 10.153217490842492,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 5,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 4.87802380952381,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 5.091171646062272,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 9.781952380952383,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 9.997203983516485,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 10,
+          "worstOneWayUs": 2.4050000000000007,
+          "memoryTransportUs": 9.926714285714286,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 10.153217490842492,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 10.153217490842492,
+      "meanTauUs": 8.68995655018222,
+      "collectiveUs": 3415.1529242216125,
+      "tpsPerUser": {
+        "bottomUp": 221.8697010462182,
+        "specFloor": 221.8697010462182,
+        "optimistic": 459.2018455820683,
+        "pessimistic": 90.1658140536846
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "ring32",
+      "algorithm": "ring",
+      "ackDrain": "phase",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 31,
+          "worstOneWayUs": 0.11750000000000002,
+          "memoryTransportUs": 8.802523809523812,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 9.285475675366303,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11750000000000002,
+          "memoryTransportUs": 17.097238095238122,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 17.32374130036633,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 31,
+          "worstOneWayUs": 0.11750000000000002,
+          "memoryTransportUs": 8.47185714285715,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 8.685004979395611,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11750000000000002,
+          "memoryTransportUs": 16.967333333333336,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 17.182584935897438,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11750000000000002,
+          "memoryTransportUs": 17.097238095238122,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 17.32374130036633,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 17.32374130036633,
+      "meanTauUs": 14.77751101522525,
+      "collectiveUs": 5807.561828983523,
+      "tpsPerUser": {
+        "bottomUp": 136.8687758158523,
+        "specFloor": 136.8687758158523,
+        "optimistic": 317.70977363426596,
+        "pessimistic": 64.37020363038148
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    },
+    {
+      "topology": "ring32",
+      "algorithm": "ring",
+      "ackDrain": "deferred",
+      "classes": [
+        {
+          "name": "LSE merge / output reduce-scatter",
+          "count": 24,
+          "kind": "LSE reduce-scatter",
+          "activeNICs": 3,
+          "steps": 31,
+          "worstOneWayUs": 0.11750000000000002,
+          "memoryTransportUs": 5.036023809523807,
+          "tpReduceUs": 0.03338095238095238,
+          "cardLocalUs": 0.4075709134615385,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 5.518975675366297,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Attention output all-reduce",
+          "count": 93,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11750000000000002,
+          "memoryTransportUs": 9.56423809523809,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 9.790741300366296,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wdown + Router all-gather",
+          "count": 92,
+          "kind": "all-gather",
+          "activeNICs": 1,
+          "steps": 31,
+          "worstOneWayUs": 0.11750000000000002,
+          "memoryTransportUs": 4.705357142857146,
+          "tpReduceUs": 0,
+          "cardLocalUs": 0.17314783653846155,
+          "portTailUs": 0,
+          "controlPathUs": 0.04,
+          "tauUs": 4.918504979395608,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Routed latent merge",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11750000000000002,
+          "memoryTransportUs": 9.434333333333338,
+          "tpReduceUs": 0.0023333333333333335,
+          "cardLocalUs": 0.17091826923076928,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 9.64958493589744,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        },
+        {
+          "name": "Wup + Shared output all-reduce",
+          "count": 92,
+          "kind": "FP32 reduce-scatter + BF16 all-gather",
+          "activeNICs": 1,
+          "steps": 62,
+          "worstOneWayUs": 0.11750000000000002,
+          "memoryTransportUs": 9.56423809523809,
+          "tpReduceUs": 0.004666666666666667,
+          "cardLocalUs": 0.17983653846153852,
+          "portTailUs": 0,
+          "controlPathUs": 0.042,
+          "tauUs": 9.790741300366296,
+          "withinSpecTau": false,
+          "withinBreakEvenTau": false
+        }
+      ],
+      "maxTauUs": 9.790741300366296,
+      "meanTauUs": 8.3562514732405,
+      "collectiveUs": 3284.0068289835162,
+      "tpsPerUser": {
+        "bottomUp": 229.68921628281421,
+        "specFloor": 229.68921628281421,
+        "optimistic": 442.3714202872344,
+        "pessimistic": 117.47874695933109
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      }
+    }
+  ],
+  "conditions": [
+    {
+      "topology": "fullMesh",
+      "ackDrain": "phase",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 1075.0504227847857,
+        "specFloor": 1028.336025102022,
+        "optimistic": 1104.7796405629188,
+        "pessimistic": 641.8954636509031
+      },
+      "meetsTarget": {
+        "bottomUp": true,
+        "specFloor": true,
+        "optimistic": true,
+        "pessimistic": false
+      },
+      "maxTauUs": 1.3598365384615387,
+      "mustHold": [
+        {
+          "param": "ucieHopUs",
+          "atMost": 0.03273094654083253,
+          "nominal": 0.025
+        },
+        {
+          "param": "fecUs",
+          "atMost": 0.09452796936035157,
+          "nominal": 0.05
+        },
+        {
+          "param": "macUs",
+          "atMost": 0.08452804565429689,
+          "nominal": 0.04
+        }
+      ],
+      "failsAcrossRange": [],
+      "tornado": [
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 1101.7921567815936
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 784.4834641769587
+          },
+          "swing": 317.30869260463487,
+          "verdict": "straddles",
+          "breakEven": 0.03273094654083253
+        },
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 1101.7921567815936
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 864.5244577284968
+          },
+          "swing": 237.26769905309675,
+          "verdict": "straddles",
+          "breakEven": 0.09452796936035157
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 1101.7921567815936
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 976.3175361085697
+          },
+          "swing": 125.47462067302388,
+          "verdict": "straddles",
+          "breakEven": 0.08452804565429689
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 1092.8714627008073
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 1023.3079593696492
+          },
+          "swing": 69.56350333115813,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 1075.0504227847857
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 1053.423678476691
+          },
+          "swing": 21.626744308094658,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 1,
+          "low": {
+            "value": 0.5,
+            "tpsPerUser": 1079.4962753905236
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 1064.935714381229
+          },
+          "swing": 14.560561009294588,
+          "verdict": "passes across range"
+        }
+      ]
+    },
+    {
+      "topology": "fullMesh",
+      "ackDrain": "deferred",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 1104.7796405629188,
+        "specFloor": 1101.771070241925,
+        "optimistic": 1107.7833693777116,
+        "pessimistic": 851.85124154719
+      },
+      "meetsTarget": {
+        "bottomUp": true,
+        "specFloor": true,
+        "optimistic": true,
+        "pessimistic": false
+      },
+      "maxTauUs": 1.1064756753663005,
+      "mustHold": [],
+      "failsAcrossRange": [],
+      "tornado": [
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 1104.7796405629188
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 1101.771070241925
+          },
+          "swing": 3.00857032099384,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 1104.7796405629188
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 1101.7921567815936
+          },
+          "swing": 2.9874837813251816,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 1104.7796405629188
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 1101.7921567815936
+          },
+          "swing": 2.9874837813251816,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 1104.7796405629188
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 1104.7796405629188
+          },
+          "swing": 0,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 1104.7796405629188
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 1104.7796405629188
+          },
+          "swing": 0,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 1,
+          "low": {
+            "value": 0.5,
+            "tpsPerUser": 1104.7796405629188
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 1104.7796405629188
+          },
+          "swing": 0,
+          "verdict": "passes across range"
+        }
+      ]
+    },
+    {
+      "topology": "singleSwitch",
+      "ackDrain": "phase",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 722.68450906426,
+        "specFloor": 722.68450906426,
+        "optimistic": 1101.7921567815936,
+        "pessimistic": 415.456200846174
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": true,
+        "pessimistic": false
+      },
+      "maxTauUs": 2.2108841575091573,
+      "mustHold": [],
+      "failsAcrossRange": [
+        "switchUs",
+        "fecUs",
+        "macUs",
+        "phyUs",
+        "ucieHopUs",
+        "cableM",
+        "controlScale"
+      ],
+      "tornado": [
+        {
+          "param": "switchUs",
+          "nominal": 0.2,
+          "low": {
+            "value": 0.1,
+            "tpsPerUser": 818.6176751117683
+          },
+          "high": {
+            "value": 0.5,
+            "tpsPerUser": 536.4051878243697
+          },
+          "swing": 282.21248728739863,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 818.6176751117683
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 623.7440625532739
+          },
+          "swing": 194.87361255849441,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 742.3929919055173
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 676.6826188169498
+          },
+          "swing": 65.71037308856751,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 742.3929919055173
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 676.6826188169498
+          },
+          "swing": 65.71037308856751,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 740.3223906093103
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 688.3728174959493
+          },
+          "swing": 51.949573113361,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 2,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 730.9665410590762
+          },
+          "high": {
+            "value": 5,
+            "tpsPerUser": 698.9274457411142
+          },
+          "swing": 32.03909531796205,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 722.68450906426
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 712.846571857136
+          },
+          "swing": 9.837937207124014,
+          "verdict": "fails across range"
+        }
+      ]
+    },
+    {
+      "topology": "singleSwitch",
+      "ackDrain": "deferred",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 1060.5220742177873,
+        "specFloor": 1016.206846845186,
+        "optimistic": 1104.7796405629188,
+        "pessimistic": 618.1985357339593
+      },
+      "meetsTarget": {
+        "bottomUp": true,
+        "specFloor": true,
+        "optimistic": true,
+        "pessimistic": false
+      },
+      "maxTauUs": 1.402884157509158,
+      "mustHold": [
+        {
+          "param": "switchUs",
+          "atMost": 0.27287635803222665,
+          "nominal": 0.2
+        },
+        {
+          "param": "fecUs",
+          "atMost": 0.08643814086914062,
+          "nominal": 0.05
+        },
+        {
+          "param": "ucieHopUs",
+          "atMost": 0.045707011222839364,
+          "nominal": 0.025
+        }
+      ],
+      "failsAcrossRange": [],
+      "tornado": [
+        {
+          "param": "switchUs",
+          "nominal": 0.2,
+          "low": {
+            "value": 0.1,
+            "tpsPerUser": 1101.7921567815936
+          },
+          "high": {
+            "value": 0.5,
+            "tpsPerUser": 771.1135473744145
+          },
+          "swing": 330.6786094071791,
+          "verdict": "straddles",
+          "breakEven": 0.27287635803222665
+        },
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 1101.7921567815936
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 853.5185352526095
+          },
+          "swing": 248.2736215289841,
+          "verdict": "straddles",
+          "breakEven": 0.08643814086914062
+        },
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 1091.9999079246413
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 988.294957283081
+          },
+          "swing": 103.70495064156034,
+          "verdict": "straddles",
+          "breakEven": 0.045707011222839364
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 1078.4689791198855
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 1010.1967508141729
+          },
+          "swing": 68.27222830571259,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 1078.4689791198855
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 1010.1967508141729
+          },
+          "swing": 68.27222830571259,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 2,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 1068.1182546222894
+          },
+          "high": {
+            "value": 5,
+            "tpsPerUser": 1034.7434178294425
+          },
+          "swing": 33.37483679284696,
+          "verdict": "passes across range"
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 1060.5220742177873
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 1039.5190532822762
+          },
+          "swing": 21.00302093551113,
+          "verdict": "passes across range"
+        }
+      ]
+    },
+    {
+      "topology": "leafSpine",
+      "ackDrain": "phase",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 431.2344198674707,
+        "specFloor": 431.2344198674707,
+        "optimistic": 749.0160509647756,
+        "pessimistic": 207.40843872128318
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      },
+      "maxTauUs": 4.570884157509158,
+      "mustHold": [],
+      "failsAcrossRange": [
+        "switchUs",
+        "fecUs",
+        "spineCableM",
+        "phyUs",
+        "macUs",
+        "ucieHopUs",
+        "cableM",
+        "controlScale"
+      ],
+      "tornado": [
+        {
+          "param": "switchUs",
+          "nominal": 0.2,
+          "low": {
+            "value": 0.1,
+            "tpsPerUser": 540.9544855076635
+          },
+          "high": {
+            "value": 0.5,
+            "tpsPerUser": 268.1005141547447
+          },
+          "swing": 272.85397135291885,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 498.66249805762305
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 362.59362908123455
+          },
+          "swing": 136.0688689763885,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "spineCableM",
+          "nominal": 5,
+          "low": {
+            "value": 2,
+            "tpsPerUser": 440.16208648552185
+          },
+          "high": {
+            "value": 20,
+            "tpsPerUser": 391.5282131548808
+          },
+          "swing": 48.63387333064105,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 443.2206909511638
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 398.87352413745316
+          },
+          "swing": 44.34716681371066,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 437.1454067131095
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 414.4231940536339
+          },
+          "swing": 22.722212659475588,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 436.42665495449114
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 418.7787322807873
+          },
+          "swing": 17.647922673703818,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 2,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 434.16979550057215
+          },
+          "high": {
+            "value": 5,
+            "tpsPerUser": 422.6617078245023
+          },
+          "swing": 11.508087676069863,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 431.2344198674707
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 427.71213702569116
+          },
+          "swing": 3.5222828417795427,
+          "verdict": "fails across range"
+        }
+      ]
+    },
+    {
+      "topology": "leafSpine",
+      "ackDrain": "deferred",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 653.7934416270334,
+        "specFloor": 653.7934416270334,
+        "optimistic": 1101.0911149504796,
+        "pessimistic": 352.73343754279296
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": true,
+        "pessimistic": false
+      },
+      "maxTauUs": 2.5828841575091572,
+      "mustHold": [],
+      "failsAcrossRange": [
+        "switchUs",
+        "fecUs",
+        "spineCableM",
+        "phyUs",
+        "ucieHopUs",
+        "macUs",
+        "cableM",
+        "controlScale"
+      ],
+      "tornado": [
+        {
+          "param": "switchUs",
+          "nominal": 0.2,
+          "low": {
+            "value": 0.1,
+            "tpsPerUser": 775.8030901618229
+          },
+          "high": {
+            "value": 0.5,
+            "tpsPerUser": 445.3871295738794
+          },
+          "swing": 330.41596058794346,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 728.4620680508924
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 568.5835568235821
+          },
+          "swing": 159.87851122731036,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "spineCableM",
+          "nominal": 5,
+          "low": {
+            "value": 2,
+            "tpsPerUser": 664.0026553370527
+          },
+          "high": {
+            "value": 20,
+            "tpsPerUser": 607.1202797514903
+          },
+          "swing": 56.882375585562386,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 667.4769508376066
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 615.9140840064596
+          },
+          "swing": 51.56286683114706,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 665.8026883333015
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 625.5839146236458
+          },
+          "swing": 40.21877370965569,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 660.5643407793464
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 634.2887327981106
+          },
+          "swing": 26.275607981235794,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 2,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 657.1614510982419
+          },
+          "high": {
+            "value": 5,
+            "tpsPerUser": 643.8934127574593
+          },
+          "swing": 13.268038340782596,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 653.7934416270334
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 645.7312778143951
+          },
+          "swing": 8.062163812638346,
+          "verdict": "fails across range"
+        }
+      ]
+    },
+    {
+      "topology": "torus4x8",
+      "ackDrain": "phase",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 475.2697696944554,
+        "specFloor": 475.2697696944554,
+        "optimistic": 839.6965846524399,
+        "pessimistic": 214.1023010379721
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      },
+      "maxTauUs": 3.999646062271063,
+      "mustHold": [],
+      "failsAcrossRange": [
+        "fecUs",
+        "relayUs",
+        "ucieHopUs",
+        "phyUs",
+        "macUs",
+        "cableM",
+        "controlScale"
+      ],
+      "tornado": [
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 615.8497953234405
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 361.98516089966313
+          },
+          "swing": 253.86463442377737,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "relayUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0.03,
+            "tpsPerUser": 513.5346732685957
+          },
+          "high": {
+            "value": 0.2,
+            "tpsPerUser": 304.8856540592776
+          },
+          "swing": 208.6490192093181,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 500.6187694523839
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 415.2983665790752
+          },
+          "swing": 85.3204028733087,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 497.5123929086815
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 419.06367923598094
+          },
+          "swing": 78.44871367270053,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 482.4596530908093
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 454.9308675492107
+          },
+          "swing": 27.52878554159861,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 1.5,
+          "low": {
+            "value": 0.5,
+            "tpsPerUser": 486.1367929796435
+          },
+          "high": {
+            "value": 3,
+            "tpsPerUser": 459.8506297326819
+          },
+          "swing": 26.286163246961564,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 475.2697696944554
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 470.9949707232648
+          },
+          "swing": 4.274798971190592,
+          "verdict": "fails across range"
+        }
+      ]
+    },
+    {
+      "topology": "torus4x8",
+      "ackDrain": "deferred",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 714.1806798453548,
+        "specFloor": 714.1806798453548,
+        "optimistic": 1101.7921567815936,
+        "pessimistic": 365.26600503591504
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": true,
+        "pessimistic": false
+      },
+      "maxTauUs": 2.231646062271062,
+      "mustHold": [],
+      "failsAcrossRange": [
+        "fecUs",
+        "relayUs",
+        "ucieHopUs",
+        "phyUs",
+        "macUs",
+        "cableM",
+        "controlScale"
+      ],
+      "tornado": [
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 861.7013996723055
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 578.2205489774118
+          },
+          "swing": 283.48085069489366,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "relayUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0.03,
+            "tpsPerUser": 759.3378459267782
+          },
+          "high": {
+            "value": 0.2,
+            "tpsPerUser": 500.419456239706
+          },
+          "swing": 258.9183896870722,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 753.146288619735
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 629.3308954823888
+          },
+          "swing": 123.81539313734618,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 741.8331246448191
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 648.799634025314
+          },
+          "swing": 93.03349061950507,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 722.2678586711247
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 690.97044763204
+          },
+          "swing": 31.29741103908475,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 1.5,
+          "low": {
+            "value": 0.5,
+            "tpsPerUser": 726.3393881132057
+          },
+          "high": {
+            "value": 3,
+            "tpsPerUser": 696.6304137040797
+          },
+          "swing": 29.70897440912597,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 714.1806798453548
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 704.5713672202721
+          },
+          "swing": 9.60931262508268,
+          "verdict": "fails across range"
+        }
+      ]
+    },
+    {
+      "topology": "ring32",
+      "ackDrain": "phase",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 222.45575910618038,
+        "specFloor": 222.45575910618038,
+        "optimistic": 476.1203634330557,
+        "pessimistic": 87.03596602865346
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      },
+      "maxTauUs": 10.089225171334045,
+      "mustHold": [],
+      "failsAcrossRange": [
+        "fecUs",
+        "relayUs",
+        "phyUs",
+        "ucieHopUs",
+        "cableM",
+        "macUs",
+        "controlScale"
+      ],
+      "tornado": [
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 308.5433325965617
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 159.9689828385882
+          },
+          "swing": 148.5743497579735,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "relayUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0.03,
+            "tpsPerUser": 248.45116520075567
+          },
+          "high": {
+            "value": 0.2,
+            "tpsPerUser": 124.64436092657013
+          },
+          "swing": 123.80680427418554,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 235.60301577471415
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 190.55532201119541
+          },
+          "swing": 45.04769376351874,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 236.26601916459148
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 194.09288615878563
+          },
+          "swing": 42.17313300580585,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 1.5,
+          "low": {
+            "value": 0.5,
+            "tpsPerUser": 228.8407103891739
+          },
+          "high": {
+            "value": 3,
+            "tpsPerUser": 213.51955231932396
+          },
+          "swing": 15.321158069849929,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 224.01835947271564
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 217.8960727840349
+          },
+          "swing": 6.122286688680731,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 222.45575910618038
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 221.5147247287025
+          },
+          "swing": 0.9410343774778767,
+          "verdict": "fails across range"
+        }
+      ]
+    },
+    {
+      "topology": "ring32",
+      "ackDrain": "deferred",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 383.6031528592215,
+        "specFloor": 383.6031528592215,
+        "optimistic": 721.5970599739073,
+        "pessimistic": 162.6542973710798
+      },
+      "meetsTarget": {
+        "bottomUp": false,
+        "specFloor": false,
+        "optimistic": false,
+        "pessimistic": false
+      },
+      "maxTauUs": 5.271225171334044,
+      "mustHold": [],
+      "failsAcrossRange": [
+        "fecUs",
+        "relayUs",
+        "ucieHopUs",
+        "phyUs",
+        "cableM",
+        "macUs",
+        "controlScale"
+      ],
+      "tornado": [
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 505.1166440054367
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 286.9581473891228
+          },
+          "swing": 218.15849661631387,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "relayUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0.03,
+            "tpsPerUser": 421.64013290481415
+          },
+          "high": {
+            "value": 0.2,
+            "tpsPerUser": 228.79966642133334
+          },
+          "swing": 192.8404664834808,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 406.2254632673422
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 336.72360772644515
+          },
+          "swing": 69.50185554089705,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 402.99234018546247
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 335.21806980135256
+          },
+          "swing": 67.77427038410991,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 1.5,
+          "low": {
+            "value": 0.5,
+            "tpsPerUser": 393.05877961463835
+          },
+          "high": {
+            "value": 3,
+            "tpsPerUser": 370.2430146180864
+          },
+          "swing": 22.815764996551934,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 385.9241509622134
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 376.8046953316253
+          },
+          "swing": 9.119455630588106,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 383.6031528592215
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 380.81347719945194
+          },
+          "swing": 2.789675659769557,
+          "verdict": "fails across range"
+        }
+      ]
+    }
+  ]
+}

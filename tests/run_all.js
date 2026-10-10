@@ -42,7 +42,8 @@ const SLOW_FIRST = [
   'regression/test_budget_frontier.js',
   'regression/test_tps_design_baseline.js',
   'regression/test_sram_design.js',
-  'regression/test_memory_design.js'
+  'regression/test_memory_design.js',
+  'regression/test_tau_derivation.js'
 ];
 const dispatchOrder = [
   ...SLOW_FIRST.filter(name => tests.includes(name)),

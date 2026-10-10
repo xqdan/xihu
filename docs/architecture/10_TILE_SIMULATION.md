@@ -38,7 +38,11 @@
   （[`cost_provider.js`](../../integration/detailed/cost_provider.js)，实测表
   [`teams/vv/inputs/operator_cost_observations.json`](../../teams/vv/inputs/operator_cost_observations.json) 目前为空），
   每个算子带 `costSource` / `costEvidence`。`npm run cost:coverage` → `out/detailed/cost_coverage.json`：
-  raw 按证据来源分解，以及按本文 §8 和 24 号文档顺序排列的待测 shape 队列。
+  raw 按证据来源分解，以及按本文 §8 和 24 号文档顺序排列的待测 shape 队列；
+- 链路级 τ 推导（2026-10-10，HW-CH-01）：[`collective_topology.js`](../../integration/detailed/collective_topology.js)
+  把集合通信协议模型里固定的单程时延换成各 scale-out 拓扑候选的路径（链路、交换、中继、卡内 Die 跳），
+  按 one-shot / halving-doubling / ring 和两种 ACK 语义自底向上算出每类集合通信的 τ，并回放发布点。
+  `npm run tau:derivation` → `out/detailed/tau_derivation.json`，候选与延迟均为 `ASSUMPTION`，不改 `OPT.tauUs`。
 
 这是良好起点，但还不是签核级模型。
 
