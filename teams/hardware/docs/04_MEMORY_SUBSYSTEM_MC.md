@@ -104,8 +104,8 @@ B=1 的 TPS/usr 目标不依赖这一点，但它决定吞吐型部署的上限�
 | 模型 | 权重（dense + routed） | KV / state | index key | 集合通信 | 合计（全局） | 每 rank |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | K3 | 111.16 + 25.83 GB | 16.51 + 0.43 GB | — | 0.57 GB | 154.50 GB | 4.83 GB |
-| GLM-5.2 | 18.72 + 22.65 GB | 0.10 GB | 2.91 GB | 0.20 GB | 44.58 GB | 1.39 GB |
-| DeepSeek-V4-Pro | 20.42 + 15.27 GB | 0.08 GB | 8.44 GB | 0.22 GB | 44.43 GB | 1.39 GB |
+| GLM-5.2 | 18.72 + 22.65 GB | 0.10 GB | 2.91 GB | 0.26 GB | 44.64 GB | 1.40 GB |
+| DeepSeek-V4-Pro | 20.42 + 15.27 GB | 0.08 GB | 8.44 GB | 0.28 GB | 44.49 GB | 1.39 GB |
 
 来源：`out/workload/planning_operator_workload.json#operators`（全局 byte/token，TP 前；规划口径）。
 K3 的详细模型每 rank 读 4.97 GB（含预测错取 0.16 GB），DMA busy 775.30 µs。
@@ -115,7 +115,7 @@ xychart-beta
   title "每 rank 每 token 读取字节（GB，TP32）"
   x-axis ["K3", "GLM-5.2", "DeepSeek-V4-Pro"]
   y-axis "GB" 0 --> 5
-  bar [4.83, 1.39, 1.39]
+  bar [4.83, 1.40, 1.39]
 ```
 
 K3 的 BF16 dense 权重（111 GB 全局）是最大的一项；换成 FP8 dense 后降到 57.3 GB（`comparisons.K3-FP8-dense`，不是 K3 的记录配置）。

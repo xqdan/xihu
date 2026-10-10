@@ -1,7 +1,7 @@
 # Stage A blocker resolution run
 
 Run ID: `stage-a-20261002-token-time`
-Manifest hash: `d888e569c08aa6bfa421e630cb08b9b972cb767980a4b585b8e7cd2e24dea9a0`
+Manifest hash: `a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083`
 Source commit: `f9e05202394a7038cd52f692d45aaba4b62bb300`
 
 ## Planning token time (integration/planning/token_time.js)
@@ -51,22 +51,22 @@ Source commit: `f9e05202394a7038cd52f692d45aaba4b62bb300`
 | Candidate | Model | dtype | memory lane us | FLOP / fixed / TMA us | collective us | bound | TPS/usr | tau 1.15 / 1.5 / 2.0 | shape range |
 |---|---|---|---:|---:|---:|---|---:|---|---|
 | P1-compact-MC320-TP8 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 6202.4 | 983.2 / 27.8 / 111.5 | 451.9 | memory | 137.80 | 137.8 / 137.8 / 137.8 | - |
-| P1-compact-MC320-TP8 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 1906.7 | 116.4 / 23.3 / 32.1 | 382.9 | memory | 448.26 | 448.3 / 448.3 / 448.3 | - |
+| P1-compact-MC320-TP8 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 1906.9 | 116.6 / 23.3 / 32.1 | 382.9 | memory | 448.22 | 448.2 / 448.2 / 448.2 | - |
 | P1-compact-MC320-TP8 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 1842.6 | 259.7 / 18.2 / 32.0 | 350.8 | memory | 463.85 | 463.8 / 463.8 / 463.8 | 463.8 - 498.2 |
 | P1-compact-MC320-TP16 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 3101.2 | 491.6 / 27.8 / 55.7 | 451.9 | memory | 275.60 | 275.6 / 275.6 / 275.6 | - |
-| P1-compact-MC320-TP16 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 953.3 | 58.2 / 23.3 / 16.1 | 382.9 | memory | 896.53 | 896.5 / 896.5 / 896.5 | - |
+| P1-compact-MC320-TP16 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 953.4 | 58.3 / 23.3 / 16.1 | 382.9 | memory | 896.45 | 896.4 / 896.4 / 896.4 | - |
 | P1-compact-MC320-TP16 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 921.3 | 129.8 / 18.2 / 16.0 | 350.8 | memory | 927.69 | 927.7 / 927.7 / 927.7 | 927.7 - 996.3 |
 | P1-compact-MC320-TP32 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 1550.6 | 245.8 / 27.8 / 27.9 | 451.9 | memory | 551.21 | 551.2 / 551.2 / 551.2 | - |
-| P1-compact-MC320-TP32 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 476.7 | 29.1 / 23.3 / 8.0 | 382.9 | memory | 1793.05 | 1793.1 / 1526.5 / 1176.6 | - |
+| P1-compact-MC320-TP32 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 476.7 | 29.1 / 23.3 / 8.0 | 382.9 | memory | 1792.90 | 1792.9 / 1526.3 / 1176.5 | - |
 | P1-compact-MC320-TP32 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 460.7 | 64.9 / 18.2 / 8.0 | 350.8 | memory | 1855.38 | 1855.4 / 1557.9 / 1219.0 | 1855.4 - 1947.7 |
 | P1-compact-MC640-TP8 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 3101.2 | 983.2 / 27.8 / 111.5 | 451.9 | memory | 275.60 | 275.6 / 275.6 / 275.6 | - |
-| P1-compact-MC640-TP8 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 953.3 | 116.4 / 23.3 / 32.1 | 382.9 | memory | 896.53 | 896.5 / 896.5 / 896.5 | - |
+| P1-compact-MC640-TP8 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 953.4 | 116.6 / 23.3 / 32.1 | 382.9 | memory | 896.45 | 896.4 / 896.4 / 896.4 | - |
 | P1-compact-MC640-TP8 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 921.3 | 259.7 / 18.2 / 32.0 | 350.8 | memory | 927.69 | 927.7 / 927.7 / 927.7 | 927.7 - 996.3 |
 | P1-compact-MC640-TP16 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 1550.6 | 491.6 / 27.8 / 55.7 | 451.9 | memory | 551.21 | 551.2 / 551.2 / 551.2 | - |
-| P1-compact-MC640-TP16 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 476.7 | 58.2 / 23.3 / 16.1 | 382.9 | collective | 1778.76 | 1778.8 / 1431.5 / 1119.4 | - |
+| P1-compact-MC640-TP16 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 476.7 | 58.3 / 23.3 / 16.1 | 382.9 | collective | 1778.38 | 1778.4 / 1431.3 / 1119.2 | - |
 | P1-compact-MC640-TP16 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 460.7 | 129.8 / 18.2 / 16.0 | 350.8 | collective | 1660.23 | 1660.2 / 1375.1 / 1104.2 | 1660.2 - 1680.2 |
 | P1-compact-MC640-TP32 | K3 | dense BF16, router/LM head BF16, routed MXFP4 | 775.3 | 245.8 / 27.8 / 27.9 | 451.9 | memory | 1102.41 | 1102.4 / 959.3 / 786.0 | - |
-| P1-compact-MC640-TP32 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 238.3 | 29.1 / 23.3 / 8.0 | 382.9 | collective | 1927.72 | 1927.7 / 1526.5 / 1176.6 | - |
+| P1-compact-MC640-TP32 | GLM-5.2 | dense FP8, router/LM head BF16, routed FP8 | 238.4 | 29.1 / 23.3 / 8.0 | 382.9 | collective | 1927.49 | 1927.5 / 1526.3 / 1176.5 | - |
 | P1-compact-MC640-TP32 | DeepSeek-V4-Pro | dense FP8, router/LM head BF16, routed FP4 | 230.3 | 64.9 / 18.2 / 8.0 | 350.8 | collective | 1934.20 | 1934.2 / 1557.9 / 1219.0 | 1934.2 - 1947.7 |
 
 - tau columns: the point estimate uses tau 1.15 us and alone decides selection; 1.5 and 2.0 us are risk columns until B-008 derives tau physically.

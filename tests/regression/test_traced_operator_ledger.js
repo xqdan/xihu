@@ -3,7 +3,8 @@
 // 1. A synthetic GLM-5.2 ledger shaped like the tracer's output (built here from the manifest config and the reference
 //    modeling code's shapes) reconciles: no MISMATCH, and the known differences get their status and exact size.
 // 2. Perturbations of the ledger (a shape, a layer, the indexer layers, the expert count, the cache width, an
-//    unmatched not-convert entry, a stray FLOP) are each reported as MISMATCH; provenance gaps are reported.
+//    unmatched not-convert entry, a stray FLOP, a missing indexer head weighting) are each reported as MISMATCH;
+//    provenance gaps are reported.
 // 3. The tracer and the reconciler agree on the output path; the tracer header names its dependencies.
 // 4. If the committed ledger exists: provenance complete, produced by the current tracer (else stale), no MISMATCH.
 //    The tracer needs torch and transformers, which the test path does not install, so the ledger may be absent.
@@ -111,18 +112,14 @@ assert.deepStrictEqual(TL.mismatches(report), [], JSON.stringify(TL.mismatches(r
 for (const id of ['structure.layers', 'structure.fullIndexerLayers', 'structure.denseLayers', 'structure.indexerTopK',
   'structure.selectedExperts', 'structure.unmatchedNotConvert', 'params.attention', 'params.indexer', 'params.denseFfn',
   'params.sharedExperts', 'params.routedExperts', 'params.router', 'params.embedding', 'params.lmHead', 'params.total',
-  'dense_projection.flops', 'routed_moe.flops', 'routed_moe.bytes', 'indexer.keyElements']) {
+  'dense_projection.flops', 'dense_projection.bytes', 'routed_moe.flops', 'routed_moe.bytes', 'indexer.flops', 'indexer.keyElements']) {
   assert.strictEqual(check(id).status, 'MATCH', `${id}: ${JSON.stringify(check(id))}`);
 }
 const fullLayers = c.fullIndexerLayers.length;
-// The FP8 checkpoint keeps the indexer head-weight projection in BF16; the plan prices it at FP8.
-assert.strictEqual(check('dense_projection.bytes').status, 'STORAGE_DIFFERENCE');
-assert.strictEqual(check('dense_projection.bytes').delta, fullLayers * H * idx.heads);
-assert.deepStrictEqual(report.storageDifferences.map(s => [s.name, s.storage, s.planned, s.numel]),
-  [['self_attn.indexer.weights_proj.weight', 'bf16', 'fp8', fullLayers * H * idx.heads]]);
-// The indexer's per-head weighting of the scores is traced work the planning row leaves out.
-assert.strictEqual(check('indexer.flops').status, 'NOT_IN_PLAN');
-assert.strictEqual(check('indexer.flops').delta, fullLayers * 2 * idx.heads * T);
+// The plan prices the indexer head-weight projection at BF16 as the FP8 checkpoint stores it, and counts the
+// per-head weighting of the indexer scores.
+assert.deepStrictEqual(report.storageDifferences, []);
+assert.strictEqual(TL.plannedStorage('self_attn.indexer.weights_proj.weight', 'indexer'), 'bf16');
 assert.strictEqual(check('reference.kv_b_proj').status, 'REFERENCE_FORM');
 assert.strictEqual(check('reference.kv_b_proj').traced, check('reference.kv_b_proj').planned * T);
 assert.strictEqual(check('sparse_attention.flops').status, 'REFERENCE_FORM');
@@ -131,13 +128,16 @@ assert.strictEqual(check('params.norm').status, 'NOT_IN_PLAN');
 assert.strictEqual(check('collective_reduce').status, 'NOT_TRACED');
 assert.strictEqual(Object.values(report.summary).reduce((a, b) => a + b, 0), report.checks.length);
 
-// With the indexer projection at FP8 the bytes match the plan exactly.
+// A checkpoint that stored the indexer projection at FP8 would differ from the plan by exactly its storage.
 {
   const l = clone(base);
   for (const k of l.layerKinds) for (const p of k.parameters) if (p.name.endsWith('weights_proj.weight')) p.storage = 'fp8';
   const r = TL.reconcileGlm(l, shape);
-  assert.strictEqual(r.checks.find(x => x.id === 'dense_projection.bytes').status, 'MATCH');
-  assert.deepStrictEqual(r.storageDifferences, []);
+  const bytes = r.checks.find(x => x.id === 'dense_projection.bytes');
+  assert.strictEqual(bytes.status, 'STORAGE_DIFFERENCE');
+  assert.strictEqual(bytes.delta, -fullLayers * H * idx.heads);
+  assert.deepStrictEqual(r.storageDifferences.map(s => [s.name, s.storage, s.planned, s.numel]),
+    [['self_attn.indexer.weights_proj.weight', 'fp8', 'bf16', fullLayers * H * idx.heads]]);
 }
 
 // 2. Perturbations.
@@ -163,6 +163,10 @@ flagged(l => { kindOf(l, 5).cache.kv.width = mla.kvLatent; }, ['sparse_attention
 flagged(l => { l.unmatchedNotConvert = ['model.layers.5.self_attn.unknown']; }, ['structure.unmatchedNotConvert']);
 flagged(l => { kindOf(l, 5).ops.push({module: 'mlp', op: 'aten.mm', shapes: [], count: 1, flops: 2}); }, ['ops.unexpected']);
 flagged(l => { kindOf(l, 5).ops.find(o => o.module === 'self_attn.o_proj').flops *= 2; }, ['ops.weightOps']);
+flagged(l => {
+  const k = kindOf(l, 6);
+  k.ops = k.ops.filter(o => !(o.module === 'self_attn.indexer' && o.shapes[0][2] === idx.heads));
+}, ['indexer.flops']);
 flagged(l => { kindOf(l, 5).parameters.push({name: 'self_attn.extra.weight', shape: [1, 1], numel: 1, role: 'matmul', storage: 'fp8'}); },
   ['ops.weightOps']);
 {

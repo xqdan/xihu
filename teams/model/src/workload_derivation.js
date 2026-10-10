@@ -86,7 +86,10 @@ function deriveGlm(shape) {
   const attnParams = H * mla.qLoraRank + mla.qLoraRank * c.heads * (mla.qkNopeDim + mla.ropeDim)
     + H * (mla.kvLatent + mla.ropeDim) + mla.kvLatent * c.heads * (mla.qkNopeDim + mla.vHeadDim)
     + c.heads * mla.vHeadDim * H;
-  const indexerParams = mla.qLoraRank * idx.heads * idx.headDim + H * idx.headDim + H * idx.heads; // full layers only
+  // Full layers only. The head-weight projection (indexer.weights_proj, checkpoint name indexers_proj) stays BF16
+  // in the FP8 checkpoint; the traced ledger (traced_ledger.js) confirms it.
+  const indexerWeightsProjParams = H * idx.heads;
+  const indexerParams = mla.qLoraRank * idx.heads * idx.headDim + H * idx.headDim + indexerWeightsProjParams;
   const denseFfnParams = 3 * H * c.denseFfnHidden;
   const expertParams = 3 * H * c.expertHidden;
   const routerParams = H * c.routedExperts;
@@ -98,11 +101,12 @@ function deriveGlm(shape) {
   const mtpParams = attnParams + indexerParams + routerParams + (c.routedExperts + c.sharedExperts) * expertParams + 2 * H * H;
   const activeParams = fixed + moeLayers * (c.activeExperts + c.sharedExperts) * expertParams;
 
-  const fp8MatmulParams = c.layers * attnParams + fullLayers * indexerParams + c.denseLayers * denseFfnParams
-    + moeLayers * c.sharedExperts * expertParams;
-  const bf16MatmulParams = moeLayers * routerParams + lmHeadParams; // embedding is a row lookup, not a matmul
+  const fp8MatmulParams = c.layers * attnParams + fullLayers * (indexerParams - indexerWeightsProjParams)
+    + c.denseLayers * denseFfnParams + moeLayers * c.sharedExperts * expertParams;
+  const bf16MatmulParams = fullLayers * indexerWeightsProjParams + moeLayers * routerParams + lmHeadParams; // embedding is a row lookup, not a matmul
   const routedActiveParams = moeLayers * c.activeExperts * expertParams;
-  const indexerFlops = fullLayers * CONTEXT * idx.heads * idx.headDim * 2;
+  // q.k scores over the context, then the per-head weighting of the scores (2 x heads per context token).
+  const indexerFlops = fullLayers * CONTEXT * idx.heads * (idx.headDim * 2 + 2);
   const indexerBytes = fullLayers * CONTEXT * v.indexKeyBytesPerToken;
   const sparseFlops = c.layers * 2 * idx.topK * c.heads * ((mla.kvLatent + mla.ropeDim) + mla.kvLatent);
   const sparseBytes = c.layers * idx.topK * v.kvBytesPerTokenPerLayer;
@@ -125,7 +129,8 @@ function deriveGlm(shape) {
       denseFfnParamsPerLayer: denseFfnParams,
       expertParams,
       moeLayers,
-      attentionWeightBytes: (c.layers * attnParams + fullLayers * indexerParams) * bpp.fp8,
+      attentionWeightBytes: (c.layers * attnParams + fullLayers * (indexerParams - indexerWeightsProjParams)) * bpp.fp8
+        + fullLayers * indexerWeightsProjParams * bpp.bf16,
       fullIndexerLayers: fullLayers,
       sharedIndexerLayers: sharedLayers,
       totalParams,

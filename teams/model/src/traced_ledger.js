@@ -27,9 +27,12 @@ const PROVENANCE_KEYS = ['tool', 'toolSha256', 'python', 'torch', 'transformers'
 const SOURCE_KEYS = ['repo', 'revision', 'sha256'];
 const STATUSES = ['MATCH', 'STORAGE_DIFFERENCE', 'REFERENCE_FORM', 'NOT_IN_PLAN', 'NOT_TRACED', 'MISMATCH'];
 
-// Storage the planning rows price each parameter class at (workload_derivation.js deriveGlm, bytesPerParam).
+// Storage the planning rows price each parameter class at (workload_derivation.js deriveGlm, bytesPerParam), and the
+// parameters priced differently from their class.
 const PLANNED_STORAGE = {attention: 'fp8', indexer: 'fp8', denseFfn: 'fp8', sharedExperts: 'fp8', routedExperts: 'fp8',
   router: 'bf16', lmHead: 'bf16'};
+const PLANNED_STORAGE_BY_NAME = {'self_attn.indexer.weights_proj.weight': 'bf16'};
+const plannedStorage = (name, cat) => PLANNED_STORAGE_BY_NAME[name] || PLANNED_STORAGE[cat];
 
 function provenanceProblems(ledger) {
   const out = [];
@@ -118,7 +121,7 @@ function reconcileGlm(ledger, shape) {
       const cat = categoryOf(p.name, p.role);
       params[cat] = (params[cat] || 0) + p.numel * u.n;
       if (cat === 'unclassified') unclassified.push(p.name);
-      const planned = PLANNED_STORAGE[cat];
+      const planned = plannedStorage(p.name, cat);
       if (planned && p.storage !== planned) {
         const key = `${p.name}:${p.storage}`;
         const rec = storageDiffs[key] || (storageDiffs[key] = {name: p.name, category: cat, storage: p.storage, planned,
@@ -214,10 +217,8 @@ function reconcileGlm(ledger, shape) {
     'the reference decompresses the whole latent cache through kv_b_proj every token; deployment absorbs it into q and the output (planned: once per token)');
   add('routed_moe.flops', routedFlops, row.routed_moe.flops, judge(routedFlops, row.routed_moe.flops), 'selected routed experts');
   add('routed_moe.bytes', routedBytes, row.routed_moe.bytes, judge(routedBytes, row.routed_moe.bytes), 'selected routed expert weights at checkpoint storage');
-  const headWeighting = fullLayers * 2 * idx.heads * CONTEXT;
-  add('indexer.flops', activation.indexer.traced, row.indexer.flops,
-    judge(activation.indexer.traced, row.indexer.flops, [{value: row.indexer.flops + headWeighting, status: 'NOT_IN_PLAN'}]),
-    `q.k scores over the context; the reference also weights the ${idx.heads} heads per token (2 x heads x context per full layer = ${headWeighting} FLOPs in total), which the planning row leaves out`);
+  add('indexer.flops', activation.indexer.traced, row.indexer.flops, judge(activation.indexer.traced, row.indexer.flops),
+    `q.k scores over the context and the weighting of the ${idx.heads} heads per context token`);
   const denseAttention = c.layers * 2 * c.heads * CONTEXT * (mla.qkNopeDim + mla.ropeDim + mla.vHeadDim);
   add('sparse_attention.flops', activation.attention.traced, row.sparse_attention.flops,
     judge(activation.attention.traced, row.sparse_attention.flops, [{value: denseAttention, status: 'REFERENCE_FORM'}]),
@@ -263,4 +264,5 @@ if (require.main === module) {
   }
 }
 
-module.exports = {FORMAT, EVIDENCE, TOOL, LEDGERS, STATUSES, PLANNED_STORAGE, provenanceProblems, categoryOf, reconcileGlm, mismatches};
+module.exports = {FORMAT, EVIDENCE, TOOL, LEDGERS, STATUSES, PLANNED_STORAGE, PLANNED_STORAGE_BY_NAME, plannedStorage,
+  provenanceProblems, categoryOf, reconcileGlm, mismatches};

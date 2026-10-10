@@ -263,7 +263,7 @@
               "fp8": 1,
               "bf16": 2
             },
-            "basis": "ASSUMPTION: FP8 checkpoint as published (attention, indexer, dense FFN, shared and routed experts 1 B; router and LM head BF16 2 B); the 128x128 FP32 block scales (0.02%) are ignored; the embedding is a row lookup and is not counted"
+            "basis": "ASSUMPTION: FP8 checkpoint as published (attention, indexer, dense FFN, shared and routed experts 1 B; router, LM head and the indexer head-weight projection indexers_proj BF16 2 B, confirmed by the traced operator ledger); the 128x128 FP32 block scales (0.02%) are ignored; the embedding is a row lookup and is not counted"
           },
           "kvBytesPerTokenPerLayer": {
             "value": 656,

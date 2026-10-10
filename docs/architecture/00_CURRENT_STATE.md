@@ -134,7 +134,7 @@ raw = max(访存道, 串行道)，e2e = raw × 1.17，TPS/usr = 1e6 / e2e
 | K3 | dense BF16、routed MXFP4、KV FP8 656 B | 1102.4 | 959.3 / 786.0 | 访存 | `PLANNING_ESTIMATE` |
 | K3-FP8-dense（对照，不排名） | dense/shared FP8、router/LM head BF16 | 1149.3 | — | 集合通信 | 对照 |
 | DeepSeek-V4-Pro | dense FP8、router/LM head BF16、routed FP4；expert hidden 两解区间 1934.2–1947.7 | 1934.2 | 1557.9 / 1219.0 | 集合通信（305 × 1.15 μs，含 q all-gather，ADR-0024） | `PLANNING_ESTIMATE` |
-| GLM-5.2 | dense FP8、router/LM head BF16、routed FP8（公开 config，含 MTP 总参数 753.3B 对公布 753B） | 1927.7 | 1526.5 / 1176.6 | 集合通信（333 × 1.15 μs，含 q all-gather，ADR-0024） | `PLANNING_ESTIMATE` |
+| GLM-5.2 | dense FP8、router/LM head BF16、routed FP8（公开 config，含 MTP 总参数 753.3B 对公布 753B） | 1927.5 | 1526.3 / 1176.5 | 集合通信（333 × 1.15 μs，含 q all-gather，ADR-0024） | `PLANNING_ESTIMATE` |
 
 - **D-Gate：** `PASS`（范围 `PLANNING_COMPARISON_ONLY_NOT_ARCHITECTURE_FREEZE`）。
 - **正式候选：** 只有三个模型都 ≥ 1000 的槽位才能入选（ADR-0008），为 `P1-compact-MC640-TP32`；

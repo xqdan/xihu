@@ -332,14 +332,14 @@ D4 原定由硬件团队给候选。2026-10-10 按用户指示，由架构 agent
 
 对账口径：每项给一个状态，含义见 `traced_ledger.js` 文件头。只有 `MISMATCH` 让测试失败。参考实现与部署 kernel 的差异（kv_b_proj 解压整个缓存、全上下文稠密 attention）按参考公式核对后记为 `REFERENCE_FORM`，不用来修改规划行。
 
-追踪结果（19 项 `MATCH`、1 项 `STORAGE_DIFFERENCE`、3 项 `REFERENCE_FORM`、2 项 `NOT_IN_PLAN`、1 项 `NOT_TRACED`、0 项 `MISMATCH`），见 [`OPERATOR_LEDGER.md`](../../model/docs/deployment/OPERATOR_LEDGER.md) §3.1：
+首次追踪结果（19 项 `MATCH`、1 项 `STORAGE_DIFFERENCE`、3 项 `REFERENCE_FORM`、2 项 `NOT_IN_PLAN`、1 项 `NOT_TRACED`、0 项 `MISMATCH`），见 [`OPERATOR_LEDGER.md`](../../model/docs/deployment/OPERATOR_LEDGER.md) §3.1：
 
 1. **FP8 checkpoint 把 21 个 full 层的 `indexers_proj` 存为 BF16**，`deriveGlm` 按 FP8 计。dense_projection 字节因此少计 4.13 MB / token，占该行 0.02%。
 2. **indexer 行漏掉按头加权求和这一步**，每个 full 层 2 × 32 × context FLOP，合计 1.41 GFLOP / token，占该行 0.78%。
 3. 其余参数数和 FLOP 与规划行逐位一致：总参数 743.38 B（不含 MTP）、dense_projection 35.30 GFLOP、routed_moe 45.30 GFLOP / 22.65 GB、index key 元素数，以及层结构（full indexer 层、dense 层、top-k 2048、每层 8 个专家）。
 4. 参考实现与部署的差距有多大：kv_b_proj 每 token 解压整个缓存，78 层合计约 2.4 PFLOP；稠密 attention 约 5.36 TFLOP，规划行（top-k 稀疏）是 22.25 GFLOP。这正是部署必须用吸收形式和 top-k 稀疏的原因，不是规划误差。
 
-两项差异都远低于规划精度，暂不改 `deriveGlm`。是否并入规划行由 model 团队决定；并入会改变三模型规划的 GLM 数值，需要重跑 `npm run model:planning`。
+第 1、2 项已并入 `deriveGlm`：indexer 头权重投影按 BF16 计，indexer 行计入按头加权求和。现在对账为 21 项 `MATCH`、3 项 `REFERENCE_FORM`、1 项 `NOT_IN_PLAN`（范数参数）、1 项 `NOT_TRACED`、0 项 `MISMATCH`。GLM 规划 TPS/usr 变化在 0.02% 以内（TP32 / MC640 由 1927.72 变为 1927.49），`out/` 已重新生成（`npm run model:planning` 及依赖它的各 domain search、`budget:frontier`）。
 
 ### 2.6 运行追踪工具
 
