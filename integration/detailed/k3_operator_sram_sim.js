@@ -336,7 +336,7 @@ function simulate(plan,sramMiB,{trace=false}={}){
   if(async){comm={...o,end:t+o.duration};index++;}else running={...o,duration:body,read:o.read-moved,linkBytes:o.linkBytes-moved,end:t+body};
   if(o.unit==='COMM'){coll+=o.duration;stat.comm+=o.duration;}else{compute+=o.duration;stat.compute+=o.duration;}
   const a=stat.operators[o.name]||(stat.operators[o.name]={name:o.name,unit:o.unit,count:0,flops:0,read:0,write:0,service:0,wait:0});a.count++;a.flops+=o.flops;a.read+=o.read;a.write+=o.write;a.service+=o.duration;
-  if(trace)events.push({type:'op',layer:o.layer,index:o.id,name:o.name,start:t,end:t+body,detail:o.detail});
+  if(trace)events.push({type:'op',layer:o.layer,index:o.id,name:o.name,unit:o.unit,async,filled:!!filled,start:t,end:t+body,detail:o.detail});
   record();return true;
  }
  function startFills(){
@@ -450,6 +450,10 @@ function simulate(plan,sramMiB,{trace=false}={}){
   const exposed=!!(tl&&head&&head.tma&&fillState[head.id]==='filling'&&!(comm&&!head.overlapComm));
   const busy=!!running||exposed;
   if(exposed)tmaExposed+=dt;
+  // Trace only: the compute-slot time the head op spends on its own fill, and
+  // idle time, charged to the op at the head of the queue (null once all issued).
+  if(trace&&dt>0){if(exposed)events.push({type:'TMA exposed',t,dur:dt,index:head.id,layer:head.layer});
+   if(!busy&&!comm)events.push({type:'wait',t,dur:dt,index:index<ops.length?index:null});}
   for(const f of fills)f.remaining-=dt*f.speed;
   if(busy&&comm)overlap+=dt;
   if(!busy&&!comm){wait+=dt;if(index<ops.length){const st=layerStats[ops[index].layer];st.wait+=dt;const op=ops[index],a=st.operators[op.name]||(st.operators[op.name]={name:op.name,unit:op.unit,count:0,flops:0,read:0,write:0,service:0,wait:0});a.wait+=dt;}}

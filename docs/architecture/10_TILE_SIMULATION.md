@@ -26,7 +26,11 @@
 - TMA、Local SRAM、Shared SRAM、NoC、MC 和链路带宽上限；
 - online-softmax m/l/O；
 - 预测命中/误读/淘汰；
-- layer/operator 时间账。
+- layer/operator 时间账；
+- 执行 trace 导出（2026-10-10，[`execution_trace.js`](../../integration/detailed/execution_trace.js)，`npm run trace:published`）：
+  发布点一个 step 的计算槽、集合通信、等待、DMA、TMA-L/H、SRAM 占用时间线（Chrome Trace，Perfetto 可开），
+  逐轨与时间账守恒对账；每类集合通信抽样一次展开 RDMA 阶段和逐 peer 事件；`--diff` 按算子对比机制回退。
+  契约见 [`contracts/EXECUTION_TRACE.md`](contracts/EXECUTION_TRACE.md)，证据等级 MODEL。
 
 这是良好起点，但还不是签核级模型。
 
