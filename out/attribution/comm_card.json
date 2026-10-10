@@ -5,7 +5,7 @@
   "status": "MODEL: one-at-a-time replays of the detailed model at one design point. Changes no baseline, gate or published number",
   "inputs": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "baselineSha256": "5b4c8ff39f873b5c17edc0d33384c699b4dc24dc0059f60c3cdc32c2d6523ca5",
     "pointSource": "teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware.x",
     "x": {
       "nL": 8,
@@ -152,8 +152,8 @@
       },
       {
         "name": "cardLocal",
-        "us": 74.70554326923076,
-        "shareOfRaw": 0.09630083544207141
+        "us": 94.35554326923082,
+        "shareOfRaw": 0.12163110323246847
       },
       {
         "name": "portTail",
@@ -162,8 +162,8 @@
       },
       {
         "name": "tauFloor",
-        "us": 182.99731387362533,
-        "shareOfRaw": 0.2358967412387917
+        "us": 163.34731387362675,
+        "shareOfRaw": 0.21056647344839655
       },
       {
         "name": "commOverlap",
@@ -171,39 +171,39 @@
         "shareOfRaw": -0.03386324137370942
       }
     ],
-    "netUs": 425.6805306639635,
-    "netShareOfRaw": 0.5487329178054191,
+    "netUs": 425.680530663965,
+    "netShareOfRaw": 0.548732917805421,
     "commUs": 451.94999999999703,
     "collectives": [
       {
         "name": "LSE merge / output reduce-scatter",
         "count": 24,
-        "timeUs": 23.48341620879122,
-        "avgUs": 0.9784756753663008
+        "timeUs": 24.68341620879122,
+        "avgUs": 1.0284756753663007
       },
       {
         "name": "Attention output all-reduce",
         "count": 93,
-        "timeUs": 71.5062266483516,
-        "avgUs": 0.768884157509157
+        "timeUs": 76.15622664835178,
+        "avgUs": 0.8188841575091589
       },
       {
         "name": "Wdown + Router all-gather",
         "count": 92,
-        "timeUs": 39.69188667582421,
-        "avgUs": 0.43143355082417617
+        "timeUs": 44.29188667582421,
+        "avgUs": 0.48143355082417616
       },
       {
         "name": "Routed latent merge",
         "count": 92,
-        "timeUs": 63.53381410256403,
-        "avgUs": 0.6905849358974351
+        "timeUs": 68.13381410256413,
+        "avgUs": 0.7405849358974362
       },
       {
         "name": "Wup + Shared output all-reduce",
         "count": 92,
-        "timeUs": 70.73734249084244,
-        "avgUs": 0.768884157509157
+        "timeUs": 75.33734249084262,
+        "avgUs": 0.8188841575091589
       }
     ],
     "collectiveCount": 393
@@ -242,8 +242,8 @@
           "dTpsPerMm2": null,
           "dTpsPerW": null,
           "stress": {
-            "tpsPerUser": 966.964955537458,
-            "dTps": 60.45770903145433,
+            "tpsPerUser": 966.09245256039,
+            "dTps": 59.58520605438639,
             "withinBudget": false
           }
         },
@@ -370,19 +370,19 @@
           "to": 8,
           "adverse": true,
           "feasible": true,
-          "tpsPerUser": 1095.2243455323455,
-          "rawUs": 780.3888383118605,
+          "tpsPerUser": 1093.6127711157974,
+          "rawUs": 781.5388383118603,
           "withinBudget": true,
-          "dTps": -6.546724709579394,
-          "dRawUs": 4.6370711927791035,
+          "dTps": -8.158299126127531,
+          "dRawUs": 5.787071192778967,
           "dDieAreaMm2": -2.8000000000000114,
           "dDiePowerW": -3.3600000000000136,
           "dCardPowerW": -26.88000000000011,
-          "dTpsPerMm2": 2.338115967706917,
-          "dTpsPerW": 1.9484299730890973,
+          "dTpsPerMm2": 2.9136782593312494,
+          "dTpsPerW": 2.4280652161093745,
           "stress": {
-            "tpsPerUser": 901.1217891634648,
-            "dTps": -5.385457342538871,
+            "tpsPerUser": 899.9831529850992,
+            "dTps": -6.524093520904444,
             "withinBudget": false
           }
         }
@@ -413,8 +413,8 @@
           "dTpsPerMm2": 11.88447230237411,
           "dTpsPerW": 5.416100658634026,
           "stress": {
-            "tpsPerUser": 901.9634462387392,
-            "dTps": -4.543800267264487,
+            "tpsPerUser": 900.8226834174322,
+            "dTps": -5.6845630885713945,
             "withinBudget": false
           }
         },
@@ -462,8 +462,8 @@
           "dTpsPerMm2": null,
           "dTpsPerW": 5.416100658634026,
           "stress": {
-            "tpsPerUser": 901.9634462387392,
-            "dTps": -4.543800267264487,
+            "tpsPerUser": 900.8226834174322,
+            "dTps": -5.6845630885713945,
             "withinBudget": false
           }
         }
@@ -645,19 +645,19 @@
           "to": "tile",
           "adverse": true,
           "feasible": true,
-          "tpsPerUser": 1082.211841520481,
-          "rawUs": 789.7722256485581,
+          "tpsPerUser": 1081.4245017428743,
+          "rawUs": 790.3472256485578,
           "withinBudget": true,
-          "dTps": -19.559228721444015,
-          "dRawUs": 14.020458529476741,
+          "dTps": -20.34656849905059,
+          "dRawUs": 14.595458529476446,
           "dDieAreaMm2": 0,
           "dDiePowerW": 0,
           "dCardPowerW": 0,
           "dTpsPerMm2": null,
           "dTpsPerW": null,
           "stress": {
-            "tpsPerUser": 853.9425101759955,
-            "dTps": -52.564736330008145,
+            "tpsPerUser": 852.9199143959552,
+            "dTps": -53.587332110048465,
             "withinBudget": false
           }
         }

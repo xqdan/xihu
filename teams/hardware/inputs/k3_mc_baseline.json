@@ -287,9 +287,9 @@
         "assumedGain": 7.827072323607354e-15,
         "memoryTransport": 192.3679999999996,
         "tpReduce": 1.87914285714285,
-        "cardLocal": 74.70554326923076,
+        "cardLocal": 94.35554326923082,
         "portTail": 0,
-        "tauFloor": 182.99731387362533,
+        "tauFloor": 163.34731387362675,
         "commOverlap": -26.269469336035073,
         "tmaHidden": -106.90661439522479
       },
@@ -305,36 +305,36 @@
         {
           "name": "LSE merge / output reduce-scatter",
           "count": 24,
-          "timeUs": 23.48341620879122,
-          "avgProtocolUs": 0.9784756753663008,
+          "timeUs": 24.68341620879122,
+          "avgProtocolUs": 1.0284756753663007,
           "workspaceBytes": 1325568
         },
         {
           "name": "Attention output all-reduce",
           "count": 93,
-          "timeUs": 71.5062266483516,
-          "avgProtocolUs": 0.768884157509157,
+          "timeUs": 76.15622664835178,
+          "avgProtocolUs": 0.8188841575091589,
           "workspaceBytes": 276480
         },
         {
           "name": "Wdown + Router all-gather",
           "count": 92,
-          "timeUs": 39.69188667582421,
-          "avgProtocolUs": 0.43143355082417617,
+          "timeUs": 44.29188667582421,
+          "avgProtocolUs": 0.48143355082417616,
           "workspaceBytes": 186880
         },
         {
           "name": "Routed latent merge",
           "count": 92,
-          "timeUs": 63.53381410256403,
-          "avgProtocolUs": 0.6905849358974351,
+          "timeUs": 68.13381410256413,
+          "avgProtocolUs": 0.7405849358974362,
           "workspaceBytes": 204800
         },
         {
           "name": "Wup + Shared output all-reduce",
           "count": 92,
-          "timeUs": 70.73734249084244,
-          "avgProtocolUs": 0.768884157509157,
+          "timeUs": 75.33734249084262,
+          "avgProtocolUs": 0.8188841575091589,
           "workspaceBytes": 276480
         }
       ]
@@ -630,8 +630,8 @@
           "role": "PV m/l/O merged once per layer, cross-die ring reduce-scatter by heads",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 1082.211841520481,
-            "rawLatencyUs": 789.7722256485581
+            "tpsPerUser": 1081.4245017428743,
+            "rawLatencyUs": 790.3472256485578
           }
         },
         {
@@ -695,8 +695,8 @@
           ],
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 976.3905447926797,
-            "rawLatencyUs": 875.3678118445281
+            "tpsPerUser": 975.7217595714036,
+            "rawLatencyUs": 875.9678118445278
           }
         },
         "schedulerAndKernelMapping": {
@@ -712,8 +712,8 @@
           ],
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 755.4548604332412,
-            "rawLatencyUs": 1131.3725008145393
+            "tpsPerUser": 755.0544329352816,
+            "rawLatencyUs": 1131.9725008145394
           }
         }
       },

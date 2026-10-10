@@ -19,7 +19,7 @@
     ],
     "candidates": 216000,
     "valid": 45900,
-    "feasible": 6607,
+    "feasible": 2923,
     "constraints": [
       "every collective class: protocol time + control path <= the contract's B-TAU ceiling, so the published point is unchanged; this also keeps the raw latency within the raw budget because TPS does not rise with tau",
       "graph storage fits the local SRAM with graphBuffers copies when the graph is stored locally",
@@ -82,7 +82,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "3f6dd7a0dcbd0a4a3a53861fa231f9c412408966d2e44affcadc5a25eb09ba71",
+    "sha256": "40464b8b9697e516290ce219072b2b218bfc34544ce9f6c272b0f995dcd044de",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -199,7 +199,7 @@
         "requests": 93,
         "activeNICs": 3,
         "reduce": true,
-        "protocolUs": 0.9784756753663004,
+        "protocolUs": 1.0284756753663005,
         "steps": {
           "trigger": 0.01,
           "fetch": 0,
@@ -208,8 +208,8 @@
           "completion": 0.02
         },
         "controlUs": 0.042,
-        "latencyUs": 1.0204756753663005,
-        "slackUs": 0.12952432463369948
+        "latencyUs": 1.0704756753663005,
+        "slackUs": 0.07952432463369943
       },
       {
         "name": "Attention output all-reduce",
@@ -217,7 +217,7 @@
         "requests": 21,
         "activeNICs": 1,
         "reduce": true,
-        "protocolUs": 0.7688841575091576,
+        "protocolUs": 0.8188841575091577,
         "steps": {
           "trigger": 0.01,
           "fetch": 0,
@@ -226,8 +226,8 @@
           "completion": 0.02
         },
         "controlUs": 0.042,
-        "latencyUs": 0.8108841575091577,
-        "slackUs": 0.3391158424908423
+        "latencyUs": 0.8608841575091577,
+        "slackUs": 0.28911584249084227
       },
       {
         "name": "Wdown + Router all-gather",
@@ -235,7 +235,7 @@
         "requests": 31,
         "activeNICs": 1,
         "reduce": false,
-        "protocolUs": 0.4314335508241759,
+        "protocolUs": 0.4814335508241758,
         "steps": {
           "trigger": 0.01,
           "fetch": 0,
@@ -244,8 +244,8 @@
           "completion": 0.018
         },
         "controlUs": 0.04,
-        "latencyUs": 0.4714335508241759,
-        "slackUs": 0.678566449175824
+        "latencyUs": 0.5214335508241759,
+        "slackUs": 0.628566449175824
       },
       {
         "name": "Routed latent merge",
@@ -253,7 +253,7 @@
         "requests": 21,
         "activeNICs": 1,
         "reduce": true,
-        "protocolUs": 0.690584935897436,
+        "protocolUs": 0.740584935897436,
         "steps": {
           "trigger": 0.01,
           "fetch": 0,
@@ -262,8 +262,8 @@
           "completion": 0.02
         },
         "controlUs": 0.042,
-        "latencyUs": 0.732584935897436,
-        "slackUs": 0.41741506410256396
+        "latencyUs": 0.782584935897436,
+        "slackUs": 0.3674150641025639
       },
       {
         "name": "Wup + Shared output all-reduce",
@@ -271,7 +271,7 @@
         "requests": 21,
         "activeNICs": 1,
         "reduce": true,
-        "protocolUs": 0.7688841575091576,
+        "protocolUs": 0.8188841575091577,
         "steps": {
           "trigger": 0.01,
           "fetch": 0,
@@ -280,15 +280,15 @@
           "completion": 0.02
         },
         "controlUs": 0.042,
-        "latencyUs": 0.8108841575091577,
-        "slackUs": 0.3391158424908423
+        "latencyUs": 0.8608841575091577,
+        "slackUs": 0.28911584249084227
       }
     ],
     "slowest": {
       "name": "LSE merge / output reduce-scatter",
-      "latencyUs": 1.0204756753663005
+      "latencyUs": 1.0704756753663005
     },
-    "specSlackUs": 0.12952432463369948,
+    "specSlackUs": 0.07952432463369943,
     "firmwareOnCriticalPath": false
   },
   "evaluation": {
@@ -312,16 +312,16 @@
       "feasible": true,
       "tpsPerUser": 1104.7796405629188,
       "rawLatencyUs": 773.639215749268,
-      "commUs": 285.27468612637415
+      "commUs": 304.9246861263732
     },
-    "controlUsWithinRawBudget": 0.67040509466824,
+    "controlUsWithinRawBudget": 0.6204050946689676,
     "tauSweep": [
       {
         "tauUs": 1,
         "feasible": true,
         "tpsPerUser": 1101.7921567815936,
         "rawLatencyUs": 775.7369204710001,
-        "commUs": 393
+        "commUs": 393.6834162087911
       },
       {
         "tauUs": 1.15,

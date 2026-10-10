@@ -11,7 +11,7 @@
     "dies": 8,
     "lanesPerDie": 16,
     "dieTopology": "ring",
-    "dieTopologyNote": "Die hops between the sending NIC and the die that owns a scale-out port are counted on the 8-die bidirectional ring, the bandwidth basis of the model (dieCutGB = 2 x uciePortGB). B-004 is open; the 4x2 mesh of 06 section 3 has the same worst case (4 hops) and is shorter on average.",
+    "dieTopologyNote": "Die hops between the sending NIC and the die that owns a scale-out port are counted on the 8-die bidirectional ring, the in-card basis of the model (ADR-0016, 2026-10-10: dieCutGB = 2 x uciePortGB, A.dieRing). B-004 is open pending hardware review; the 4x2 mesh of 06 section 3 has the same worst case (4 hops) and is shorter on average.",
     "nicDies": [0, 1, 2, 3, 4, 5, 6, 7],
     "nicDiesNote": "The k-th active NIC of a collective (activeNICs = 1 or 3 at the published point) sits on die nicDies[k].",
     "portLaneAllocation": "Ports take their lanes in order from die 0 upward, 16 lanes per die; a port owns every die its lanes touch."
@@ -28,7 +28,7 @@
     {"key": "relayUs", "nominal": 0.05, "low": 0.03, "high": 0.20, "unit": "us per relay card", "evidence": "ASSUMPTION",
      "meaning": "Cut-through forwarding through an intermediate card's NIC/router (torus, ring), excluding the die hops between its in-port and out-port."},
     {"key": "ucieHopUs", "nominal": 0.025, "low": 0.015, "high": 0.05, "unit": "us per die hop", "evidence": "ASSUMPTION",
-     "meaning": "One die-to-die hop inside the card (A.TECH.ucieHopUs is 0.025). Also rescales the 6 die hops inside cardLocal."},
+     "meaning": "One die-to-die hop inside the card (A.TECH.ucieHopUs is 0.025). Also rescales the 8 die hops inside cardLocal (collect and redistribute on the in-card ring, 4 hops each way)."},
     {"key": "controlScale", "nominal": 1, "low": 1, "high": 2, "unit": "x", "evidence": "ASSUMPTION",
      "meaning": "Multiplier on the Comm Core control path of each collective class (out/detailed/comm_core_design.json controlPath.classes[].controlUs, O-018)."}
   ],

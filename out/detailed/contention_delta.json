@@ -7,18 +7,18 @@
   "method": "Running op and in-flight collective advance by remaining work. Per resource (shared read, shared write, fabric) the foreground demand, each clipped to the cap, is summed; above the cap every requester gets cap/sum and progresses at its slowest resource. DMA and TMA fills keep the historical priority: they take what the foreground actually draws. No calibration factor.",
   "provenance": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "baselineSha256": "5b4c8ff39f873b5c17edc0d33384c699b4dc24dc0059f60c3cdc32c2d6523ca5",
     "coupling": "out/detailed/coupling_candidates.json",
-    "couplingSha256": "c27db729ed333eba5a3664e86cb41c02e2a310b9d2532aac3ad732fc7f44b465",
+    "couplingSha256": "c649247483e4f52f0343a9a8712701903e10d1d6938916862f448cd4f75b2b52",
     "sources": {
       "integration/detailed/contention_delta.js": "07617be32639d7fd8338d04d1a858df203d559156c46a6b302f9689134875084",
       "integration/detailed/k3_operator_sram_sim.js": "49580d74ff1f93c70ad8185d99cca679bc3d28ab2a61b889c6c8c3ef45343355",
-      "integration/detailed/k3_architecture_search.js": "45731fa500ddd256e6e7fb98815564f6de9a1e3eb4938e93bc9853e65752273a",
+      "integration/detailed/k3_architecture_search.js": "b8689699d8ed807fa9e6cad71843ce077eb09961af748ad389862a19957a40bd",
       "integration/detailed/cost_provider.js": "9a737e30a235e8e9c30f8eab40e198df47667525ca5c27cb5ce16d176dbec413",
       "teams/vv/inputs/operator_cost_observations.json": "aa535b0adf152419b1452c2bc73e1ba356ec3dfc35f7f16754140af1423ee5b2",
       "integration/detailed/k3_physical_basis.js": "c93f516e1ecdbd35190f714c06deac1ada09d64656fcd75332a7a2214a2f3c90",
-      "integration/detailed/k3_sram_memory_rdma_model.js": "68314a43ca69a40d170ac1f1f266c09124ee8f34afe8946ff6301fa8b61df187",
-      "integration/detailed/k3_rdma_final_tuning_model.js": "54b7ae2e6c3f6736f332fa87d1cd75b9f9c18ba9642487e01aa56e667d9d49de",
+      "integration/detailed/k3_sram_memory_rdma_model.js": "ef7b58287a7352eed73ed4ef8f8e8a10424cad0876e875742caa60ae77f6a3cc",
+      "integration/detailed/k3_rdma_final_tuning_model.js": "36dee594dc340272de22f6a50e677ea9182a37c9667d9013a39f84d18823ba12",
       "integration/detailed/coupling_search.js": "4d1902471242a412ef4f8abd1dfbb6d61c45441dfb03d8a27f14d2a989d8ca45",
       "integration/detailed/matrix_vector_search.js": "45b3126aeff9f8d49cbc638448452ed64c5e7f128c755b27997385fe4f7c121f",
       "integration/detailed/comm_core_search.js": "2a65bab88be9f36b7e7de5216a134be46ba4d59099cd8e4e1516a86f1489663b"

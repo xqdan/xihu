@@ -25,11 +25,11 @@
 | TMA / 本地 SRAM | `layoutImbalance` ≤ 1.42 是**容量**约束，非时序 | 见 `DESIGN_TARGETS_AND_MARGINS.md` §2.1 |
 | NoC | 4096-bit link 是否可布线（O-003） | `OPEN` |
 | Reduce 引擎 | 4096 lane（`09_PACKAGE_POWER_RAS.md` §4.1 指出其功耗占比 12% 偏大） | `MODEL` |
-| Comm Core 控制路径 | 搜索选中 0.042 µs/次，raw 预算内上限 0.670 µs/次（O-018） | `ASSUMPTION`，待 RTL/周期模型 |
+| Comm Core 控制路径 | 搜索选中 0.042 µs/次，raw 预算内上限 0.620 µs/次（O-018） | `ASSUMPTION`，待 RTL/周期模型 |
 | SRAM 访问 | 与 `layoutImbalance`、bank class 比例（O-008）相关 | `ASSUMPTION` |
 
-**注意 Comm Core 那一行的余量**：0.042 µs 对 0.670 µs 看似极宽，但那是**控制路径**，
-最慢的 LSE merge 加控制路径是 1.02 µs，已逼近 spec τ（1.15 µs）。
+**注意 Comm Core 那一行的余量**：0.042 µs 对 0.620 µs 看似极宽，但那是**控制路径**，
+最慢的 LSE merge 加控制路径是 1.07 µs（卡内阶段按 8 Die 环计，B-004），已逼近 spec τ（1.15 µs）。
 O-018 记录了两个只差 2–8 ns 余量的方案（`descriptorExpand`、`sharedSram`），
 **回标后可能翻转**。这是时序侧最脆弱的一点，不是 Comm Core 内部的问题，而是它决定 τ 能否成立（B-008）。
 

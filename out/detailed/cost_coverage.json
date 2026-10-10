@@ -7,7 +7,7 @@
   "method": "Kernel line of every compute op from cost_provider.js (measured -> fitted -> analytical); all other service lines, DMA wait and the hidden lines are MODEL. Shares are gross (hidden kernels count in full).",
   "provenance": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "baselineSha256": "5b4c8ff39f873b5c17edc0d33384c699b4dc24dc0059f60c3cdc32c2d6523ca5",
     "observations": "teams/vv/inputs/operator_cost_observations.json",
     "observationsSha256": "aa535b0adf152419b1452c2bc73e1ba356ec3dfc35f7f16754140af1423ee5b2",
     "observationCount": 0,
@@ -15,10 +15,10 @@
       "integration/detailed/cost_coverage.js": "ce8e2ed8b4c06b294976452a64fb2971441f8ede5685375a8ef62f353aa14765",
       "integration/detailed/cost_provider.js": "9a737e30a235e8e9c30f8eab40e198df47667525ca5c27cb5ce16d176dbec413",
       "integration/detailed/k3_operator_sram_sim.js": "49580d74ff1f93c70ad8185d99cca679bc3d28ab2a61b889c6c8c3ef45343355",
-      "integration/detailed/k3_architecture_search.js": "45731fa500ddd256e6e7fb98815564f6de9a1e3eb4938e93bc9853e65752273a",
+      "integration/detailed/k3_architecture_search.js": "b8689699d8ed807fa9e6cad71843ce077eb09961af748ad389862a19957a40bd",
       "integration/detailed/k3_physical_basis.js": "c93f516e1ecdbd35190f714c06deac1ada09d64656fcd75332a7a2214a2f3c90",
-      "integration/detailed/k3_sram_memory_rdma_model.js": "68314a43ca69a40d170ac1f1f266c09124ee8f34afe8946ff6301fa8b61df187",
-      "integration/detailed/k3_rdma_final_tuning_model.js": "54b7ae2e6c3f6736f332fa87d1cd75b9f9c18ba9642487e01aa56e667d9d49de"
+      "integration/detailed/k3_sram_memory_rdma_model.js": "ef7b58287a7352eed73ed4ef8f8e8a10424cad0876e875742caa60ae77f6a3cc",
+      "integration/detailed/k3_rdma_final_tuning_model.js": "36dee594dc340272de22f6a50e677ea9182a37c9667d9013a39f84d18823ba12"
     }
   },
   "target": {
@@ -59,9 +59,9 @@
       "assumedGain": 7.827072323607354e-15,
       "memoryTransport": 192.3679999999996,
       "tpReduce": 1.87914285714285,
-      "cardLocal": 74.70554326923076,
+      "cardLocal": 94.35554326923082,
       "portTail": 0,
-      "tauFloor": 182.99731387362533,
+      "tauFloor": 163.34731387362675,
       "commOverlap": -26.269469336035073,
       "tmaHidden": -106.90661439522479
     },

@@ -7,7 +7,7 @@
   },
   "inputs": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "baselineSha256": "5b4c8ff39f873b5c17edc0d33384c699b4dc24dc0059f60c3cdc32c2d6523ca5",
     "goalTpsPerUser": 1000,
     "pessimisticPoints": {
       "compute": {
@@ -146,8 +146,8 @@
       "reason": null,
       "nominalTps": 1101.771070241925,
       "dNominalTps": 0,
-      "computeTps": 921.6304666655911,
-      "dComputeTps": 0,
+      "computeTps": 921.2227276973812,
+      "dComputeTps": -0.40773896820996924,
       "dDieAreaMm2": -1.400000000000034,
       "dDiePowerW": -1.6800000000000637
     },
@@ -334,14 +334,14 @@
           "packageAreaMm2": 4605.701893998487
         },
         "compute": {
-          "tps": 999.1570888268302,
+          "tps": 998.9124890173351,
           "dieAreaMm2": 375.71273674981103,
           "diePowerW": 289.5765760000001,
           "cardPowerW": 2795.3326080000006,
           "packageAreaMm2": 4605.701893998487
         },
         "allUnmeasured": {
-          "tps": 981.411283450141,
+          "tps": 981.1752940216653,
           "dieAreaMm2": 375.71273674981103,
           "diePowerW": 289.5765760000001,
           "cardPowerW": 2774.852608000001,
@@ -362,8 +362,8 @@
             }
           ],
           "nominalTps": 1101.570109244785,
-          "computeTps": 996.037663495363,
-          "allUnmeasuredTps": 978.4015140487961,
+          "computeTps": 995.7945884249824,
+          "allUnmeasuredTps": 978.1669696816812,
           "dieAreaMm2": 375.71273674981103,
           "diePowerW": 289.5765760000001,
           "cardPowerW": 2795.3326080000006
@@ -381,15 +381,15 @@
             }
           ],
           "nominalTps": 1101.570109244785,
-          "computeTps": 999.1570888268302,
-          "allUnmeasuredTps": 981.411283450141,
+          "computeTps": 998.9124890173351,
+          "allUnmeasuredTps": 981.1752940216653,
           "dieAreaMm2": 375.71273674981103,
           "diePowerW": 289.5765760000001,
           "cardPowerW": 2795.3326080000006
         }
       ],
       "holdOut": {
-        "allUnmeasuredGainTps": 74.90403694413737,
+        "allUnmeasuredGainTps": 74.66804751566167,
         "note": "tuned on the compute point, scored on the point that also moves mcUtil, prediction and launch scale"
       }
     },
@@ -457,14 +457,14 @@
           "packageAreaMm2": 4605.701893998487
         },
         "compute": {
-          "tps": 999.1570888268302,
+          "tps": 998.9124890173351,
           "dieAreaMm2": 375.71273674981103,
           "diePowerW": 289.5765760000001,
           "cardPowerW": 2795.3326080000006,
           "packageAreaMm2": 4605.701893998487
         },
         "allUnmeasured": {
-          "tps": 981.411283450141,
+          "tps": 981.1752940216653,
           "dieAreaMm2": 375.71273674981103,
           "diePowerW": 289.5765760000001,
           "cardPowerW": 2774.852608000001,
@@ -485,8 +485,8 @@
             }
           ],
           "nominalTps": 1101.570109244785,
-          "computeTps": 996.037663495363,
-          "allUnmeasuredTps": 978.4015140487961,
+          "computeTps": 995.7945884249824,
+          "allUnmeasuredTps": 978.1669696816812,
           "dieAreaMm2": 375.71273674981103,
           "diePowerW": 289.5765760000001,
           "cardPowerW": 2795.3326080000006
@@ -504,15 +504,15 @@
             }
           ],
           "nominalTps": 1101.570109244785,
-          "computeTps": 999.1570888268302,
-          "allUnmeasuredTps": 981.411283450141,
+          "computeTps": 998.9124890173351,
+          "allUnmeasuredTps": 981.1752940216653,
           "dieAreaMm2": 375.71273674981103,
           "diePowerW": 289.5765760000001,
           "cardPowerW": 2795.3326080000006
         }
       ],
       "holdOut": {
-        "allUnmeasuredGainTps": 74.90403694413737,
+        "allUnmeasuredGainTps": 74.66804751566167,
         "note": "tuned on the compute point, scored on the point that also moves mcUtil, prediction and launch scale"
       }
     }

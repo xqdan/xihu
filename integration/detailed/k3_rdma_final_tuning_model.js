@@ -85,7 +85,8 @@ const OPT={
 const GAIN={
   // hot collectives (Attention output, Wup all-reduce, Shared output, Routed latent) after phase fusion
   hotPhaseDuration:1,hotWire:1,hotReadWrite:1,hotNoc:1,hotWorkspace:1,
-  // hierarchical (4+4 die) reduce
+  // hierarchical (4+4 die) reduce. The in-card basis is the die ring (A.dieRing, B-004); no 4+4
+  // schedule is modelled, so these factors stay 1 until one is.
   hierCardLocal:1,hierTpReduce:1,hierDuration:1,
   // remote direct reduce into shared-SRAM staging
   remoteMemoryTransport:1,remoteDuration:1,remoteReadWrite:1,remoteNoc:1,
