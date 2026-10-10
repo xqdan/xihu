@@ -1,0 +1,877 @@
+{
+  "format": "k3-cost-coverage/1",
+  "status": "MODEL: share of the published raw latency whose kernel time is measured, fitted or analytical, and the shapes to measure. Feeds no gate or baseline",
+  "evidenceClass": "MODEL",
+  "workItem": "ARCH-CH-02",
+  "plan": "teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md",
+  "method": "Kernel line of every compute op from cost_provider.js (measured -> fitted -> analytical); all other service lines, DMA wait and the hidden lines are MODEL. Shares are gross (hidden kernels count in full).",
+  "provenance": {
+    "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
+    "baselineSha256": "aac3b9eb2679cf29adca9125c49f1c99dfd27ee66b09ac8575e7ea47d59eff49",
+    "observations": "teams/vv/inputs/operator_cost_observations.json",
+    "observationsSha256": "aa535b0adf152419b1452c2bc73e1ba356ec3dfc35f7f16754140af1423ee5b2",
+    "observationCount": 0,
+    "sources": {
+      "integration/detailed/cost_coverage.js": "ce8e2ed8b4c06b294976452a64fb2971441f8ede5685375a8ef62f353aa14765",
+      "integration/detailed/cost_provider.js": "9a737e30a235e8e9c30f8eab40e198df47667525ca5c27cb5ce16d176dbec413",
+      "integration/detailed/k3_operator_sram_sim.js": "49580d74ff1f93c70ad8185d99cca679bc3d28ab2a61b889c6c8c3ef45343355",
+      "integration/detailed/k3_architecture_search.js": "6dfb8062f990495e75d78e158f7d8ad035da99ce02d3936211fc61afc6b9dab8",
+      "integration/detailed/k3_physical_basis.js": "c93f516e1ecdbd35190f714c06deac1ada09d64656fcd75332a7a2214a2f3c90",
+      "integration/detailed/k3_sram_memory_rdma_model.js": "68314a43ca69a40d170ac1f1f266c09124ee8f34afe8946ff6301fa8b61df187",
+      "integration/detailed/k3_rdma_final_tuning_model.js": "0410f9cf6db81716fce488916905a87e66626af92c8b554bf83109ee3fade12c"
+    }
+  },
+  "target": {
+    "point": "published (tpsDesign.hardware.x, model OPT)",
+    "hardware": {
+      "nL": 8,
+      "nH": 4,
+      "lRows": 1,
+      "lCols": 256,
+      "lEngines": 8,
+      "hRows": 48,
+      "hCols": 128,
+      "hEngines": 5,
+      "ghz": 1,
+      "vectorLanes": 512,
+      "lMiB": 1,
+      "hMiB": 4,
+      "lBanks": 64,
+      "hBanks": 64,
+      "bankBytes": 64,
+      "tmaEngines": 4,
+      "tmaBytes": 512,
+      "kvTile": 32768,
+      "headTile": 96
+    }
+  },
+  "ledger": {
+    "rawUs": 775.7517671190814,
+    "tpsPerUser": 1101.771070241925,
+    "waitUs": 22.353084639818142,
+    "services": {
+      "kernel": 224.84237236788633,
+      "localTma": 42.874092680469154,
+      "tmaFill": 134.77336125833259,
+      "reduce": 14.233846153846155,
+      "dieLink": 6.729843750000002,
+      "launch": 11.171250000000223,
+      "assumedGain": 7.827072323607354e-15,
+      "memoryTransport": 192.3679999999996,
+      "tpReduce": 1.87914285714285,
+      "cardLocal": 74.70554326923076,
+      "portTail": 0,
+      "tauFloor": 182.99731387362533,
+      "commOverlap": -26.269469336035073,
+      "tmaHidden": -106.90661439522479
+    },
+    "kernelUs": 224.84237236788633,
+    "nonKernelUs": 550.909394751195,
+    "bySource": {
+      "measured": 0,
+      "fitted": 0,
+      "analytical": 224.84237236788633,
+      "nonKernel": 550.909394751195
+    },
+    "byEvidence": {
+      "SILICON_OBSERVED": 0,
+      "EMULATION_OBSERVED": 0,
+      "MODEL": 775.7517671190814
+    }
+  },
+  "shares": {
+    "measured": 0,
+    "fitted": 0,
+    "observed": 0,
+    "analyticalKernel": 0.2898380408502144,
+    "nonKernel": 0.7101619591497855
+  },
+  "classes": [
+    {
+      "class": "attention",
+      "ops": 4,
+      "shapes": 4,
+      "kernelUs": 166.34671648351647
+    },
+    {
+      "class": "linear",
+      "ops": 9,
+      "shapes": 13,
+      "kernelUs": 30.477796667480458
+    },
+    {
+      "class": "expert",
+      "ops": 2,
+      "shapes": 2,
+      "kernelUs": 26.661599999999964
+    },
+    {
+      "class": "other",
+      "ops": 15,
+      "shapes": 15,
+      "kernelUs": 1.3562592168898804
+    }
+  ],
+  "calibrationQueue": [
+    {
+      "rank": 1,
+      "op": "QK (absorbed MLA)",
+      "unit": "H",
+      "class": "attention",
+      "count": 24,
+      "kernelUs": 78.26510769230767,
+      "costSource": {
+        "analytical": 24
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 3623878656,
+            "readBytes": 21606400,
+            "writeBytes": 12582912
+          },
+          "count": 24,
+          "kernelUsEach": 3.2610461538461535,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.10088937081376138
+    },
+    {
+      "rank": 2,
+      "op": "PV + rescale accumulation",
+      "unit": "H",
+      "class": "attention",
+      "count": 24,
+      "kernelUs": 69.57323076923079,
+      "costSource": {
+        "analytical": 24
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 3221422080,
+            "readBytes": 34078720,
+            "writeBytes": 196608
+          },
+          "count": 24,
+          "kernelUsEach": 2.898884615384615,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.08968491432202047
+    },
+    {
+      "rank": 3,
+      "op": "Linear recurrent state update",
+      "unit": "H",
+      "class": "attention",
+      "count": 69,
+      "kernelUs": 10.938092307692292,
+      "costSource": {
+        "analytical": 69
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 344064,
+            "readBytes": 98304,
+            "writeBytes": 196608
+          },
+          "count": 69,
+          "kernelUsEach": 0.1585230769230769,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.01409999019185379
+    },
+    {
+      "rank": 4,
+      "op": "Online softmax",
+      "unit": "V",
+      "class": "attention",
+      "count": 24,
+      "kernelUs": 7.570285714285719,
+      "costSource": {
+        "analytical": 24
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 25165824,
+            "readBytes": 12582912,
+            "writeBytes": 12582912
+          },
+          "count": 24,
+          "kernelUsEach": 0.31542857142857145,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.009758644498354905
+    },
+    {
+      "rank": 5,
+      "op": "Linear projections (fitted)",
+      "unit": "L",
+      "class": "linear",
+      "count": 138,
+      "kernelUs": 9.01553295197518,
+      "costSource": {
+        "analytical": 138
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 8388608,
+            "readBytes": 8417280,
+            "writeBytes": 28672
+          },
+          "count": 69,
+          "kernelUsEach": 0.0736,
+          "costSource": "analytical"
+        },
+        {
+          "shape": {
+            "flops": 6503439.070967743,
+            "readBytes": 6532111.070967743,
+            "writeBytes": 28672
+          },
+          "count": 69,
+          "kernelUsEach": 0.0570598978547127,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.01162167246547987
+    },
+    {
+      "rank": 6,
+      "op": "Attention output projection (fitted)",
+      "unit": "L",
+      "class": "linear",
+      "count": 186,
+      "kernelUs": 8.100913666992176,
+      "costSource": {
+        "analytical": 186
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 8388608,
+            "readBytes": 8417280,
+            "writeBytes": 28672
+          },
+          "count": 93,
+          "kernelUsEach": 0.0736,
+          "costSource": "analytical"
+        },
+        {
+          "shape": {
+            "flops": 1539423.3806451617,
+            "readBytes": 1568095.3806451615,
+            "writeBytes": 28672
+          },
+          "count": 93,
+          "kernelUsEach": 0.013506598569808468,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.010442662215358703
+    },
+    {
+      "rank": 7,
+      "op": "Shared gate/up",
+      "unit": "L",
+      "class": "linear",
+      "count": 184,
+      "kernelUs": 4.443599999999999,
+      "costSource": {
+        "analytical": 184
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 2752512,
+            "readBytes": 2781184,
+            "writeBytes": 28672
+          },
+          "count": 184,
+          "kernelUsEach": 0.02415,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.005728121015440609
+    },
+    {
+      "rank": 8,
+      "op": "MLA Q/KV projections (fitted)",
+      "unit": "L",
+      "class": "linear",
+      "count": 48,
+      "kernelUs": 3.135837548513104,
+      "costSource": {
+        "analytical": 48
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 8388608,
+            "readBytes": 8417280,
+            "writeBytes": 28672
+          },
+          "count": 24,
+          "kernelUsEach": 0.0736,
+          "costSource": "analytical"
+        },
+        {
+          "shape": {
+            "flops": 6503439.070967743,
+            "readBytes": 6532111.070967743,
+            "writeBytes": 28672
+          },
+          "count": 24,
+          "kernelUsEach": 0.0570598978547127,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.004042320857558212
+    },
+    {
+      "rank": 9,
+      "op": "Shared down",
+      "unit": "L",
+      "class": "linear",
+      "count": 184,
+      "kernelUs": 2.2217999999999996,
+      "costSource": {
+        "analytical": 184
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 1376256,
+            "readBytes": 1404928,
+            "writeBytes": 28672
+          },
+          "count": 184,
+          "kernelUsEach": 0.012075,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.0028640605077203045
+    },
+    {
+      "rank": 10,
+      "op": "Latent Wdown",
+      "unit": "L",
+      "class": "linear",
+      "count": 92,
+      "kernelUs": 1.2960500000000013,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 1605632,
+            "readBytes": 1634304,
+            "writeBytes": 28672
+          },
+          "count": 92,
+          "kernelUsEach": 0.0140875,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.0016707019628368462
+    },
+    {
+      "rank": 11,
+      "op": "Latent Wup",
+      "unit": "L",
+      "class": "linear",
+      "count": 92,
+      "kernelUs": 1.2960500000000013,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 1605632,
+            "readBytes": 1634304,
+            "writeBytes": 28672
+          },
+          "count": 92,
+          "kernelUsEach": 0.0140875,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.0016707019628368462
+    },
+    {
+      "rank": 12,
+      "op": "LM head",
+      "unit": "L",
+      "class": "linear",
+      "count": 9,
+      "kernelUs": 0.644,
+      "costSource": {
+        "analytical": 9
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 8388608,
+            "readBytes": 8417280,
+            "writeBytes": 28672
+          },
+          "count": 8,
+          "kernelUsEach": 0.0736,
+          "costSource": "analytical"
+        },
+        {
+          "shape": {
+            "flops": 6291456,
+            "readBytes": 6320128,
+            "writeBytes": 28672
+          },
+          "count": 1,
+          "kernelUsEach": 0.0552,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.0008301624660058855
+    },
+    {
+      "rank": 13,
+      "op": "Router logits",
+      "unit": "L",
+      "class": "linear",
+      "count": 92,
+      "kernelUs": 0.3240125000000003,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 401408,
+            "readBytes": 430080,
+            "writeBytes": 28672
+          },
+          "count": 92,
+          "kernelUsEach": 0.003521875,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.00041767549070921155
+    },
+    {
+      "rank": 14,
+      "op": "Expert gate/up",
+      "unit": "L",
+      "class": "expert",
+      "count": 92,
+      "kernelUs": 17.774399999999975,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 22020096,
+            "readBytes": 5972992,
+            "writeBytes": 123904
+          },
+          "count": 92,
+          "kernelUsEach": 0.1932,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.022912484061762408
+    },
+    {
+      "rank": 15,
+      "op": "Expert down",
+      "unit": "L",
+      "class": "expert",
+      "count": 92,
+      "kernelUs": 8.887199999999988,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 11010048,
+            "readBytes": 3163136,
+            "writeBytes": 238592
+          },
+          "count": 92,
+          "kernelUsEach": 0.0966,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.011456242030881204
+    },
+    {
+      "rank": 16,
+      "op": "Expert weighted sum",
+      "unit": "V",
+      "class": "other",
+      "count": 92,
+      "kernelUs": 0.5289999999999994,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 114688,
+            "readBytes": 229376,
+            "writeBytes": 14336
+          },
+          "count": 92,
+          "kernelUsEach": 0.00575,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.0006819191685048337
+    },
+    {
+      "rank": 17,
+      "op": "Attention RMSNorm",
+      "unit": "V",
+      "class": "other",
+      "count": 93,
+      "kernelUs": 0.20053124999999988,
+      "costSource": {
+        "analytical": 93
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 43008,
+            "readBytes": 14336,
+            "writeBytes": 14336
+          },
+          "count": 93,
+          "kernelUsEach": 0.0021562499999999997,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.0002584992500174575
+    },
+    {
+      "rank": 18,
+      "op": "MoE RMSNorm",
+      "unit": "V",
+      "class": "other",
+      "count": 92,
+      "kernelUs": 0.19837499999999988,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 43008,
+            "readBytes": 14336,
+            "writeBytes": 14336
+          },
+          "count": 92,
+          "kernelUsEach": 0.0021562499999999997,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.0002557196881893128
+    },
+    {
+      "rank": 19,
+      "op": "Dispatch local pack",
+      "unit": "V",
+      "class": "other",
+      "count": 92,
+      "kernelUs": 0.12343333333333352,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 0,
+            "readBytes": 7168,
+            "writeBytes": 114688
+          },
+          "count": 92,
+          "kernelUsEach": 0.0013416666666666666,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.0001591144726511283
+    },
+    {
+      "rank": 20,
+      "op": "RoPE",
+      "unit": "V",
+      "class": "other",
+      "count": 24,
+      "kernelUs": 0.08871428571428573,
+      "costSource": {
+        "analytical": 24
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 36864,
+            "readBytes": 110592,
+            "writeBytes": 110592
+          },
+          "count": 24,
+          "kernelUsEach": 0.003696428571428571,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.00011435911521509649
+    },
+    {
+      "rank": 21,
+      "op": "Shared + routed + residual add",
+      "unit": "V",
+      "class": "other",
+      "count": 92,
+      "kernelUs": 0.06612499999999992,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 14336,
+            "readBytes": 28672,
+            "writeBytes": 14336
+          },
+          "count": 92,
+          "kernelUsEach": 0.00071875,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.00008523989606310421
+    },
+    {
+      "rank": 22,
+      "op": "SiLU x up",
+      "unit": "V",
+      "class": "other",
+      "count": 92,
+      "kernelUs": 0.042508928571428496,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 9216,
+            "readBytes": 6144,
+            "writeBytes": 3072
+          },
+          "count": 92,
+          "kernelUsEach": 0.0004620535714285714,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.00005479707604056696
+    },
+    {
+      "rank": 23,
+      "op": "Attention residual add",
+      "unit": "V",
+      "class": "other",
+      "count": 93,
+      "kernelUs": 0.03342187499999996,
+      "costSource": {
+        "analytical": 93
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 7168,
+            "readBytes": 28672,
+            "writeBytes": 14336
+          },
+          "count": 93,
+          "kernelUsEach": 0.000359375,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.00004308320833624289
+    },
+    {
+      "rank": 24,
+      "op": "Top-k / route resolve",
+      "unit": "V",
+      "class": "other",
+      "count": 92,
+      "kernelUs": 0.03306249999999996,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 7168,
+            "readBytes": 3584,
+            "writeBytes": 256
+          },
+          "count": 92,
+          "kernelUsEach": 0.000359375,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.000042619948031552106
+    },
+    {
+      "rank": 25,
+      "op": "Q / new-KV all-gather",
+      "unit": "V",
+      "class": "other",
+      "count": 24,
+      "kernelUs": 0.0313734375,
+      "costSource": {
+        "analytical": 24
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 0,
+            "readBytes": 111744,
+            "writeBytes": 111744
+          },
+          "count": 24,
+          "kernelUsEach": 0.0013072265624999998,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.00004044262459950547
+    },
+    {
+      "rank": 26,
+      "op": "Shared SiLU x up",
+      "unit": "V",
+      "class": "other",
+      "count": 184,
+      "kernelUs": 0.005313616071428569,
+      "costSource": {
+        "analytical": 184
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 576,
+            "readBytes": 384,
+            "writeBytes": 192
+          },
+          "count": 184,
+          "kernelUsEach": 0.00002887834821428571,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.0000068496345050708794
+    },
+    {
+      "rank": 27,
+      "op": "Final RMSNorm",
+      "unit": "V",
+      "class": "other",
+      "count": 1,
+      "kernelUs": 0.0021562499999999997,
+      "costSource": {
+        "analytical": 1
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 43008,
+            "readBytes": 14336,
+            "writeBytes": 14336
+          },
+          "count": 1,
+          "kernelUsEach": 0.0021562499999999997,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.0000027795618281447055
+    },
+    {
+      "rank": 28,
+      "op": "Sampling",
+      "unit": "V",
+      "class": "other",
+      "count": 1,
+      "kernelUs": 0.0020535714285714285,
+      "costSource": {
+        "analytical": 1
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 40960,
+            "readBytes": 20480,
+            "writeBytes": 4
+          },
+          "count": 1,
+          "kernelUsEach": 0.0020535714285714285,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.000002647201741090196
+    },
+    {
+      "rank": 29,
+      "op": "KV append source",
+      "unit": "V",
+      "class": "other",
+      "count": 24,
+      "kernelUs": 0.00018417968749999994,
+      "costSource": {
+        "analytical": 24
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 0,
+            "readBytes": 1152,
+            "writeBytes": 656
+          },
+          "count": 24,
+          "kernelUsEach": 0.000007674153645833333,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 2.3742090615402688e-7
+    },
+    {
+      "rank": 30,
+      "op": "Distributed sampling candidates",
+      "unit": "V",
+      "class": "other",
+      "count": 1,
+      "kernelUs": 0.000005989583333333333,
+      "costSource": {
+        "analytical": 1
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 0,
+            "readBytes": 512,
+            "writeBytes": 512
+          },
+          "count": 1,
+          "kernelUsEach": 0.000005989583333333333,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 7.721005078179738e-9
+    }
+  ]
+}

@@ -30,7 +30,15 @@
 - 执行 trace 导出（2026-10-10，[`execution_trace.js`](../../integration/detailed/execution_trace.js)，`npm run trace:published`）：
   发布点一个 step 的计算槽、集合通信、等待、DMA、TMA-L/H、SRAM 占用时间线（Chrome Trace，Perfetto 可开），
   逐轨与时间账守恒对账；每类集合通信抽样一次展开 RDMA 阶段和逐 peer 事件；`--diff` 按算子对比机制回退。
-  契约见 [`contracts/EXECUTION_TRACE.md`](contracts/EXECUTION_TRACE.md)，证据等级 MODEL。
+  契约见 [`contracts/EXECUTION_TRACE.md`](contracts/EXECUTION_TRACE.md)，证据等级 MODEL；
+- 前台重叠争用选项（2026-10-10，ARCH-CH-01）：`simulate(..., {contention:'proportional'})` 让运行中的算子和集合通信按剩余工作量推进，
+  两者对 shared SRAM 读口、写口和 fabric 的总需求超过上限时按需求比例分配，不含标定因子；默认 `'none'` 即发布模型。
+  `npm run contention:delta` → `out/detailed/contention_delta.json`；
+- 算子成本提供者（2026-10-10，ARCH-CH-02）：`mappedPlan` 的 `kernel` 一项按"实测 → 两点插值 → 解析式"取值
+  （[`cost_provider.js`](../../integration/detailed/cost_provider.js)，实测表
+  [`teams/vv/inputs/operator_cost_observations.json`](../../teams/vv/inputs/operator_cost_observations.json) 目前为空），
+  每个算子带 `costSource` / `costEvidence`。`npm run cost:coverage` → `out/detailed/cost_coverage.json`：
+  raw 按证据来源分解，以及按本文 §8 和 24 号文档顺序排列的待测 shape 队列。
 
 这是良好起点，但还不是签核级模型。
 

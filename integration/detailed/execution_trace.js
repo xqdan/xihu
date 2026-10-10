@@ -38,6 +38,8 @@ const SOURCE_FILES = [
   'integration/detailed/execution_trace.js',
   'integration/detailed/k3_operator_sram_sim.js',
   'integration/detailed/k3_architecture_search.js',
+  'integration/detailed/cost_provider.js',
+  'teams/vv/inputs/operator_cost_observations.json',
   'integration/detailed/k3_physical_basis.js',
   'integration/detailed/k3_sram_memory_rdma_model.js',
   'integration/detailed/k3_rdma_final_tuning_model.js'
@@ -103,7 +105,8 @@ const ledgerOf = r => ({
 
 function opArgs(o, extra = {}) {
   const a = {operator_id: o.id, layer: o.layer, unit: o.unit, flops: o.flops, readBytes: o.read, writeBytes: o.write, linkBytes: o.linkBytes,
-    durationUs: o.duration, timing: o.timing, evidence: EVIDENCE};
+    durationUs: o.duration, timing: o.timing, evidence: EVIDENCE, costSource: o.costSource, costEvidence: o.costEvidence};
+  if (o.costObservations) a.costObservations = o.costObservations;
   if (o.detail) a.detail = o.detail;
   if (o.overlapComm) a.overlapComm = true;
   if (o.tma) a.tma = {us: o.tma.us, bytes: o.tma.bytes, domain: o.tma.domain};

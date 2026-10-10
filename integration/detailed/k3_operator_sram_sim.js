@@ -226,7 +226,18 @@ function build(input={}){
  return {c,model:m,ops,jobs,layers,layerJobs,expertJobs,scratch,scratchReserve,U,minCapacity:scratchReserve+minTransfer,kvBytesPerToken:kvBytes,
   backingBytes:weightStore+stateStore,weightStore,stateStore};
 }
-function simulate(plan,sramMiB,{trace=false}={}){
+// contention: 'none' (default, the published model) gives the running op and the in-flight
+// collective their mapped service time whatever runs beside them; only DMA and TMA fills yield.
+// 'proportional' (ARCH-CH-01, teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md) advances both
+// by remaining work: where their summed demand on the shared-SRAM read port, write port or fabric
+// exceeds the cap, each gets the cap in proportion to its demand. No calibration factor. An op whose
+// own demand already exceeds a cap enters the sharing at the cap and keeps its mapped time; it is
+// reported (overCap, with the time it would add at the cap) and not booked as contention: that is
+// a mapping question, not two requesters sharing a resource.
+const CONTENTION=['none','proportional'];
+function simulate(plan,sramMiB,{trace=false,contention='none'}={}){
+ if(!CONTENTION.includes(contention))throw Error('unknown contention mode '+contention);
+ const prop=contention==='proportional';
  const {c,ops,layers,scratchReserve}=plan,S=sramMiB*MiB,pool=S-scratchReserve;
  if(S+1e-6<plan.minCapacity)return {sramMiB,feasible:false,reason:'Fixed tile + scratch does not fit',minMiB:plan.minCapacity/MiB};
  const js=plan.jobs.map(j=>({...j,status:j.kind==='expert'?'blocked':j.kind==='write'?'output':'queued',reserved:0,remaining:0,adopted:false}));
@@ -245,6 +256,13 @@ function simulate(plan,sramMiB,{trace=false}={}){
  let t=0,index=0,running=null,comm=null,dma=null,used=0,peakReserved=0,peakLive=0,wait=0,compute=0,coll=0,overlap=0,dmaBusy=0;
  let readBytes=0,writeBytes=0,predBytes=0,wrongBytes=0,evictBytes=0,stallCapacityUs=0;
  let iterations=0;const layerStats=layers.map(l=>({...l,start:null,end:null,wait:0,compute:0,comm:0,readBytes:0,writeBytes:0,peak:0,operators:{}}));
+ // contention:'proportional' only. contended is the wall time the running op and the collective
+ // lose to sharing (the slowdown dt*(1-speed) of each), booked so the timeline still conserves.
+ const caps={read:c.sramReadTBs*1e6,write:c.sramWriteTBs*1e6,fabric:c.fabricTBs*1e6},overCap={},peakLoad={read:{load:0},write:{load:0},fabric:{load:0}};
+ let contended=0;if(prop)for(const st of layerStats)st.contention=0;
+ const demand=o=>o.duration>0?{read:o.read/o.duration,write:o.write/o.duration,fabric:o.linkBytes/o.duration}:{read:0,write:0,fabric:0};
+ // A slowed foreground requester draws only its share, which is what DMA and fills then see.
+ const pace=o=>prop?o.speed:1;
  const writes=[],events=[],occupancy=[];let capacityBlocked=false;
  // A write job only ever moves output -> queued -> filling -> done, and is queued once, so everything before
  // writeHead is past 'queued' for good and the first queued write is found without rescanning the history.
@@ -307,7 +325,7 @@ function simulate(plan,sramMiB,{trace=false}={}){
   if(trace)events.push({type:'DMA end',t,job:j.id,layer:j.layer,category:j.category});
  }
  function finishOp(){
-  const o=running;running=null;
+  const o=running;running=null;if(o.ev)o.ev.end=t;
   for(const id of required(o)){const j=js[id];if(j.last===o.id){free(j);j.status='done';}}
   for(const id of o.outputs){js[id].status='queued';writes.push(id);}
   if(o.router)route(o.layer);
@@ -316,7 +334,7 @@ function simulate(plan,sramMiB,{trace=false}={}){
   index++;record();
  }
  function finishComm(){
-  const o=comm;comm=null;
+  const o=comm;comm=null;if(o.ev)o.ev.end=t;
   if(trace)events.push({type:'COMM end',t,index:o.id,layer:o.layer,name:o.name});
   record();
  }
@@ -334,10 +352,26 @@ function simulate(plan,sramMiB,{trace=false}={}){
   if(filled){for(const id of ids)js[id].tmaPin=false;tmaPre+=o.tma.us;}
   const body=filled?Math.max(0,o.duration-o.tma.us):o.duration,moved=filled?o.tma.bytes:0;
   if(async){comm={...o,end:t+o.duration};index++;}else running={...o,duration:body,read:o.read-moved,linkBytes:o.linkBytes-moved,end:t+body};
+  const issued=async?comm:running;
+  if(prop){issued.left=issued.duration;issued.speed=1;const d=demand(issued);let worst=1;
+   for(const k in caps)if(d[k]>caps[k]){const e=overCap[o.name]||(overCap[o.name]={name:o.name,unit:o.unit,count:0,read:0,write:0,fabric:0,clippedUs:0});
+    if(worst===1)e.count++;e[k]=Math.max(e[k],d[k]/caps[k]);worst=Math.max(worst,d[k]/caps[k]);}
+   // What the op would add if it ran at the cap instead: not simulated, only reported.
+   if(worst>1)overCap[o.name].clippedUs+=issued.duration*(worst-1);}
   if(o.unit==='COMM'){coll+=o.duration;stat.comm+=o.duration;}else{compute+=o.duration;stat.compute+=o.duration;}
   const a=stat.operators[o.name]||(stat.operators[o.name]={name:o.name,unit:o.unit,count:0,flops:0,read:0,write:0,service:0,wait:0});a.count++;a.flops+=o.flops;a.read+=o.read;a.write+=o.write;a.service+=o.duration;
-  if(trace)events.push({type:'op',layer:o.layer,index:o.id,name:o.name,unit:o.unit,async,filled:!!filled,start:t,end:t+body,detail:o.detail});
+  if(trace){const ev={type:'op',layer:o.layer,index:o.id,name:o.name,unit:o.unit,async,filled:!!filled,start:t,end:t+body,detail:o.detail};events.push(ev);
+   // Under contention the end is known only when the op finishes.
+   if(prop)issued.ev=ev;}
   record();return true;
+ }
+ function foreSpeeds(){
+  // ARCH-CH-01: each foreground requester's demand, clipped to the cap; where the sum still
+  // exceeds a cap every requester gets cap/sum of it, and progresses at its slowest resource.
+  const act=[running,comm].filter(Boolean),want=act.map(demand),share={};
+  for(const k in caps){const sum=want.reduce((a,d)=>a+Math.min(d[k],caps[k]),0);share[k]=sum>caps[k]?caps[k]/sum:1;
+   if(act.length>1&&sum/caps[k]>peakLoad[k].load)peakLoad[k]={load:sum/caps[k],layer:act[0].layer,ops:act.map(o=>o.name)};}
+  act.forEach((o,i)=>{let s=1;for(const k in caps)if(want[i][k]>0)s=Math.min(s,share[k]);o.speed=s;o.end=t+o.left/s;});
  }
  function startFills(){
   // One fill per domain lane, in program order: only the domain's next filled
@@ -361,7 +395,7 @@ function simulate(plan,sramMiB,{trace=false}={}){
   // read port and the fabric, and what a same-domain kernel leaves of the
   // local write port. Nominal speed 1 reproduces the mapper's fill time.
   const act=[running,comm].filter(Boolean);
-  const opRead=act.reduce((a,o)=>a+o.read/o.duration,0),link=act.reduce((a,o)=>a+o.linkBytes/o.duration,0);
+  const opRead=act.reduce((a,o)=>a+o.read/o.duration*pace(o),0),link=act.reduce((a,o)=>a+o.linkBytes/o.duration*pace(o),0);
   const demand=fills.reduce((a,f)=>a+f.rate,0);
   const shared=demand?Math.max(0,Math.min(1,(c.sramReadTBs*1e6-opRead)/demand,(c.fabricTBs*1e6-link)/demand)):1;
   for(const f of fills){
@@ -430,14 +464,15 @@ function simulate(plan,sramMiB,{trace=false}={}){
   if(!dma)return 0;
   const act=[running,comm].filter(Boolean);
   const tma=fills.reduce((a,f)=>a+f.rate*f.speed,0);
-  const opRead=act.reduce((a,o)=>a+o.read/o.duration,0)+tma,opWrite=act.reduce((a,o)=>a+o.write/o.duration,0);
-  const commFabric=act.reduce((a,o)=>a+o.linkBytes/o.duration,0)+tma;
+  const opRead=act.reduce((a,o)=>a+o.read/o.duration*pace(o),0)+tma,opWrite=act.reduce((a,o)=>a+o.write/o.duration*pace(o),0);
+  const commFabric=act.reduce((a,o)=>a+o.linkBytes/o.duration*pace(o),0)+tma;
   const port=dma.kind==='write'?c.sramReadTBs*1e6-opRead:c.sramWriteTBs*1e6-opWrite;
   return Math.max(0,Math.min(c.memTBs*1e6,c.fabricTBs*1e6-commFabric,port));
  }
  while(index<ops.length||comm||dma||parked.length||fills.length||nextWrite()!==undefined){
   if(++iterations>ops.length*30+js.length*30)throw Error('Event loop bound');
   capacityBlocked=false;while(tryOp());if(tl)startFills();selectDMA();
+  if(prop)foreSpeeds();
   if(tl)fillSpeeds();
   const rate=dmaRate(),endOp=running?running.end:Infinity,endComm=comm?comm.end:Infinity,endDma=dma&&rate>1e-9?t+dma.remaining/rate:Infinity;
   const endFill=fills.reduce((a,f)=>f.speed>1e-12?Math.min(a,t+f.remaining/f.speed):a,Infinity);
@@ -455,6 +490,7 @@ function simulate(plan,sramMiB,{trace=false}={}){
   if(trace&&dt>0){if(exposed)events.push({type:'TMA exposed',t,dur:dt,index:head.id,layer:head.layer});
    if(!busy&&!comm)events.push({type:'wait',t,dur:dt,index:index<ops.length?index:null});}
   for(const f of fills)f.remaining-=dt*f.speed;
+  if(prop)for(const f of [running,comm])if(f){f.left-=dt*f.speed;const lost=dt*(1-f.speed);if(lost>0){contended+=lost;layerStats[f.layer].contention+=lost;}}
   if(busy&&comm)overlap+=dt;
   if(!busy&&!comm){wait+=dt;if(index<ops.length){const st=layerStats[ops[index].layer];st.wait+=dt;const op=ops[index],a=st.operators[op.name]||(st.operators[op.name]={name:op.name,unit:op.unit,count:0,flops:0,read:0,write:0,service:0,wait:0});a.wait+=dt;}}
   if(capacityBlocked)stallCapacityUs+=dt;
@@ -470,12 +506,14 @@ function simulate(plan,sramMiB,{trace=false}={}){
  // compute counts each op's full service; a fill that ran while the slot was
  // otherwise occupied (or idle behind a collective) is hidden.
  const tmaHidden=tmaPre-tmaExposed;
- if(Math.abs(t-(compute-tmaHidden+coll+wait-overlap))>1e-5)throw Error('Timeline conservation');
+ if(Math.abs(t-(compute-tmaHidden+coll+wait-overlap+contended))>1e-5)throw Error('Timeline conservation');
  for(const st of layerStats){st.duration=st.end-st.start;st.peakMiB=st.peak/MiB;delete st.peak;}
+ // Reported only when asked for, so the default result is the published model's, field for field.
+ const shared=prop?{contentionUs:contended,contention:{mode:contention,peakForegroundLoad:peakLoad,overCap:Object.values(overCap)}}:{};
  return {sramMiB,feasible:true,rawUs:t,e2eUs:t*c.margin,tps:1e6/(t*c.margin),tokensPerSecond:c.batch*1e6/(t*c.margin),
   computeUs:compute,commUs:coll,waitUs:wait,overlapUs:overlap,tmaFillUs:tmaPre,tmaExposedUs:tmaExposed,tmaHiddenUs:tmaHidden,dmaPreemptions:preemptions,tmaCancels,dmaBusyUs:dmaBusy,readBytes,writeBytes,predBytes,wrongBytes,evictBytes,stallCapacityUs,
-  peakReservedMiB:peakReserved/MiB,peakLiveMiB:peakLive/MiB,scratchMiB:scratchReserve/MiB,minMiB:plan.minCapacity/MiB,
+  peakReservedMiB:peakReserved/MiB,peakLiveMiB:peakLive/MiB,scratchMiB:scratchReserve/MiB,minMiB:plan.minCapacity/MiB,...shared,
   layerStats,events,occupancy};
 }
-module.exports={DEFAULT,MiB,build,simulate};
+module.exports={DEFAULT,MiB,CONTENTION,build,simulate};
 if(require.main===module){const p=build();console.log('ops',p.ops.length,'jobs',p.jobs.length,'minMiB',p.minCapacity/MiB);for(const S of [24,64,288,768]){const r=simulate(p,S);console.log(S,r.tps,r.waitUs,r.peakReservedMiB,r.reason);}}

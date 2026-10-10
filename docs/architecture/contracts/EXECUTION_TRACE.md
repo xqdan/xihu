@@ -72,6 +72,9 @@ provenance 只记文件内容的 sha256，不记 git commit：这样 trace 只�
 - `op` / `comm`：`unit`、`flops`、`readBytes`、`writeBytes`、`linkBytes`、`durationUs`（算子服务时间）、`timing`（`mappedPlan` 的时长拆解，含
   `kernel`/`localTma`/`tmaFill`/`launch`/`assumedGain`，COMM 为 `memoryTransport`/`tpReduce`/`cardLocal`/`portTail`/`tauFloor`）；
   可选 `detail`（如 `weight tile 1/2`）、`overlapComm`、`tma`。`op` 另有 `bodyUs`（切片时长）与 `tmaPrefilled`；`comm` 另有 `async`。
+  另有 `costSource`（`measured` / `fitted` / `analytical`）和 `costEvidence`（`SILICON_OBSERVED` / `EMULATION_OBSERVED` / `MODEL`）：
+  `timing.kernel` 来自哪一级（ARCH-CH-02，`cost_provider.js`）；非解析时还有 `costObservations`（引用的实测条目 id）。
+  集合通信恒为 `analytical` / `MODEL`。`evidence` 仍是 `MODEL`：它描述整个调度视图，`costEvidence` 只描述 kernel 一项。
 - `dma`：`operator_id` 对读取是消费它的算子，对写回是产生它的算子；另有 `job`、`kind`、`category`、`bytes`、`segment`、`endedBy`。
 - `tma`：`bytes`、`nominalUs`（无争用时的 fill 时长）、`halves`。
 

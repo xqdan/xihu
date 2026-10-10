@@ -1,0 +1,24 @@
+{
+  "format": "k3-operator-cost-observations/1",
+  "status": "EMPTY: no operator has been measured. Every op's kernel time is the analytical model (costSource analytical, evidence MODEL).",
+  "owner": "VV (teams/vv/docs/VV_MEASUREMENT_PLAN.md); consumer integration/detailed/cost_provider.js",
+  "plan": "teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md ARCH-CH-02",
+  "schema": {
+    "id": "unique string, cited by the ops that use it",
+    "op": "mappedPlan op name, exactly as in plan.ops (e.g. 'QK (absorbed MLA)')",
+    "shape": "{flops, readBytes, writeBytes}: the op's card-level flops and bytes as mappedPlan sees them before mapping (out/detailed/cost_coverage.json lists the shapes the published point needs)",
+    "hardware": "values of every key in cost_provider.js HW_KEYS for the design point measured",
+    "kernelUs": "kernel body time on the card in microseconds: matrix/vector/unpack body only, without shared->local staging, flush, reduce, die link or launch, and before fused online-softmax hiding",
+    "evidence": "SILICON_OBSERVED (silicon, prototype or FPGA; docs/architecture/14_TPS_OBSERVATION_METRICS.md section 3) or EMULATION_OBSERVED (RTL simulation or Palladium emulation)",
+    "source": "where the number comes from: run log, report or artifact path",
+    "environment": "toolchain, RTL/netlist version, clock, firmware and settings of the run",
+    "repeats": "integer >= 1",
+    "errorUs": "measurement error in microseconds, >= 0"
+  },
+  "rules": [
+    "An exact match on op, shape and hardware replaces the analytical kernel (costSource measured).",
+    "Two observations of the same op and hardware whose shapes bracket the query on a line give a linear interpolation (costSource fitted, the weaker evidence of the two). There is no extrapolation: outside the sampled segment the op falls back to the analytical value.",
+    "Numbers from references/ or other external papers are not observations of this hardware and may not be entered here."
+  ],
+  "observations": []
+}
