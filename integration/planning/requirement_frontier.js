@@ -95,15 +95,47 @@ function context(options = {}) {
   const guidance = Object.fromEntries(active.map(m => [m, RW.computeGuidance({planning}, m, CONTRACT_TP)]));
   const guidanceLower = active.length ? Math.min(...active.flatMap(m => guidance[m].map(c => c.lower))) : 0;
   const computeHard = Math.max(1e-3, COMPUTE_FLOOR_FRACTION * guidanceLower);
-  return {spec, workload, x, planning, guidance, hard: {...HARD, computeScale: computeHard},
+  const scenarioCatalog = RW.loadScenarioCatalog(options);
+  for (const s of scenarioCatalog) if (!models.includes(s.model)) throw new Error(`unknown scenario model ${s.model}`);
+  return {spec, workload, x, planning, guidance, scenarioCatalog, hard: {...HARD, computeScale: computeHard},
     active,
     blocked: models.filter(m => !planning[m]),
     tech: Object.fromEntries(COMPUTE_TECH.map(k => [k, A.TECH[k]])),
     target: {tpsPerUser: spec.goal.target, architectureGate: spec.acceptance.architectureGateTpsPerUser,
       rawBudgetUs: spec.goal.rawLatencyBudgetUs, engineeringMargin: spec.goal.engineeringMargin},
     published: {tauUs: O.OPT.tauUs, computeScale: 1, mcGBs: x.mcGBs},
-    sourceArtifacts: [{path: BASELINE_FILE, sha256: sha256(text)}, {path: WORKLOAD_FILE, sha256: sha256(workloadText)}],
+    sourceArtifacts: [{path: BASELINE_FILE, sha256: sha256(text)}, {path: WORKLOAD_FILE, sha256: sha256(workloadText)},
+      {path: RW.SCENARIO_CATALOG_FILE, sha256: sha256(fs.readFileSync(path.join(root, RW.SCENARIO_CATALOG_FILE), 'utf8'))},
+      {path: RW.SCENARIO_SCHEMA_FILE, sha256: sha256(fs.readFileSync(path.join(root, RW.SCENARIO_SCHEMA_FILE), 'utf8'))},
+      {path: RW.KERNEL_FILE, sha256: sha256(fs.readFileSync(path.join(root, RW.KERNEL_FILE), 'utf8'))}],
     memo: new Map()};
+}
+
+function demandRequirements(ctx) {
+  const demandContext = {
+    spec: ctx.spec,
+    planning: ctx.planning,
+    workload: ctx.workload,
+    target: {...ctx.target, rawLatencyBudgetUs: ctx.target.rawBudgetUs,
+      architectureGateTpsPerUser: ctx.target.architectureGate},
+  };
+  const scenarioCatalog = RW.loadScenarioCatalog({scenarioCatalog: ctx.scenarioCatalog});
+  const byModel = Object.fromEntries(Object.keys(ctx.workload.provenance).map(modelId => [modelId,
+    scenarioCatalog.filter(s => s.model === modelId).map(s => RW.scenarioRequirements(demandContext, modelId, s))]));
+  return {
+    schemaVersion: 'demand-requirements-v0.1',
+    status: 'MODEL_PLANNING; capacity, layer traffic and P99 network demand are separate from L1 budget entries',
+    source: `${RW.OUT_FILE}#/models/*/scenarios`,
+    scenarioCatalog,
+    dimensions: {
+      compute: 'FLOPs/s at aggregate target token rate',
+      capacity: 'resident bytes split into weights, KV and runtime state',
+      bandwidth: 'bytes/s split by weight, expert, KV/state and collective traffic',
+      network: 'collective traffic with explicit P99 multiplier; topology/link allocation remains a later hardware contract'
+    },
+    networkClasses: ['die-local', 'die-to-die', 'package', 'scale-out', 'collective'],
+    models: byModel
+  };
 }
 
 const budgetFor = tps => 1e6 / (tps * TT.MARGIN);
@@ -319,6 +351,7 @@ function contract(ctx, split, point, budgetUs, derivedBounds) {
     scope: {tp: CONTRACT_TP, physicalProfile: PROFILE, planningModels: ctx.active, blockedModels: ctx.blocked, detailedModel: 'K3 TP32 at tpsDesign.hardware.x'},
     point,
     split: entries(ctx, point, budgetUs, derivedBounds),
+    demandRequirements: demandRequirements(ctx),
     coupling: [
       {between: ['B-SERIAL-CMP', 'B-TAU'], via: 'planning serial lane: flopUs / computeScale + fixedUs + tmaExposedUs + collectivesPerToken x max(tau, floor) <= budget', source: `${OUT_FILE}#/planning`},
       {between: ['B-SRAM-CAP', 'B-MEM-BW'], via: 'detailed shared window x prefetch depth: a smaller window needs more MC payload', source: `${OUT_FILE}#/detailed/sharedDepthGrid`},
@@ -367,7 +400,8 @@ function build(options = {}) {
       'software switches stay at the published OPT on every replay (no re-tuning), as in the attribution cards',
       'B-SRAM-CAP and the detailed half of every bound are K3 only; the other models are bounded by the planning model alone',
       'tau below the planning collective bandwidth floor makes no difference; tau physical reachability is open (B-008)',
-      'the MC payload search stops at MC640; a split that needs more than MC640 is not offered'
+      'the MC payload search stops at MC640; a split that needs more than MC640 is not offered',
+      'demandRequirements is a planning demand ledger, not a claim that one physical link carries all listed traffic'
     ]
   };
 }

@@ -71,10 +71,9 @@ const sourceInputs = {
   gateValidator: hashFile('integration/governance/evaluate_gates.js'),
   modelProfiles: hashFile('teams/model/inputs/model_profiles.json'),
   mcSpec: hashFile('teams/hardware/inputs/k3_mc_baseline.json'),
-  // The morphology table is scored entry by entry against this contract, so the table is a
-  // statement about a particular budget. Recording the hash makes "which contract was this
-  // table scored against" answerable without trusting the file's current contents.
-  l1Contract: hashFile('out/requirements/budget_frontier.json'),
+  // The morphology table is scored entry by entry against the selected L1 contract. The
+  // landed contract wins; the frontier split is a bootstrap only when req.budget has not run.
+  l1Contract: null,
   morphologyModel: hashFile('integration/planning/morphology.js')
 };
 
@@ -202,13 +201,22 @@ for (const physicalProfile of RES.PHYSICAL_PROFILES) {
 //     D-Gate; the morphology table informs the L2 decision and the L2 budget.
 //   * The contract is read, never recomputed. B-AREA's limits, B-SRAM-CAP's depth and the
 //     target all come from the split entry, so a contract change moves this table with it.
-const CONTRACT_FILE = 'out/requirements/budget_frontier.json';
-if (!fs.existsSync(path.join(root, CONTRACT_FILE))) {
-  throw new Error(`${CONTRACT_FILE} is missing; run npm run budget:frontier (the morphology table is scored against the default split)`);
+const LANDED_CONTRACT_FILE = 'out/budget/L1_budget.json';
+const FRONTIER_CONTRACT_FILE = 'out/requirements/budget_frontier.json';
+const contractSource = fs.existsSync(path.join(root, LANDED_CONTRACT_FILE)) ? LANDED_CONTRACT_FILE : FRONTIER_CONTRACT_FILE;
+if (!fs.existsSync(path.join(root, contractSource))) {
+  throw new Error(`${contractSource} is missing; run npm run budget:frontier (and design.req.budget when selecting a contract)`);
 }
-const contractSplit = read(CONTRACT_FILE).splits.find(s => s.splitId === 'S-CMP');
-if (!contractSplit) throw new Error(`${CONTRACT_FILE} carries no S-CMP split; run npm run budget:frontier`);
+const contractDoc = read(contractSource);
+const contractSplit = contractSource === LANDED_CONTRACT_FILE
+  ? {splitId: contractDoc.splitId, contract: contractDoc}
+  : contractDoc.splits.find(s => s.splitId === (process.env.K3_CONTRACT_SPLIT || 'S-CMP'));
+if (!contractSplit) throw new Error(`${contractSource} carries no selected contract`);
 const l1Contract = contractSplit.contract;
+sourceInputs.l1Contract = hashFile(contractSource);
+if (!l1Contract.demandRequirements) {
+  throw new Error(`${contractSource} has no demandRequirements; regenerate budget frontier / selected L1 contract`);
+}
 const morphologyModels = {};
 for (const model of manifest.models) {
   const planning = TT.planningModel(workload, model.modelId);
@@ -217,14 +225,18 @@ for (const model of manifest.models) {
 const morphology = MORPH.enumerate().map(item => MORPH.evaluate(item, {models: morphologyModels, calibration, contract: l1Contract}));
 const morphologyBySatisfied = morphology.slice().sort((a, b) =>
   a.misses.length - b.misses.length || b.minTpsPerUser - a.minTpsPerUser || a.morphologyId.localeCompare(b.morphologyId));
+const morphologyPareto = morphology.filter(m => !morphology.some(n => n !== m &&
+  n.minTpsPerUser >= m.minTpsPerUser && n.physical.dieAreaMm2 <= m.physical.dieAreaMm2 && n.physical.cardPowerW <= m.physical.cardPowerW &&
+  (n.minTpsPerUser > m.minTpsPerUser || n.physical.dieAreaMm2 < m.physical.dieAreaMm2 || n.physical.cardPowerW < m.physical.cardPowerW)));
 const morphologySummary = {
   contract: {
     splitId: contractSplit.splitId,
-    source: 'out/requirements/budget_frontier.json',
+    source: contractSource,
     targetTpsPerUser: l1Contract.target.tpsPerUser,
     architectureGateTpsPerUser: l1Contract.target.architectureGate,
     entries: l1Contract.split.map(e => ({id: e.id, quantity: e.quantity, min: e.min === undefined ? null : e.min, max: e.max === undefined ? null : e.max, set: e.set || null}))
   },
+  demandRequirements: l1Contract.demandRequirements,
   axes: {
     lhRatios: MORPH.LH_RATIOS,
     localSram: MORPH.LOCAL_SRAM,
@@ -239,6 +251,7 @@ const morphologySummary = {
   meetsTarget: morphology.filter(m => m.meetsTarget).map(m => m.morphologyId),
   meetsArchitectureGate: morphology.filter(m => m.meetsArchitectureGate).map(m => m.morphologyId),
   bestByContract: morphologyBySatisfied.length ? morphologyBySatisfied[0].morphologyId : null,
+  paretoCandidates: morphologyPareto.map(m => m.morphologyId),
   rows: morphology
 };
 
@@ -261,7 +274,7 @@ const l2Budget = {
   schemaVersion: 'budget-contract-v0.1',
   layer: 'L2',
   splitId: contractSplit.splitId,
-  sourceContract: {layer: 'L1', splitId: contractSplit.splitId, path: 'out/requirements/budget_frontier.json'},
+  sourceContract: {layer: 'L1', splitId: contractSplit.splitId, path: contractSource, sha256: hashFile(contractSource)},
   target: l1Contract.target,
   // B-SRAM-CAP, refined. The window L1 requires per die is what L2 must place shared; the local
   // half is the per-core SRAM the spec's core shapes already fix, reported so the split is total.
@@ -294,6 +307,9 @@ const l2Budget = {
     count: morphology.length,
     satisfiesEveryEntry: morphologySummary.satisfiesEveryEntry,
     bestByContract: morphologySummary.bestByContract,
+    paretoCandidates: morphologySummary.paretoCandidates,
+    rows: morphologyPareto.map(m => ({morphologyId: m.morphologyId, axes: m.axes, hardware: m.hardware, physical: m.physical,
+      minTpsPerUser: m.minTpsPerUser, misses: m.misses})),
     table: 'out/direction/directional_tps_scorecard.json#/morphology'
   }
 };

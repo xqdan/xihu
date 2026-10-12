@@ -31,17 +31,27 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const {execFileSync} = require('child_process');
 const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const B = require('./k3_tps_design_baseline.js');
 const C = require('./coupling_search.js');
 const BP = require('./baseline_point.js');
+const {MOVES: AREA_MOVES} = require('./die_area_reallocation.js');
+const IDS = require('../planning/run_ids.js');
 
 const root = path.resolve(__dirname, '../..');
 const BASELINE_FILE = 'teams/hardware/inputs/k3_mc_baseline.json';
 const OUT_DIR = 'out/attribution';
 const SCHEMA_VERSION = 'attribution-card-v0.1';
 const DEFAULT_DIMENSIONS = ['sram', 'comm', 'joint'];
+const TRADEOFF_SOURCE_FILES = [BASELINE_FILE,
+  ...['tps_attribution', 'die_area_reallocation', 'k3_architecture_search', 'k3_operator_sram_sim',
+    'k3_rdma_final_tuning_model', 'k3_sram_memory_rdma_model', 'k3_tps_design_baseline', 'k3_physical_basis',
+    'baseline_point', 'cost_provider', 'coupling_search', 'matrix_vector_search', 'comm_core_search']
+    .map(name => `integration/detailed/${name}.js`),
+  'teams/model/src/design_engine.js', 'teams/vv/inputs/operator_cost_observations.json',
+  'integration/planning/run_ids.js', 'docs/architecture/contracts/sram_attribution_contract.md'];
 // A move that changes TPS by less than this is "no effect" for the classification.
 const SLACK_TPS = 1;
 const EPS = 1e-9;
@@ -241,6 +251,13 @@ const KV_TILES = [16384, 32768, 65536];
 // headTile follows the tuning search's list (k3_rdma_final_tuning_search.js EXT.headTile), where 96 is the top.
 const HEAD_TILES = [48, 96];
 const HMIB = [2, 4, 8], BANKS = [32, 64], SLICES = [8, 16, 32];
+// Small, auditable neighbourhoods for the SRAM trade-off study. These are not
+// a replacement design space; they are replay points around the published point.
+const TRADEOFF_MOVES = {
+  capacity: {lMiB: [0.5, 1, 2], hMiB: HMIB, sharedMiB: [12, 16, 24]},
+  replacement: Object.fromEntries(['hEngines', 'vectorLanes', 'reduceLanes', 'rdmaLanes', 'nocLanes'].map(k => [k, AREA_MOVES[k]])),
+  mapping: {kvTile: KV_TILES, headTile: HEAD_TILES, depth: [2, 3, 4]}
+};
 // The steps next to the published value on a list.
 const neighbours = (values, v) => {
   const i = values.indexOf(v);
@@ -429,8 +446,109 @@ function dimensionJoint(dimension, ctx) {
     leaveOut: rest.feasible ? {tpsPerUser: rest.tpsPerUser, recoveryTps: ctx.stressBase.feasible ? rest.tpsPerUser - ctx.stressBase.tpsPerUser : null, withinBudget: rest.rawUs <= ctx.budgetUs} : rest};
 }
 
+const tradeoffSnap = r => r && r.feasible !== false
+  ? {feasible: true, tpsPerUser: r.tps, rawUs: r.rawUs, dieAreaMm2: r.p.dieArea,
+    diePowerW: r.p.diePower, cardPowerW: r.p.cardPower}
+  : {feasible: false, reasons: (r && (r.reasons || [r.reason])) || ['infeasible']};
+
+const tradeoffScore = (x, ctx, {preserveMapping = false} = {}) => {
+  const nominal = tradeoffSnap(safe(() => O.evaluate(x)));
+  // The standard stress card intentionally pins kvTile to its pessimistic
+  // value. A rescheduling study must instead preserve the candidate mapping,
+  // otherwise changing kvTile would be reported while the replay ignores it.
+  const stressValues = preserveMapping ? {...STRESS, kvTile: x.kvTile} : STRESS;
+  const stress = tradeoffSnap(safe(() => B.replayJoint(stressValues, x)));
+  return {nominal, stress};
+};
+
+// Fixed-area replacement: move one SRAM-side resource and one compute/communication
+// resource together, then retain only candidates that fit the published die-area
+// envelope. The model owns all numbers; this function only enumerates and filters.
+function fixedDieAreaReplacement(ctx) {
+  const baseArea = ctx.base.dieAreaMm2;
+  const rows = [], rejected = [];
+  for (const [sramField, sramValues] of Object.entries(TRADEOFF_MOVES.capacity)) {
+    for (const sramValue of sramValues) {
+      if (sramValue === ctx.x[sramField]) continue;
+      for (const [replacementField, replacementValues] of Object.entries(TRADEOFF_MOVES.replacement)) {
+        for (const replacementValue of replacementValues) {
+          if (replacementValue === ctx.x[replacementField]) continue;
+          if ((sramValue - ctx.x[sramField]) * (replacementValue - ctx.x[replacementField]) >= 0) continue;
+          const x = {...ctx.x, [sramField]: sramValue, [replacementField]: replacementValue};
+          const score = tradeoffScore(x, ctx);
+          if (!score.nominal.feasible || score.nominal.dieAreaMm2 > baseArea + EPS) {
+            rejected.push({changes: {[sramField]: sramValue, [replacementField]: replacementValue},
+              reasons: score.nominal.feasible ? ['published die area envelope'] : score.nominal.reasons});
+            continue;
+          }
+          rows.push({sram: {field: sramField, from: ctx.x[sramField], to: sramValue},
+            replacement: {field: replacementField, from: ctx.x[replacementField], to: replacementValue},
+            areaDeltaMm2: score.nominal.dieAreaMm2 - baseArea,
+            powerDeltaW: score.nominal.diePowerW - ctx.base.diePowerW,
+            nominal: score.nominal, stress: score.stress});
+        }
+      }
+    }
+  }
+  const byNominal = [...rows].sort((a, b) => b.nominal.tpsPerUser - a.nominal.tpsPerUser || a.areaDeltaMm2 - b.areaDeltaMm2);
+  const byStress = rows.filter(r => r.stress.feasible).sort((a, b) => b.stress.tpsPerUser - a.stress.tpsPerUser || a.areaDeltaMm2 - b.areaDeltaMm2);
+  return {mode: 'FIXED_DIE_AREA_REPLACEMENT', evidence: 'MODEL_WITH_ASSUMPTIONS',
+    constraint: {dieAreaMm2: baseArea, comparison: 'candidate die area <= published die area',
+      note: 'discrete SRAM/compute/communication alternatives; unused area is not silently reallocated'},
+    searchSpace: {capacity: TRADEOFF_MOVES.capacity, replacement: TRADEOFF_MOVES.replacement},
+    candidateCount: rows.length, candidates: rows, rejected,
+    bestNominal: byNominal[0] || null, bestStress: byStress[0] || null};
+}
+
+// Software re-scheduling: hold the SRAM move fixed, then search only mapping knobs
+// the scheduler already exposes (KV tile, head tile and prefetch depth). No extra
+// utilization or software gain is invented; every result is a direct model replay.
+function softwareReschedule(ctx) {
+  const rows = [];
+  const scheduleKeys = Object.keys(TRADEOFF_MOVES.mapping);
+  const combinations = [];
+  for (const kvTile of TRADEOFF_MOVES.mapping.kvTile) for (const headTile of TRADEOFF_MOVES.mapping.headTile)
+    for (const depth of TRADEOFF_MOVES.mapping.depth) combinations.push({kvTile, headTile, depth});
+  // A resolved joint point may use mapping values outside this neighbourhood.
+  // Keep its mapping as the no-change control, so rescheduling cannot lose it.
+  const currentMapping = pick(ctx.x, scheduleKeys);
+  if (!combinations.some(m => scheduleKeys.every(k => m[k] === currentMapping[k]))) combinations.push(currentMapping);
+  for (const [sramField, sramValues] of Object.entries(TRADEOFF_MOVES.capacity)) {
+    for (const sramValue of sramValues) {
+      if (sramValue === ctx.x[sramField]) continue;
+      const moved = {...ctx.x, [sramField]: sramValue};
+      const held = tradeoffScore(moved, ctx, {preserveMapping: true});
+      const candidates = combinations.map(mapping => ({mapping, ...tradeoffScore({...moved, ...mapping}, ctx, {preserveMapping: true})}));
+      const feasible = candidates.filter(row => row.nominal.feasible);
+      const bestNominal = [...feasible].sort((a, b) => b.nominal.tpsPerUser - a.nominal.tpsPerUser)[0] || null;
+      const bestStress = candidates.filter(row => row.stress.feasible).sort((a, b) => b.stress.tpsPerUser - a.stress.tpsPerUser)[0] || null;
+      rows.push({sram: {field: sramField, from: ctx.x[sramField], to: sramValue},
+        scheduleKeys, held, candidates, bestNominal, bestStress,
+        nominalRecoveryTps: held.nominal.feasible && bestNominal ? bestNominal.nominal.tpsPerUser - held.nominal.tpsPerUser : null,
+        stressRecoveryTps: held.stress.feasible && bestStress ? bestStress.stress.tpsPerUser - held.stress.tpsPerUser : null});
+    }
+  }
+  return {mode: 'SOFTWARE_RESCHEDULE', evidence: 'MODEL_WITH_ASSUMPTIONS',
+    scheduleKeys, candidateCountPerSramMove: combinations.length,
+    stressPolicy: {values: omit(STRESS, ['kvTile']), mapping: 'candidate kvTile/headTile/depth preserved; not the standard pinned-kvTile stress card'},
+    constraint: 'only kvTile, headTile and depth are rescheduled; no additional software gain or precision change', rows};
+}
+
+function tradeoffStudies(ctx) {
+  const sha256 = data => crypto.createHash('sha256').update(data).digest('hex');
+  const sources = TRADEOFF_SOURCE_FILES.map(file => ({path: file, sha256: sha256(fs.readFileSync(path.join(root, file)))}));
+  return {contract: TRADEOFF_CONTRACT, workItem: 'ARCH-SRAM-ATTRIBUTION-01',
+    provenance: {sourceCommit: process.env.K3_SOURCE_COMMIT || execFileSync('git', ['rev-parse', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim(),
+      manifestHash: sha256(fs.readFileSync(path.join(root, 'teams/model/src/design_engine.js'))),
+      modelVersion: ctx.spec.version, runId: `sram-tradeoff-${sha256(JSON.stringify([ctx.x, ctx.inputs.point, sources])).slice(0, 12)}`,
+      seed: IDS.seed, profile: `K3 TP32 decode / MC${ctx.x.mcGBs} / detailed model`,
+      units: {tps: 'tokens/s per user', latency: 'us', area: 'mm2 per die', power: 'W'}, evidenceLevel: 'MODEL_WITH_ASSUMPTIONS'},
+    inputs: {sourceArtifacts: sources},
+    fixedDieAreaReplacement: fixedDieAreaReplacement(ctx), softwareReschedule: softwareReschedule(ctx)};
+}
+
 const CAVEATS = [
-  'software configuration is held at the design point\'s OPT for every move (the published OPT, patched by inputs.point.opt at a joint point); a hardware move that re-tuning would rescue is charged in full to the hardware',
+  'parameter rows hold mapping and OPT at the design point except the named move; tradeoffStudies.softwareReschedule separately searches mapping knobs while keeping OPT and precision fixed',
   'die area / power are the detailed model\'s; at a joint point they leave out the Comm Core area (inputs.point.model.commCoreAreaMm2), which the coupling row\'s die area includes',
   'moves are one step on a neighbour list (or the sweep values), not gradients; interactions appear only in jointPessimistic, the stress replays and couplings',
   'couplings are reported, not classified: a pair that breaks the budget only together is flagged breaksOnlyTogether, the rows keep their one-at-a-time class',
@@ -441,6 +559,7 @@ const CAVEATS = [
 ];
 const STATUS = 'MODEL: one-at-a-time replays of the detailed model at one design point. Changes no baseline, gate or published number';
 const REGENERATE = 'npm run attribution:cards (node integration/pipelines/generate_tps_attribution.js); checked by tests/regression/test_tps_attribution.js';
+const TRADEOFF_CONTRACT = 'docs/architecture/contracts/sram_attribution_contract.md';
 
 // Which hard constraint each infeasible move hits, grouped by constraint. One constraint behind many
 // rows is the wall the point sits against; model errors are listed apart, they are not constraints.
@@ -491,6 +610,7 @@ function dimensionCard(dimension, ctx) {
     classes: CLASSES,
     parameters,
     jointPessimistic: dimensionJoint(dimension, ctx),
+    ...(dimension === 'sram' ? {tradeoffStudies: tradeoffStudies(ctx)} : {}),
     bindingConstraints: bindingConstraints(parameters),
     couplings: (d.couplings ? d.couplings(ctx.x) : []).map(c => couplingRow(c, ctx)),
     loadBearing: by('loadBearing'), graded: by('graded'), slack: by('slack'), insensitive: by('insensitive'), untested: by('untested'), basis: by('basis'),
@@ -573,4 +693,4 @@ function build(dimension, options = {}) {
 }
 
 module.exports = {build, context, classify, DIMENSIONS, DEFAULT_DIMENSIONS, KEY_DIMENSION, DIMENSION_OWNER, CLASSES, SLACK_TPS, TAU_SWEEP,
-  BASELINE_FILE, OUT_DIR, SCHEMA_VERSION};
+  BASELINE_FILE, OUT_DIR, SCHEMA_VERSION, TRADEOFF_MOVES, TRADEOFF_CONTRACT, TRADEOFF_SOURCE_FILES, fixedDieAreaReplacement, softwareReschedule};

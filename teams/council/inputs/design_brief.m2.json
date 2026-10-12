@@ -4,6 +4,11 @@
   "runId": "m2-compute-20260930",
   "sourceCommit": "c16b26e",
   "objective": "AI Core 的 matrix:vector 配比取哪一组（vectorLanes × 低精度输入路径 × exp 单元），使 K3 / GLM-5.2 / DeepSeek-V4-Pro 三模型的 H-core kernel 全部隐藏向量时间，且 die 面积与功耗不超限",
+  "scenarios": [
+    {"scenarioId":"decode-b1-c1m-tp32","model":"K3","batch":1,"context":1048576,"tp":32,"phase":"decode","precision":"BF16+FP8-KV","targetTpsPerUser":1000},
+    {"scenarioId":"decode-b4-c32k-tp32","model":"K3","batch":4,"context":32768,"tp":32,"phase":"decode","precision":"BF16+FP8-KV","targetTpsPerUser":1000},
+    {"scenarioId":"decode-b1-c1m-tp16","model":"K3","batch":1,"context":1048576,"tp":16,"phase":"decode","precision":"BF16+FP8-KV","targetTpsPerUser":1000}
+  ],
   "hardConstraints": [
     {
       "id": "C-AREA-DIE",

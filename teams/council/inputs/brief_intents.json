@@ -25,6 +25,107 @@
       "source": "teams/hardware/inputs/k3_mc_baseline.json"
     }
   ],
+  "scenarios": [
+    {
+      "scenarioId": "decode-b1-c1m-tp32",
+      "model": "K3",
+      "batch": 1,
+      "context": 1048576,
+      "tp": 32,
+      "phase": "decode",
+      "precision": "BF16+FP8-KV",
+      "targetTpsPerUser": 1000,
+      "notes": "发布点与详细回放场景"
+    },
+    {
+      "scenarioId": "decode-b4-c32k-tp32",
+      "model": "K3",
+      "batch": 4,
+      "context": 32768,
+      "tp": 32,
+      "phase": "decode",
+      "precision": "BF16+FP8-KV",
+      "targetTpsPerUser": 1000,
+      "notes": "短上下文批量敏感性场景"
+    },
+    {
+      "scenarioId": "decode-b1-c1m-tp16",
+      "model": "K3",
+      "batch": 1,
+      "context": 1048576,
+      "tp": 16,
+      "phase": "decode",
+      "precision": "BF16+FP8-KV",
+      "targetTpsPerUser": 1000,
+      "notes": "互联与分片敏感性场景"
+    },
+    {
+      "scenarioId": "glm52-decode-b1-c1m-tp32",
+      "model": "GLM-5.2",
+      "batch": 1,
+      "context": 1048576,
+      "tp": 32,
+      "phase": "decode",
+      "precision": "FP8+FP8-KV",
+      "targetTpsPerUser": 1000,
+      "notes": "规划外推；KV 布局与 collective 次数仍为 ASSUMPTION"
+    },
+    {
+      "scenarioId": "glm52-decode-b4-c32k-tp32",
+      "model": "GLM-5.2",
+      "batch": 4,
+      "context": 32768,
+      "tp": 32,
+      "phase": "decode",
+      "precision": "FP8+FP8-KV",
+      "targetTpsPerUser": 1000,
+      "notes": "短上下文批量规划敏感性；未做独立详细回放"
+    },
+    {
+      "scenarioId": "glm52-decode-b1-c1m-tp16",
+      "model": "GLM-5.2",
+      "batch": 1,
+      "context": 1048576,
+      "tp": 16,
+      "phase": "decode",
+      "precision": "FP8+FP8-KV",
+      "targetTpsPerUser": 1000,
+      "notes": "互联与分片规划敏感性；未做独立详细回放"
+    },
+    {
+      "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp32",
+      "model": "DeepSeek-V4-Pro",
+      "batch": 1,
+      "context": 1048576,
+      "tp": 32,
+      "phase": "decode",
+      "precision": "FP8+FP8-KV",
+      "targetTpsPerUser": 1000,
+      "notes": "UNVERIFIED_PLANNING_MANIFEST：采用 shape 假设与 active 参数点估计"
+    },
+    {
+      "scenarioId": "deepseek-v4-pro-decode-b4-c32k-tp32",
+      "model": "DeepSeek-V4-Pro",
+      "batch": 4,
+      "context": 32768,
+      "tp": 32,
+      "phase": "decode",
+      "precision": "FP8+FP8-KV",
+      "targetTpsPerUser": 1000,
+      "notes": "UNVERIFIED_PLANNING_MANIFEST：短上下文批量规划敏感性"
+    },
+    {
+      "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp16",
+      "model": "DeepSeek-V4-Pro",
+      "batch": 1,
+      "context": 1048576,
+      "tp": 16,
+      "phase": "decode",
+      "precision": "FP8+FP8-KV",
+      "targetTpsPerUser": 1000,
+      "notes": "UNVERIFIED_PLANNING_MANIFEST：互联与分片规划敏感性"
+    }
+  ],
   "stages": {
     "req.workload": {
       "objective": "每 token 在每类算子上要做多少 FLOP、搬多少字节（密集权重 / 路由专家 / KV 与状态）、做多少次集合通信与每次多少字节；以及哪些算子决定算力需求、哪些决定带宽需求",

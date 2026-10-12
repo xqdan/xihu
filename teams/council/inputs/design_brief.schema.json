@@ -11,6 +11,7 @@
     "runId",
     "sourceCommit",
     "objective",
+    "scenarios",
     "hardConstraints",
     "budget",
     "shapeIntent",
@@ -51,6 +52,27 @@
       "type": "string",
       "minLength": 1,
       "description": "本阶段要回答的唯一问题；多问题说明 stage 切分有误"
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "description": "本阶段必须覆盖的结构化工作负载场景；场景不能只藏在 prose 中",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["scenarioId", "model", "batch", "context", "tp", "phase", "precision", "targetTpsPerUser"],
+        "properties": {
+          "scenarioId": { "type": "string", "minLength": 1 },
+          "model": { "type": "string", "minLength": 1 },
+          "batch": { "type": "integer", "minimum": 1 },
+          "context": { "type": "integer", "minimum": 1 },
+          "tp": { "type": "integer", "minimum": 1 },
+          "phase": { "type": "string", "enum": ["decode", "prefill", "mixed"] },
+          "precision": { "type": "string", "minLength": 1 },
+          "targetTpsPerUser": { "type": "number", "exclusiveMinimum": 0 },
+          "notes": { "type": "string" }
+        }
+      }
     },
     "hardConstraints": {
       "type": "array",
