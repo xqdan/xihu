@@ -49,6 +49,33 @@
 
 这是良好起点，但还不是签核级模型。
 
+### 2.1 行为假设清单（已建模 / 未建模）
+
+`ASSUMPTION` 标签只标参数的证据等级。下表标的是**模拟器行为**：哪些资源争用、依赖和状态已经进入
+`simulate`，哪些没有。引用"差值为零"或"收益已计入"之类的结论时，以此表判断适用范围。
+参考做法：AccelForge 的 `assumptions.rst` 对每条假设说明它支撑哪一步算法、什么会让它失效
+（外部方法参考，不是证据，见 `references/README.md`）。
+
+| 项 | 状态 | 依据 / 失效条件 |
+|---|---|---|
+| shared SRAM 读口、写口、fabric 在 DMA、TMA fill 与前台之间的分配 | 已建模 | `fillSpeeds()`、`dmaRate()`：fill 和 DMA 只拿前台用剩的带宽 |
+| 前台算子与前台集合通信之间的争用 | 默认**未建模**；`contention:'proportional'` 时仅覆盖 shared 读口、写口、fabric 三项 | 默认 `end = t + duration`，被拉长的时间不入账。发布点和 8 个联合点差值为 0（24 号文档 §2.2）；该结论只对这三项成立 |
+| local SRAM 写口 | 只约束 TMA fill | 不约束前台算子之间；前台算子的时长取自映射值 |
+| MC 带宽 | 只约束 DMA | 不进前台争用 |
+| 单个算子内部的 bank 冲突、地址相关行为 | **未建模** | `TECH.bankUtil` 是一个常数折减，不是 bank 级仿真；见 `memory-subsystem.md` 对访问模式的讨论（外部参照，不是证据） |
+| 算子 kernel 时长 | 解析式；实测表为空 | `cost_provider.js`；raw 的 29.0% 来自解析 kernel，71.0% 不是 kernel（24 号文档 §2.4） |
+| 集合通信时长 | 协议模型 + 统一下限 τ；链路级拓扑为 `ASSUMPTION` | B-008；`tau_derivation.json` |
+| 专家预测命中率 | 常数 0.8，路由均匀（`union` 取 worst 或 expected） | 无按层分布，无路由倾斜；倾斜会让 FFN 与通信按 skewness 放大，当前不入账 |
+| 跨层状态 | 已建模 | KV 预取、SRAM 驻留、DMA 抢占与恢复；这也是不能做单 block 抽取的原因（24 号文档 §1） |
+| 映射器合法性 | mapper 只强制 `legal`；`assumes` 事后由 `checkRules` 报告 | 见 24 号文档 §2.8 的 4 项发现；其中 pvMerge `'layer'` 的累加器预留见下 |
+
+**已核对的一项（pvMerge `'layer'` 累加器，2026-10-12，只读）**：`hLocalBytes` 只为一个 head tile 预留 m/l/O 累加器，
+而该规则的 `assumes` 要求容纳一层交错的全部 `96/headTile` 个。对 `out/rdma/k3_rdma_final_tuning_results.json` 里
+headTile < 96 的 109 个可行点，用模型自己的 `mappedPlan` 重算（补上 `(96 − headTile) × 512 × 4 × 1.15` 字节），
+**没有一个点翻转为不可行**，最佳点（headTile = 96）不受影响。但有一个点（headTile 48，hMiB 1，275.1 TPS/usr）
+余量从 0.133 MiB 降到 0.026 MiB。结论：对当前产物无影响，但边界已经很窄；若搜索空间或 `hMiB` 档位放宽，
+该偏差可能开始改变可行集合。脚本为 `scratch/review/pv_accumulator_check.js`（`scratch/` 不构成证据，按 AGENTS.md 需要时再走 generator 落进 `out/`）。
+
 ## 3. 当前需要移除的经验项
 
 Final Tuning 中以下优化主要以乘法缩放实现：
