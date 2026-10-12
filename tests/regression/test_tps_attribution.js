@@ -10,6 +10,8 @@ const crypto = require('crypto');
 const fs = require('fs');
 const T = require('../../integration/detailed/tps_attribution.js');
 const DP = require('../../integration/pipelines/design_point.js');
+const O = require('../../integration/detailed/k3_rdma_final_tuning_model.js');
+const B = require('../../integration/detailed/k3_tps_design_baseline.js');
 
 const text = fs.readFileSync(T.BASELINE_FILE, 'utf8');
 const spec = JSON.parse(text);
@@ -46,6 +48,52 @@ for (const dim of T.DEFAULT_DIMENSIONS) {
   const listed = Object.keys(card.classes).flatMap(c => card[c] || []);
   assert.deepStrictEqual([...listed].sort(), card.parameters.map(p => p.name).sort(), `${dim}: class lists must partition the parameters`);
 }
+
+// SRAM must expose the three decision modes separately: one-at-a-time SRAM
+// sensitivity (the parameter rows above), fixed-area replacement, and software
+// rescheduling. These are exploratory MODEL replays, not Gate inputs.
+const tradeoffs = cards.sram.tradeoffStudies;
+assert(tradeoffs && tradeoffs.fixedDieAreaReplacement && tradeoffs.softwareReschedule, 'sram trade-off studies are required');
+assert.strictEqual(tradeoffs.fixedDieAreaReplacement.mode, 'FIXED_DIE_AREA_REPLACEMENT');
+assert.strictEqual(tradeoffs.fixedDieAreaReplacement.constraint.comparison, 'candidate die area <= published die area');
+assert(tradeoffs.fixedDieAreaReplacement.candidateCount > 0, 'fixed-area study must replay at least one candidate');
+assert(tradeoffs.fixedDieAreaReplacement.candidates.every(r => r.nominal.feasible && r.nominal.dieAreaMm2 <= ctx.base.dieAreaMm2 + 1e-9), 'fixed-area candidates must fit the published die area');
+for (const row of tradeoffs.fixedDieAreaReplacement.candidates) {
+  assert((row.sram.to - row.sram.from) * (row.replacement.to - row.replacement.from) < 0, 'replacement must trade capacity for another resource, not shrink both');
+  const x = {...ctx.x, [row.sram.field]: row.sram.to, [row.replacement.field]: row.replacement.to};
+  const replay = O.evaluate(x);
+  near(row.nominal.tpsPerUser, replay.tps, 'replacement TPS');
+  near(row.nominal.dieAreaMm2, replay.p.dieArea, 'replacement area');
+}
+const maxNominal = Math.max(...tradeoffs.fixedDieAreaReplacement.candidates.map(r => r.nominal.tpsPerUser));
+near(tradeoffs.fixedDieAreaReplacement.bestNominal.nominal.tpsPerUser, maxNominal, 'best replacement');
+assert.strictEqual(tradeoffs.softwareReschedule.mode, 'SOFTWARE_RESCHEDULE');
+assert.deepStrictEqual(tradeoffs.softwareReschedule.scheduleKeys, ['kvTile', 'headTile', 'depth']);
+assert(tradeoffs.softwareReschedule.rows.length > 0, 'software reschedule must replay SRAM moves');
+assert(tradeoffs.softwareReschedule.rows.every(r => r.nominalRecoveryTps === null || typeof r.nominalRecoveryTps === 'number'), 'software recovery must be numeric or null');
+const softwareKvRows = tradeoffs.softwareReschedule.rows.filter(r => r.sram.field === 'hMiB');
+assert(softwareKvRows.some(r => r.bestStress && r.bestStress.mapping.kvTile === 16384), 'software stress replay must honor a rescheduled kvTile');
+for (const row of tradeoffs.softwareReschedule.rows) {
+  assert.strictEqual(row.candidates.length, tradeoffs.softwareReschedule.candidateCountPerSramMove);
+  const moved = {...ctx.x, [row.sram.field]: row.sram.to};
+  for (const candidate of row.candidates) {
+    const x = {...moved, ...candidate.mapping};
+    const nominal = O.evaluate(x);
+    const stress = B.replayJoint({...B.JOINT_PESSIMISTIC.allUnmeasured, kvTile: x.kvTile}, x);
+    assert.strictEqual(candidate.nominal.feasible, nominal.feasible, 'nominal rescheduling feasibility');
+    assert.strictEqual(candidate.stress.feasible, stress.feasible, 'stress rescheduling feasibility');
+    if (nominal.feasible) near(candidate.nominal.tpsPerUser, nominal.tps, 'nominal rescheduling TPS');
+    if (stress.feasible) near(candidate.stress.tpsPerUser, stress.tps, 'stress rescheduling TPS');
+  }
+  const nominal = row.candidates.filter(c => c.nominal.feasible);
+  const stress = row.candidates.filter(c => c.stress.feasible);
+  if (nominal.length) near(row.bestNominal.nominal.tpsPerUser, Math.max(...nominal.map(c => c.nominal.tpsPerUser)), 'best nominal schedule');
+  else assert.strictEqual(row.bestNominal, null);
+  if (stress.length) near(row.bestStress.stress.tpsPerUser, Math.max(...stress.map(c => c.stress.tpsPerUser)), 'best stress schedule');
+  else assert.strictEqual(row.bestStress, null);
+}
+assert(tradeoffs.provenance.modelVersion && tradeoffs.provenance.seed && tradeoffs.provenance.manifestHash && tradeoffs.provenance.units);
+assert.deepStrictEqual(tradeoffs.inputs.sourceArtifacts.map(a => a.path), T.TRADEOFF_SOURCE_FILES);
 
 // Mechanism switch-backs are the ablations tpsDesign publishes.
 for (const dim of ['sram', 'comm']) {
@@ -152,7 +200,6 @@ for (const p of joint.parameters) if (p.breakEven && typeof p.breakEven.valueAtB
 // At a joint point (design.coupling's landed row, doc 23 §7.3) the card replays that row exactly:
 // its x, OPT patch and model patch (compute unpack / softmax, comm control path), and the model
 // state is restored afterwards.
-const O = require('../../integration/detailed/k3_rdma_final_tuning_model.js');
 const coupling = JSON.parse(fs.readFileSync('out/detailed/coupling_candidates.json', 'utf8'));
 const row = coupling.candidates.find(c => c.feasible && c.pareto) || coupling.candidates.find(c => c.feasible);
 const landed = {optionId: row.optionId, values: JSON.stringify(row), provenance: 'test', x: row.x, opt: row.opt, model: row.model};

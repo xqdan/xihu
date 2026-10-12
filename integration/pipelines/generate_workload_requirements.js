@@ -3,14 +3,25 @@
  * intensity summary (integration/planning/requirement_workload.js), input to the design.req.workload
  * workflow. Feeds no gate or baseline.
  *
- * Run: node integration/pipelines/generate_workload_requirements.js   (npm run workload:requirements)
+ * Run: node integration/pipelines/generate_workload_requirements.js [--brief file]
  */
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const R = require('../planning/requirement_workload.js');
 
 const root = path.resolve(__dirname, '../..');
-const out = R.build();
+const flags = process.argv.slice(2);
+if (flags.length && (flags.length !== 2 || flags[0] !== '--brief')) throw new Error('usage: generate_workload_requirements.js [--brief file]');
+const options = {};
+if (flags.length) {
+  const file = path.resolve(root, flags[1]);
+  const text = fs.readFileSync(file, 'utf8');
+  options.scenarioCatalog = R.loadScenarioCatalog({scenarios: JSON.parse(text).scenarios});
+  options.context = R.context(options);
+  options.context.sourceArtifacts.push({path: path.relative(root, file), sha256: crypto.createHash('sha256').update(text).digest('hex')});
+}
+const out = R.build(options);
 fs.mkdirSync(path.dirname(path.join(root, R.OUT_FILE)), {recursive: true});
 fs.writeFileSync(path.join(root, R.OUT_FILE), `${JSON.stringify(out, null, 2)}\n`);
 const f = (v, n = 2) => (v === null || v === undefined ? '-' : v.toFixed(n));

@@ -735,7 +735,7 @@
     "software-expert"
   ],
   "caveats": [
-    "software configuration is held at the design point's OPT for every move (the published OPT, patched by inputs.point.opt at a joint point); a hardware move that re-tuning would rescue is charged in full to the hardware",
+    "parameter rows hold mapping and OPT at the design point except the named move; tradeoffStudies.softwareReschedule separately searches mapping knobs while keeping OPT and precision fixed",
     "die area / power are the detailed model's; at a joint point they leave out the Comm Core area (inputs.point.model.commCoreAreaMm2), which the coupling row's die area includes",
     "moves are one step on a neighbour list (or the sweep values), not gradients; interactions appear only in jointPessimistic, the stress replays and couplings",
     "couplings are reported, not classified: a pair that breaks the budget only together is flagged breaksOnlyTogether, the rows keep their one-at-a-time class",

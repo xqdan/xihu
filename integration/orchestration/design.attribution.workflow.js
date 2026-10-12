@@ -155,6 +155,10 @@ const cardHead = {
   criticalPath: CARD.criticalPath,
   classes: CARD.classes,
   jointPessimistic: CARD.jointPessimistic,
+  // SRAM-only trade-off studies are deterministic card data too. They are
+  // passed whole so reviewers can distinguish fixed-area replacement from
+  // software rescheduling instead of collapsing both into the row classes.
+  tradeoffStudies: CARD.tradeoffStudies,
   bindingConstraints: CARD.bindingConstraints,
   couplings: CARD.couplings,
   caveats: CARD.caveats,

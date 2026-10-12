@@ -26,11 +26,14 @@ const fs = require('fs');
 const path = require('path');
 const TT = require('./token_time.js');
 const RES = require('../../teams/hardware/src/resource_profiles');
+const {validate} = require('../orchestration/runtime/schema');
 
 const root = path.resolve(__dirname, '../..');
 const BASELINE_FILE = 'teams/hardware/inputs/k3_mc_baseline.json';
 const WORKLOAD_FILE = 'out/workload/planning_operator_workload.json';
 const PROFILES_FILE = 'teams/hardware/src/resource_profiles.js';
+const SCENARIO_CATALOG_FILE = 'teams/council/inputs/brief_intents.json';
+const SCENARIO_SCHEMA_FILE = 'teams/council/inputs/design_brief.schema.json';
 const KERNEL_FILE = 'integration/planning/requirement_workload.js';
 const OUT_FILE = 'out/requirements/workload_requirements.json';
 const SCHEMA_VERSION = 'workload-requirements-v0.1';
@@ -38,6 +41,20 @@ const TPS_LIST = [8, 16, 32];
 const PROFILE = 'P1';
 // Bandwidth reference of the summary: the fitted planning point of the calibration (MC640).
 const MC_REFERENCE = 'MC640';
+function loadScenarioCatalog(options = {}) {
+  const catalog = options.scenarioCatalog ?? options.scenarios ??
+    JSON.parse(fs.readFileSync(path.join(root, SCENARIO_CATALOG_FILE), 'utf8')).scenarios;
+  const schema = JSON.parse(fs.readFileSync(path.join(root, SCENARIO_SCHEMA_FILE), 'utf8')).properties.scenarios;
+  const errors = validate(schema, catalog);
+  if (errors.length) throw new Error(`invalid scenario catalog: ${errors.join('; ')}`);
+  const ids = new Set();
+  return catalog.map(scenario => {
+    if (ids.has(scenario.scenarioId)) throw new Error(`duplicate scenarioId ${scenario.scenarioId}`);
+    ids.add(scenario.scenarioId);
+    if (!Number.isFinite(scenario.targetTpsPerUser) || scenario.targetTpsPerUser <= 0) throw new Error(`invalid target in scenario ${scenario.scenarioId}`);
+    return {...scenario};
+  });
+}
 // The baseline is the K3 spec, so its collectiveCount block is K3's; GLM-5.2 and DeepSeek-V4-Pro
 // carry only their own per-layer ASSUMPTION counts (ADR-0024) and have no second basis.
 const BASELINE_MODEL = 'K3';
@@ -61,14 +78,19 @@ function context(options = {}) {
   const workload = JSON.parse(workloadText);
   const models = Object.keys(workload.provenance);
   const planning = Object.fromEntries(models.map(m => [m, TT.planningModel(workload, m)]));
-  return {spec, workload, planning,
+  const scenarioCatalog = loadScenarioCatalog(options);
+  for (const s of scenarioCatalog) if (!models.includes(s.model)) throw new Error(`unknown scenario model ${s.model}`);
+  return {spec, workload, planning, scenarioCatalog,
     active: models.filter(m => planning[m]),
     blocked: models.filter(m => !planning[m]),
     target: {tpsPerUser: spec.goal.target, architectureGateTpsPerUser: spec.acceptance.architectureGateTpsPerUser,
       rawLatencyBudgetUs: spec.goal.rawLatencyBudgetUs, engineeringMargin: spec.goal.engineeringMargin},
     sourceArtifacts: [{path: BASELINE_FILE, sha256: sha256(baselineText)},
       {path: WORKLOAD_FILE, sha256: sha256(workloadText)},
-      {path: PROFILES_FILE, sha256: sha256(fs.readFileSync(path.join(root, PROFILES_FILE), 'utf8'))}]};
+      {path: PROFILES_FILE, sha256: sha256(fs.readFileSync(path.join(root, PROFILES_FILE), 'utf8'))},
+      {path: SCENARIO_CATALOG_FILE, sha256: sha256(fs.readFileSync(path.join(root, SCENARIO_CATALOG_FILE), 'utf8'))},
+      {path: SCENARIO_SCHEMA_FILE, sha256: sha256(fs.readFileSync(path.join(root, SCENARIO_SCHEMA_FILE), 'utf8'))},
+      {path: KERNEL_FILE, sha256: sha256(fs.readFileSync(path.join(root, KERNEL_FILE), 'utf8'))}]};
 }
 
 const budgetUs = ctx => ctx.target.rawLatencyBudgetUs;
@@ -250,10 +272,87 @@ function computeGuidance(ctx, modelId, tp = 32) {
   });
 }
 
+// Scenario-level demand is intentionally separate from the per-token operator ledger. The
+// ledger answers "what one token costs"; this view answers what a deployment must provision
+// for a batch/context point. Values are planning estimates and retain the model's own shape
+// provenance instead of silently treating the 1M-context K3 calibration as universal.
+function scenarioRequirements(ctx, modelId, scenario) {
+  if (scenario.model !== modelId) throw new Error(`scenario ${scenario.scenarioId} belongs to ${scenario.model}, not ${modelId}`);
+  const identity = {...scenario};
+  const dtype = ctx.workload.dtypePolicy[modelId];
+  const supportedPrecision = dtype && typeof dtype.kvCache === 'string' && dtype.kvCache.startsWith('FP8')
+    ? `${dtype.attentionAndDenseProjections}+FP8-KV` : null;
+  const reasons = [];
+  if (scenario.phase !== 'decode') reasons.push(`phase ${scenario.phase} has no operator derivation; decode rows cannot estimate it`);
+  if (scenario.precision !== supportedPrecision) reasons.push(`precision ${scenario.precision} differs from ledger policy ${supportedPrecision}`);
+  if (!ctx.planning[modelId]) reasons.push(`model ${modelId} has no planning rows`);
+  if (reasons.length) return {...identity, status: 'BLOCKED_CONFIG', reasons,
+    capacityBytes: null, bandwidthBytesPerSecond: null, bandwidthGBs: null, compute: null, network: null, baselineSlot: null};
+  const model = ctx.planning[modelId];
+  const base = slotSummary(ctx, modelId, scenario.tp);
+  const rows = model.rows;
+  const factor = scenario.batch;
+  const baseContext = ctx.workload.provenance[modelId].context || 1048576;
+  const contextScale = scenario.context / baseContext;
+  const weightBytes = rows.filter(r => r[4] === 'weight' || r[4] === 'expert').reduce((s, r) => s + r[3], 0);
+  const collectiveBytes = rows.filter(r => r[4] === 'collective').reduce((s, r) => s + r[3], 0);
+  const attentionState = rows.filter(r => r[0] === 'attention' || r[0] === 'sparse_attention').reduce((s, r) => s + r[3], 0);
+  const runtimeState = rows.filter(r => r[0] === 'kda_state').reduce((s, r) => s + r[3], 0);
+  const kvResidentBytes = factor * attentionState * contextScale;
+  const stateResidentBytes = runtimeState * factor;
+  const targetTpsPerUser = scenario.targetTpsPerUser;
+  const tokenRate = targetTpsPerUser * factor;
+  const contextSensitive = new Set(['attention', 'sparse_attention', 'indexer']);
+  const flopsPerToken = rows.reduce((s, r) => s + r[2] * (contextSensitive.has(r[0]) ? contextScale : 1), 0);
+  const perSecond = {
+    weight: weightBytes * tokenRate,
+    expert: rows.filter(r => r[4] === 'expert').reduce((s, r) => s + r[3], 0) * tokenRate,
+    kv_state: (attentionState * contextScale + runtimeState) * tokenRate,
+    collective: collectiveBytes * tokenRate
+  };
+  return {
+    scenarioId: scenario.scenarioId,
+    status: 'MODEL_PLANNING',
+    model: modelId,
+    batch: scenario.batch,
+    context: scenario.context,
+    tp: scenario.tp,
+    phase: scenario.phase,
+    precision: scenario.precision,
+    targetTpsPerUser,
+    notes: scenario.notes,
+    assumptions: {
+      modelStatus: ctx.workload.provenance[modelId].status,
+      shapeSource: ctx.workload.provenance[modelId].shapeSource,
+      precisionPolicy: dtype,
+      aggregateTokenRate: 'targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate',
+      weightResidency: 'active weight/operator ledger bytes; replicated weights and embeddings are not modeled here',
+      kvResidency: `${attentionState} B at ${baseContext} context from the operator ledger; runtime state is kept separate`
+    },
+    capacityBytes: {weightResident: weightBytes, kvResident: kvResidentBytes, stateResident: stateResidentBytes,
+      totalTracked: weightBytes + kvResidentBytes + stateResidentBytes},
+    bandwidthBytesPerSecond: perSecond,
+    bandwidthGBs: Object.fromEntries(Object.entries(perSecond).map(([k, v]) => [k, v / 1e9])),
+    compute: {flopsPerToken: flopsPerToken, requiredFLOPsPerSecond: flopsPerToken * tokenRate},
+    network: {
+      collectiveCountPerToken: model.collectivesPerToken,
+      collectiveBytesPerTokenPerRank: collectiveBytes / scenario.tp,
+      requiredGBs: perSecond.collective / 1e9,
+      p99Multiplier: 1.25,
+      p99RequiredGBs: perSecond.collective / 1e9 * 1.25,
+      requiredGBsByClass: {dieLocal: null, dieToDie: null, package: null, scaleOut: null, collective: perSecond.collective / 1e9},
+      note: 'Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here'
+    },
+    baselineSlot: {rawUs: base.lanes.rawUs, bound: base.lanes.bound, tpsPerUser: base.lanes.tpsPerUser}
+  };
+}
+
 // ---- build -------------------------------------------------------------------------------------
 
 function build(options = {}) {
   const ctx = options.context || context(options);
+  const scenarioCatalog = loadScenarioCatalog({scenarioCatalog: options.scenarioCatalog ?? options.scenarios ?? ctx.scenarioCatalog});
+  for (const s of scenarioCatalog) if (!Object.hasOwn(ctx.workload.provenance, s.model)) throw new Error(`unknown scenario model ${s.model}`);
   const models = ctx.active.map(modelId => {
     const p = ctx.workload.provenance[modelId];
     // Shape-ambiguity alternatives are reported as a TPS range, exactly as the scorecard does.
@@ -262,6 +361,7 @@ function build(options = {}) {
       const t = TT.slotTime(v, slot(32), ctx.workload.calibration);
       return {variant: name, tpsPerUserAtTP32: t.tpsPerUser, bound: t.bound};
     });
+    const scenarios = scenarioCatalog.filter(s => s.model === modelId).map(s => scenarioRequirements(ctx, modelId, s));
     return {
       model: modelId,
       status: p.status,
@@ -271,7 +371,8 @@ function build(options = {}) {
       layers: ctx.workload.layers[modelId],
       variants,
       slots: TPS_LIST.map(tp => slotSummary(ctx, modelId, tp)),
-      computeGuidance: computeGuidance(ctx, modelId, 32)
+      computeGuidance: computeGuidance(ctx, modelId, 32),
+      scenarios
     };
   });
   return {
@@ -280,10 +381,12 @@ function build(options = {}) {
     question: 'per token, how much FLOP and how many bytes each model moves per operator class, and which operators need compute versus bandwidth',
     generatedBy: KERNEL_FILE,
     kernel: {rows: 'integration/pipelines/generate_planning_operator_workload.js', timing: 'integration/planning/token_time.js'},
-    inputs: {sourceArtifacts: ctx.sourceArtifacts,
+    inputs: {sourceArtifacts: ctx.sourceArtifacts, scenarioCatalogSha256: sha256(JSON.stringify(scenarioCatalog)),
       slot: {physicalProfile: PROFILE, mcProfile: MC_REFERENCE, calibration: `${WORKLOAD_FILE}#/calibration`}},
     target: ctx.target,
     blockedModels: ctx.blocked,
+    blockedScenarios: scenarioCatalog.filter(s => !ctx.planning[s.model]).map(s => scenarioRequirements(ctx, s.model, s))
+      .concat(models.flatMap(m => m.scenarios.filter(s => s.status === 'BLOCKED_CONFIG'))),
     definitions: {
       perTokenPerRank: 'global rows are divided by TP, as laneTimes does; the arithmetic intensity is TP-invariant',
       bound: 'compute when the row\'s FLOP/byte is at or above the core class\'s machine balance (peak x utilization x duty cycle / MC effective bytes per second); collective rows are classified by the network against tau',
@@ -298,9 +401,11 @@ function build(options = {}) {
       'software switches stay at the published OPT; no re-tuning happens here',
       'this file changes no baseline, contract, gate or published number',
       'computeGuidance is a coarse design aid, not a sizing input: it is read by no gate and no search space yet (see WORKFLOWS.md design.req.budget)'
-    ]
+    ],
+    scenarioCatalog
   };
 }
 
 module.exports = {build, context, slotSummary, computeGuidance, collectiveBases, histogram, row, RATIOS, INTENSITY_BUCKETS,
-  BASELINE_FILE, WORKLOAD_FILE, PROFILES_FILE, OUT_FILE, SCHEMA_VERSION, TPS_LIST, PROFILE, MC_REFERENCE, BASELINE_MODEL};
+  BASELINE_FILE, WORKLOAD_FILE, PROFILES_FILE, SCENARIO_CATALOG_FILE, SCENARIO_SCHEMA_FILE, KERNEL_FILE, OUT_FILE, SCHEMA_VERSION, TPS_LIST, PROFILE, MC_REFERENCE, BASELINE_MODEL,
+  loadScenarioCatalog, scenarioRequirements};

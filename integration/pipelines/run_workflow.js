@@ -65,6 +65,7 @@ const assert = require('assert');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const {isDeepStrictEqual} = require('util');
 const {runWorkflow, listWorkflows} = require('../orchestration/runtime/core');
 const {landFiles, scriptGateDecisions, recheckGateDecision} = require('../orchestration/runtime/land');
 const {snapshot, changedBetween} = require('../orchestration/runtime/guard');
@@ -81,6 +82,7 @@ const ATTRIBUTION = require('../detailed/tps_attribution');
 const DESIGN_POINT = require('./design_point');
 const FRONTIER = require('../planning/requirement_frontier');
 const WORKLOAD_REQUIREMENTS = require('../planning/requirement_workload');
+const NETWORK_REQUIREMENTS = require('../planning/network_requirements');
 
 const root = path.resolve(__dirname, '../..');
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest('hex');
@@ -177,6 +179,13 @@ function prepareArgs(workflow, flags, {designPoint = () => DESIGN_POINT.resolve(
     if (!card.inputs || card.inputs.baselineSha256 !== baselineSha256) {
       throw new Error(`${cardPath} is stale (built from another ${ATTRIBUTION.BASELINE_FILE}); run npm run attribution:cards`);
     }
+    if (dimension === 'sram') {
+      const sources = card.tradeoffStudies && card.tradeoffStudies.inputs && card.tradeoffStudies.inputs.sourceArtifacts;
+      if (!sources || ATTRIBUTION.TRADEOFF_SOURCE_FILES.some(file => !sources.some(a => a.path === file && a.sha256)) ||
+          sources.some(a => !fs.existsSync(path.join(root, a.path)) || sha256(fs.readFileSync(path.join(root, a.path))) !== a.sha256)) {
+        throw new Error(`${cardPath} has missing or stale SRAM trade-off provenance; run npm run attribution:cards`);
+      }
+    }
     // After L3 the card must be at the joint point: one built at the published point (or at an
     // older joint point) answers a question about a design nobody is building any more.
     const point = designPoint();
@@ -234,6 +243,12 @@ function prepareArgs(workflow, flags, {designPoint = () => DESIGN_POINT.resolve(
     if (stale.length) {
       throw new Error(`${requirementsPath} is stale (built from another ${stale.map((a) => a.path).join(', ')}); run npm run workload:requirements`);
     }
+    if (!args.brief || !isDeepStrictEqual(args.brief.scenarios, requirements.scenarioCatalog)) {
+      throw new Error(`${requirementsPath} scenario catalog differs from brief.scenarios; regenerate workload requirements for this brief before running req.workload`);
+    }
+    if ((requirements.blockedScenarios || []).length) {
+      throw new Error(`${requirementsPath} has BLOCKED_CONFIG scenarios: ${requirements.blockedScenarios.map(s => s.scenarioId).join(', ')}`);
+    }
     if (!fs.existsSync(path.join(root, WORKLOAD_REQUIREMENTS.WORKLOAD_FILE))) {
       throw new Error(`${WORKLOAD_REQUIREMENTS.WORKLOAD_FILE} is missing; run npm run workload:planning`);
     }
@@ -246,6 +261,20 @@ function prepareArgs(workflow, flags, {designPoint = () => DESIGN_POINT.resolve(
   // the L1 contract looks like one layer down. All four are handed over whole. The workflow is
   // required to agree with the script's gate, so a stale scorecard would let it argue about a
   // candidate space that no longer exists -- that is a stop, not a warning.
+  if (workflow === 'comm' || workflow === 'req.workload') {
+    const networkPath = NETWORK_REQUIREMENTS.OUT_FILE;
+    if (!fs.existsSync(path.join(root, networkPath))) throw new Error(`${networkPath} is missing; run npm run network:requirements`);
+    const networkText = fs.readFileSync(path.join(root, networkPath), 'utf8');
+    const network = JSON.parse(networkText);
+    if (network.schemaVersion !== NETWORK_REQUIREMENTS.SCHEMA_VERSION ||
+        NETWORK_REQUIREMENTS.SOURCE_FILES.some(file => !((network.inputs && network.inputs.sourceArtifacts) || []).some(a => a.path === file && a.sha256))) {
+      throw new Error(`${networkPath} is missing its schema or required provenance; run npm run network:requirements`);
+    }
+    const stale = ((network.inputs && network.inputs.sourceArtifacts) || [])
+      .filter(a => !fs.existsSync(path.join(root, a.path)) || sha256(fs.readFileSync(path.join(root, a.path))) !== a.sha256);
+    if (stale.length) throw new Error(`${networkPath} is stale (built from another ${stale.map(a => a.path).join(', ')}); run npm run network:requirements`);
+    Object.assign(args, {networkRequirements: networkPath, networkRequirementsSha256: sha256(networkText), networkArtifact: network});
+  }
   if (workflow === 'arch.direction') {
     const files = {
       scorecardArtifact: 'out/direction/directional_tps_scorecard.json',
@@ -489,7 +518,7 @@ async function main(argv, deps = {}) {
   return landing.rejected.length ? 4 : 0;
 }
 
-module.exports = {main, parseFlags, halfWinnerResult, verifyLandedBudget, ledgerUpdate, DERIVED_BRIEFS};
+module.exports = {main, parseFlags, prepareArgs, halfWinnerResult, verifyLandedBudget, ledgerUpdate, DERIVED_BRIEFS};
 
 if (require.main === module) {
   main(process.argv.slice(2)).then((code) => { process.exitCode = code; });

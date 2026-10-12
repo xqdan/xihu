@@ -12,6 +12,18 @@
       {
         "path": "out/workload/planning_operator_workload.json",
         "sha256": "868424df13ee76f781a0adecd0b292a607696f3941d829369311f0ab04866977"
+      },
+      {
+        "path": "teams/council/inputs/brief_intents.json",
+        "sha256": "bb686ef789cd40e768c91d8470af0e6fab2b4f3f7b12ea85bba1c58c90e6345b"
+      },
+      {
+        "path": "teams/council/inputs/design_brief.schema.json",
+        "sha256": "15ede0d15381157ce9337abda0fbc0e2ca29764affab04b465ae8200c74ca449"
+      },
+      {
+        "path": "integration/planning/requirement_workload.js",
+        "sha256": "4c567af844d1bf50adba37bf65a732a47c83e3547c4f03281007e4f42a2b9337"
       }
     ],
     "publishedPoint": "teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware.x",
@@ -1516,6 +1528,18 @@
           {
             "path": "out/workload/planning_operator_workload.json",
             "sha256": "868424df13ee76f781a0adecd0b292a607696f3941d829369311f0ab04866977"
+          },
+          {
+            "path": "teams/council/inputs/brief_intents.json",
+            "sha256": "bb686ef789cd40e768c91d8470af0e6fab2b4f3f7b12ea85bba1c58c90e6345b"
+          },
+          {
+            "path": "teams/council/inputs/design_brief.schema.json",
+            "sha256": "15ede0d15381157ce9337abda0fbc0e2ca29764affab04b465ae8200c74ca449"
+          },
+          {
+            "path": "integration/planning/requirement_workload.js",
+            "sha256": "4c567af844d1bf50adba37bf65a732a47c83e3547c4f03281007e4f42a2b9337"
           }
         ],
         "target": {
@@ -1686,6 +1710,754 @@
             "set": "k3_physical_basis.BASIS.limits"
           }
         ],
+        "demandRequirements": {
+          "schemaVersion": "demand-requirements-v0.1",
+          "status": "MODEL_PLANNING; capacity, layer traffic and P99 network demand are separate from L1 budget entries",
+          "source": "out/requirements/workload_requirements.json#/models/*/scenarios",
+          "scenarioCatalog": [
+            {
+              "scenarioId": "decode-b1-c1m-tp32",
+              "model": "K3",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "发布点与详细回放场景"
+            },
+            {
+              "scenarioId": "decode-b4-c32k-tp32",
+              "model": "K3",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "短上下文批量敏感性场景"
+            },
+            {
+              "scenarioId": "decode-b1-c1m-tp16",
+              "model": "K3",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "互联与分片敏感性场景"
+            },
+            {
+              "scenarioId": "glm52-decode-b1-c1m-tp32",
+              "model": "GLM-5.2",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "规划外推；KV 布局与 collective 次数仍为 ASSUMPTION"
+            },
+            {
+              "scenarioId": "glm52-decode-b4-c32k-tp32",
+              "model": "GLM-5.2",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "短上下文批量规划敏感性；未做独立详细回放"
+            },
+            {
+              "scenarioId": "glm52-decode-b1-c1m-tp16",
+              "model": "GLM-5.2",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "互联与分片规划敏感性；未做独立详细回放"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp32",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：采用 shape 假设与 active 参数点估计"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b4-c32k-tp32",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：短上下文批量规划敏感性"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp16",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：互联与分片规划敏感性"
+            }
+          ],
+          "dimensions": {
+            "compute": "FLOPs/s at aggregate target token rate",
+            "capacity": "resident bytes split into weights, KV and runtime state",
+            "bandwidth": "bytes/s split by weight, expert, KV/state and collective traffic",
+            "network": "collective traffic with explicit P99 multiplier; topology/link allocation remains a later hardware contract"
+          },
+          "networkClasses": [
+            "die-local",
+            "die-to-die",
+            "package",
+            "scale-out",
+            "collective"
+          ],
+          "models": {
+            "K3": [
+              {
+                "scenarioId": "decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "发布点与详细回放场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 16508780544,
+                  "stateResident": 434110464,
+                  "totalTracked": 153931719680
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 136988828672000,
+                  "expert": 25829572608000,
+                  "kv_state": 16942891008000,
+                  "collective": 565868544000
+                },
+                "bandwidthGBs": {
+                  "weight": 136988.828672,
+                  "expert": 25829.572608,
+                  "kv_state": 16942.891008,
+                  "collective": 565.868544
+                },
+                "compute": {
+                  "flopsPerToken": 5466482597888,
+                  "requiredFLOPsPerSecond": 5466482597888000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 17683392,
+                  "requiredGBs": 565.868544,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 707.33568,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 565.868544
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 775.3004419656204,
+                  "bound": "memory",
+                  "tpsPerUser": 1102.412443534703
+                }
+              },
+              {
+                "scenarioId": "decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "短上下文批量敏感性场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 2063597568,
+                  "stateResident": 1736441856,
+                  "totalTracked": 140788868096
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 547955314688000,
+                  "expert": 103318290432000,
+                  "kv_state": 3800039424000,
+                  "collective": 2263474176000
+                },
+                "bandwidthGBs": {
+                  "weight": 547955.314688,
+                  "expert": 103318.290432,
+                  "kv_state": 3800.039424,
+                  "collective": 2263.474176
+                },
+                "compute": {
+                  "flopsPerToken": 373725126656,
+                  "requiredFLOPsPerSecond": 1494900506624000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 17683392,
+                  "requiredGBs": 2263.474176,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 2829.34272,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 2263.474176
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 775.3004419656204,
+                  "bound": "memory",
+                  "tpsPerUser": 1102.412443534703
+                }
+              },
+              {
+                "scenarioId": "decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "互联与分片敏感性场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 16508780544,
+                  "stateResident": 434110464,
+                  "totalTracked": 153931719680
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 136988828672000,
+                  "expert": 25829572608000,
+                  "kv_state": 16942891008000,
+                  "collective": 565868544000
+                },
+                "bandwidthGBs": {
+                  "weight": 136988.828672,
+                  "expert": 25829.572608,
+                  "kv_state": 16942.891008,
+                  "collective": 565.868544
+                },
+                "compute": {
+                  "flopsPerToken": 5466482597888,
+                  "requiredFLOPsPerSecond": 5466482597888000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 35366784,
+                  "requiredGBs": 565.868544,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 707.33568,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 565.868544
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 1550.6008839312408,
+                  "bound": "memory",
+                  "tpsPerUser": 551.2062217673515
+                }
+              }
+            ],
+            "GLM-5.2": [
+              {
+                "scenarioId": "glm52-decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "规划外推；KV 布局与 collective 次数仍为 ASSUMPTION",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 104792064,
+                  "stateResident": 0,
+                  "totalTracked": 41476227072
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 41371435008000,
+                  "expert": 22649241600000,
+                  "kv_state": 104792064000,
+                  "collective": 261881856000
+                },
+                "bandwidthGBs": {
+                  "weight": 41371.435008,
+                  "expert": 22649.2416,
+                  "kv_state": 104.792064,
+                  "collective": 261.881856
+                },
+                "compute": {
+                  "flopsPerToken": 284770959360,
+                  "requiredFLOPsPerSecond": 284770959360000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 8183808,
+                  "requiredGBs": 261.881856,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 327.35232,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 261.881856
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 443.4260742185688,
+                  "bound": "collective",
+                  "tpsPerUser": 1927.4934524476448
+                }
+              },
+              {
+                "scenarioId": "glm52-decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "短上下文批量规划敏感性；未做独立详细回放",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 13099008,
+                  "stateResident": 0,
+                  "totalTracked": 41384534016
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 165485740032000,
+                  "expert": 90596966400000,
+                  "kv_state": 13099008000,
+                  "collective": 1047527424000
+                },
+                "bandwidthGBs": {
+                  "weight": 165485.740032,
+                  "expert": 90596.9664,
+                  "kv_state": 13.099008,
+                  "collective": 1047.527424
+                },
+                "compute": {
+                  "flopsPerToken": 87102849024,
+                  "requiredFLOPsPerSecond": 348411396096000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 8183808,
+                  "requiredGBs": 1047.527424,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 1309.40928,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 1047.527424
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 443.4260742185688,
+                  "bound": "collective",
+                  "tpsPerUser": 1927.4934524476448
+                }
+              },
+              {
+                "scenarioId": "glm52-decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "互联与分片规划敏感性；未做独立详细回放",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 104792064,
+                  "stateResident": 0,
+                  "totalTracked": 41476227072
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 41371435008000,
+                  "expert": 22649241600000,
+                  "kv_state": 104792064000,
+                  "collective": 261881856000
+                },
+                "bandwidthGBs": {
+                  "weight": 41371.435008,
+                  "expert": 22649.2416,
+                  "kv_state": 104.792064,
+                  "collective": 261.881856
+                },
+                "compute": {
+                  "flopsPerToken": 284770959360,
+                  "requiredFLOPsPerSecond": 284770959360000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 16367616,
+                  "requiredGBs": 261.881856,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 327.35232,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 261.881856
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 480.60625466438614,
+                  "bound": "collective",
+                  "tpsPerUser": 1778.380631558164
+                }
+              }
+            ],
+            "DeepSeek-V4-Pro": [
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：采用 shape 假设与 active 参数点估计",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 81952768,
+                  "stateResident": 0,
+                  "totalTracked": 35768526258.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 35686573490285.71,
+                  "expert": 15269481833142.857,
+                  "kv_state": 81952768000,
+                  "collective": 279838720000
+                },
+                "bandwidthGBs": {
+                  "weight": 35686.57349028571,
+                  "expert": 15269.481833142858,
+                  "kv_state": 81.952768,
+                  "collective": 279.83872
+                },
+                "compute": {
+                  "flopsPerToken": 1179054527488,
+                  "requiredFLOPsPerSecond": 1179054527488000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 8744960,
+                  "requiredGBs": 279.83872,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 349.7984,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 279.83872
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 441.88925476813154,
+                  "bound": "collective",
+                  "tpsPerUser": 1934.196963330403
+                }
+              },
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：短上下文批量规划敏感性",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 10244096,
+                  "stateResident": 0,
+                  "totalTracked": 35696817586.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 142746293961142.84,
+                  "expert": 61077927332571.43,
+                  "kv_state": 10244096000,
+                  "collective": 1119354880000
+                },
+                "bandwidthGBs": {
+                  "weight": 142746.29396114283,
+                  "expert": 61077.92733257143,
+                  "kv_state": 10.244096,
+                  "collective": 1119.35488
+                },
+                "compute": {
+                  "flopsPerToken": 130123060224,
+                  "requiredFLOPsPerSecond": 520492240896000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 8744960,
+                  "requiredGBs": 1119.35488,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 1399.1936,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 1119.35488
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 441.88925476813154,
+                  "bound": "collective",
+                  "tpsPerUser": 1934.196963330403
+                }
+              },
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：互联与分片规划敏感性",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 81952768,
+                  "stateResident": 0,
+                  "totalTracked": 35768526258.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 35686573490285.71,
+                  "expert": 15269481833142.857,
+                  "kv_state": 81952768000,
+                  "collective": 279838720000
+                },
+                "bandwidthGBs": {
+                  "weight": 35686.57349028571,
+                  "expert": 15269.481833142858,
+                  "kv_state": 81.952768,
+                  "collective": 279.83872
+                },
+                "compute": {
+                  "flopsPerToken": 1179054527488,
+                  "requiredFLOPsPerSecond": 1179054527488000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 17489920,
+                  "requiredGBs": 279.83872,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 349.7984,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 279.83872
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 514.8099259447524,
+                  "bound": "collective",
+                  "tpsPerUser": 1660.2260594186332
+                }
+              }
+            ]
+          }
+        },
         "coupling": [
           {
             "between": [
@@ -1772,6 +2544,18 @@
           {
             "path": "out/workload/planning_operator_workload.json",
             "sha256": "868424df13ee76f781a0adecd0b292a607696f3941d829369311f0ab04866977"
+          },
+          {
+            "path": "teams/council/inputs/brief_intents.json",
+            "sha256": "bb686ef789cd40e768c91d8470af0e6fab2b4f3f7b12ea85bba1c58c90e6345b"
+          },
+          {
+            "path": "teams/council/inputs/design_brief.schema.json",
+            "sha256": "15ede0d15381157ce9337abda0fbc0e2ca29764affab04b465ae8200c74ca449"
+          },
+          {
+            "path": "integration/planning/requirement_workload.js",
+            "sha256": "4c567af844d1bf50adba37bf65a732a47c83e3547c4f03281007e4f42a2b9337"
           }
         ],
         "target": {
@@ -1942,6 +2726,754 @@
             "set": "k3_physical_basis.BASIS.limits"
           }
         ],
+        "demandRequirements": {
+          "schemaVersion": "demand-requirements-v0.1",
+          "status": "MODEL_PLANNING; capacity, layer traffic and P99 network demand are separate from L1 budget entries",
+          "source": "out/requirements/workload_requirements.json#/models/*/scenarios",
+          "scenarioCatalog": [
+            {
+              "scenarioId": "decode-b1-c1m-tp32",
+              "model": "K3",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "发布点与详细回放场景"
+            },
+            {
+              "scenarioId": "decode-b4-c32k-tp32",
+              "model": "K3",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "短上下文批量敏感性场景"
+            },
+            {
+              "scenarioId": "decode-b1-c1m-tp16",
+              "model": "K3",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "互联与分片敏感性场景"
+            },
+            {
+              "scenarioId": "glm52-decode-b1-c1m-tp32",
+              "model": "GLM-5.2",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "规划外推；KV 布局与 collective 次数仍为 ASSUMPTION"
+            },
+            {
+              "scenarioId": "glm52-decode-b4-c32k-tp32",
+              "model": "GLM-5.2",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "短上下文批量规划敏感性；未做独立详细回放"
+            },
+            {
+              "scenarioId": "glm52-decode-b1-c1m-tp16",
+              "model": "GLM-5.2",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "互联与分片规划敏感性；未做独立详细回放"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp32",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：采用 shape 假设与 active 参数点估计"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b4-c32k-tp32",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：短上下文批量规划敏感性"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp16",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：互联与分片规划敏感性"
+            }
+          ],
+          "dimensions": {
+            "compute": "FLOPs/s at aggregate target token rate",
+            "capacity": "resident bytes split into weights, KV and runtime state",
+            "bandwidth": "bytes/s split by weight, expert, KV/state and collective traffic",
+            "network": "collective traffic with explicit P99 multiplier; topology/link allocation remains a later hardware contract"
+          },
+          "networkClasses": [
+            "die-local",
+            "die-to-die",
+            "package",
+            "scale-out",
+            "collective"
+          ],
+          "models": {
+            "K3": [
+              {
+                "scenarioId": "decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "发布点与详细回放场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 16508780544,
+                  "stateResident": 434110464,
+                  "totalTracked": 153931719680
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 136988828672000,
+                  "expert": 25829572608000,
+                  "kv_state": 16942891008000,
+                  "collective": 565868544000
+                },
+                "bandwidthGBs": {
+                  "weight": 136988.828672,
+                  "expert": 25829.572608,
+                  "kv_state": 16942.891008,
+                  "collective": 565.868544
+                },
+                "compute": {
+                  "flopsPerToken": 5466482597888,
+                  "requiredFLOPsPerSecond": 5466482597888000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 17683392,
+                  "requiredGBs": 565.868544,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 707.33568,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 565.868544
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 775.3004419656204,
+                  "bound": "memory",
+                  "tpsPerUser": 1102.412443534703
+                }
+              },
+              {
+                "scenarioId": "decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "短上下文批量敏感性场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 2063597568,
+                  "stateResident": 1736441856,
+                  "totalTracked": 140788868096
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 547955314688000,
+                  "expert": 103318290432000,
+                  "kv_state": 3800039424000,
+                  "collective": 2263474176000
+                },
+                "bandwidthGBs": {
+                  "weight": 547955.314688,
+                  "expert": 103318.290432,
+                  "kv_state": 3800.039424,
+                  "collective": 2263.474176
+                },
+                "compute": {
+                  "flopsPerToken": 373725126656,
+                  "requiredFLOPsPerSecond": 1494900506624000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 17683392,
+                  "requiredGBs": 2263.474176,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 2829.34272,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 2263.474176
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 775.3004419656204,
+                  "bound": "memory",
+                  "tpsPerUser": 1102.412443534703
+                }
+              },
+              {
+                "scenarioId": "decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "互联与分片敏感性场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 16508780544,
+                  "stateResident": 434110464,
+                  "totalTracked": 153931719680
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 136988828672000,
+                  "expert": 25829572608000,
+                  "kv_state": 16942891008000,
+                  "collective": 565868544000
+                },
+                "bandwidthGBs": {
+                  "weight": 136988.828672,
+                  "expert": 25829.572608,
+                  "kv_state": 16942.891008,
+                  "collective": 565.868544
+                },
+                "compute": {
+                  "flopsPerToken": 5466482597888,
+                  "requiredFLOPsPerSecond": 5466482597888000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 35366784,
+                  "requiredGBs": 565.868544,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 707.33568,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 565.868544
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 1550.6008839312408,
+                  "bound": "memory",
+                  "tpsPerUser": 551.2062217673515
+                }
+              }
+            ],
+            "GLM-5.2": [
+              {
+                "scenarioId": "glm52-decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "规划外推；KV 布局与 collective 次数仍为 ASSUMPTION",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 104792064,
+                  "stateResident": 0,
+                  "totalTracked": 41476227072
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 41371435008000,
+                  "expert": 22649241600000,
+                  "kv_state": 104792064000,
+                  "collective": 261881856000
+                },
+                "bandwidthGBs": {
+                  "weight": 41371.435008,
+                  "expert": 22649.2416,
+                  "kv_state": 104.792064,
+                  "collective": 261.881856
+                },
+                "compute": {
+                  "flopsPerToken": 284770959360,
+                  "requiredFLOPsPerSecond": 284770959360000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 8183808,
+                  "requiredGBs": 261.881856,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 327.35232,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 261.881856
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 443.4260742185688,
+                  "bound": "collective",
+                  "tpsPerUser": 1927.4934524476448
+                }
+              },
+              {
+                "scenarioId": "glm52-decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "短上下文批量规划敏感性；未做独立详细回放",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 13099008,
+                  "stateResident": 0,
+                  "totalTracked": 41384534016
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 165485740032000,
+                  "expert": 90596966400000,
+                  "kv_state": 13099008000,
+                  "collective": 1047527424000
+                },
+                "bandwidthGBs": {
+                  "weight": 165485.740032,
+                  "expert": 90596.9664,
+                  "kv_state": 13.099008,
+                  "collective": 1047.527424
+                },
+                "compute": {
+                  "flopsPerToken": 87102849024,
+                  "requiredFLOPsPerSecond": 348411396096000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 8183808,
+                  "requiredGBs": 1047.527424,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 1309.40928,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 1047.527424
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 443.4260742185688,
+                  "bound": "collective",
+                  "tpsPerUser": 1927.4934524476448
+                }
+              },
+              {
+                "scenarioId": "glm52-decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "互联与分片规划敏感性；未做独立详细回放",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 104792064,
+                  "stateResident": 0,
+                  "totalTracked": 41476227072
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 41371435008000,
+                  "expert": 22649241600000,
+                  "kv_state": 104792064000,
+                  "collective": 261881856000
+                },
+                "bandwidthGBs": {
+                  "weight": 41371.435008,
+                  "expert": 22649.2416,
+                  "kv_state": 104.792064,
+                  "collective": 261.881856
+                },
+                "compute": {
+                  "flopsPerToken": 284770959360,
+                  "requiredFLOPsPerSecond": 284770959360000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 16367616,
+                  "requiredGBs": 261.881856,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 327.35232,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 261.881856
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 480.60625466438614,
+                  "bound": "collective",
+                  "tpsPerUser": 1778.380631558164
+                }
+              }
+            ],
+            "DeepSeek-V4-Pro": [
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：采用 shape 假设与 active 参数点估计",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 81952768,
+                  "stateResident": 0,
+                  "totalTracked": 35768526258.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 35686573490285.71,
+                  "expert": 15269481833142.857,
+                  "kv_state": 81952768000,
+                  "collective": 279838720000
+                },
+                "bandwidthGBs": {
+                  "weight": 35686.57349028571,
+                  "expert": 15269.481833142858,
+                  "kv_state": 81.952768,
+                  "collective": 279.83872
+                },
+                "compute": {
+                  "flopsPerToken": 1179054527488,
+                  "requiredFLOPsPerSecond": 1179054527488000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 8744960,
+                  "requiredGBs": 279.83872,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 349.7984,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 279.83872
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 441.88925476813154,
+                  "bound": "collective",
+                  "tpsPerUser": 1934.196963330403
+                }
+              },
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：短上下文批量规划敏感性",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 10244096,
+                  "stateResident": 0,
+                  "totalTracked": 35696817586.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 142746293961142.84,
+                  "expert": 61077927332571.43,
+                  "kv_state": 10244096000,
+                  "collective": 1119354880000
+                },
+                "bandwidthGBs": {
+                  "weight": 142746.29396114283,
+                  "expert": 61077.92733257143,
+                  "kv_state": 10.244096,
+                  "collective": 1119.35488
+                },
+                "compute": {
+                  "flopsPerToken": 130123060224,
+                  "requiredFLOPsPerSecond": 520492240896000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 8744960,
+                  "requiredGBs": 1119.35488,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 1399.1936,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 1119.35488
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 441.88925476813154,
+                  "bound": "collective",
+                  "tpsPerUser": 1934.196963330403
+                }
+              },
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：互联与分片规划敏感性",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 81952768,
+                  "stateResident": 0,
+                  "totalTracked": 35768526258.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 35686573490285.71,
+                  "expert": 15269481833142.857,
+                  "kv_state": 81952768000,
+                  "collective": 279838720000
+                },
+                "bandwidthGBs": {
+                  "weight": 35686.57349028571,
+                  "expert": 15269.481833142858,
+                  "kv_state": 81.952768,
+                  "collective": 279.83872
+                },
+                "compute": {
+                  "flopsPerToken": 1179054527488,
+                  "requiredFLOPsPerSecond": 1179054527488000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 17489920,
+                  "requiredGBs": 279.83872,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 349.7984,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 279.83872
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 514.8099259447524,
+                  "bound": "collective",
+                  "tpsPerUser": 1660.2260594186332
+                }
+              }
+            ]
+          }
+        },
         "coupling": [
           {
             "between": [
@@ -2028,6 +3560,18 @@
           {
             "path": "out/workload/planning_operator_workload.json",
             "sha256": "868424df13ee76f781a0adecd0b292a607696f3941d829369311f0ab04866977"
+          },
+          {
+            "path": "teams/council/inputs/brief_intents.json",
+            "sha256": "bb686ef789cd40e768c91d8470af0e6fab2b4f3f7b12ea85bba1c58c90e6345b"
+          },
+          {
+            "path": "teams/council/inputs/design_brief.schema.json",
+            "sha256": "15ede0d15381157ce9337abda0fbc0e2ca29764affab04b465ae8200c74ca449"
+          },
+          {
+            "path": "integration/planning/requirement_workload.js",
+            "sha256": "4c567af844d1bf50adba37bf65a732a47c83e3547c4f03281007e4f42a2b9337"
           }
         ],
         "target": {
@@ -2198,6 +3742,754 @@
             "set": "k3_physical_basis.BASIS.limits"
           }
         ],
+        "demandRequirements": {
+          "schemaVersion": "demand-requirements-v0.1",
+          "status": "MODEL_PLANNING; capacity, layer traffic and P99 network demand are separate from L1 budget entries",
+          "source": "out/requirements/workload_requirements.json#/models/*/scenarios",
+          "scenarioCatalog": [
+            {
+              "scenarioId": "decode-b1-c1m-tp32",
+              "model": "K3",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "发布点与详细回放场景"
+            },
+            {
+              "scenarioId": "decode-b4-c32k-tp32",
+              "model": "K3",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "短上下文批量敏感性场景"
+            },
+            {
+              "scenarioId": "decode-b1-c1m-tp16",
+              "model": "K3",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "互联与分片敏感性场景"
+            },
+            {
+              "scenarioId": "glm52-decode-b1-c1m-tp32",
+              "model": "GLM-5.2",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "规划外推；KV 布局与 collective 次数仍为 ASSUMPTION"
+            },
+            {
+              "scenarioId": "glm52-decode-b4-c32k-tp32",
+              "model": "GLM-5.2",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "短上下文批量规划敏感性；未做独立详细回放"
+            },
+            {
+              "scenarioId": "glm52-decode-b1-c1m-tp16",
+              "model": "GLM-5.2",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "互联与分片规划敏感性；未做独立详细回放"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp32",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：采用 shape 假设与 active 参数点估计"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b4-c32k-tp32",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：短上下文批量规划敏感性"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp16",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：互联与分片规划敏感性"
+            }
+          ],
+          "dimensions": {
+            "compute": "FLOPs/s at aggregate target token rate",
+            "capacity": "resident bytes split into weights, KV and runtime state",
+            "bandwidth": "bytes/s split by weight, expert, KV/state and collective traffic",
+            "network": "collective traffic with explicit P99 multiplier; topology/link allocation remains a later hardware contract"
+          },
+          "networkClasses": [
+            "die-local",
+            "die-to-die",
+            "package",
+            "scale-out",
+            "collective"
+          ],
+          "models": {
+            "K3": [
+              {
+                "scenarioId": "decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "发布点与详细回放场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 16508780544,
+                  "stateResident": 434110464,
+                  "totalTracked": 153931719680
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 136988828672000,
+                  "expert": 25829572608000,
+                  "kv_state": 16942891008000,
+                  "collective": 565868544000
+                },
+                "bandwidthGBs": {
+                  "weight": 136988.828672,
+                  "expert": 25829.572608,
+                  "kv_state": 16942.891008,
+                  "collective": 565.868544
+                },
+                "compute": {
+                  "flopsPerToken": 5466482597888,
+                  "requiredFLOPsPerSecond": 5466482597888000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 17683392,
+                  "requiredGBs": 565.868544,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 707.33568,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 565.868544
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 775.3004419656204,
+                  "bound": "memory",
+                  "tpsPerUser": 1102.412443534703
+                }
+              },
+              {
+                "scenarioId": "decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "短上下文批量敏感性场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 2063597568,
+                  "stateResident": 1736441856,
+                  "totalTracked": 140788868096
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 547955314688000,
+                  "expert": 103318290432000,
+                  "kv_state": 3800039424000,
+                  "collective": 2263474176000
+                },
+                "bandwidthGBs": {
+                  "weight": 547955.314688,
+                  "expert": 103318.290432,
+                  "kv_state": 3800.039424,
+                  "collective": 2263.474176
+                },
+                "compute": {
+                  "flopsPerToken": 373725126656,
+                  "requiredFLOPsPerSecond": 1494900506624000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 17683392,
+                  "requiredGBs": 2263.474176,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 2829.34272,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 2263.474176
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 775.3004419656204,
+                  "bound": "memory",
+                  "tpsPerUser": 1102.412443534703
+                }
+              },
+              {
+                "scenarioId": "decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "互联与分片敏感性场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 16508780544,
+                  "stateResident": 434110464,
+                  "totalTracked": 153931719680
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 136988828672000,
+                  "expert": 25829572608000,
+                  "kv_state": 16942891008000,
+                  "collective": 565868544000
+                },
+                "bandwidthGBs": {
+                  "weight": 136988.828672,
+                  "expert": 25829.572608,
+                  "kv_state": 16942.891008,
+                  "collective": 565.868544
+                },
+                "compute": {
+                  "flopsPerToken": 5466482597888,
+                  "requiredFLOPsPerSecond": 5466482597888000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 35366784,
+                  "requiredGBs": 565.868544,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 707.33568,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 565.868544
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 1550.6008839312408,
+                  "bound": "memory",
+                  "tpsPerUser": 551.2062217673515
+                }
+              }
+            ],
+            "GLM-5.2": [
+              {
+                "scenarioId": "glm52-decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "规划外推；KV 布局与 collective 次数仍为 ASSUMPTION",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 104792064,
+                  "stateResident": 0,
+                  "totalTracked": 41476227072
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 41371435008000,
+                  "expert": 22649241600000,
+                  "kv_state": 104792064000,
+                  "collective": 261881856000
+                },
+                "bandwidthGBs": {
+                  "weight": 41371.435008,
+                  "expert": 22649.2416,
+                  "kv_state": 104.792064,
+                  "collective": 261.881856
+                },
+                "compute": {
+                  "flopsPerToken": 284770959360,
+                  "requiredFLOPsPerSecond": 284770959360000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 8183808,
+                  "requiredGBs": 261.881856,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 327.35232,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 261.881856
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 443.4260742185688,
+                  "bound": "collective",
+                  "tpsPerUser": 1927.4934524476448
+                }
+              },
+              {
+                "scenarioId": "glm52-decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "短上下文批量规划敏感性；未做独立详细回放",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 13099008,
+                  "stateResident": 0,
+                  "totalTracked": 41384534016
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 165485740032000,
+                  "expert": 90596966400000,
+                  "kv_state": 13099008000,
+                  "collective": 1047527424000
+                },
+                "bandwidthGBs": {
+                  "weight": 165485.740032,
+                  "expert": 90596.9664,
+                  "kv_state": 13.099008,
+                  "collective": 1047.527424
+                },
+                "compute": {
+                  "flopsPerToken": 87102849024,
+                  "requiredFLOPsPerSecond": 348411396096000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 8183808,
+                  "requiredGBs": 1047.527424,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 1309.40928,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 1047.527424
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 443.4260742185688,
+                  "bound": "collective",
+                  "tpsPerUser": 1927.4934524476448
+                }
+              },
+              {
+                "scenarioId": "glm52-decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "互联与分片规划敏感性；未做独立详细回放",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 104792064,
+                  "stateResident": 0,
+                  "totalTracked": 41476227072
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 41371435008000,
+                  "expert": 22649241600000,
+                  "kv_state": 104792064000,
+                  "collective": 261881856000
+                },
+                "bandwidthGBs": {
+                  "weight": 41371.435008,
+                  "expert": 22649.2416,
+                  "kv_state": 104.792064,
+                  "collective": 261.881856
+                },
+                "compute": {
+                  "flopsPerToken": 284770959360,
+                  "requiredFLOPsPerSecond": 284770959360000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 16367616,
+                  "requiredGBs": 261.881856,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 327.35232,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 261.881856
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 480.60625466438614,
+                  "bound": "collective",
+                  "tpsPerUser": 1778.380631558164
+                }
+              }
+            ],
+            "DeepSeek-V4-Pro": [
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：采用 shape 假设与 active 参数点估计",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 81952768,
+                  "stateResident": 0,
+                  "totalTracked": 35768526258.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 35686573490285.71,
+                  "expert": 15269481833142.857,
+                  "kv_state": 81952768000,
+                  "collective": 279838720000
+                },
+                "bandwidthGBs": {
+                  "weight": 35686.57349028571,
+                  "expert": 15269.481833142858,
+                  "kv_state": 81.952768,
+                  "collective": 279.83872
+                },
+                "compute": {
+                  "flopsPerToken": 1179054527488,
+                  "requiredFLOPsPerSecond": 1179054527488000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 8744960,
+                  "requiredGBs": 279.83872,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 349.7984,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 279.83872
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 441.88925476813154,
+                  "bound": "collective",
+                  "tpsPerUser": 1934.196963330403
+                }
+              },
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：短上下文批量规划敏感性",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 10244096,
+                  "stateResident": 0,
+                  "totalTracked": 35696817586.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 142746293961142.84,
+                  "expert": 61077927332571.43,
+                  "kv_state": 10244096000,
+                  "collective": 1119354880000
+                },
+                "bandwidthGBs": {
+                  "weight": 142746.29396114283,
+                  "expert": 61077.92733257143,
+                  "kv_state": 10.244096,
+                  "collective": 1119.35488
+                },
+                "compute": {
+                  "flopsPerToken": 130123060224,
+                  "requiredFLOPsPerSecond": 520492240896000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 8744960,
+                  "requiredGBs": 1119.35488,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 1399.1936,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 1119.35488
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 441.88925476813154,
+                  "bound": "collective",
+                  "tpsPerUser": 1934.196963330403
+                }
+              },
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：互联与分片规划敏感性",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 81952768,
+                  "stateResident": 0,
+                  "totalTracked": 35768526258.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 35686573490285.71,
+                  "expert": 15269481833142.857,
+                  "kv_state": 81952768000,
+                  "collective": 279838720000
+                },
+                "bandwidthGBs": {
+                  "weight": 35686.57349028571,
+                  "expert": 15269.481833142858,
+                  "kv_state": 81.952768,
+                  "collective": 279.83872
+                },
+                "compute": {
+                  "flopsPerToken": 1179054527488,
+                  "requiredFLOPsPerSecond": 1179054527488000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 17489920,
+                  "requiredGBs": 279.83872,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 349.7984,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 279.83872
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 514.8099259447524,
+                  "bound": "collective",
+                  "tpsPerUser": 1660.2260594186332
+                }
+              }
+            ]
+          }
+        },
         "coupling": [
           {
             "between": [
@@ -2286,6 +4578,18 @@
           {
             "path": "out/workload/planning_operator_workload.json",
             "sha256": "868424df13ee76f781a0adecd0b292a607696f3941d829369311f0ab04866977"
+          },
+          {
+            "path": "teams/council/inputs/brief_intents.json",
+            "sha256": "bb686ef789cd40e768c91d8470af0e6fab2b4f3f7b12ea85bba1c58c90e6345b"
+          },
+          {
+            "path": "teams/council/inputs/design_brief.schema.json",
+            "sha256": "15ede0d15381157ce9337abda0fbc0e2ca29764affab04b465ae8200c74ca449"
+          },
+          {
+            "path": "integration/planning/requirement_workload.js",
+            "sha256": "4c567af844d1bf50adba37bf65a732a47c83e3547c4f03281007e4f42a2b9337"
           }
         ],
         "target": {
@@ -2450,6 +4754,754 @@
             "set": "k3_physical_basis.BASIS.limits"
           }
         ],
+        "demandRequirements": {
+          "schemaVersion": "demand-requirements-v0.1",
+          "status": "MODEL_PLANNING; capacity, layer traffic and P99 network demand are separate from L1 budget entries",
+          "source": "out/requirements/workload_requirements.json#/models/*/scenarios",
+          "scenarioCatalog": [
+            {
+              "scenarioId": "decode-b1-c1m-tp32",
+              "model": "K3",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "发布点与详细回放场景"
+            },
+            {
+              "scenarioId": "decode-b4-c32k-tp32",
+              "model": "K3",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "短上下文批量敏感性场景"
+            },
+            {
+              "scenarioId": "decode-b1-c1m-tp16",
+              "model": "K3",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "BF16+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "互联与分片敏感性场景"
+            },
+            {
+              "scenarioId": "glm52-decode-b1-c1m-tp32",
+              "model": "GLM-5.2",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "规划外推；KV 布局与 collective 次数仍为 ASSUMPTION"
+            },
+            {
+              "scenarioId": "glm52-decode-b4-c32k-tp32",
+              "model": "GLM-5.2",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "短上下文批量规划敏感性；未做独立详细回放"
+            },
+            {
+              "scenarioId": "glm52-decode-b1-c1m-tp16",
+              "model": "GLM-5.2",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "互联与分片规划敏感性；未做独立详细回放"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp32",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：采用 shape 假设与 active 参数点估计"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b4-c32k-tp32",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 4,
+              "context": 32768,
+              "tp": 32,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：短上下文批量规划敏感性"
+            },
+            {
+              "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp16",
+              "model": "DeepSeek-V4-Pro",
+              "batch": 1,
+              "context": 1048576,
+              "tp": 16,
+              "phase": "decode",
+              "precision": "FP8+FP8-KV",
+              "targetTpsPerUser": 1000,
+              "notes": "UNVERIFIED_PLANNING_MANIFEST：互联与分片规划敏感性"
+            }
+          ],
+          "dimensions": {
+            "compute": "FLOPs/s at aggregate target token rate",
+            "capacity": "resident bytes split into weights, KV and runtime state",
+            "bandwidth": "bytes/s split by weight, expert, KV/state and collective traffic",
+            "network": "collective traffic with explicit P99 multiplier; topology/link allocation remains a later hardware contract"
+          },
+          "networkClasses": [
+            "die-local",
+            "die-to-die",
+            "package",
+            "scale-out",
+            "collective"
+          ],
+          "models": {
+            "K3": [
+              {
+                "scenarioId": "decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "发布点与详细回放场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 16508780544,
+                  "stateResident": 434110464,
+                  "totalTracked": 153931719680
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 136988828672000,
+                  "expert": 25829572608000,
+                  "kv_state": 16942891008000,
+                  "collective": 565868544000
+                },
+                "bandwidthGBs": {
+                  "weight": 136988.828672,
+                  "expert": 25829.572608,
+                  "kv_state": 16942.891008,
+                  "collective": 565.868544
+                },
+                "compute": {
+                  "flopsPerToken": 5466482597888,
+                  "requiredFLOPsPerSecond": 5466482597888000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 17683392,
+                  "requiredGBs": 565.868544,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 707.33568,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 565.868544
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 775.3004419656204,
+                  "bound": "memory",
+                  "tpsPerUser": 1102.412443534703
+                }
+              },
+              {
+                "scenarioId": "decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "短上下文批量敏感性场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 2063597568,
+                  "stateResident": 1736441856,
+                  "totalTracked": 140788868096
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 547955314688000,
+                  "expert": 103318290432000,
+                  "kv_state": 3800039424000,
+                  "collective": 2263474176000
+                },
+                "bandwidthGBs": {
+                  "weight": 547955.314688,
+                  "expert": 103318.290432,
+                  "kv_state": 3800.039424,
+                  "collective": 2263.474176
+                },
+                "compute": {
+                  "flopsPerToken": 373725126656,
+                  "requiredFLOPsPerSecond": 1494900506624000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 17683392,
+                  "requiredGBs": 2263.474176,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 2829.34272,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 2263.474176
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 775.3004419656204,
+                  "bound": "memory",
+                  "tpsPerUser": 1102.412443534703
+                }
+              },
+              {
+                "scenarioId": "decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "K3",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "BF16+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "互联与分片敏感性场景",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_ENGINEERING_PRESET",
+                  "shapeSource": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "BF16",
+                    "sharedExpert": "BF16",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "MXFP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer)",
+                    "source": "teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3.dtype (dense 2 B); the K3 detailed published point is BF16 dense"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "16508780544 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 136988828672,
+                  "kvResident": 16508780544,
+                  "stateResident": 434110464,
+                  "totalTracked": 153931719680
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 136988828672000,
+                  "expert": 25829572608000,
+                  "kv_state": 16942891008000,
+                  "collective": 565868544000
+                },
+                "bandwidthGBs": {
+                  "weight": 136988.828672,
+                  "expert": 25829.572608,
+                  "kv_state": 16942.891008,
+                  "collective": 565.868544
+                },
+                "compute": {
+                  "flopsPerToken": 5466482597888,
+                  "requiredFLOPsPerSecond": 5466482597888000
+                },
+                "network": {
+                  "collectiveCountPerToken": 393,
+                  "collectiveBytesPerTokenPerRank": 35366784,
+                  "requiredGBs": 565.868544,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 707.33568,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 565.868544
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 1550.6008839312408,
+                  "bound": "memory",
+                  "tpsPerUser": 551.2062217673515
+                }
+              }
+            ],
+            "GLM-5.2": [
+              {
+                "scenarioId": "glm52-decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "规划外推；KV 布局与 collective 次数仍为 ASSUMPTION",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 104792064,
+                  "stateResident": 0,
+                  "totalTracked": 41476227072
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 41371435008000,
+                  "expert": 22649241600000,
+                  "kv_state": 104792064000,
+                  "collective": 261881856000
+                },
+                "bandwidthGBs": {
+                  "weight": 41371.435008,
+                  "expert": 22649.2416,
+                  "kv_state": 104.792064,
+                  "collective": 261.881856
+                },
+                "compute": {
+                  "flopsPerToken": 284770959360,
+                  "requiredFLOPsPerSecond": 284770959360000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 8183808,
+                  "requiredGBs": 261.881856,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 327.35232,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 261.881856
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 443.4260742185688,
+                  "bound": "collective",
+                  "tpsPerUser": 1927.4934524476448
+                }
+              },
+              {
+                "scenarioId": "glm52-decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "短上下文批量规划敏感性；未做独立详细回放",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 13099008,
+                  "stateResident": 0,
+                  "totalTracked": 41384534016
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 165485740032000,
+                  "expert": 90596966400000,
+                  "kv_state": 13099008000,
+                  "collective": 1047527424000
+                },
+                "bandwidthGBs": {
+                  "weight": 165485.740032,
+                  "expert": 90596.9664,
+                  "kv_state": 13.099008,
+                  "collective": 1047.527424
+                },
+                "compute": {
+                  "flopsPerToken": 87102849024,
+                  "requiredFLOPsPerSecond": 348411396096000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 8183808,
+                  "requiredGBs": 1047.527424,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 1309.40928,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 1047.527424
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 443.4260742185688,
+                  "bound": "collective",
+                  "tpsPerUser": 1927.4934524476448
+                }
+              },
+              {
+                "scenarioId": "glm52-decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "GLM-5.2",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "互联与分片规划敏感性；未做独立详细回放",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_FROM_CONFIG",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16",
+                    "routedExpert": "FP8",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "zai-org/GLM-5.2-FP8 quantization_config"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "104792064 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 41371435008,
+                  "kvResident": 104792064,
+                  "stateResident": 0,
+                  "totalTracked": 41476227072
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 41371435008000,
+                  "expert": 22649241600000,
+                  "kv_state": 104792064000,
+                  "collective": 261881856000
+                },
+                "bandwidthGBs": {
+                  "weight": 41371.435008,
+                  "expert": 22649.2416,
+                  "kv_state": 104.792064,
+                  "collective": 261.881856
+                },
+                "compute": {
+                  "flopsPerToken": 284770959360,
+                  "requiredFLOPsPerSecond": 284770959360000
+                },
+                "network": {
+                  "collectiveCountPerToken": 333,
+                  "collectiveBytesPerTokenPerRank": 16367616,
+                  "requiredGBs": 261.881856,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 327.35232,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 261.881856
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 480.60625466438614,
+                  "bound": "collective",
+                  "tpsPerUser": 1778.380631558164
+                }
+              }
+            ],
+            "DeepSeek-V4-Pro": [
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：采用 shape 假设与 active 参数点估计",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 81952768,
+                  "stateResident": 0,
+                  "totalTracked": 35768526258.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 35686573490285.71,
+                  "expert": 15269481833142.857,
+                  "kv_state": 81952768000,
+                  "collective": 279838720000
+                },
+                "bandwidthGBs": {
+                  "weight": 35686.57349028571,
+                  "expert": 15269.481833142858,
+                  "kv_state": 81.952768,
+                  "collective": 279.83872
+                },
+                "compute": {
+                  "flopsPerToken": 1179054527488,
+                  "requiredFLOPsPerSecond": 1179054527488000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 8744960,
+                  "requiredGBs": 279.83872,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 349.7984,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 279.83872
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 441.88925476813154,
+                  "bound": "collective",
+                  "tpsPerUser": 1934.196963330403
+                }
+              },
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b4-c32k-tp32",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 4,
+                "context": 32768,
+                "tp": 32,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：短上下文批量规划敏感性",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 10244096,
+                  "stateResident": 0,
+                  "totalTracked": 35696817586.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 142746293961142.84,
+                  "expert": 61077927332571.43,
+                  "kv_state": 10244096000,
+                  "collective": 1119354880000
+                },
+                "bandwidthGBs": {
+                  "weight": 142746.29396114283,
+                  "expert": 61077.92733257143,
+                  "kv_state": 10.244096,
+                  "collective": 1119.35488
+                },
+                "compute": {
+                  "flopsPerToken": 130123060224,
+                  "requiredFLOPsPerSecond": 520492240896000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 8744960,
+                  "requiredGBs": 1119.35488,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 1399.1936,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 1119.35488
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 441.88925476813154,
+                  "bound": "collective",
+                  "tpsPerUser": 1934.196963330403
+                }
+              },
+              {
+                "scenarioId": "deepseek-v4-pro-decode-b1-c1m-tp16",
+                "status": "MODEL_PLANNING",
+                "model": "DeepSeek-V4-Pro",
+                "batch": 1,
+                "context": 1048576,
+                "tp": 16,
+                "phase": "decode",
+                "precision": "FP8+FP8-KV",
+                "targetTpsPerUser": 1000,
+                "notes": "UNVERIFIED_PLANNING_MANIFEST：互联与分片规划敏感性",
+                "assumptions": {
+                  "modelStatus": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+                  "shapeSource": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+                  "precisionPolicy": {
+                    "attentionAndDenseProjections": "FP8",
+                    "sharedExpert": "FP8",
+                    "routerAndLmHead": "BF16 (aligned with GLM-5.2)",
+                    "routedExpert": "FP4 (0.53125 B)",
+                    "kvCache": "FP8 FlashMLA (656 B/token/layer, ASSUMPTION)",
+                    "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape/assumptions/bytesPerParam (ASSUMPTION)"
+                  },
+                  "aggregateTokenRate": "targetTpsPerUser x batch; serving scheduler must sustain this aggregate rate",
+                  "weightResidency": "active weight/operator ledger bytes; replicated weights and embeddings are not modeled here",
+                  "kvResidency": "81952768 B at 1048576 context from the operator ledger; runtime state is kept separate"
+                },
+                "capacityBytes": {
+                  "weightResident": 35686573490.28571,
+                  "kvResident": 81952768,
+                  "stateResident": 0,
+                  "totalTracked": 35768526258.28571
+                },
+                "bandwidthBytesPerSecond": {
+                  "weight": 35686573490285.71,
+                  "expert": 15269481833142.857,
+                  "kv_state": 81952768000,
+                  "collective": 279838720000
+                },
+                "bandwidthGBs": {
+                  "weight": 35686.57349028571,
+                  "expert": 15269.481833142858,
+                  "kv_state": 81.952768,
+                  "collective": 279.83872
+                },
+                "compute": {
+                  "flopsPerToken": 1179054527488,
+                  "requiredFLOPsPerSecond": 1179054527488000
+                },
+                "network": {
+                  "collectiveCountPerToken": 305,
+                  "collectiveBytesPerTokenPerRank": 17489920,
+                  "requiredGBs": 279.83872,
+                  "p99Multiplier": 1.25,
+                  "p99RequiredGBs": 349.7984,
+                  "requiredGBsByClass": {
+                    "dieLocal": null,
+                    "dieToDie": null,
+                    "package": null,
+                    "scaleOut": null,
+                    "collective": 279.83872
+                  },
+                  "note": "Only aggregate collective demand is modeled at L1; topology allocation is a hardware/communication contract input, not inferred here"
+                },
+                "baselineSlot": {
+                  "rawUs": 514.8099259447524,
+                  "bound": "collective",
+                  "tpsPerUser": 1660.2260594186332
+                }
+              }
+            ]
+          }
+        },
         "coupling": [
           {
             "between": [
@@ -2523,6 +5575,7 @@
     "software switches stay at the published OPT on every replay (no re-tuning), as in the attribution cards",
     "B-SRAM-CAP and the detailed half of every bound are K3 only; the other models are bounded by the planning model alone",
     "tau below the planning collective bandwidth floor makes no difference; tau physical reachability is open (B-008)",
-    "the MC payload search stops at MC640; a split that needs more than MC640 is not offered"
+    "the MC payload search stops at MC640; a split that needs more than MC640 is not offered",
+    "demandRequirements is a planning demand ledger, not a claim that one physical link carries all listed traffic"
   ]
 }

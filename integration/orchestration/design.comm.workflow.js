@@ -41,6 +41,10 @@ const SEARCH_ARTIFACT = args.searchArtifact
 const SEARCH_COMMAND_FOR_RECORD = args.searchCommand || 'UNVERIFIED'
 // 已核验的候选集（search_brief.js brief 的输出）；workflow 不自己读产物，也不让 agent 转写数值。
 const SEARCH_BRIEF = args.searchBrief
+// The runner injects the validated artifact path.  Direct workflow tests and
+// local runtime callers may omit it; they still point at the generated ledger,
+// while freshness/schema validation remains the runner's responsibility.
+const NETWORK_REQUIREMENTS = args.networkRequirements || 'out/requirements/network_requirements.json'
 
 if (!BRIEF) throw new Error('design.comm 需要 args.brief（intake 阶段产出的 DesignBrief）')
 if (!SEARCH_ARTIFACT) {
@@ -63,6 +67,7 @@ const HEAD = [
   '你没有文件系统写权限。把该写的东西作为返回值交回，由 workflow 落盘。',
   '所有数字必须带出处（文件路径:行号 或 ADR 编号）；没有出处的写 UNVERIFIED 并说明缺什么，不得静默补齐。',
   '不得输出 TPS/usr 或任何全局性能指标；不得输出 PASS / D_GATE_PASSED 字面量。',
+  `链路需求账本路径：${NETWORK_REQUIREMENTS}；只读，不得重算或改写；freshness/schema 校验由主循环负责。`,
 ].join('\n')
 
 // 领域知识注入（知识不是证据）—— 见 design.compute 里的同名说明。

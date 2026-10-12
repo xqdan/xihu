@@ -47,6 +47,7 @@ const fs = require('fs');
 const path = require('path');
 const {execFileSync} = require('child_process');
 const {validate} = require('../orchestration/runtime/schema');
+const {loadScenarioCatalog} = require('../planning/requirement_workload');
 
 const root = path.resolve(__dirname, '../..');
 
@@ -194,6 +195,7 @@ function buildBrief(stage, {contract, file, base, runId, commit, intents, baseli
     runId: runId || `${stage}-${C.splitId}`,
     sourceCommit: commit || sourceCommit(),
     objective: intent.objective,
+    scenarios: loadScenarioCatalog({scenarios: I.scenarios}),
     hardConstraints: [...derivedConstraints(C, where, B, base || '#'), ...(I.sharedConstraints || []), ...(intent.extraConstraints || [])],
     budget: {
       areaMm2: byId(C, ENTRY.areaMm2).max,

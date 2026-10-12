@@ -904,6 +904,3754 @@
       "withinBudget": false
     }
   },
+  "tradeoffStudies": {
+    "contract": "docs/architecture/contracts/sram_attribution_contract.md",
+    "workItem": "ARCH-SRAM-ATTRIBUTION-01",
+    "provenance": {
+      "sourceCommit": "8590f19bf5e757c39602bc87eecba050856f4af2",
+      "manifestHash": "4e42c1a71d7bf0b8a6340fc67ccb0df5cc49511dd347d31143846204b79673a5",
+      "modelVersion": "2026-09-25-final-tuning-tau1.15-gain1-tmalane-kvprefetch-attnfusion-fp8kv-ghz1-sf4-liquid",
+      "runId": "sram-tradeoff-db00138faa8d",
+      "seed": 20261002,
+      "profile": "K3 TP32 decode / MC640 / detailed model",
+      "units": {
+        "tps": "tokens/s per user",
+        "latency": "us",
+        "area": "mm2 per die",
+        "power": "W"
+      },
+      "evidenceLevel": "MODEL_WITH_ASSUMPTIONS"
+    },
+    "inputs": {
+      "sourceArtifacts": [
+        {
+          "path": "teams/hardware/inputs/k3_mc_baseline.json",
+          "sha256": "5b4c8ff39f873b5c17edc0d33384c699b4dc24dc0059f60c3cdc32c2d6523ca5"
+        },
+        {
+          "path": "integration/detailed/tps_attribution.js",
+          "sha256": "4aa16870671182cd3a1c2493848e2b75a81c034d10c96c0be490727442a9098e"
+        },
+        {
+          "path": "integration/detailed/die_area_reallocation.js",
+          "sha256": "566ba60ec71ae9f97da0688b428d6764e7d8c99d3baca69132c00e1f47da053d"
+        },
+        {
+          "path": "integration/detailed/k3_architecture_search.js",
+          "sha256": "b8689699d8ed807fa9e6cad71843ce077eb09961af748ad389862a19957a40bd"
+        },
+        {
+          "path": "integration/detailed/k3_operator_sram_sim.js",
+          "sha256": "49580d74ff1f93c70ad8185d99cca679bc3d28ab2a61b889c6c8c3ef45343355"
+        },
+        {
+          "path": "integration/detailed/k3_rdma_final_tuning_model.js",
+          "sha256": "36dee594dc340272de22f6a50e677ea9182a37c9667d9013a39f84d18823ba12"
+        },
+        {
+          "path": "integration/detailed/k3_sram_memory_rdma_model.js",
+          "sha256": "ef7b58287a7352eed73ed4ef8f8e8a10424cad0876e875742caa60ae77f6a3cc"
+        },
+        {
+          "path": "integration/detailed/k3_tps_design_baseline.js",
+          "sha256": "a7397361a26e2e7e822b0326abea28a2c54e96e4b28ec1b183b5a3af50e04df0"
+        },
+        {
+          "path": "integration/detailed/k3_physical_basis.js",
+          "sha256": "c93f516e1ecdbd35190f714c06deac1ada09d64656fcd75332a7a2214a2f3c90"
+        },
+        {
+          "path": "integration/detailed/baseline_point.js",
+          "sha256": "c412bd41e83edc48b169486c9f63c5a722f1dce93d33b84c64bbcdcd294be99e"
+        },
+        {
+          "path": "integration/detailed/cost_provider.js",
+          "sha256": "9a737e30a235e8e9c30f8eab40e198df47667525ca5c27cb5ce16d176dbec413"
+        },
+        {
+          "path": "integration/detailed/coupling_search.js",
+          "sha256": "4d1902471242a412ef4f8abd1dfbb6d61c45441dfb03d8a27f14d2a989d8ca45"
+        },
+        {
+          "path": "integration/detailed/matrix_vector_search.js",
+          "sha256": "45b3126aeff9f8d49cbc638448452ed64c5e7f128c755b27997385fe4f7c121f"
+        },
+        {
+          "path": "integration/detailed/comm_core_search.js",
+          "sha256": "2a65bab88be9f36b7e7de5216a134be46ba4d59099cd8e4e1516a86f1489663b"
+        },
+        {
+          "path": "teams/model/src/design_engine.js",
+          "sha256": "4e42c1a71d7bf0b8a6340fc67ccb0df5cc49511dd347d31143846204b79673a5"
+        },
+        {
+          "path": "teams/vv/inputs/operator_cost_observations.json",
+          "sha256": "aa535b0adf152419b1452c2bc73e1ba356ec3dfc35f7f16754140af1423ee5b2"
+        },
+        {
+          "path": "integration/planning/run_ids.js",
+          "sha256": "379446bc6b08c15f80e808ea3291473457d24a9b749ab9502cbe7046a0790268"
+        },
+        {
+          "path": "docs/architecture/contracts/sram_attribution_contract.md",
+          "sha256": "bd900bff72af4db6807b5e75dd8b41497fd3792788c5e0442682f71fcd685a22"
+        }
+      ]
+    },
+    "fixedDieAreaReplacement": {
+      "mode": "FIXED_DIE_AREA_REPLACEMENT",
+      "evidence": "MODEL_WITH_ASSUMPTIONS",
+      "constraint": {
+        "dieAreaMm2": 365.3410392708195,
+        "comparison": "candidate die area <= published die area",
+        "note": "discrete SRAM/compute/communication alternatives; unused area is not silently reallocated"
+      },
+      "searchSpace": {
+        "capacity": {
+          "lMiB": [
+            0.5,
+            1,
+            2
+          ],
+          "hMiB": [
+            2,
+            4,
+            8
+          ],
+          "sharedMiB": [
+            12,
+            16,
+            24
+          ]
+        },
+        "replacement": {
+          "hEngines": [
+            4,
+            5,
+            6
+          ],
+          "vectorLanes": [
+            256,
+            384,
+            512,
+            640,
+            768,
+            1024
+          ],
+          "reduceLanes": [
+            1024,
+            2048,
+            3072,
+            4096
+          ],
+          "rdmaLanes": [
+            8,
+            12,
+            16
+          ],
+          "nocLanes": [
+            2,
+            3,
+            4
+          ]
+        }
+      },
+      "candidateCount": 15,
+      "candidates": [
+        {
+          "sram": {
+            "field": "lMiB",
+            "from": 1,
+            "to": 0.5
+          },
+          "replacement": {
+            "field": "vectorLanes",
+            "from": 512,
+            "to": 640
+          },
+          "areaDeltaMm2": -1.017771019518932,
+          "powerDeltaW": 1.6367999999999938,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1101.753845894587,
+            "rawUs": 775.7638948896671,
+            "dieAreaMm2": 364.3232682513006,
+            "diePowerW": 284.9061760000001,
+            "cardPowerW": 2757.969408000001
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 933.9795883852813,
+            "rawUs": 915.117273792366,
+            "dieAreaMm2": 364.3232682513006,
+            "diePowerW": 284.9061760000001,
+            "cardPowerW": 2737.4894080000004
+          }
+        },
+        {
+          "sram": {
+            "field": "lMiB",
+            "from": 1,
+            "to": 2
+          },
+          "replacement": {
+            "field": "hEngines",
+            "from": 5,
+            "to": 4
+          },
+          "areaDeltaMm2": -11.698105019785714,
+          "powerDeltaW": -22.872960000000035,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1050.1002882686523,
+            "rawUs": 813.9230740618485,
+            "dieAreaMm2": 353.6429342510338,
+            "diePowerW": 260.39641600000004,
+            "cardPowerW": 2561.8913280000006
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 853.6890721231651,
+            "rawUs": 1001.1851886251434,
+            "dieAreaMm2": 353.6429342510338,
+            "diePowerW": 260.39641600000004,
+            "cardPowerW": 2541.411328
+          }
+        },
+        {
+          "sram": {
+            "field": "lMiB",
+            "from": 1,
+            "to": 2
+          },
+          "replacement": {
+            "field": "reduceLanes",
+            "from": 4096,
+            "to": 1024
+          },
+          "areaDeltaMm2": -23.469802498777312,
+          "powerDeltaW": -23.85600000000005,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1046.234471165431,
+            "rawUs": 816.9305048310812,
+            "dieAreaMm2": 341.8712367720422,
+            "diePowerW": 259.413376,
+            "cardPowerW": 2554.027008
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 867.2305258135808,
+            "rawUs": 985.5520870866814,
+            "dieAreaMm2": 341.8712367720422,
+            "diePowerW": 259.413376,
+            "cardPowerW": 2533.5470080000005
+          }
+        },
+        {
+          "sram": {
+            "field": "lMiB",
+            "from": 1,
+            "to": 2
+          },
+          "replacement": {
+            "field": "reduceLanes",
+            "from": 4096,
+            "to": 2048
+          },
+          "areaDeltaMm2": -13.006071406340368,
+          "powerDeltaW": -15.664000000000044,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1083.6254419644877,
+            "rawUs": 788.7419597230764,
+            "dieAreaMm2": 352.33496786447915,
+            "diePowerW": 267.60537600000004,
+            "cardPowerW": 2619.563008
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 893.0255883006248,
+            "rawUs": 957.0843947789897,
+            "dieAreaMm2": 352.33496786447915,
+            "diePowerW": 267.60537600000004,
+            "cardPowerW": 2599.0830080000005
+          }
+        },
+        {
+          "sram": {
+            "field": "lMiB",
+            "from": 1,
+            "to": 2
+          },
+          "replacement": {
+            "field": "reduceLanes",
+            "from": 4096,
+            "to": 3072
+          },
+          "areaDeltaMm2": -2.5423403139033667,
+          "powerDeltaW": -7.472000000000037,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1096.2681823477233,
+            "rawUs": 779.6457732363099,
+            "dieAreaMm2": 362.79869895691616,
+            "diePowerW": 275.79737600000004,
+            "cardPowerW": 2685.099008
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 901.9683586017669,
+            "rawUs": 947.5951640097593,
+            "dieAreaMm2": 362.79869895691616,
+            "diePowerW": 275.79737600000004,
+            "cardPowerW": 2664.6190080000006
+          }
+        },
+        {
+          "sram": {
+            "field": "lMiB",
+            "from": 1,
+            "to": 2
+          },
+          "replacement": {
+            "field": "nocLanes",
+            "from": 4,
+            "to": 2
+          },
+          "areaDeltaMm2": -6.204646196256306,
+          "powerDeltaW": -5.270400000000052,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1017.4936366464509,
+            "rawUs": 840.0060933234496,
+            "dieAreaMm2": 359.1363930745632,
+            "diePowerW": 277.998976,
+            "cardPowerW": 2702.711808
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 899.3642687655,
+            "rawUs": 950.338905362616,
+            "dieAreaMm2": 359.1363930745632,
+            "diePowerW": 277.998976,
+            "cardPowerW": 2682.2318080000005
+          }
+        },
+        {
+          "sram": {
+            "field": "hMiB",
+            "from": 4,
+            "to": 8
+          },
+          "replacement": {
+            "field": "hEngines",
+            "from": 5,
+            "to": 4
+          },
+          "areaDeltaMm2": -3.7767142412520798,
+          "powerDeltaW": -22.152960000000064,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1050.1002882686523,
+            "rawUs": 813.9230740618485,
+            "dieAreaMm2": 361.56432502956744,
+            "diePowerW": 261.116416,
+            "cardPowerW": 2567.651328
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 853.6890721231651,
+            "rawUs": 1001.1851886251434,
+            "dieAreaMm2": 361.56432502956744,
+            "diePowerW": 261.116416,
+            "cardPowerW": 2547.1713280000004
+          }
+        },
+        {
+          "sram": {
+            "field": "hMiB",
+            "from": 4,
+            "to": 8
+          },
+          "replacement": {
+            "field": "reduceLanes",
+            "from": 4096,
+            "to": 1024
+          },
+          "areaDeltaMm2": -15.548411720243621,
+          "powerDeltaW": -23.136000000000024,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1046.234471165431,
+            "rawUs": 816.9305048310812,
+            "dieAreaMm2": 349.7926275505759,
+            "diePowerW": 260.13337600000006,
+            "cardPowerW": 2559.7870080000002
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 867.2305258135808,
+            "rawUs": 985.5520870866814,
+            "dieAreaMm2": 349.7926275505759,
+            "diePowerW": 260.13337600000006,
+            "cardPowerW": 2539.3070080000007
+          }
+        },
+        {
+          "sram": {
+            "field": "hMiB",
+            "from": 4,
+            "to": 8
+          },
+          "replacement": {
+            "field": "reduceLanes",
+            "from": 4096,
+            "to": 2048
+          },
+          "areaDeltaMm2": -5.0846806278066765,
+          "powerDeltaW": -14.944000000000017,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1083.6254419644877,
+            "rawUs": 788.7419597230764,
+            "dieAreaMm2": 360.25635864301285,
+            "diePowerW": 268.32537600000006,
+            "cardPowerW": 2625.3230080000003
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 893.0255883006248,
+            "rawUs": 957.0843947789897,
+            "dieAreaMm2": 360.25635864301285,
+            "diePowerW": 268.32537600000006,
+            "cardPowerW": 2604.8430080000007
+          }
+        },
+        {
+          "sram": {
+            "field": "sharedMiB",
+            "from": 16,
+            "to": 12
+          },
+          "replacement": {
+            "field": "vectorLanes",
+            "from": 512,
+            "to": 640
+          },
+          "areaDeltaMm2": -1.017771019518932,
+          "powerDeltaW": 1.6367999999999938,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1024.4405161997147,
+            "rawUs": 834.3098903111236,
+            "dieAreaMm2": 364.3232682513006,
+            "diePowerW": 284.9061760000001,
+            "cardPowerW": 2757.969408000001
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 933.9795883852813,
+            "rawUs": 915.117273792366,
+            "dieAreaMm2": 364.3232682513006,
+            "diePowerW": 284.9061760000001,
+            "cardPowerW": 2737.4894080000004
+          }
+        },
+        {
+          "sram": {
+            "field": "sharedMiB",
+            "from": 16,
+            "to": 24
+          },
+          "replacement": {
+            "field": "hEngines",
+            "from": 5,
+            "to": 4
+          },
+          "areaDeltaMm2": -11.698105019785714,
+          "powerDeltaW": -22.872960000000035,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1050.1002882686523,
+            "rawUs": 813.9230740618485,
+            "dieAreaMm2": 353.6429342510338,
+            "diePowerW": 260.39641600000004,
+            "cardPowerW": 2561.8913280000006
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 853.6890721231651,
+            "rawUs": 1001.1851886251434,
+            "dieAreaMm2": 353.6429342510338,
+            "diePowerW": 260.39641600000004,
+            "cardPowerW": 2541.411328
+          }
+        },
+        {
+          "sram": {
+            "field": "sharedMiB",
+            "from": 16,
+            "to": 24
+          },
+          "replacement": {
+            "field": "reduceLanes",
+            "from": 4096,
+            "to": 1024
+          },
+          "areaDeltaMm2": -23.469802498777312,
+          "powerDeltaW": -23.85600000000005,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1046.166322230461,
+            "rawUs": 816.9837209810046,
+            "dieAreaMm2": 341.8712367720422,
+            "diePowerW": 259.413376,
+            "cardPowerW": 2554.027008
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 867.2305258135808,
+            "rawUs": 985.5520870866814,
+            "dieAreaMm2": 341.8712367720422,
+            "diePowerW": 259.413376,
+            "cardPowerW": 2533.5470080000005
+          }
+        },
+        {
+          "sram": {
+            "field": "sharedMiB",
+            "from": 16,
+            "to": 24
+          },
+          "replacement": {
+            "field": "reduceLanes",
+            "from": 4096,
+            "to": 2048
+          },
+          "areaDeltaMm2": -13.006071406340368,
+          "powerDeltaW": -15.664000000000044,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1083.4854020179162,
+            "rawUs": 788.8439042270749,
+            "dieAreaMm2": 352.33496786447915,
+            "diePowerW": 267.60537600000004,
+            "cardPowerW": 2619.563008
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 893.0255883006248,
+            "rawUs": 957.0843947789897,
+            "dieAreaMm2": 352.33496786447915,
+            "diePowerW": 267.60537600000004,
+            "cardPowerW": 2599.0830080000005
+          }
+        },
+        {
+          "sram": {
+            "field": "sharedMiB",
+            "from": 16,
+            "to": 24
+          },
+          "replacement": {
+            "field": "reduceLanes",
+            "from": 4096,
+            "to": 3072
+          },
+          "areaDeltaMm2": -2.5423403139033667,
+          "powerDeltaW": -7.472000000000037,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1096.2681823477233,
+            "rawUs": 779.6457732363099,
+            "dieAreaMm2": 362.79869895691616,
+            "diePowerW": 275.79737600000004,
+            "cardPowerW": 2685.099008
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 901.9683586017669,
+            "rawUs": 947.5951640097593,
+            "dieAreaMm2": 362.79869895691616,
+            "diePowerW": 275.79737600000004,
+            "cardPowerW": 2664.6190080000006
+          }
+        },
+        {
+          "sram": {
+            "field": "sharedMiB",
+            "from": 16,
+            "to": 24
+          },
+          "replacement": {
+            "field": "nocLanes",
+            "from": 4,
+            "to": 2
+          },
+          "areaDeltaMm2": -6.204646196256306,
+          "powerDeltaW": -5.270400000000052,
+          "nominal": {
+            "feasible": true,
+            "tpsPerUser": 1017.4936366464509,
+            "rawUs": 840.0060933234496,
+            "dieAreaMm2": 359.1363930745632,
+            "diePowerW": 277.998976,
+            "cardPowerW": 2702.711808
+          },
+          "stress": {
+            "feasible": true,
+            "tpsPerUser": 899.3642687655,
+            "rawUs": 950.338905362616,
+            "dieAreaMm2": 359.1363930745632,
+            "diePowerW": 277.998976,
+            "cardPowerW": 2682.2318080000005
+          }
+        }
+      ],
+      "rejected": [
+        {
+          "changes": {
+            "lMiB": 0.5,
+            "hEngines": 6
+          },
+          "reasons": [
+            "die power",
+            "card power"
+          ]
+        },
+        {
+          "changes": {
+            "lMiB": 0.5,
+            "vectorLanes": 768
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "lMiB": 0.5,
+            "vectorLanes": 1024
+          },
+          "reasons": [
+            "card power after shared-port scaling"
+          ]
+        },
+        {
+          "changes": {
+            "lMiB": 2,
+            "vectorLanes": 256
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "lMiB": 2,
+            "vectorLanes": 384
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "lMiB": 2,
+            "rdmaLanes": 8
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "lMiB": 2,
+            "rdmaLanes": 12
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "lMiB": 2,
+            "nocLanes": 3
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 2,
+            "hEngines": 6
+          },
+          "reasons": [
+            "die power",
+            "card power"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 2,
+            "vectorLanes": 640
+          },
+          "reasons": [
+            "H local tile"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 2,
+            "vectorLanes": 768
+          },
+          "reasons": [
+            "H local tile"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 2,
+            "vectorLanes": 1024
+          },
+          "reasons": [
+            "H local tile"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 8,
+            "vectorLanes": 256
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 8,
+            "vectorLanes": 384
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 8,
+            "reduceLanes": 3072
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 8,
+            "rdmaLanes": 8
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 8,
+            "rdmaLanes": 12
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 8,
+            "nocLanes": 2
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "hMiB": 8,
+            "nocLanes": 3
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "sharedMiB": 12,
+            "hEngines": 6
+          },
+          "reasons": [
+            "die power",
+            "card power"
+          ]
+        },
+        {
+          "changes": {
+            "sharedMiB": 12,
+            "vectorLanes": 768
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "sharedMiB": 12,
+            "vectorLanes": 1024
+          },
+          "reasons": [
+            "card power after shared-port scaling"
+          ]
+        },
+        {
+          "changes": {
+            "sharedMiB": 24,
+            "vectorLanes": 256
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "sharedMiB": 24,
+            "vectorLanes": 384
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "sharedMiB": 24,
+            "rdmaLanes": 8
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "sharedMiB": 24,
+            "rdmaLanes": 12
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        },
+        {
+          "changes": {
+            "sharedMiB": 24,
+            "nocLanes": 3
+          },
+          "reasons": [
+            "published die area envelope"
+          ]
+        }
+      ],
+      "bestNominal": {
+        "sram": {
+          "field": "lMiB",
+          "from": 1,
+          "to": 0.5
+        },
+        "replacement": {
+          "field": "vectorLanes",
+          "from": 512,
+          "to": 640
+        },
+        "areaDeltaMm2": -1.017771019518932,
+        "powerDeltaW": 1.6367999999999938,
+        "nominal": {
+          "feasible": true,
+          "tpsPerUser": 1101.753845894587,
+          "rawUs": 775.7638948896671,
+          "dieAreaMm2": 364.3232682513006,
+          "diePowerW": 284.9061760000001,
+          "cardPowerW": 2757.969408000001
+        },
+        "stress": {
+          "feasible": true,
+          "tpsPerUser": 933.9795883852813,
+          "rawUs": 915.117273792366,
+          "dieAreaMm2": 364.3232682513006,
+          "diePowerW": 284.9061760000001,
+          "cardPowerW": 2737.4894080000004
+        }
+      },
+      "bestStress": {
+        "sram": {
+          "field": "lMiB",
+          "from": 1,
+          "to": 0.5
+        },
+        "replacement": {
+          "field": "vectorLanes",
+          "from": 512,
+          "to": 640
+        },
+        "areaDeltaMm2": -1.017771019518932,
+        "powerDeltaW": 1.6367999999999938,
+        "nominal": {
+          "feasible": true,
+          "tpsPerUser": 1101.753845894587,
+          "rawUs": 775.7638948896671,
+          "dieAreaMm2": 364.3232682513006,
+          "diePowerW": 284.9061760000001,
+          "cardPowerW": 2757.969408000001
+        },
+        "stress": {
+          "feasible": true,
+          "tpsPerUser": 933.9795883852813,
+          "rawUs": 915.117273792366,
+          "dieAreaMm2": 364.3232682513006,
+          "diePowerW": 284.9061760000001,
+          "cardPowerW": 2737.4894080000004
+        }
+      }
+    },
+    "softwareReschedule": {
+      "mode": "SOFTWARE_RESCHEDULE",
+      "evidence": "MODEL_WITH_ASSUMPTIONS",
+      "scheduleKeys": [
+        "kvTile",
+        "headTile",
+        "depth"
+      ],
+      "candidateCountPerSramMove": 18,
+      "stressPolicy": {
+        "values": {
+          "matrixUtil": 0.5,
+          "vectorUtil": 0.25,
+          "unpackParamsPerLaneCycle": 1,
+          "layoutImbalance": 1.3,
+          "mcUtil": 0.65,
+          "prediction": 0.7,
+          "launchScale": 0.7
+        },
+        "mapping": "candidate kvTile/headTile/depth preserved; not the standard pinned-kvTile stress card"
+      },
+      "constraint": "only kvTile, headTile and depth are rescheduled; no additional software gain or precision change",
+      "rows": [
+        {
+          "sram": {
+            "field": "lMiB",
+            "from": 1,
+            "to": 0.5
+          },
+          "scheduleKeys": [
+            "kvTile",
+            "headTile",
+            "depth"
+          ],
+          "held": {
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2741.995008000001
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2721.5150080000003
+            }
+          },
+          "candidates": [
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            }
+          ],
+          "bestNominal": {
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2741.995008000001
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2721.5150080000003
+            }
+          },
+          "bestStress": {
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2741.995008000001
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2721.5150080000003
+            }
+          },
+          "nominalRecoveryTps": 0,
+          "stressRecoveryTps": 0
+        },
+        {
+          "sram": {
+            "field": "lMiB",
+            "from": 1,
+            "to": 2
+          },
+          "scheduleKeys": [
+            "kvTile",
+            "headTile",
+            "depth"
+          ],
+          "held": {
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2750.635008
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2730.1550080000006
+            }
+          },
+          "candidates": [
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            }
+          ],
+          "bestNominal": {
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2750.635008
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2730.1550080000006
+            }
+          },
+          "bestStress": {
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2750.635008
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2730.1550080000006
+            }
+          },
+          "nominalRecoveryTps": 0,
+          "stressRecoveryTps": 0
+        },
+        {
+          "sram": {
+            "field": "hMiB",
+            "from": 4,
+            "to": 2
+          },
+          "scheduleKeys": [
+            "kvTile",
+            "headTile",
+            "depth"
+          ],
+          "held": {
+            "nominal": {
+              "feasible": false,
+              "reasons": [
+                "H local tile"
+              ]
+            },
+            "stress": {
+              "feasible": false,
+              "reasons": [
+                "H local tile"
+              ]
+            }
+          },
+          "candidates": [
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 357.41964849228583,
+                "diePowerW": 282.54937600000005,
+                "cardPowerW": 2739.1150080000007
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 357.41964849228583,
+                "diePowerW": 282.54937600000005,
+                "cardPowerW": 2718.635008
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 357.41964849228583,
+                "diePowerW": 282.54937600000005,
+                "cardPowerW": 2739.1150080000007
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 357.41964849228583,
+                "diePowerW": 282.54937600000005,
+                "cardPowerW": 2718.635008
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 357.41964849228583,
+                "diePowerW": 282.54937600000005,
+                "cardPowerW": 2739.1150080000007
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 357.41964849228583,
+                "diePowerW": 282.54937600000005,
+                "cardPowerW": 2718.635008
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 357.41964849228583,
+                "diePowerW": 282.54937600000005,
+                "cardPowerW": 2739.1150080000007
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 357.41964849228583,
+                "diePowerW": 282.54937600000005,
+                "cardPowerW": 2739.1150080000007
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 357.41964849228583,
+                "diePowerW": 282.54937600000005,
+                "cardPowerW": 2739.1150080000007
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            }
+          ],
+          "bestNominal": {
+            "mapping": {
+              "kvTile": 16384,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1094.348484493772,
+              "rawUs": 781.0134219688033,
+              "dieAreaMm2": 357.41964849228583,
+              "diePowerW": 282.54937600000005,
+              "cardPowerW": 2739.1150080000007
+            },
+            "stress": {
+              "feasible": false,
+              "reasons": [
+                "H local tile"
+              ]
+            }
+          },
+          "bestStress": {
+            "mapping": {
+              "kvTile": 16384,
+              "headTile": 48,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1087.0656410945603,
+              "rawUs": 786.2458552551263,
+              "dieAreaMm2": 357.41964849228583,
+              "diePowerW": 282.54937600000005,
+              "cardPowerW": 2739.1150080000007
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 881.4827069991932,
+              "rawUs": 969.6172686251427,
+              "dieAreaMm2": 357.41964849228583,
+              "diePowerW": 282.54937600000005,
+              "cardPowerW": 2718.635008
+            }
+          },
+          "nominalRecoveryTps": null,
+          "stressRecoveryTps": null
+        },
+        {
+          "sram": {
+            "field": "hMiB",
+            "from": 4,
+            "to": 8
+          },
+          "scheduleKeys": [
+            "kvTile",
+            "headTile",
+            "depth"
+          ],
+          "held": {
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 381.1838208278868,
+              "diePowerW": 284.7093760000001,
+              "cardPowerW": 2756.3950080000004
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 381.1838208278868,
+              "diePowerW": 284.7093760000001,
+              "cardPowerW": 2735.915008000001
+            }
+          },
+          "candidates": [
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2756.3950080000004
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 381.1838208278868,
+                "diePowerW": 284.7093760000001,
+                "cardPowerW": 2735.915008000001
+              }
+            }
+          ],
+          "bestNominal": {
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 381.1838208278868,
+              "diePowerW": 284.7093760000001,
+              "cardPowerW": 2756.3950080000004
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 381.1838208278868,
+              "diePowerW": 284.7093760000001,
+              "cardPowerW": 2735.915008000001
+            }
+          },
+          "bestStress": {
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 381.1838208278868,
+              "diePowerW": 284.7093760000001,
+              "cardPowerW": 2756.3950080000004
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 381.1838208278868,
+              "diePowerW": 284.7093760000001,
+              "cardPowerW": 2735.915008000001
+            }
+          },
+          "nominalRecoveryTps": 0,
+          "stressRecoveryTps": 0
+        },
+        {
+          "sram": {
+            "field": "sharedMiB",
+            "from": 16,
+            "to": 12
+          },
+          "scheduleKeys": [
+            "kvTile",
+            "headTile",
+            "depth"
+          ],
+          "held": {
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1022.7251932341995,
+              "rawUs": 835.7092016067429,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2741.995008000001
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 882.7513684947122,
+              "rawUs": 968.2237662891537,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2721.5150080000003
+            }
+          },
+          "candidates": [
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1073.5546133195382,
+                "rawUs": 796.1410105239398,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 879.9899065137512,
+                "rawUs": 971.2621115018422,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1073.5752833950223,
+                "rawUs": 796.1256820276174,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 880.0047506079177,
+                "rawUs": 971.2457280604648,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1073.5752833950223,
+                "rawUs": 796.1256820276174,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 880.0047506079177,
+                "rawUs": 971.2457280604648,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1022.2903561543374,
+                "rawUs": 836.0646753199135,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 882.4079476597246,
+                "rawUs": 968.6005854408347,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1022.7251932341995,
+                "rawUs": 835.7092016067429,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 882.7513684947122,
+                "rawUs": 968.2237662891537,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1022.7251932341995,
+                "rawUs": 835.7092016067429,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2741.995008000001
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 882.7513684947122,
+                "rawUs": 968.2237662891537,
+                "dieAreaMm2": 361.3803438815526,
+                "diePowerW": 282.90937600000007,
+                "cardPowerW": 2721.5150080000003
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            }
+          ],
+          "bestNominal": {
+            "mapping": {
+              "kvTile": 16384,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1094.348484493772,
+              "rawUs": 781.0134219688033,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2741.995008000001
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 906.5072465060036,
+              "rawUs": 942.8505486251446,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2721.5150080000003
+            }
+          },
+          "bestStress": {
+            "mapping": {
+              "kvTile": 16384,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1094.348484493772,
+              "rawUs": 781.0134219688033,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2741.995008000001
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 906.5072465060036,
+              "rawUs": 942.8505486251446,
+              "dieAreaMm2": 361.3803438815526,
+              "diePowerW": 282.90937600000007,
+              "cardPowerW": 2721.5150080000003
+            }
+          },
+          "nominalRecoveryTps": 71.62329125957251,
+          "stressRecoveryTps": 23.75587801129143
+        },
+        {
+          "sram": {
+            "field": "sharedMiB",
+            "from": 16,
+            "to": 24
+          },
+          "scheduleKeys": [
+            "kvTile",
+            "headTile",
+            "depth"
+          ],
+          "held": {
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2750.635008
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2730.1550080000006
+            }
+          },
+          "candidates": [
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0656410945603,
+                "rawUs": 786.2458552551263,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0424383670238,
+                "rawUs": 786.2626375330874,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1087.0424383670238,
+                "rawUs": 786.2626375330874,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.4827069991932,
+                "rawUs": 969.6172686251427,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 16384,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1094.348484493772,
+                "rawUs": 781.0134219688033,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 906.5072465060036,
+                "rawUs": 942.8505486251446,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1091.9480343725181,
+                "rawUs": 782.7303386209251,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 881.0810028378204,
+                "rawUs": 970.0593384127005,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 32768,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": true,
+                "tpsPerUser": 1101.771070241925,
+                "rawUs": 775.7517671190814,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2750.635008
+              },
+              "stress": {
+                "feasible": true,
+                "tpsPerUser": 916.2091462248712,
+                "rawUs": 932.8665384127041,
+                "dieAreaMm2": 373.2624300493531,
+                "diePowerW": 283.98937600000005,
+                "cardPowerW": 2730.1550080000006
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 48,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 2
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 3
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            },
+            {
+              "mapping": {
+                "kvTile": 65536,
+                "headTile": 96,
+                "depth": 4
+              },
+              "nominal": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              },
+              "stress": {
+                "feasible": false,
+                "reasons": [
+                  "H local tile"
+                ]
+              }
+            }
+          ],
+          "bestNominal": {
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2750.635008
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2730.1550080000006
+            }
+          },
+          "bestStress": {
+            "mapping": {
+              "kvTile": 32768,
+              "headTile": 96,
+              "depth": 2
+            },
+            "nominal": {
+              "feasible": true,
+              "tpsPerUser": 1101.771070241925,
+              "rawUs": 775.7517671190814,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2750.635008
+            },
+            "stress": {
+              "feasible": true,
+              "tpsPerUser": 916.2091462248712,
+              "rawUs": 932.8665384127041,
+              "dieAreaMm2": 373.2624300493531,
+              "diePowerW": 283.98937600000005,
+              "cardPowerW": 2730.1550080000006
+            }
+          },
+          "nominalRecoveryTps": 0,
+          "stressRecoveryTps": 0
+        }
+      ]
+    }
+  },
   "bindingConstraints": {
     "byConstraint": [
       {
@@ -2451,7 +6199,7 @@
     "software-expert"
   ],
   "caveats": [
-    "software configuration is held at the design point's OPT for every move (the published OPT, patched by inputs.point.opt at a joint point); a hardware move that re-tuning would rescue is charged in full to the hardware",
+    "parameter rows hold mapping and OPT at the design point except the named move; tradeoffStudies.softwareReschedule separately searches mapping knobs while keeping OPT and precision fixed",
     "die area / power are the detailed model's; at a joint point they leave out the Comm Core area (inputs.point.model.commCoreAreaMm2), which the coupling row's die area includes",
     "moves are one step on a neighbour list (or the sweep values), not gradients; interactions appear only in jointPessimistic, the stress replays and couplings",
     "couplings are reported, not classified: a pair that breaks the budget only together is flagged breaksOnlyTogether, the rows keep their one-at-a-time class",
