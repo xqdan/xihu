@@ -26,6 +26,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const TT = require('./token_time.js');
+const RW = require('./requirement_workload.js');
 const RES = require('../../teams/hardware/src/resource_profiles');
 const A = require('../detailed/k3_architecture_search.js');
 const O = require('../detailed/k3_rdma_final_tuning_model.js');
@@ -45,7 +46,6 @@ const TPS_LIST = [8, 16, 32];
 const CONTRACT_TP = 32;
 const PROFILE = 'P1';
 const REF_MC = 'MC640';
-const COMPUTE_SCALES = [0.5, 0.75, 1, 1.5, 2];
 const TAUS = [1.0, 1.15, 1.3, 1.5, 2.0];
 const SHARED_GRID = [8, 10, 12, 13, 14, 16, 20, 24];
 const DEPTH_GRID = [0, 1, 2, 4];
@@ -54,7 +54,18 @@ const DEPTH_GRID = [0, 1, 2, 4];
 const COMPUTE_TECH = ['matrixUtil', 'vectorUtil', 'reduceUtil', 'unpackParamsPerLaneCycle'];
 // Search ranges per axis: [published side is easy, far end is hard]. The MC payload stops at the
 // published MC640 (above it the card power limit binds first).
-const HARD = {tauUs: 3, computeScale: 0.3, mcGBs: 160};
+// The compute axis is no longer hard-coded. It is searched over the guidance range the L1-a kernel
+// reads off the operator rows (requirement_workload.js#computeGuidance): below the lower end compute
+// starts to bind; at or above the upper end every operator of the class is bandwidth-bound, so more
+// compute buys nothing. The fixed grid it replaces stopped at 2, short of K3 (2.28) and
+// DeepSeek-V4-Pro (3.04), so their saturation was never shown.
+const HARD = {tauUs: 3, mcGBs: 160};
+// The bisection's hard end for the compute axis, as a fraction of the smallest guidance lower bound
+// across models. The bound is an ideal-perfect-overlap ratio, so the real crossover can sit below it
+// (GLM-5.2 holds down to 0.070 against a 0.130 bound); the bracket therefore sits well under the
+// smallest bound and the bisection finds the real edge. A bracket that was too high would be
+// returned as the edge, which is why singleAxis reports `clamped` per model.
+const COMPUTE_FLOOR_FRACTION = 0.25;
 const ITER = 16;
 
 const OWNER_AGENT = {mc: 'memory-expert', sram: 'memory-expert', compute: 'compute-expert', comm: 'comm-expert', physical: 'physical-expert'};
@@ -77,8 +88,15 @@ function context(options = {}) {
   const x = BP.publishedX(spec, 'generate_budget_frontier.js');
   const models = Object.keys(workload.provenance);
   const planning = Object.fromEntries(models.map(m => [m, TT.planningModel(workload, m)]));
-  return {spec, workload, x, planning,
-    active: models.filter(m => planning[m]),
+  const active = models.filter(m => planning[m]);
+  // The compute axis bracket comes from the L1-a kernel (requirement_workload.js#computeGuidance),
+  // read off the same operator rows. The hard end sits below the smallest lower bound so the
+  // bisection finds the real edge rather than returning the bracket.
+  const guidance = Object.fromEntries(active.map(m => [m, RW.computeGuidance({planning}, m, CONTRACT_TP)]));
+  const guidanceLower = active.length ? Math.min(...active.flatMap(m => guidance[m].map(c => c.lower))) : 0;
+  const computeHard = Math.max(1e-3, COMPUTE_FLOOR_FRACTION * guidanceLower);
+  return {spec, workload, x, planning, guidance, hard: {...HARD, computeScale: computeHard},
+    active,
     blocked: models.filter(m => !planning[m]),
     tech: Object.fromEntries(COMPUTE_TECH.map(k => [k, A.TECH[k]])),
     target: {tpsPerUser: spec.goal.target, architectureGate: spec.acceptance.architectureGateTpsPerUser,
@@ -130,6 +148,19 @@ function edge(ok, easy, hard, iter = ITER) {
 
 // ---- 1. planning frontier ----------------------------------------------------------------------
 
+// A compute-search grid for one model, read off its L1-a guidance (ctx.guidance[model]). The ends
+// are the guidance range itself: the lower bound (below it compute begins to bind) and the upper
+// bound (at or above it every operator of the class is bandwidth-bound, so tau no longer improves).
+// 1 (the published point) is always included. The old fixed grid [0.5 .. 2] is what this replaces:
+// it stopped at 2, so K3 (2.28) and DeepSeek-V4-Pro (3.04) were never shown past saturation.
+function computeScalesFor(guidance, published = 1) {
+  const lower = Math.min(...guidance.map(c => c.lower));
+  const upper = Math.max(...guidance.map(c => c.upper));
+  const grid = new Set([1, Number(lower.toPrecision(3)), Number(upper.toPrecision(3))]);
+  for (const f of [0.5, 0.75, 1.5, 2, 2.5, 3]) { const v = Number((published * f).toPrecision(3)); if (v >= lower && v <= upper) grid.add(v); }
+  return [...grid].sort((a, b) => a - b);
+}
+
 function planningSlot(ctx, model, tp, budgetUs) {
   const ref = planningAt(ctx, model, tp, ctx.published);
   const floorUs = TT.laneTimes(ctx.planning[model], slot(tp), {...TT.NOMINAL, tauUs: 0}).perCollectiveUs;
@@ -154,7 +185,7 @@ function planningSlot(ctx, model, tp, budgetUs) {
     bandwidthMin: {mcPayloadGBsPerCube: payload, effectiveBytesPerSecond: scale * RES.mcProfiles[REF_MC].effectiveBytesPerSecond,
       withinMC320: payload <= RES.mcProfiles.MC320.payloadGBsPerCube, withinMC640: payload <= refPayload()},
     serial: {flopUs: ref.flopUs, fixedUs: ref.fixedUs, tmaExposedUs: ref.tmaExposedUs, collectivesPerToken: n, collectiveBandwidthFloorUs: floorUs},
-    tauMaxByComputeScale: COMPUTE_SCALES.map(s => ({computeScale: s, tauMaxUs: tauMax(s)})),
+    tauMaxByComputeScale: computeScalesFor(ctx.guidance[model]).map(s => ({computeScale: s, tauMaxUs: tauMax(s)})),
     tauMaxAtUnboundedComputeUs: tauMax(Infinity),
     computeScaleMinByTau: TAUS.map(tau => ({tauUs: tau, computeScaleMin: scaleMin(tau)})),
     // Bytes per collective / tau: the network bandwidth below which the collective leaves the tau floor.
@@ -184,7 +215,7 @@ function detailedGrid(ctx, budgetUs) {
   for (const sharedMiB of SHARED_GRID) for (const depth of DEPTH_GRID) {
     const where = {sharedMiB, depth};
     const at640 = detailedAt(ctx, ctx.published, where);
-    const min = edge(mc => detailedHolds(ctx, budgetUs, where)({...ctx.published, mcGBs: mc}), ctx.published.mcGBs, HARD.mcGBs);
+    const min = edge(mc => detailedHolds(ctx, budgetUs, where)({...ctx.published, mcGBs: mc}), ctx.published.mcGBs, ctx.hard.mcGBs);
     cells.push({sharedMiB, depth, mcPayloadGBsPerCubeMin: min, atMC640: at640.feasible
       ? {feasible: true, rawUs: at640.rawUs, dieAreaMm2: at640.dieAreaMm2}
       : {feasible: false, reasons: at640.reasons}});
@@ -201,7 +232,7 @@ function detailedGrid(ctx, budgetUs) {
 const AXES = ['tauUs', 'computeScale', 'mcGBs'];
 // Single-axis bound under one model family (planning: every active model; detailed: K3).
 function axisBound(ok, ctx, axis, base = ctx.published) {
-  return edge(v => ok({...base, [axis]: v}), base[axis], HARD[axis]);
+  return edge(v => ok({...base, [axis]: v}), base[axis], ctx.hard[axis]);
 }
 const tighter = (axis, a, b) => {
   if (a === null || b === null) return null;
@@ -341,5 +372,5 @@ function build(options = {}) {
   };
 }
 
-module.exports = {build, context, planningAt, detailedAt, edge, BASELINE_FILE, WORKLOAD_FILE, OUT_FILE, SCHEMA_VERSION, CONTRACT_SCHEMA,
-  CONTRACT_TP, SHARED_GRID, DEPTH_GRID, COMPUTE_TECH, SPLITS};
+module.exports = {build, context, planningAt, detailedAt, edge, computeScalesFor, BASELINE_FILE, WORKLOAD_FILE, OUT_FILE, SCHEMA_VERSION, CONTRACT_SCHEMA,
+  CONTRACT_TP, SHARED_GRID, DEPTH_GRID, COMPUTE_TECH, COMPUTE_FLOOR_FRACTION, SPLITS};
