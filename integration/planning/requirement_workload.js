@@ -218,6 +218,38 @@ function slotSummary(ctx, modelId, tp) {
   };
 }
 
+// ---- compute guidance (coarse, per core class) -------------------------------------------------
+// A coarse range of the peak compute each core class needs, read off the operator rows at one TP.
+// Both ends are dimensionless ratios of the uncalibrated lanes, so they are in units of the planning
+// peak (1 = the reference peak of that core class, see refProfile()). They are guidance for the
+// design, not a sizing: they assume every operator of a class overlaps perfectly and ignore fixed
+// per-layer cost, collectives and DMA waits, which the detailed model carries.
+//   lower: the class's total compute time over its total memory time. Below it, compute is not what
+//          limits the class at all; a bigger engine buys nothing.
+//   upper: the largest single operator's compute-over-memory ratio. At or above it, every operator of
+//          the class is bandwidth-bound, so more compute beyond it buys nothing either.
+// The range is TP-invariant (both lanes divide by TP), so one TP is enough; TP 32 is the published one.
+function computeGuidance(ctx, modelId, tp = 32) {
+  const model = ctx.planning[modelId];
+  const rows = model.rows.map(r => row(model, tp, r)).filter(r => r.memoryUs !== null && r.bytesClass !== 'collective');
+  const classes = [...new Set(rows.map(r => r.coreClass))].sort();
+  return classes.map(coreClass => {
+    const ops = rows.filter(r => r.coreClass === coreClass);
+    const computeSum = ops.reduce((s, r) => s + r.computeUs, 0);
+    const memorySum = ops.reduce((s, r) => s + r.memoryUs, 0);
+    const top = ops.reduce((best, r) => (r.computeUs / r.memoryUs > best.ratio ? {ratio: r.computeUs / r.memoryUs, operatorId: r.operatorId} : best), {ratio: -Infinity, operatorId: null});
+    return {
+      coreClass,
+      operators: ops.map(r => r.operatorId),
+      lower: computeSum / memorySum,
+      upper: top.ratio,
+      upperSetBy: top.operatorId,
+      computeUsSum: computeSum,
+      memoryUsSum: memorySum
+    };
+  });
+}
+
 // ---- build -------------------------------------------------------------------------------------
 
 function build(options = {}) {
@@ -238,7 +270,8 @@ function build(options = {}) {
       collectivesPerToken: ctx.workload.collectivesPerToken[modelId],
       layers: ctx.workload.layers[modelId],
       variants,
-      slots: TPS_LIST.map(tp => slotSummary(ctx, modelId, tp))
+      slots: TPS_LIST.map(tp => slotSummary(ctx, modelId, tp)),
+      computeGuidance: computeGuidance(ctx, modelId, 32)
     };
   });
   return {
@@ -255,17 +288,19 @@ function build(options = {}) {
       perTokenPerRank: 'global rows are divided by TP, as laneTimes does; the arithmetic intensity is TP-invariant',
       bound: 'compute when the row\'s FLOP/byte is at or above the core class\'s machine balance (peak x utilization x duty cycle / MC effective bytes per second); collective rows are classified by the network against tau',
       ratios: 'each ratio is one domain\'s own lane time as a fraction of the raw budget; they do not add up (raw = max(memory lane, serial lane))',
-      intensityHistogram: 'buckets over FLOP/byte, with the operators in each bucket'
+      intensityHistogram: 'buckets over FLOP/byte, with the operators in each bucket',
+      computeGuidance: 'per model and core class, a coarse [lower, upper] range in units of the planning peak of that class (1 = refProfile peak x utilization x duty cycle). lower = class compute time / class memory time; upper = the largest single operator compute/memory ratio. Uncalibrated (no kFlop). Guidance only: assumes perfect per-class overlap and omits fixed, collective and DMA time'
     },
     models,
     caveats: [
       'every number is MODEL: the operator rows are derived from the repository engineering preset and the public configs, the token-time factors are fitted on K3 only (ADR-0006)',
       'the collective count is stated on both bases the repository carries for K3 (reference-393, repo-510, ADR-0004); the other two models state only their ADR-0024 per-layer ASSUMPTION count',
       'software switches stay at the published OPT; no re-tuning happens here',
-      'this file changes no baseline, contract, gate or published number'
+      'this file changes no baseline, contract, gate or published number',
+      'computeGuidance is a coarse design aid, not a sizing input: it is read by no gate and no search space yet (see WORKFLOWS.md design.req.budget)'
     ]
   };
 }
 
-module.exports = {build, context, slotSummary, collectiveBases, histogram, row, RATIOS, INTENSITY_BUCKETS,
+module.exports = {build, context, slotSummary, computeGuidance, collectiveBases, histogram, row, RATIOS, INTENSITY_BUCKETS,
   BASELINE_FILE, WORKLOAD_FILE, PROFILES_FILE, OUT_FILE, SCHEMA_VERSION, TPS_LIST, PROFILE, MC_REFERENCE, BASELINE_MODEL};

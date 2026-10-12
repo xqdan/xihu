@@ -39,7 +39,8 @@
     "perTokenPerRank": "global rows are divided by TP, as laneTimes does; the arithmetic intensity is TP-invariant",
     "bound": "compute when the row's FLOP/byte is at or above the core class's machine balance (peak x utilization x duty cycle / MC effective bytes per second); collective rows are classified by the network against tau",
     "ratios": "each ratio is one domain's own lane time as a fraction of the raw budget; they do not add up (raw = max(memory lane, serial lane))",
-    "intensityHistogram": "buckets over FLOP/byte, with the operators in each bucket"
+    "intensityHistogram": "buckets over FLOP/byte, with the operators in each bucket",
+    "computeGuidance": "per model and core class, a coarse [lower, upper] range in units of the planning peak of that class (1 = refProfile peak x utilization x duty cycle). lower = class compute time / class memory time; upper = the largest single operator compute/memory ratio. Uncalibrated (no kFlop). Guidance only: assumes perfect per-class overlap and omits fixed, collective and DMA time"
   },
   "models": [
     {
@@ -1015,6 +1016,42 @@
             ]
           }
         }
+      ],
+      "computeGuidance": [
+        {
+          "coreClass": "H",
+          "operators": [
+            "attention"
+          ],
+          "lower": 2.2764227642276422,
+          "upper": 2.2764227642276422,
+          "upperSetBy": "attention",
+          "computeUsSum": 163.84,
+          "memoryUsSum": 71.97257142857143
+        },
+        {
+          "coreClass": "L",
+          "operators": [
+            "dense_projection",
+            "routed_moe"
+          ],
+          "lower": 0.08156436529213786,
+          "upper": 0.2018454440599769,
+          "upperSetBy": "routed_moe",
+          "computeUsSum": 48.71218812231923,
+          "memoryUsSum": 597.2238973214286
+        },
+        {
+          "coreClass": "V",
+          "operators": [
+            "kda_state"
+          ],
+          "lower": 0.25020424836601307,
+          "upper": 0.25020424836601307,
+          "upperSetBy": "kda_state",
+          "computeUsSum": 0.47352941176470587,
+          "memoryUsSum": 1.8925714285714286
+        }
       ]
     },
     {
@@ -1953,6 +1990,42 @@
               "indexer"
             ]
           }
+        }
+      ],
+      "computeGuidance": [
+        {
+          "coreClass": "H",
+          "operators": [
+            "sparse_attention"
+          ],
+          "lower": 1.5176151761517613,
+          "upper": 1.5176151761517613,
+          "upperSetBy": "sparse_attention",
+          "computeUsSum": 0.6933333333333332,
+          "memoryUsSum": 0.45685714285714285
+        },
+        {
+          "coreClass": "INDEXER",
+          "operators": [
+            "indexer"
+          ],
+          "lower": 0.4471182412358883,
+          "upper": 0.4471182412358883,
+          "upperSetBy": "indexer",
+          "computeUsSum": 5.665882352941177,
+          "memoryUsSum": 12.672
+        },
+        {
+          "coreClass": "L",
+          "operators": [
+            "dense_projection",
+            "routed_moe"
+          ],
+          "lower": 0.10444753656122045,
+          "upper": 0.10723039215686277,
+          "upperSetBy": "routed_moe",
+          "computeUsSum": 18.838694852941178,
+          "memoryUsSum": 180.36514285714284
         }
       ]
     },
@@ -2896,6 +2969,42 @@
             ]
           }
         }
+      ],
+      "computeGuidance": [
+        {
+          "coreClass": "H",
+          "operators": [
+            "sparse_attention"
+          ],
+          "lower": 3.0352303523035227,
+          "upper": 3.0352303523035227,
+          "upperSetBy": "sparse_attention",
+          "computeUsSum": 1.0844444444444443,
+          "memoryUsSum": 0.35728571428571426
+        },
+        {
+          "coreClass": "INDEXER",
+          "operators": [
+            "indexer"
+          ],
+          "lower": 0.8873044167161814,
+          "upper": 0.8873044167161814,
+          "upperSetBy": "indexer",
+          "computeUsSum": 32.66091503267974,
+          "memoryUsSum": 36.80914285714286
+        },
+        {
+          "coreClass": "L",
+          "operators": [
+            "dense_projection",
+            "routed_moe"
+          ],
+          "lower": 0.1444498744107993,
+          "upper": 0.20184544405997695,
+          "upperSetBy": "routed_moe",
+          "computeUsSum": 22.4736723058364,
+          "memoryUsSum": 155.5811135004783
+        }
       ]
     }
   ],
@@ -2903,6 +3012,7 @@
     "every number is MODEL: the operator rows are derived from the repository engineering preset and the public configs, the token-time factors are fitted on K3 only (ADR-0006)",
     "the collective count is stated on both bases the repository carries for K3 (reference-393, repo-510, ADR-0004); the other two models state only their ADR-0024 per-layer ASSUMPTION count",
     "software switches stay at the published OPT; no re-tuning happens here",
-    "this file changes no baseline, contract, gate or published number"
+    "this file changes no baseline, contract, gate or published number",
+    "computeGuidance is a coarse design aid, not a sizing input: it is read by no gate and no search space yet (see WORKFLOWS.md design.req.budget)"
   ]
 }
