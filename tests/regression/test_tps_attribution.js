@@ -22,6 +22,16 @@ const ctx = T.context({text, point: published});
 const resolved = DP.resolve({point: 'auto', baselineText: text});
 const storedCtx = resolved.kind === 'published' ? ctx : T.context({text, point: resolved});
 
+// sourceCommit identifies the commit that generated a checked-in artifact. It is
+// intentionally not compared with the current checkout HEAD: committing the
+// regenerated artifact necessarily changes HEAD after generation. Source hashes
+// and the regeneration governance test provide the actual freshness checks.
+const withoutGeneratedCommit = card => {
+  const copy = JSON.parse(JSON.stringify(card));
+  if (copy.tradeoffStudies && copy.tradeoffStudies.provenance) delete copy.tradeoffStudies.provenance.sourceCommit;
+  return copy;
+};
+
 near(ctx.base.tpsPerUser, td.point.tpsPerUser, 'published TPS');
 near(ctx.base.rawUs, td.point.rawLatencyUs, 'published raw');
 
@@ -34,9 +44,12 @@ for (const dim of T.DEFAULT_DIMENSIONS) {
   const stored = JSON.parse(fs.readFileSync(file, 'utf8'));
   assert.strictEqual(stored.inputs.baselineSha256, crypto.createHash('sha256').update(text).digest('hex'), `${file} was built from a different baseline; run npm run attribution:cards`);
   assert.strictEqual(stored.inputs.point.sha256, resolved.sha256, `${file} was built at another design point than ${resolved.source}; run npm run attribution:cards`);
+  if (stored.tradeoffStudies && stored.tradeoffStudies.provenance) {
+    assert(/^[0-9a-f]{40}$/.test(stored.tradeoffStudies.provenance.sourceCommit || ''), `${file} has invalid provenance.sourceCommit`);
+  }
   // Round-trip through JSON so the comparison sees what the generator wrote.
   const rebuilt = storedCtx === ctx ? card : T.build(dim, {context: storedCtx});
-  assert.deepStrictEqual(stored, JSON.parse(JSON.stringify(rebuilt)), `${file} is stale; run npm run attribution:cards`);
+  assert.deepStrictEqual(withoutGeneratedCommit(stored), withoutGeneratedCommit(rebuilt), `${file} is stale; run npm run attribution:cards`);
   assert.strictEqual(card.dimension, dim);
   assert(/^MODEL/.test(card.status), `${dim}: card must declare its evidence level`);
   assert(!/\bPASS\b/.test(JSON.stringify(card)), `${dim}: a card may not carry a gate-like literal`);
