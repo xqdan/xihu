@@ -1,5 +1,5 @@
 'use strict';
-// Collective-only link demand at the published K3 mapping. Routing, packets and timing use
+// Collective-only link demand at the published K3 mapping and its TP16 protocol projection. Routing, packets and timing use
 // the existing protocol/topology kernel; no measurement, topology choice or Gate is inferred.
 const crypto = require('crypto');
 const fs = require('fs');
@@ -10,13 +10,14 @@ const O = require('../detailed/k3_rdma_final_tuning_model');
 const R = require('../detailed/k3_sram_memory_rdma_model');
 const A = require('../detailed/k3_architecture_search');
 const BP = require('../detailed/baseline_point');
+const E = require('../../teams/model/src/design_engine');
 const RW = require('./requirement_workload');
 const IDS = require('./run_ids');
 
 const root = path.resolve(__dirname, '../..');
 const OUT_FILE = 'out/requirements/network_requirements.json';
 const KERNEL_FILE = 'integration/planning/network_requirements.js';
-const SCHEMA_VERSION = 'network-requirements-v0.1';
+const SCHEMA_VERSION = 'network-requirements-v0.2';
 const SOURCE_FILES = [...new Set([T.BASELINE_FILE, T.CANDIDATES_FILE, T.COMM_CORE_FILE,
   RW.WORKLOAD_FILE, RW.SCENARIO_CATALOG_FILE, RW.SCENARIO_SCHEMA_FILE, RW.KERNEL_FILE,
   KERNEL_FILE, 'integration/planning/run_ids.js', 'integration/orchestration/runtime/schema.js',
@@ -52,9 +53,10 @@ function routeTraffic(topologyDef, spec, classes, ctx) {
   const classRows = classes.map(({name, payload, count, q}) => {
     let injected = 0, routed = 0;
     const ownSamples = [];
-    for (const pass of T.passes(name, payload, q)) for (const step of T.steps(pass, 'oneShot', q.activeNICs, order)) {
+    for (const pass of T.passes(name, payload, q)) for (const step of T.steps(pass, 'oneShot', q.activeNICs, order, spec.card.ranks)) {
       const packetBytes = Math.ceil((step.bytes + ctx.c.headerBytes + ctx.c.flagBytes) / ctx.c.packetAlign) * ctx.c.packetAlign;
       for (let src = 0; src < spec.card.ranks; src++) for (let nic = 0; nic < q.activeNICs; nic++) for (const dst of step.dsts(src)) {
+        if (dst === src || dst < 0 || dst >= spec.card.ranks) throw new Error('invalid collective destination');
         const route = topo.route(src, dst, spec.card.nicDies[nic]);
         ownSamples.push({value: T.pathLatency(route, P, spec.propagationUsPerM), count});
         injected += packetBytes * count;
@@ -78,6 +80,9 @@ function routeTraffic(topologyDef, spec, classes, ctx) {
       return [corner, T.derive(name, payload, q, cell, {...ctx, P: Pc}).tauUs];
     }));
     return {name, countPerToken: count, payloadBytesPerCollective: payload, activeNICs: q.activeNICs,
+      protocolWireBytesPerCollectivePerRank: q.wireBytes,
+      protocolRequestsPerCollectivePerRank: T.passes(name, payload, q).length * (spec.card.ranks - 1) * q.activeNICs,
+      protocolWorkspaceBytesPerRank: q.workspace,
       injectedPacketBytesPerTokenGroup: injected, routedPacketBytesPerTokenGroup: routed,
       nominalMessagePathLatencyUs: percentiles(ownSamples), collectiveLatencyCornersUs: latencyCornersUs};
   });
@@ -88,7 +93,7 @@ function routeTraffic(topologyDef, spec, classes, ctx) {
     links: [...links.values()].sort((a, b) => a.linkId.localeCompare(b.linkId))};
 }
 
-function context() {
+function context(tp = 32) {
   const baseline = read(T.BASELINE_FILE), spec = read(T.CANDIDATES_FILE);
   if (spec.card.ranks !== 32 || spec.card.dies !== baseline.card.computeDies || spec.card.dies !== 8 ||
       spec.card.nicDies.length !== spec.card.dies) throw new Error('network ledger requires the existing 32-rank / 8-die protocol mapping');
@@ -103,10 +108,21 @@ function context() {
     const entry = grouped.get(key) || {name: op.name, payload: op.mapping.payload, count: 0, q: op.memory};
     entry.count++; grouped.set(key, entry);
   }
-  const classes = [...grouped.values()];
+  let classes = [...grouped.values()];
+  if (![16, 32].includes(tp)) throw new Error(`no K3 protocol projection for TP${tp}`);
+  const projectedSpec = {...spec, card: {...spec.card, ranks: tp}, topologies: spec.topologies.map(t => {
+    if (tp === spec.card.ranks) return t;
+    const variant = t.rankVariants && t.rankVariants[String(tp)];
+    if (!variant) throw new Error(`${t.key}: no explicit TP${tp} topology variant`);
+    const {rankVariants, ...base} = t;
+    return {...base, ...variant};
+  })};
+  const protocolConfig = tp === 32 ? c : R.config({...c, tp});
+  if (tp !== 32) classes = classes.map(k => ({...k, q: R.collective(k.name, k.payload, mapped.p, x, protocolConfig)}));
   const controls = new Map(read(T.COMM_CORE_FILE).controlPath.classes.map(k => [k.name, k.controlUs]));
   const controlUs = name => { if (!controls.has(name)) throw new Error(`missing Comm Core control cost for ${name}`); return controls.get(name); };
-  return {baseline, spec, x, p: mapped.p, c, card: spec.card, prop: spec.propagationUsPerM, controlUs, classes,
+  return {baseline, spec: projectedSpec, x, p: mapped.p, c: protocolConfig, card: projectedSpec.card,
+    prop: spec.propagationUsPerM, controlUs, classes,
     wireBytesPerTokenPerRank: classes.reduce((s, k) => s + k.count * k.q.wireBytes, 0),
     nocBytesPerTokenPerRank: classes.reduce((s, k) => s + k.count * k.q.nocBytes, 0),
     dieCutBytesPerTokenPerRank: classes.reduce((s, k) => s + k.count * 2 * k.payload, 0)};
@@ -115,13 +131,19 @@ function context() {
 function scenarioLedger(scenario, ctx, traffic, multiplier) {
   const reasons = [];
   if (scenario.model !== 'K3') reasons.push('no per-collective message ledger for this model');
-  if (scenario.tp !== ctx.spec.card.ranks) reasons.push('protocol steps are fixed at TP32');
+  if (scenario.tp !== ctx.spec.card.ranks) reasons.push('no explicit protocol/topology projection for this TP');
   if (scenario.batch !== 1 || scenario.context !== ctx.baseline.goal.contextTokens || scenario.phase !== 'decode') reasons.push('not the published batch/context/decode mapping');
   if (scenario.precision !== 'BF16+FP8-KV') reasons.push('precision differs from the published K3 mapping');
   if (reasons.length) return {...scenario, status: 'BLOCKED_CONFIG', reasons, layers: null, topologies: []};
   const rate = scenario.targetTpsPerUser;
   const gb = bytes => bytes * rate / 1e9;
   return {...scenario, status: 'MODEL_WITH_ASSUMPTIONS', tokenRatePerRank: rate,
+    mapping: {basis: scenario.tp === 32 ? 'PUBLISHED_TP32_PROTOCOL' : 'TP16_PROTOCOL_PROJECTION',
+      detailedReplaySupported: scenario.tp === 32, endToEndTpsPerUser: null,
+      payloadBasis: 'full-group logical payload and reference-393 class counts from the published K3 operator ledger; payload is not scaled by TP',
+      peersPerRank: scenario.tp - 1, lseHeadsPerRank: E.MODEL_PRESETS.kimiK3.attention.heads / scenario.tp,
+      lseNICPlacement: 'one whole head per active NIC up to 8 dies; nicDies[k] from topology contract',
+      controlPathBasis: 'TP32 Comm Core control cost held fixed for TP16 as a planning assumption; not a TP16 firmware replay'},
     layers: {
       dieLocal: {basis: 'collective NoC bytes, balanced across dies; not individual NoC link routing',
         bytesPerTokenPerRank: ctx.nocBytesPerTokenPerRank, requiredGBsPerRank: gb(ctx.nocBytesPerTokenPerRank),
@@ -151,10 +173,17 @@ function scenarioLedger(scenario, ctx, traffic, multiplier) {
 function build() {
   const ctx = context(), catalog = RW.loadScenarioCatalog();
   const workload = RW.build();
-  const supported = workload.models.flatMap(m => m.scenarios).find(s => s.model === 'K3' && s.batch === 1 && s.tp === 32 && s.context === ctx.baseline.goal.contextTokens);
-  if (!supported || !supported.network) throw new Error('network planning tail multiplier requires a matching workload scenario');
-  const multiplier = supported.network.p99Multiplier;
-  const traffic = ctx.spec.topologies.map(t => routeTraffic(t, ctx.spec, ctx.classes, ctx));
+  const planningScenarios = workload.models.flatMap(m => m.scenarios);
+  const contexts = new Map([[32, ctx], [16, context(16)]]), traffic = new Map();
+  const ledgers = catalog.map(s => {
+    const own = contexts.get(s.tp) || ctx;
+    const planning = planningScenarios.find(p => p.scenarioId === s.scenarioId);
+    const supported = s.model === 'K3' && contexts.has(s.tp) && s.batch === 1 && s.context === ctx.baseline.goal.contextTokens && s.phase === 'decode' && s.precision === 'BF16+FP8-KV';
+    if (!supported) return scenarioLedger(s, own, [], null);
+    if (!planning || !planning.network) throw new Error(`network planning tail multiplier requires matching workload scenario ${s.scenarioId}`);
+    if (!traffic.has(s.tp)) traffic.set(s.tp, own.spec.topologies.map(t => routeTraffic(t, own.spec, own.classes, own)));
+    return scenarioLedger(s, own, traffic.get(s.tp), planning.network.p99Multiplier);
+  });
   return {schemaVersion: SCHEMA_VERSION, generatedBy: KERNEL_FILE, workItem: 'HW-NETWORK-DEMAND-01',
     status: 'PARTIAL_MODEL_WITH_ASSUMPTIONS; no Gate or topology selection',
     provenance: {sourceCommit: process.env.K3_SOURCE_COMMIT || execFileSync('git', ['rev-parse', 'HEAD'], {cwd: root, encoding: 'utf8'}).trim(),
@@ -162,19 +191,20 @@ function build() {
       runId: `network-demand-${hash(JSON.stringify(catalog)).slice(0, 12)}`, seed: IDS.seed,
       profile: 'P1 / MC640 published stretch mapping', modelVersion: ctx.baseline.version,
       evidenceLevel: 'MODEL_WITH_ASSUMPTIONS', units: 'decimal GB/s and us'},
-    scope: {point: `${T.BASELINE_FILE}#/tpsDesign/hardware/x`, model: 'K3', tp: 32, batch: 1,
+    scope: {point: `${T.BASELINE_FILE}#/tpsDesign/hardware/x`, model: 'K3', tp: [16, 32], detailedReplayTp: [32], batch: 1,
       context: ctx.baseline.goal.contextTokens, phase: 'decode', physicalProfile: 'P1', mcProfile: 'MC640 (published stretch mapping)'},
     units: {bandwidth: 'decimal GB/s, directed links, full TP-group traffic on each link', latency: 'us'},
     inputs: {sourceArtifacts: SOURCE_FILES.map(file => ({path: file, sha256: hash(fs.readFileSync(path.join(root, file)))})),
       scenarioCatalogSha256: hash(JSON.stringify(catalog))},
     assumptions: {topologyStatus: ctx.spec.status, topologySource: T.CANDIDATES_FILE,
-      bandwidthP99Multiplier: multiplier, bandwidthP99Basis: 'workload demand planning assumption, not a measured traffic quantile',
+      bandwidthP99MultipliersByScenario: Object.fromEntries(ledgers.filter(s => s.status !== 'BLOCKED_CONFIG').map(s => [s.scenarioId, planningScenarios.find(p => p.scenarioId === s.scenarioId).network.p99Multiplier])),
+      bandwidthP99Basis: 'each matching workload scenario planning multiplier, not a measured traffic quantile',
       latencyQuantiles: 'nearest-rank empirical quantiles across nominal message routes, weighted by collective count; not runtime queueing tails',
       latencyCorners: 'all parameters low/nominal/high from topology contract; NOT P50/P95/P99'},
     exclusions: ['ACK packet wire demand', 'packet retransmission and loss', 'MTU segmentation', 'background DMA and non-collective NoC traffic',
       'NoC per-router placement and routing', 'extra D2D forwarding to scale-out ports; ring-cut demand is a lower bound',
-      'queueing distributions and runtime latency percentiles', 'topology selection and Gate eligibility'],
-    scenarios: catalog.map(s => scenarioLedger(s, ctx, traffic, multiplier))};
+      'queueing distributions and runtime latency percentiles', 'TP16 compute, memory capacity, SRAM feasibility and end-to-end TPS replay', 'topology selection and Gate eligibility'],
+    scenarios: ledgers};
 }
 
 module.exports = {build, context, percentiles, parameters, routeTraffic, scenarioLedger, SOURCE_FILES, OUT_FILE, KERNEL_FILE, SCHEMA_VERSION};

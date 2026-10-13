@@ -2,11 +2,13 @@
  * assumptions, NOT properties guaranteed by RDMA memory semantics. */
 'use strict';
 const A=require('./k3_architecture_search.js');
+const E=require('../../teams/model/src/design_engine.js');
 const {simulate,MiB}=require('./k3_operator_sram_sim.js');
 const MEM={oneWayUs:.10,issueCycles:4,rxCycles:24,commitCycles:8,notifyCycles:8,
  ackCycles:16,outstandingPerNIC:32,headerBytes:64,flagBytes:16,packetAlign:64,
  stripeKiB:16,qpContextBytes:256,wqeCqeBytes:128,epochs:2};
-function config(overrides={}){const c={...MEM,...overrides};for(const[k,v]of Object.entries(c))if(!Number.isFinite(v)||v<0)throw Error('Invalid RDMA '+k);for(const k of ['issueCycles','outstandingPerNIC','stripeKiB','packetAlign','epochs'])if(c[k]<=0||!Number.isInteger(c[k]))throw Error('Invalid RDMA '+k);return c;}
+function ranks(c){const tp=c.tp===undefined?32:c.tp;if(!Number.isInteger(tp)||tp<2)throw Error('Invalid RDMA tp');return tp;}
+function config(overrides={}){const c={...MEM,...overrides};for(const[k,v]of Object.entries(c))if(!Number.isFinite(v)||v<0)throw Error('Invalid RDMA '+k);for(const k of ['issueCycles','outstandingPerNIC','stripeKiB','packetAlign','epochs'])if(c[k]<=0||!Number.isInteger(c[k]))throw Error('Invalid RDMA '+k);ranks(c);return c;}
 const align=(n,a)=>Math.ceil(n/a)*a;
 // A verification model for epoch-owned SRAM receive slots. WRITE != READY
 // until commit, and READY != FREE until the consumer and all ACKs finish.
@@ -24,12 +26,12 @@ function lseMerge(tuples){
  if(!(L>0))throw Error('invalid softmax normalizer');
  return {m:M,l:L,o:tuples[0].o.map((_,i)=>tuples.reduce((s,t,j)=>s+a[j]*t.o[i],0)/L)};
 }
-// One balanced all-to-all phase. Each active NIC issues to 31 peer ranks;
+// One balanced all-to-all phase. Each active NIC issues to TP-1 peer ranks;
 // peer writes target disjoint source-rank slots in the destination SRAM.
 // Credit returns only after the write is visible and ACK arrives. Phase end
 // conservatively drains ACKs; no hidden dropped in-flight writes.
 function phase(bytesPerMessage,activeNICs,p,x,c=MEM,{trace=false}={}){
- const peers=31,issue=c.issueCycles/(x.ghz*1000);
+ const peers=ranks(c)-1,issue=c.issueCycles/(x.ghz*1000);
  const packet=align(bytesPerMessage+c.headerBytes+c.flagBytes,c.packetAlign);
  const networkGBs=Math.min(p.rdmaDieGB,A.LIMITS.networkGBs/activeNICs);
  const serialization=Math.max(packet/(networkGBs*1000),bytesPerMessage/(p.sharedRead*1e6),(bytesPerMessage+c.flagBytes)/(p.sharedWrite*1e6),(2*bytesPerMessage+c.flagBytes)/(p.nocTB*1e6));
@@ -47,9 +49,11 @@ function phase(bytesPerMessage,activeNICs,p,x,c=MEM,{trace=false}={}){
  return {duration:Math.max(ready,drained),ready,drained,requests,logicalBytes,wireBytes:packet*requests,readBytes:logicalBytes,writeBytes:logicalBytes+flags,nocBytes:2*logicalBytes+flags,events};
 }
 function collective(name,logicalPayload,p,x,c=MEM,trace=false){
- const TP=32,D=8,isLse=name.includes('LSE'),isGather=name.includes('all-gather')||name.includes('sampling');
+ const TP=ranks(c),D=8,isLse=name.includes('LSE'),isGather=name.includes('all-gather')||name.includes('sampling');
+ const attention=E.MODEL_PRESETS.kimiK3.attention,heads=attention.heads/TP;
+ if(isLse&&!Number.isInteger(heads))throw Error(`LSE heads ${attention.heads} not divisible by TP${TP}`);
  const kind=isLse?'LSE reduce-scatter':isGather?'all-gather':'FP32 reduce-scatter + BF16 all-gather';
- const activeNICs=isLse?3:Math.min(D,Math.max(1,Math.ceil(logicalPayload/(c.stripeKiB*1024))));
+ const activeNICs=isLse?Math.min(D,heads):Math.min(D,Math.max(1,Math.ceil(logicalPayload/(c.stripeKiB*1024))));
  const transportBytes=isGather||isLse?logicalPayload:2*logicalPayload;
  const first=phase(transportBytes/TP/activeNICs,activeNICs,p,x,c,{trace});
  const phases=[first];if(!isGather&&!isLse)phases.push(phase(logicalPayload/TP/activeNICs,activeNICs,p,x,c,{trace}));
@@ -58,9 +62,9 @@ function collective(name,logicalPayload,p,x,c=MEM,trace=false){
   reduceRead=transportBytes;reduceWrite=transportBytes/TP;
   let reduceOps=(TP-1)*(transportBytes/4/TP);
   if(isLse){
-   // Each rank owns 3 whole heads. Metadata is merged with max/exp/sum;
+   // Each rank owns totalHeads/TP whole heads. Metadata is merged with max/exp/sum;
    // then FP32 O is weighted and normalized, NOT a plain FP32 SUM.
-   const heads=3,dims=512;
+   const dims=attention.kvLatent;
    const vectorOps=heads*(TP*8+TP*dims+dims);
    const vectorTOP=activeNICs*x.nH*x.vectorLanes*2*x.ghz/1000*A.TECH.vectorUtil;
    vectorUs=vectorOps/(vectorTOP*1e6);
@@ -80,8 +84,8 @@ function collective(name,logicalPayload,p,x,c=MEM,trace=false){
  const raw=memoryTransport+reduceUs+vectorUs+cardLocal;
  const resourceFloor=Math.max(reads/(D*p.sharedRead*1e6),writes/(D*p.sharedWrite*1e6),noc/(D*p.nocTB*1e6));
  const portTail=Math.max(0,resourceFloor-raw);
- const queueBytes=D*(31*c.qpContextBytes+c.outstandingPerNIC*c.wqeCqeBytes);
- // Conservative disjoint TX/input, 32 receive slots, final-output and flags;
+ const queueBytes=D*((TP-1)*c.qpContextBytes+c.outstandingPerNIC*c.wqeCqeBytes);
+ // Conservative disjoint TX/input, TP receive slots, final-output and flags;
  // epoch ping-pong cannot be double-counted as reusable weight SRAM.
  const mailboxBytes=c.epochs*(transportBytes*2+logicalPayload+TP*activeNICs*64);
  return {kind,activeNICs,logicalPayload,transportBytes,phases:phases.length,phaseDetail:trace?phases:undefined,
@@ -90,7 +94,8 @@ function collective(name,logicalPayload,p,x,c=MEM,trace=false){
   timing:{memoryTransport,tpReduce:reduceUs+vectorUs,cardLocal,portTail},duration:raw+portTail};
 }
 function mapped(x,overrides={}){
- const c=config(overrides),p=A.physical(x);if(!p.feasible)return {feasible:false,reasons:p.reasons};
+ const c=config(overrides);if(ranks(c)!==32)throw Error('Detailed SRAM mapping supports TP32 only');
+ const p=A.physical(x);if(!p.feasible)return {feasible:false,reasons:p.reasons};
  const m=A.mappedPlan(x,1,p);if(!m.feasible)return m;
  let reserve=0,wireBytes=0,requests=0,phases=0;const protocol={};
  for(const o of m.plan.ops)if(o.unit==='COMM'){
