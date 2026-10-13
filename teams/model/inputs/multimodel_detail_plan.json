@@ -1,0 +1,243 @@
+{
+  "schemaVersion": "multimodel-detail-plan-v0.1",
+  "status": "BLOCKED_CONFIG",
+  "purpose": "Executable backlog for taking GLM-5.2 and DeepSeek-V4-Pro from planning manifests to per-die, AI-core, memory and network replay.",
+  "scope": {
+    "models": ["GLM-5.2", "DeepSeek-V4-Pro"],
+    "batch": 1,
+    "contextTokens": 1048576,
+    "phase": "decode",
+    "tpValues": [8, 16, 32],
+    "ppValues": [1],
+    "parallelismToFreeze": ["TP", "EP", "CP", "PP"],
+    "metricPolicy": "No validated TPS is produced until the model-specific ledger, replay and provenance gates pass.",
+    "evidencePolicy": "Planning estimates, validated replay and silicon observation remain separate evidence classes."
+  },
+  "modelLanes": {
+    "GLM-5.2": {
+      "currentState": "SHAPE_DERIVED_FROM_CONFIG",
+      "source": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+      "shapeHashRequired": true,
+      "distinctRisks": [
+        "FP8 checkpoint storage versus deployed FP8 KV/index layout",
+        "21 full-indexer layers versus 57 shared-indexer layers",
+        "indexer top-k and index-cache capacity/bandwidth",
+        "MTP draft/verify/rollback path and acceptance-rate evidence",
+        "TP-only MoE decision must be proven against the runtime lowering"
+      ],
+      "requiredVariants": ["config-derived native precision", "deployment precision candidate"]
+    },
+    "DeepSeek-V4-Pro": {
+      "currentState": "SHAPE_DERIVED_WITH_ASSUMPTIONS",
+      "source": "teams/model/inputs/formal_model_manifests.json#/models/2/shape",
+      "shapeHashRequired": true,
+      "distinctRisks": [
+        "reported 49B active and 1.6T total parameter figures do not reconcile under current assumptions",
+        "DeepSeek-V3/V3.2 dimensions are assumptions pending an official config",
+        "FP4 expert encoding, scale granularity and dequant/accumulate cost",
+        "per-layer indexer traffic and sparse-attention state",
+        "six routed experts plus one shared expert under TP-only placement"
+      ],
+      "requiredVariants": ["active-parameter solution", "total-parameter solution", "deployment precision candidate"]
+    }
+  },
+  "workItems": [
+    {
+      "workItem": "MODEL-GLM-QUAL-01",
+      "team": "Model",
+      "ownerStrategy": "model-expert",
+      "models": ["GLM-5.2"],
+      "stage": "qualification",
+      "dependsOn": [],
+      "inputs": [
+        "formal_model_manifests.json",
+        "model_profiles.json",
+        "versioned GLM config.json",
+        "versioned FP8 checkpoint quantization/config metadata",
+        "versioned modeling implementation"
+      ],
+      "requiredOutputs": [
+        "qualified shape manifest with source hashes",
+        "precision/storage manifest",
+        "explicit TP/EP/CP/PP and MTP deployment decision",
+        "qualification delta report"
+      ],
+      "acceptance": [
+        "Every shape and precision field has a versioned source or remains explicitly BLOCKED_CONFIG",
+        "full/shared indexer layer sets reconcile with the reference implementation",
+        "FP8 weight, KV and index-key storage formats are separately identified",
+        "MTP acceptance, rollback and commit semantics are either measured or excluded with a named blocker"
+      ],
+      "blockedWhen": ["official config or checkpoint metadata is unavailable", "TP/EP/CP/PP layout is not explicit"]
+    },
+    {
+      "workItem": "MODEL-DS-QUAL-01",
+      "team": "Model",
+      "ownerStrategy": "model-expert",
+      "models": ["DeepSeek-V4-Pro"],
+      "stage": "qualification",
+      "dependsOn": [],
+      "inputs": [
+        "formal_model_manifests.json",
+        "model_profiles.json",
+        "official DeepSeek config/checkpoint metadata",
+        "official FP4 encoding and scale specification"
+      ],
+      "requiredOutputs": [
+        "qualified shape manifest with source hashes",
+        "separate active-parameter and total-parameter variants",
+        "precision/storage manifest",
+        "qualification delta report"
+      ],
+      "acceptance": [
+        "61-layer, hidden, head, expert and indexer fields reconcile to one versioned source",
+        "active-parameter and total-parameter solutions are registered as separate variants, never silently averaged",
+        "FP4 scale granularity, dequant path and accumulation dtype are explicit",
+        "the 49B versus 1.6T discrepancy is resolved or remains a blocking variant range"
+      ],
+      "blockedWhen": ["official config/checkpoint metadata is unavailable", "FP4 storage semantics are unspecified", "parameter variants are not separately identifiable"]
+    },
+    {
+      "workItem": "MODEL-OP-LEDGER-01",
+      "team": "Model",
+      "ownerStrategy": "model-expert",
+      "models": ["GLM-5.2", "DeepSeek-V4-Pro"],
+      "stage": "operator-ledger",
+      "dependsOn": ["MODEL-GLM-QUAL-01", "MODEL-DS-QUAL-01"],
+      "inputs": ["qualified shape/precision manifests", "reference model trace or equivalent operator trace", "deployment lowering contract"],
+      "requiredOutputs": ["per-layer operator ledger", "operator DAG", "shape/dtype hash", "golden decode trace"],
+      "acceptance": [
+        "Each operator row carries operator_id, layer type/count, shape, dtype, FLOPs, weight/activation/expert/KV/index bytes and source hash",
+        "router selection, active experts, shared expert and capacity overflow are explicit",
+        "MTP draft/verify/rollback work is either represented or explicitly excluded",
+        "FLOP and byte totals conserve against the layer and parameter ledgers"
+      ],
+      "blockedWhen": ["a required operator or dtype has no source", "trace cannot distinguish full/shared/indexer layer behavior"]
+    },
+    {
+      "workItem": "MODEL-COLLECTIVE-LEDGER-01",
+      "team": "Model",
+      "ownerStrategy": "comm-expert",
+      "models": ["GLM-5.2", "DeepSeek-V4-Pro"],
+      "stage": "collective-ledger",
+      "dependsOn": ["MODEL-OP-LEDGER-01"],
+      "inputs": ["operator DAG", "TP/EP/CP/PP decision", "NoC/RDMA packet contract", "collective algorithm selection"],
+      "requiredOutputs": ["per-collective message ledger", "TP8/TP16/TP32 protocol projections", "workspace/control-byte ledger"],
+      "acceptance": [
+        "Every collective has a name, count per token, payload bytes per rank, peer/rank scaling, algorithm and phase count",
+        "requests, ACK/control bytes, workspace and packet alignment are included",
+        "full/shared/indexer layer differences are represented; TP16 and TP32 are not inferred from one scalar",
+        "payload conservation holds from logical tensor bytes to wire bytes and routed bytes"
+      ],
+      "blockedWhen": ["parallelism or algorithm is unspecified", "only an aggregate collective count exists", "payload cannot be reconciled to the operator trace"]
+    },
+    {
+      "workItem": "HW-MULTIMODEL-REPLAY-01",
+      "team": "Hardware",
+      "ownerStrategy": "compute-expert",
+      "models": ["GLM-5.2", "DeepSeek-V4-Pro"],
+      "stage": "single-die-replay",
+      "dependsOn": ["MODEL-OP-LEDGER-01", "MODEL-COLLECTIVE-LEDGER-01"],
+      "inputs": ["operator ledger", "collective ledger", "P1 resource profiles", "AI-core and NoC contracts"],
+      "requiredOutputs": ["per-die resource replay", "L/H/INDEXER/REDUCE/V cycle ledger", "utilization and bottleneck classification", "FP8/FP4 kernel cost report"],
+      "acceptance": [
+        "Dense, router, expert, indexer, sparse-attention and reduce kernels have separate cycle/resource models",
+        "FP8/FP4 dequant, scale load and accumulation are non-zero modeled costs",
+        "peak, effective and calibrated throughput are separate fields with evidence class",
+        "single-die, TP16 and TP32 results identify core, SRAM, NoC, MC or collective bottlenecks without emitting an unqualified global TPS"
+      ],
+      "blockedWhen": ["operator or collective ledger is blocked", "core mapping or dtype kernel cost is missing"]
+    },
+    {
+      "workItem": "HW-MULTIMODEL-SRAM-01",
+      "team": "Hardware",
+      "ownerStrategy": "memory-expert",
+      "models": ["GLM-5.2", "DeepSeek-V4-Pro"],
+      "stage": "memory-replay",
+      "dependsOn": ["MODEL-OP-LEDGER-01"],
+      "inputs": ["operator ledger", "96 MiB/die SRAM contract", "TMA descriptor contract", "MC320/MC640 profiles"],
+      "requiredOutputs": ["KV/index/expert/MTP buffer ledger", "SRAM capacity sweep", "SRAM bandwidth sweep", "eviction and staging report"],
+      "acceptance": [
+        "KV_STATE, SPARSE_INDEX_CACHE, EXPERT_STAGING and MTP_BRANCH_STATE have independent size/lifetime/priority rows",
+        "capacity, sustained bandwidth, burst bandwidth and DMA efficiency are separate",
+        "each model reports the performance delta for SRAM size and bandwidth changes, with the changed input and seed recorded",
+        "overflow, eviction, prefetch miss and stale-epoch counts are visible"
+      ],
+      "blockedWhen": ["state layout or buffer lifetime is unspecified", "SRAM/MC bandwidth cannot be tied to an operator or transfer"]
+    },
+    {
+      "workItem": "HW-MULTIMODEL-NET-01",
+      "team": "Hardware",
+      "ownerStrategy": "comm-expert",
+      "models": ["GLM-5.2", "DeepSeek-V4-Pro"],
+      "stage": "network-replay",
+      "dependsOn": ["MODEL-COLLECTIVE-LEDGER-01", "HW-MULTIMODEL-REPLAY-01"],
+      "inputs": ["per-collective message ledger", "topology candidates", "packet/credit/queue contract"],
+      "requiredOutputs": ["TP16/TP32 link demand", "per-class queue/tail report", "workspace/credit sizing", "routing conservation report"],
+      "acceptance": [
+        "Indexer, attention, MoE output, router/control and MTP traffic are separately attributed",
+        "logical payload, protocol wire bytes, routed bytes and link capacity reconcile",
+        "P50/P95/P99 are only reported when a queueing or trace source exists; otherwise the artifact stays BLOCKED_CONFIG",
+        "topology selection and Gate status are not written by the network kernel"
+      ],
+      "blockedWhen": ["per-collective payload ledger is missing", "queueing/credit parameters are missing"]
+    },
+    {
+      "workItem": "SW-MULTIMODEL-DEPLOY-01",
+      "team": "Software",
+      "ownerStrategy": "software-expert",
+      "models": ["GLM-5.2", "DeepSeek-V4-Pro"],
+      "stage": "deployment-replay",
+      "dependsOn": ["MODEL-OP-LEDGER-01", "MODEL-COLLECTIVE-LEDGER-01"],
+      "inputs": ["Tile IR", "deployment ABI", "kernel lowering", "scheduler and firmware contracts"],
+      "requiredOutputs": ["model-specific lowering", "overlap schedule", "MTP commit/rollback trace", "implementation prerequisites"],
+      "acceptance": [
+        "TP/EP/CP/PP, expert placement, index-cache prefetch and collective overlap are explicit",
+        "software gains carry a measurable implementation prerequisite and are not inserted as TPS multipliers",
+        "MTP acceptance/rollback is replayable for both success and rejection paths",
+        "kernel fusion, prefetch and scheduler assumptions are recorded in the trace"
+      ],
+      "blockedWhen": ["ABI or Tile IR lowering is missing", "overlap claim has no traceable schedule"]
+    },
+    {
+      "workItem": "VV-MULTIMODEL-VERIFY-01",
+      "team": "V&V",
+      "ownerStrategy": "verifier",
+      "models": ["GLM-5.2", "DeepSeek-V4-Pro"],
+      "stage": "verification-gate",
+      "dependsOn": ["HW-MULTIMODEL-REPLAY-01", "HW-MULTIMODEL-SRAM-01", "HW-MULTIMODEL-NET-01", "SW-MULTIMODEL-DEPLOY-01"],
+      "inputs": ["all model/hardware/software artifacts", "source hashes", "golden traces"],
+      "requiredOutputs": ["shape/precision hash report", "FLOP/byte/payload conservation report", "replay regression suite", "Gate-ready evidence matrix"],
+      "acceptance": [
+        "No artifact with missing provenance is treated as a pass",
+        "active/total parameter variants remain distinguishable in every downstream artifact",
+        "planning, validated replay and silicon observation never share one status",
+        "Q-Gate remains BLOCKED_CONFIG until all required model-specific rows and traces exist"
+      ],
+      "blockedWhen": ["any upstream artifact is stale, unverifiable or materially mismatched"]
+    },
+    {
+      "workItem": "ARCH-MULTIMODEL-INTEGRATION-01",
+      "team": "Architecture Council",
+      "ownerStrategy": "integrator",
+      "models": ["GLM-5.2", "DeepSeek-V4-Pro"],
+      "stage": "integration",
+      "dependsOn": ["VV-MULTIMODEL-VERIFY-01"],
+      "inputs": ["model qualification", "operator/collective ledgers", "single-die/SRAM/network replay", "software schedule", "VV evidence"],
+      "requiredOutputs": ["candidate comparison", "ADR updates", "explicit backflow targets", "Gate input bundle"],
+      "acceptance": [
+        "Every candidate number points to model, variant, TP, MC profile, seed, units and evidence class",
+        "SRAM, compute, MC and network trade-offs are shown per model rather than averaged",
+        "a blocked model blocks claims that require that model; it does not silently disappear from selection",
+        "candidate selection and Gate decisions remain in the governance evaluator"
+      ],
+      "blockedWhen": ["model lanes are not comparable by a common contract", "V&V evidence is incomplete"]
+    }
+  ],
+  "exitStates": [
+    {"state": "BLOCKED_CONFIG", "meaning": "Required shape, precision, deployment or protocol input is absent or contradictory; no detailed performance claim is allowed."},
+    {"state": "MODEL_WITH_ASSUMPTIONS", "meaning": "All rows exist with explicit assumptions and conservation checks, but at least one input is not vendor/config verified."},
+    {"state": "VALIDATED_REPLAY", "meaning": "Model-specific trace, provenance, conservation and regression checks pass for the declared scope."},
+    {"state": "SILICON_OBSERVED", "meaning": "Measured silicon evidence is linked; it does not overwrite planning or replay results."}
+  ]
+}
