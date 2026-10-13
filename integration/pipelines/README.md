@@ -14,6 +14,9 @@ npm run sram:search         # generate_sram_design.js -> out/detailed/sram_desig
 npm run physical:search     # generate_physical_design.js -> out/detailed/physical_design.json + physical_candidates.json
 npm run coupling:search     # generate_coupling_design.js -> out/detailed/coupling_design.json + coupling_candidates.json (reads the five domain designs above)
 npm run model:planning      # generate_planning_operator_workload -> stage_a -> stage_b -> generate_team_contracts -> generate_direction_feedback -> generate_global_dashboard
+npm run model:operator-ledgers # generate_model_operator_ledgers.js -> out/workload/model_operator_ledgers.json
+npm run model:core-replay    # generate_model_core_replay.js -> out/workload/model_core_replay.json (planning-only, no TPS/P95/P99)
+npm run model:sram-sensitivity # generate_model_sram_sensitivity.js -> out/workload/model_sram_sensitivity.json (state capacity/bandwidth sweep)
 npm run trace:published     # generate_execution_trace.js -> out/trace/k3_published_point.trace.json (reads the baseline only)
 npm run contention:delta    # generate_contention_delta.js -> out/detailed/contention_delta.json (reads the baseline and coupling_candidates.json)
 npm run cost:coverage       # generate_cost_coverage.js -> out/detailed/cost_coverage.json (reads the baseline and teams/vv/inputs/operator_cost_observations.json)

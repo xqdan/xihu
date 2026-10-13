@@ -20,7 +20,11 @@ for (const input of out.inputs.sourceArtifacts) assert.strictEqual(input.sha256,
 assert(out.inputs.sourceArtifacts.some(x => x.path === N.KERNEL_FILE));
 assert.deepStrictEqual(out.assumptions.bandwidthP99MultipliersByScenario, {
   'decode-b1-c1m-tp32': 1.25,
-  'decode-b1-c1m-tp16': 1.25
+  'decode-b1-c1m-tp16': 1.25,
+  'glm52-decode-b1-c1m-tp32': 1.25,
+  'glm52-decode-b1-c1m-tp16': 1.25,
+  'deepseek-v4-pro-decode-b1-c1m-tp32': 1.25,
+  'deepseek-v4-pro-decode-b1-c1m-tp16': 1.25
 });
 const k3 = out.scenarios.find(s => s.scenarioId === 'decode-b1-c1m-tp32');
 assert(k3 && k3.status === 'MODEL_WITH_ASSUMPTIONS');
@@ -47,10 +51,21 @@ for (const topology of k3tp16.topologies) {
   assert.strictEqual(topology.runtimeLatencyUs.p99, null);
   for (const link of topology.links) assert(link.capacityGBs > 0 && link.packetBytesPerToken >= 0);
 }
+const supportedModelScenarios = new Set([
+  'decode-b1-c1m-tp16',
+  'glm52-decode-b1-c1m-tp32',
+  'glm52-decode-b1-c1m-tp16',
+  'deepseek-v4-pro-decode-b1-c1m-tp32',
+  'deepseek-v4-pro-decode-b1-c1m-tp16'
+]);
 for (const scenario of out.scenarios.filter(s => s.scenarioId !== k3.scenarioId)) {
-  if (scenario.scenarioId === k3tp16.scenarioId) continue;
-  assert.strictEqual(scenario.status, 'BLOCKED_CONFIG');
-  assert.strictEqual(scenario.topologies.length, 0);
+  if (supportedModelScenarios.has(scenario.scenarioId)) {
+    assert.strictEqual(scenario.status, 'MODEL_WITH_ASSUMPTIONS');
+    assert.strictEqual(scenario.topologies.length, 5);
+  } else {
+    assert.strictEqual(scenario.status, 'BLOCKED_CONFIG');
+    assert.strictEqual(scenario.topologies.length, 0);
+  }
 }
 assert.deepStrictEqual(withoutGeneratedCommit(N.build()), withoutGeneratedCommit(out), `${N.OUT_FILE} is stale`);
 console.log('PASS network requirements: K3 TP32 link traffic, route quantiles, P99 planning multiplier and blocked coverage are traceable');

@@ -11,6 +11,7 @@ const R = require('../detailed/k3_sram_memory_rdma_model');
 const A = require('../detailed/k3_architecture_search');
 const BP = require('../detailed/baseline_point');
 const E = require('../../teams/model/src/design_engine');
+const CL = require('../../teams/model/src/collective_ledger');
 const RW = require('./requirement_workload');
 const IDS = require('./run_ids');
 
@@ -22,6 +23,8 @@ const SOURCE_FILES = [...new Set([T.BASELINE_FILE, T.CANDIDATES_FILE, T.COMM_COR
   RW.WORKLOAD_FILE, RW.SCENARIO_CATALOG_FILE, RW.SCENARIO_SCHEMA_FILE, RW.KERNEL_FILE,
   KERNEL_FILE, 'integration/planning/run_ids.js', 'integration/orchestration/runtime/schema.js',
   'teams/model/inputs/formal_model_manifests.json', 'integration/detailed/baseline_point.js',
+  CL.LEDGER_FILES['GLM-5.2'], CL.LEDGER_FILES['DeepSeek-V4-Pro'],
+  'teams/model/src/collective_ledger.js',
   'teams/hardware/src/resource_profiles.js', ...T.SOURCE_FILES])];
 const read = file => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 const hash = data => crypto.createHash('sha256').update(data).digest('hex');
@@ -53,7 +56,7 @@ function routeTraffic(topologyDef, spec, classes, ctx) {
   const classRows = classes.map(({name, payload, count, q}) => {
     let injected = 0, routed = 0;
     const ownSamples = [];
-    for (const pass of T.passes(name, payload, q)) for (const step of T.steps(pass, 'oneShot', q.activeNICs, order, spec.card.ranks)) {
+    for (const pass of q.protocolPasses || T.passes(name, payload, q)) for (const step of T.steps(pass, 'oneShot', q.activeNICs, order, spec.card.ranks)) {
       const packetBytes = Math.ceil((step.bytes + ctx.c.headerBytes + ctx.c.flagBytes) / ctx.c.packetAlign) * ctx.c.packetAlign;
       for (let src = 0; src < spec.card.ranks; src++) for (let nic = 0; nic < q.activeNICs; nic++) for (const dst of step.dsts(src)) {
         if (dst === src || dst < 0 || dst >= spec.card.ranks) throw new Error('invalid collective destination');
@@ -93,6 +96,39 @@ function routeTraffic(topologyDef, spec, classes, ctx) {
     links: [...links.values()].sort((a, b) => a.linkId.localeCompare(b.linkId))};
 }
 
+function modelContext(modelId, tp = 32) {
+  const base = context(tp);
+  const ledger = CL.protocol(modelId, tp);
+  if (!ledger) throw new Error(`no model collective ledger for ${modelId}`);
+  const classes = ledger.rows.map(row => {
+    const name = row.operation === 'allGather' ? `${row.collectiveId} all-gather`
+      : row.operation === 'lse' ? `${row.collectiveId} LSE` : `${row.collectiveId} all-reduce`;
+    return {name, payload: row.payloadBytesPerCollective, count: row.countPerToken,
+      q: {activeNICs: row.activeNICs, wireBytes: row.protocolWireBytesPerCollectivePerRank,
+        workspace: row.protocolWorkspaceBytesPerRank, transportBytes: row.transportBytes,
+        readBytes: row.transportBytes, writeBytes: row.transportBytes,
+        nocBytes: row.nocBytesPerCollectivePerRank,
+        timing: {cardLocal: 0, tpReduce: 0},
+        protocolPasses: row.operation === 'allGather' ? [{op: 'gather', bytes: row.payloadBytesPerCollective}]
+          : row.operation === 'lse' ? [{op: 'scatter', bytes: row.transportBytes}]
+            : [{op: 'scatter', bytes: row.transportBytes}, {op: 'gather', bytes: row.payloadBytesPerCollective}]}};
+  });
+  const modelControls = new Map([
+    ['all-gather', base.controlUs('Wdown + Router all-gather')],
+    ['LSE', base.controlUs('LSE merge / output reduce-scatter')],
+    ['all-reduce', base.controlUs('Attention output all-reduce')]
+  ]);
+  return {...base, modelId, modelLedger: ledger, classes,
+    controlUs: name => {
+      for (const [key, value] of modelControls) if (name.includes(key)) return value;
+      return base.controlUs('Attention output all-reduce');
+    },
+    lseHeadsPerRank: ledger.attentionHeads / tp,
+    wireBytesPerTokenPerRank: ledger.totals.protocolWireBytesPerRank,
+    nocBytesPerTokenPerRank: ledger.rows.reduce((s, row) => s + row.countPerToken * row.nocBytesPerCollectivePerRank, 0),
+    dieCutBytesPerTokenPerRank: ledger.totals.logicalPayloadBytesPerRank * 2};
+}
+
 function context(tp = 32) {
   const baseline = read(T.BASELINE_FILE), spec = read(T.CANDIDATES_FILE);
   if (spec.card.ranks !== 32 || spec.card.dies !== baseline.card.computeDies || spec.card.dies !== 8 ||
@@ -130,20 +166,39 @@ function context(tp = 32) {
 
 function scenarioLedger(scenario, ctx, traffic, multiplier) {
   const reasons = [];
-  if (scenario.model !== 'K3') reasons.push('no per-collective message ledger for this model');
+  if (scenario.model !== 'K3' && !ctx.modelLedger) reasons.push('no per-collective message ledger for this model');
   if (scenario.tp !== ctx.spec.card.ranks) reasons.push('no explicit protocol/topology projection for this TP');
   if (scenario.batch !== 1 || scenario.context !== ctx.baseline.goal.contextTokens || scenario.phase !== 'decode') reasons.push('not the published batch/context/decode mapping');
-  if (scenario.precision !== 'BF16+FP8-KV') reasons.push('precision differs from the published K3 mapping');
+  const expectedPrecision = scenario.model === 'K3' ? 'BF16+FP8-KV' : 'FP8+FP8-KV';
+  if (scenario.precision !== expectedPrecision) reasons.push(`precision differs from the ${scenario.model} collective mapping`);
   if (reasons.length) return {...scenario, status: 'BLOCKED_CONFIG', reasons, layers: null, topologies: []};
   const rate = scenario.targetTpsPerUser;
   const gb = bytes => bytes * rate / 1e9;
   return {...scenario, status: 'MODEL_WITH_ASSUMPTIONS', tokenRatePerRank: rate,
     mapping: {basis: scenario.tp === 32 ? 'PUBLISHED_TP32_PROTOCOL' : 'TP16_PROTOCOL_PROJECTION',
       detailedReplaySupported: scenario.tp === 32, endToEndTpsPerUser: null,
-      payloadBasis: 'full-group logical payload and reference-393 class counts from the published K3 operator ledger; payload is not scaled by TP',
-      peersPerRank: scenario.tp - 1, lseHeadsPerRank: E.MODEL_PRESETS.kimiK3.attention.heads / scenario.tp,
+      payloadBasis: scenario.model === 'K3' ? 'full-group logical payload and reference-393 class counts from the published K3 operator ledger; payload is not scaled by TP' : `${scenario.model} model-owned per-collective ledger; payload is not scaled by TP`,
+      peersPerRank: scenario.tp - 1, lseHeadsPerRank: ctx.lseHeadsPerRank || E.MODEL_PRESETS.kimiK3.attention.heads / scenario.tp,
       lseNICPlacement: 'one whole head per active NIC up to 8 dies; nicDies[k] from topology contract',
-      controlPathBasis: 'TP32 Comm Core control cost held fixed for TP16 as a planning assumption; not a TP16 firmware replay'},
+      controlPathBasis: 'TP32 Comm Core control cost held fixed for TP16 as a planning assumption; not a TP16 firmware replay',
+      collectiveLedger: ctx.modelLedger ? {
+      modelId: ctx.modelLedger.modelId,
+      variantId: ctx.modelLedger.variantId,
+      variants: ctx.modelLedger.variants,
+      source: ctx.modelLedger.source,
+      evidenceClass: ctx.modelLedger.evidenceClass,
+      collectiveCountPerToken: ctx.modelLedger.countPerToken,
+      logicalPayloadBytesPerRank: ctx.modelLedger.totals.logicalPayloadBytesPerRank,
+      protocolWireBytesPerRank: ctx.modelLedger.totals.protocolWireBytesPerRank,
+      routedLogicalBytesPerRank: ctx.modelLedger.totals.routedLogicalBytesPerRank,
+      requestsPerRank: ctx.modelLedger.totals.requestsPerRank,
+      ackControlBytesPerRank: ctx.modelLedger.totals.ackControlBytesPerRank,
+      maxWorkspaceBytesPerRank: ctx.modelLedger.totals.maxWorkspaceBytesPerRank,
+      conservation: {
+        routedEqualsLogicalTimesPeers: ctx.modelLedger.totals.routedLogicalBytesPerRank === ctx.modelLedger.totals.logicalPayloadBytesPerRank * (scenario.tp - 1),
+        wireAtLeastLogical: ctx.modelLedger.totals.protocolWireBytesPerRank >= ctx.modelLedger.totals.logicalPayloadBytesPerRank
+      }
+      } : null},
     layers: {
       dieLocal: {basis: 'collective NoC bytes, balanced across dies; not individual NoC link routing',
         bytesPerTokenPerRank: ctx.nocBytesPerTokenPerRank, requiredGBsPerRank: gb(ctx.nocBytesPerTokenPerRank),
@@ -174,15 +229,17 @@ function build() {
   const ctx = context(), catalog = RW.loadScenarioCatalog();
   const workload = RW.build();
   const planningScenarios = workload.models.flatMap(m => m.scenarios);
-  const contexts = new Map([[32, ctx], [16, context(16)]]), traffic = new Map();
+  const contexts = new Map([['K3|32', ctx], ['K3|16', context(16)]]), traffic = new Map();
   const ledgers = catalog.map(s => {
-    const own = contexts.get(s.tp) || ctx;
+    const key = `${s.model}|${s.tp}`;
+    if (!contexts.has(key) && s.model !== 'K3') contexts.set(key, modelContext(s.model, s.tp));
+    const own = contexts.get(key) || ctx;
     const planning = planningScenarios.find(p => p.scenarioId === s.scenarioId);
-    const supported = s.model === 'K3' && contexts.has(s.tp) && s.batch === 1 && s.context === ctx.baseline.goal.contextTokens && s.phase === 'decode' && s.precision === 'BF16+FP8-KV';
+    const supported = contexts.has(key) && s.batch === 1 && s.context === ctx.baseline.goal.contextTokens && s.phase === 'decode' && s.precision === (s.model === 'K3' ? 'BF16+FP8-KV' : 'FP8+FP8-KV');
     if (!supported) return scenarioLedger(s, own, [], null);
     if (!planning || !planning.network) throw new Error(`network planning tail multiplier requires matching workload scenario ${s.scenarioId}`);
-    if (!traffic.has(s.tp)) traffic.set(s.tp, own.spec.topologies.map(t => routeTraffic(t, own.spec, own.classes, own)));
-    return scenarioLedger(s, own, traffic.get(s.tp), planning.network.p99Multiplier);
+    if (!traffic.has(key)) traffic.set(key, own.spec.topologies.map(t => routeTraffic(t, own.spec, own.classes, own)));
+    return scenarioLedger(s, own, traffic.get(key), planning.network.p99Multiplier);
   });
   return {schemaVersion: SCHEMA_VERSION, generatedBy: KERNEL_FILE, workItem: 'HW-NETWORK-DEMAND-01',
     status: 'PARTIAL_MODEL_WITH_ASSUMPTIONS; no Gate or topology selection',

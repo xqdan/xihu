@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "model-collective-ledger-v0.1",
+  "modelId": "GLM-5.2",
+  "status": "UNVERIFIED_PLANNING_MANIFEST",
+  "evidenceClass": "MODEL_WITH_ASSUMPTIONS",
+  "manifestPath": "teams/model/inputs/formal_model_manifests.json#/models/1/shape",
+  "sourceHashBasis": "formal manifest shape plus ADR-0024 TP-only deployment assumption",
+  "hiddenSize": 6144,
+  "attentionHeads": 64,
+  "indexerHeads": 32,
+  "layers": 78,
+  "layerClasses": {
+    "fullIndexer": 21,
+    "sharedIndexer": 57
+  },
+  "defaults": {
+    "precision": "BF16",
+    "payloadBytesPerRank": 24576,
+    "payloadBasis": "2 x hidden x BF16 = 2 x 6144 x 2 B; planning transport payload for every collective class",
+    "headerBytes": 64,
+    "flagBytes": 16,
+    "packetAlignBytes": 64,
+    "stripeBytes": 16384,
+    "outstandingPerNic": 32,
+    "qpContextBytes": 256,
+    "wqeCqeBytes": 128,
+    "epochs": 2,
+    "ackBytesPerRequest": 16,
+    "mailboxSlotBytes": 64,
+    "dieCount": 8
+  },
+  "collectives": [
+    {
+      "collectiveId": "q_all_gather",
+      "layerClass": "allLayers",
+      "layerCount": 78,
+      "countPerLayer": 1,
+      "countPerToken": 78,
+      "operation": "allGather",
+      "activeNicPolicy": "stripe",
+      "payloadBytesPerRank": 24576,
+      "payloadBasis": "2 x hidden x BF16; q/indexer context-shard exchange",
+      "algorithm": "oneShot",
+      "precision": "BF16",
+      "evidence": "ASSUMPTION_ADR_0024"
+    },
+    {
+      "collectiveId": "indexer_topk_merge",
+      "layerClass": "fullIndexer",
+      "layerCount": 21,
+      "countPerLayer": 1,
+      "countPerToken": 21,
+      "operation": "reduceScatterAllGather",
+      "activeNicPolicy": "indexerHeads",
+      "payloadBytesPerRank": 24576,
+      "payloadBasis": "2 x hidden x BF16; top-k metadata/value merge planning envelope",
+      "algorithm": "oneShot",
+      "precision": "BF16",
+      "evidence": "ASSUMPTION_ADR_0024"
+    },
+    {
+      "collectiveId": "sparse_attention_lse_merge",
+      "layerClass": "fullIndexerAndShared",
+      "layerCount": 78,
+      "countPerLayer": 1,
+      "countPerToken": 78,
+      "operation": "lse",
+      "activeNicPolicy": "indexerHeads",
+      "payloadBytesPerRank": 24576,
+      "payloadBasis": "2 x hidden x BF16; sparse-attention LSE/output merge planning envelope",
+      "algorithm": "oneShot",
+      "precision": "BF16",
+      "evidence": "ASSUMPTION_ADR_0024"
+    },
+    {
+      "collectiveId": "attention_output_all_reduce",
+      "layerClass": "fullIndexerAndShared",
+      "layerCount": 78,
+      "countPerLayer": 1,
+      "countPerToken": 78,
+      "operation": "allReduce",
+      "activeNicPolicy": "stripe",
+      "payloadBytesPerRank": 24576,
+      "payloadBasis": "2 x hidden x BF16; attention output reduction",
+      "algorithm": "oneShot",
+      "precision": "BF16",
+      "evidence": "ASSUMPTION_ADR_0024"
+    },
+    {
+      "collectiveId": "ffn_moe_output_all_reduce",
+      "layerClass": "fullIndexerAndShared",
+      "layerCount": 78,
+      "countPerLayer": 1,
+      "countPerToken": 78,
+      "operation": "allReduce",
+      "activeNicPolicy": "stripe",
+      "payloadBytesPerRank": 24576,
+      "payloadBasis": "2 x hidden x BF16; TP-only FFN/MoE output reduction",
+      "algorithm": "oneShot",
+      "precision": "BF16",
+      "evidence": "DEPLOYMENT_DECISION_TP_ONLY"
+    }
+  ],
+  "countByLayerClass": {
+    "fullIndexer": 5,
+    "sharedIndexer": 4,
+    "total": 333
+  }
+}
