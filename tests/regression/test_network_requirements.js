@@ -8,7 +8,13 @@ const root = path.resolve(__dirname, '../..');
 const read = p => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8'));
 const fileHash = p => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, p))).digest('hex');
 const out = read(N.OUT_FILE);
+const withoutGeneratedCommit = artifact => {
+  const copy = JSON.parse(JSON.stringify(artifact));
+  delete copy.provenance.sourceCommit;
+  return copy;
+};
 assert.strictEqual(out.schemaVersion, N.SCHEMA_VERSION);
+assert(/^[0-9a-f]{40}$/.test(out.provenance && out.provenance.sourceCommit || ''), 'network artifact has invalid provenance.sourceCommit');
 assert.strictEqual(out.scenarios.length, read('teams/council/inputs/brief_intents.json').scenarios.length);
 for (const input of out.inputs.sourceArtifacts) assert.strictEqual(input.sha256, fileHash(input.path), `${input.path}: stale network input`);
 assert(out.inputs.sourceArtifacts.some(x => x.path === N.KERNEL_FILE));
@@ -46,5 +52,5 @@ for (const scenario of out.scenarios.filter(s => s.scenarioId !== k3.scenarioId)
   assert.strictEqual(scenario.status, 'BLOCKED_CONFIG');
   assert.strictEqual(scenario.topologies.length, 0);
 }
-assert.deepStrictEqual(JSON.parse(JSON.stringify(N.build())), out, `${N.OUT_FILE} is stale`);
+assert.deepStrictEqual(withoutGeneratedCommit(N.build()), withoutGeneratedCommit(out), `${N.OUT_FILE} is stale`);
 console.log('PASS network requirements: K3 TP32 link traffic, route quantiles, P99 planning multiplier and blocked coverage are traceable');
