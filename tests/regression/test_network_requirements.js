@@ -12,7 +12,10 @@ assert.strictEqual(out.schemaVersion, N.SCHEMA_VERSION);
 assert.strictEqual(out.scenarios.length, read('teams/council/inputs/brief_intents.json').scenarios.length);
 for (const input of out.inputs.sourceArtifacts) assert.strictEqual(input.sha256, fileHash(input.path), `${input.path}: stale network input`);
 assert(out.inputs.sourceArtifacts.some(x => x.path === N.KERNEL_FILE));
-assert.strictEqual(out.assumptions.bandwidthP99Multiplier, 1.25);
+assert.deepStrictEqual(out.assumptions.bandwidthP99MultipliersByScenario, {
+  'decode-b1-c1m-tp32': 1.25,
+  'decode-b1-c1m-tp16': 1.25
+});
 const k3 = out.scenarios.find(s => s.scenarioId === 'decode-b1-c1m-tp32');
 assert(k3 && k3.status === 'MODEL_WITH_ASSUMPTIONS');
 assert.strictEqual(k3.topologies.length, 5);
@@ -26,7 +29,20 @@ for (const topology of k3.topologies) {
     assert(link.capacityGBs > 0);
   }
 }
+const k3tp16 = out.scenarios.find(s => s.scenarioId === 'decode-b1-c1m-tp16');
+assert(k3tp16 && k3tp16.status === 'MODEL_WITH_ASSUMPTIONS');
+assert.strictEqual(k3tp16.mapping.basis, 'TP16_PROTOCOL_PROJECTION');
+assert.strictEqual(k3tp16.mapping.detailedReplaySupported, false);
+assert.strictEqual(k3tp16.mapping.peersPerRank, 15);
+assert.strictEqual(k3tp16.mapping.lseHeadsPerRank, 6);
+assert.strictEqual(k3tp16.topologies.length, 5);
+for (const topology of k3tp16.topologies) {
+  assert(topology.links.length > 0, `${topology.topology}: TP16 links`);
+  assert.strictEqual(topology.runtimeLatencyUs.p99, null);
+  for (const link of topology.links) assert(link.capacityGBs > 0 && link.packetBytesPerToken >= 0);
+}
 for (const scenario of out.scenarios.filter(s => s.scenarioId !== k3.scenarioId)) {
+  if (scenario.scenarioId === k3tp16.scenarioId) continue;
   assert.strictEqual(scenario.status, 'BLOCKED_CONFIG');
   assert.strictEqual(scenario.topologies.length, 0);
 }

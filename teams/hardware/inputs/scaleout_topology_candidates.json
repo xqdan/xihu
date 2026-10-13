@@ -5,6 +5,7 @@
   "provenance": "Chosen by the architecture agent on 2026-10-10 at the user's request, in place of decision point D4 of teams/council/docs/24_TRACE_AND_CHARON_ADOPTION_PLAN.md (the hardware team was to supply 2-3 B-005 candidates). Common scale-out shapes for a 32-rank TP group; pending review by the Collective/RDMA and NoC owners. Replacing or adding a candidate is an edit to this file and a rerun of npm run tau:derivation.",
   "document": "teams/hardware/docs/06_MULTIDIE_AND_SCALEOUT.md section 6",
   "consumer": "integration/detailed/collective_topology.js (HW-CH-01) -> out/detailed/tau_derivation.json",
+  "rankVariantStatus": "ASSUMPTION: rankVariants/16 are explicit protocol-demand projections for HW-NETWORK-DEMAND-01, not TP16 detailed replay or topology signoff. Common latency ranges and 8-die card resources are held fixed; NIC placement and control cost require SW/HW review.",
   "evidence": "Every latency below is an ASSUMPTION with a sensitivity range: order-of-magnitude figures for 112G PAM4 SerDes, FEC, cut-through switches and copper cable, none measured on this design. Bandwidths come from the published spec (16 lanes x 112 Gbps per die, p.rdmaDieGB effective, 800 GB/s per card).",
   "card": {
     "ranks": 32,
@@ -43,7 +44,8 @@
       "lanesPerPort": 4,
       "cableM": {"nominal": 1.0, "low": 0.5, "high": 2.0},
       "description": "Every card has a direct link to each of the 31 others: 31 ports x 4 lanes = 124 of 128 lanes. One hop, no switch; a NIC reaches the ports on other dies through the in-card die ring.",
-      "risks": "31 ports per card and 496 cables or backplane traces; 4-lane links give 42 GB/s per peer."
+      "risks": "31 ports per card and 496 cables or backplane traces; 4-lane links give 42 GB/s per peer.",
+      "rankVariants": {"16": {"key": "fullMesh", "name": "TP16 direct full mesh", "lanesPerPort": 4, "description": "TP16 uses 15 direct peers; lane width is unchanged (60 of 128 lanes used).", "risks": "120 cables; unused lanes do not widen the peer links."}}
     },
     {
       "key": "singleSwitch",
@@ -54,7 +56,8 @@
       "levels": 1,
       "cableM": {"nominal": 2.0, "low": 1.0, "high": 5.0},
       "description": "Eight switch planes, one per die rail: die k of every card connects its 16 lanes to plane k (32 ports x 16 lanes x 112G, a 51.2T-class switch). Two links and one switch; no die forwarding.",
-      "risks": "Eight switch chips per TP group (power, single point of failure per rail); switch latency is on every collective."
+      "risks": "Eight switch chips per TP group (power, single point of failure per rail); switch latency is on every collective.",
+      "rankVariants": {"16": {"key": "singleSwitch", "name": "TP16 single-level rail switch", "description": "TP16 keeps the eight die rails and 16 lanes per rail; 16 cards per plane.", "risks": "Eight switch planes; their latency remains an assumption."}}
     },
     {
       "key": "leafSpine",
@@ -68,7 +71,8 @@
       "cableM": {"nominal": 2.0, "low": 1.0, "high": 5.0},
       "spineCableM": {"nominal": 5.0, "low": 2.0, "high": 20.0},
       "description": "Each rail plane built from 4 leaves of 8 cards and 4 spines (non-blocking: 128 lanes down, 4 x 32 lanes up per leaf), for switch radix below 32 x 16 lanes. Up to 4 links and 3 switches; spine chosen by destination.",
-      "risks": "Three switch traversals on 24 of 31 peers; spine links may need optics."
+      "risks": "Three switch traversals on 24 of 31 peers; spine links may need optics.",
+      "rankVariants": {"16": {"key": "leafSpine", "name": "TP16 leaf-spine rail switch", "leafCards": 4, "description": "Four leaves of four cards per rail, four spines, 16 lanes per uplink (64 lanes down and up per leaf).", "risks": "Three switch traversals for cross-leaf traffic; latency remains an assumption."}}
     },
     {
       "key": "torus4x8",
@@ -79,7 +83,8 @@
       "lanesPerPort": 32,
       "cableM": {"nominal": 1.5, "low": 0.5, "high": 3.0},
       "description": "Each card has 4 neighbours (x+, x-, y+, y-, 32 lanes each); dimension-order routing, shortest direction, ties to +. Worst 6 hops with 5 relay cards.",
-      "risks": "Relay forwarding breaks the one-hop remote SRAM write; hops x relay latency go straight into tau."
+      "risks": "Relay forwarding breaks the one-hop remote SRAM write; hops x relay latency go straight into tau.",
+      "rankVariants": {"16": {"key": "torus4x4", "name": "4 x 4 torus", "dims": [4, 4], "description": "TP16 explicit torus shape; four 32-lane ports, worst path four hops.", "risks": "Relay forwarding is an assumption, not a validated remote SRAM path."}}
     },
     {
       "key": "ring32",
@@ -90,7 +95,8 @@
       "lanesPerPort": 64,
       "cableM": {"nominal": 1.5, "low": 0.5, "high": 3.0},
       "description": "Two ports of 64 lanes (clockwise, counter-clockwise); shortest direction, ties clockwise. Worst 16 hops. The lower bound on wiring, and the topology the ring algorithm assumes.",
-      "risks": "Worst-case path of 16 hops; included as the low-wiring reference, not expected to meet tau."
+      "risks": "Worst-case path of 16 hops; included as the low-wiring reference, not expected to meet tau.",
+      "rankVariants": {"16": {"key": "ring16", "name": "Bidirectional ring of 16 cards", "dims": [16], "description": "TP16 explicit ring shape; two 64-lane ports, worst path eight hops.", "risks": "Eight-hop tail and relay forwarding remain assumptions."}}
     }
   ],
   "notModelled": [

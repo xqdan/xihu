@@ -21,8 +21,16 @@
 
 场景需求目前是独立规划账本，**不是 L1 budget entries 的多场景联合约束**。L1 条目及 Gate 仍基于原有 TP32 / decode 计算；batch/context 扩展未经过独立详细回放，`baselineSlot` 仅供原始 ledger 时延参照，不能当作该扩展场景的性能预测。
 
-`npm run network:requirements` 生成 `out/requirements/network_requirements.json`。它复用现有 collective protocol 和 topology kernel，按 topology / collective class / directed link 记录 packet bytes、链路容量、利用率和名义路径 P50/P95/P99；当前只对发布点 K3、TP32、batch 1、1M context、decode 建模，其他场景显式 `BLOCKED_CONFIG`。`dieLocal` 是 NoC 平衡代理，`dieToDie` 是 8-die ring cut 下界，`package` 是同一资源的别名，`scaleOut` 是卡外拓扑 link，`collective` 是服务类别而非第五种物理链路，不能相加。
+`npm run network:requirements` 生成 `out/requirements/network_requirements.json`。它复用现有 collective protocol 和 topology kernel，按 topology / collective class / directed link 记录 packet bytes、链路容量、利用率和名义路径 P50/P95/P99。K3 的 batch 1、1M context、decode 同时登记 TP32 发布协议和 TP16 的显式协议投影；TP16 只证明 peer 数、分片 payload、消息/链路守恒和拓扑路由，不声明 TP16 的算力、SRAM、容量或端到端 TPS，且 `detailedReplaySupported=false`。其他场景显式 `BLOCKED_CONFIG`。`dieLocal` 是 NoC 平衡代理，`dieToDie` 是 8-die ring cut 下界，`package` 是同一资源的别名，`scaleOut` 是卡外拓扑 link，`collective` 是服务类别而非第五种物理链路，不能相加。
 
 路径分位数是 nominal route distribution 的 nearest-rank 统计，不是运行时排队尾延迟；运行时 P99 保持 `null/UNVERIFIABLE_NO_QUEUEING_TRACE`。带宽 P99 仅使用 workload 的 `1.25` planning multiplier。ACK wire、重传、MTU 分片、背景 DMA、NoC 路由细节和拓扑选择均排除，SerDes/FEC/switch/relay 延迟仍是 `ASSUMPTION`，不能用于 Gate 通过。
+
+## TP16 协议投影边界
+
+`network-requirements-v0.2` 的 `scope.tp=[16,32]` 与 `scope.detailedReplayTp=[32]` 分别声明协议与详细映射范围。每个场景的 `mapping` 记录范围，`endToEndTpsPerUser` 保持 `null`。TP16 沿用 reference-393 的五类 collective 次数和全组逻辑 payload，不把 payload 除以 TP 后再分片；每条 oneShot message 是 pass bytes / TP / active NICs，peer 数是 TP-1。队列上下文与 receive slots 随 TP 重算，物理 message 数不使用 final-tuning 的 fused phase/requests 展示计数。
+
+K3 head 数和 latent 维度只取 `teams/model/src/design_engine.js` preset，LSE 每 rank 为 heads/TP 个完整 head。TP16 的 6 个 head 分别放在前 6 个 NIC die 上，这是未经软件调度回放的规划假设；TP32 保留发布点的 3 个 NIC。Comm Core 控制路径成本在 TP16 暂沿用 TP32 值，不能把其 latency corners 当作 TP16 固件实测。卡内仍为 8-die ring，cut 与 balanced NoC 只覆盖 collective，不覆盖 TP16 新增的计算/KV 访存。
+
+硬件输入 `scaleout_topology_candidates.json#/topologies/*/rankVariants/16` 显式列出 TP16 拓扑：mesh 为 15×4 lanes（不把闲置 lanes 自动加宽），rail 保留 16 lanes/die，leaf-spine 是 4 leaves×4 cards、4 spines，torus 为 4×4，ring 为 16。未定义的 TP 或模型/精度/batch/context 仍阻塞。TP16 的控制路径、NIC 放置、buffer 可行性以及完整算子映射需分别确认后，才能扩大详细 replay 范围。
 
 该账本是 planning 证据，不等同于 sustained silicon measurement。L1 budget contract 只消费满足目标所需的算力、MC 带宽、SRAM、tau 和 PPA 条目，同时原样携带 `demandRequirements` 供 L2/L3 追溯。

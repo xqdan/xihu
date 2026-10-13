@@ -54,7 +54,8 @@ const SOURCE_FILES = [
   'integration/detailed/k3_architecture_search.js',
   'integration/detailed/cost_provider.js',
   'teams/vv/inputs/operator_cost_observations.json',
-  'integration/detailed/k3_physical_basis.js'
+  'integration/detailed/k3_physical_basis.js',
+  'teams/model/src/design_engine.js'
 ];
 const FORMAT = 'k3-tau-derivation/1';
 const EVIDENCE = 'MODEL';
@@ -166,14 +167,17 @@ function passes(name, payload, q) {
 }
 
 // Steps of one pass: {bytes per message per NIC, dsts(rank)}.
-function steps(pass, algorithm, n, order) {
+function steps(pass, algorithm, n, order, TP = 32) {
+  if (!Number.isInteger(TP) || TP < 2) throw new Error('invalid collective ranks');
   const all = r => Array.from({length: TP - 1}, (_, j) => (r + j + 1) % TP);
   if (algorithm === 'oneShot') return [{bytes: pass.bytes / TP / n, dsts: all}];
   const log = Math.log2(TP);
+  if (algorithm === 'halvingDoubling' && !Number.isInteger(log)) throw new Error('halvingDoubling requires power-of-two ranks');
   if (algorithm === 'halvingDoubling') return Array.from({length: log}, (_, k) => pass.op === 'scatter'
     ? {bytes: pass.bytes / n / 2 ** (k + 1), dsts: r => [r ^ (1 << k)]}
     : {bytes: pass.bytes / n / TP * 2 ** k, dsts: r => [r ^ (1 << (log - 1 - k))]});
   if (algorithm === 'ring') {
+    if (order.length !== TP || new Set(order).size !== TP || order.some(r => !Number.isInteger(r) || r < 0 || r >= TP)) throw new Error('invalid ring order');
     const pos = new Map(order.map((c, i) => [c, i]));
     return Array.from({length: TP - 1}, () => ({bytes: pass.bytes / n / TP, dsts: r => [order[(pos.get(r) + 1) % TP]]}));
   }
@@ -188,7 +192,7 @@ function step(s, n, topo, ctx) {
   const networkGBs = Math.min(p.rdmaDieGB, A.LIMITS.networkGBs / n);
   const serialization = Math.max(packet / (networkGBs * 1000), s.bytes / (p.sharedRead * 1e6), (s.bytes + c.flagBytes) / (p.sharedWrite * 1e6), (2 * s.bytes + c.flagBytes) / (p.nocTB * 1e6));
   const laneGB = p.rdmaDieGB / card.lanesPerDie, load = new Map(), chains = [];
-  for (let r = 0; r < TP; r++) for (let k = 0; k < n; k++) {
+  for (let r = 0; r < card.ranks; r++) for (let k = 0; k < n; k++) {
     const lat = [];
     for (const d of s.dsts(r)) {
       if (topo.abstract) { lat.push(topo.oneWayUs); continue; }
@@ -221,9 +225,9 @@ function step(s, n, topo, ctx) {
 // Derived timing of one collective; q is the model's own result for it.
 function derive(name, payload, q, cell, ctx) {
   const {P, p, card} = ctx, n = q.activeNICs;
-  const order = ringOrder(cell.topologyDef, TP);
+  const order = ringOrder(cell.topologyDef, card.ranks);
   let memoryTransport = 0, count = 0, worstOneWayUs = 0;
-  for (const pass of passes(name, payload, q)) for (const s of steps(pass, cell.algorithm, n, order)) {
+  for (const pass of passes(name, payload, q)) for (const s of steps(pass, cell.algorithm, n, order, card.ranks)) {
     const r = step(s, n, cell.topo, ctx);
     memoryTransport += cell.ackDrain === 'phase' ? Math.max(r.ready, r.drained) : r.ready;
     count++; worstOneWayUs = Math.max(worstOneWayUs, r.worstOneWayUs);
@@ -254,6 +258,7 @@ function withCell(cell, ctx, tauUs, fn) {
 }
 
 function replay(x, cell, ctx, tauUs) {
+  if (ctx.card.ranks !== 32) throw new Error('Detailed collective replay supports TP32 only');
   return withCell(cell, ctx, tauUs, derived => {
     const r = O.evaluate(x);
     if (!r.feasible) throw new Error(`replay infeasible: ${r.reasons || r.reason}`);
