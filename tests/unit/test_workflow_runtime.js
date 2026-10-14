@@ -2,7 +2,7 @@
 
 // The host runtime for design.*.workflow.js (integration/orchestration/runtime/):
 // schema validation, the retry/abort policy, concurrency, the landing gates, the
-// read-only guard, and the two real backends driven through fakes.
+// read-only guard, and the real backends driven through fakes.
 //
 // What this pins, because each is a way a run can go wrong silently:
 //   * a reply that does not match its schema is retried with the error list, then
@@ -11,7 +11,7 @@
 //   * landing is all-or-nothing and refuses paths outside the workflow's own area,
 //     `explore` writing anywhere but scratch/, and gate literals in content;
 //   * the guard sees a file an agent wrote;
-//   * Claude "403 Model disabled" is fatal, 429 is retried; Cursor needs a key;
+//   * Claude/Codex auth and model failures are fatal, transient failures retry; Cursor needs a key;
 //   * the exchange backend answers through files, never from a stale run, and gives up
 //     on a call nobody answers (fatal);
 //   * a run that returned no files still leaves a landable outcome record.
@@ -29,6 +29,7 @@ const {BackendFatalError} = require(`${rt}/errors`);
 const {landFiles, LANDING_POLICY, scriptGateDecisions, recheckGateDecision} = require(`${rt}/land`);
 const {snapshot, changedBetween} = require(`${rt}/guard`);
 const {createClaudeBackend, interpret, parseCliOutput} = require(`${rt}/backends/claude`);
+const {createCodexBackend, finalMessageFromEvents} = require(`${rt}/backends/codex`);
 const {createCursorBackend, withSchema} = require(`${rt}/backends/cursor`);
 const {createMockBackend} = require(`${rt}/backends/mock`);
 const {createExchangeBackend} = require(`${rt}/backends/exchange`);
@@ -192,6 +193,58 @@ assert.throws(() => compileWorkflow(root, 'nope'), /no such workflow/);
   await assert.rejects(silent.complete({prompt: 'p'}), (e) => !e.fatal && /exited 1/.test(e.message));
   assert.throws(() => interpret({is_error: false}), /neither structured_output nor result/);
 
+  // ---- codex backend through a fake CLI ----------------------------------
+  const codexSpawn = (script) => (command, argv, options) => {
+    const child = new EventEmitter();
+    child.stdout = new EventEmitter();
+    child.stderr = new EventEmitter();
+    let stdin = '';
+    child.stdin = {end: (text) => { stdin = text; }};
+    child.kill = () => {};
+    codexSpawn.last = {command, argv, options, get stdin() { return stdin; }};
+    setImmediate(() => script(child, argv));
+    return child;
+  };
+  const codexReply = (value) => codexSpawn((child, argv) => {
+    const output = argv[argv.indexOf('--output-last-message') + 1];
+    fs.writeFileSync(output, JSON.stringify(value));
+    child.stdout.emit('data', '{"type":"thread.started","thread_id":"t1"}\n');
+    child.stdout.emit('data', '{"type":"turn.completed"}\n');
+    child.emit('close', 0);
+  });
+  const codex = createCodexBackend({spawnImpl: codexReply(good), cwd: root, model: 'gpt-5-codex', tempRoot: os.tmpdir()});
+  assert.deepStrictEqual(await codex.complete({prompt: 'hello', schema, effort: 'high'}), JSON.stringify(good));
+  const codexUsed = codexSpawn.last;
+  assert.strictEqual(codexUsed.command, 'codex');
+  assert(codexUsed.argv.includes('exec') && codexUsed.argv.includes('--ephemeral'));
+  assert(codexUsed.argv.includes('--sandbox') && codexUsed.argv[codexUsed.argv.indexOf('--sandbox') + 1] === 'read-only');
+  assert(codexUsed.argv.includes('--output-schema') && codexUsed.argv.includes('--output-last-message'));
+  assert(codexUsed.argv.includes('--model') && codexUsed.argv[codexUsed.argv.indexOf('--model') + 1] === 'gpt-5-codex');
+  assert(codexUsed.argv.includes('-c') && codexUsed.argv[codexUsed.argv.indexOf('-c') + 1] === 'model_reasoning_effort=high');
+  assert.strictEqual(codexUsed.argv[codexUsed.argv.length - 1], '-', 'the prompt is read from stdin');
+  assert.strictEqual(codexUsed.stdin, 'hello');
+
+  const eventReply = finalMessageFromEvents([
+    '{"type":"thread.started","thread_id":"t1"}',
+    `{"type":"item.completed","item":{"type":"agent_message","text":${JSON.stringify(JSON.stringify(good))}}}`,
+  ].join('\n'));
+  assert.strictEqual(eventReply, JSON.stringify(good), 'Codex JSONL agent_message is a reply fallback');
+
+  const codexAuth = createCodexBackend({spawnImpl: codexSpawn((child) => {
+    child.stdout.emit('data', '{"type":"error","message":"401 Unauthorized"}\n');
+    child.emit('close', 1);
+  })});
+  await assert.rejects(codexAuth.complete({prompt: 'p'}), (e) => e.fatal === true && /401/.test(e.message));
+  const codexTransient = createCodexBackend({spawnImpl: codexSpawn((child) => {
+    child.stdout.emit('data', '{"type":"error","message":"request timed out"}\n');
+    child.emit('close', 1);
+  })});
+  await assert.rejects(codexTransient.complete({prompt: 'p'}), (e) => !e.fatal && /timed out/.test(e.message));
+  const codexMissing = createCodexBackend({spawnImpl: codexSpawn((child) => child.emit('error', Object.assign(new Error('spawn'), {code: 'ENOENT'})))});
+  await assert.rejects(codexMissing.complete({prompt: 'p'}), (e) => e.fatal === true && /not found/.test(e.message));
+  const codexSilent = createCodexBackend({spawnImpl: codexSpawn((child) => child.emit('close', 1))});
+  await assert.rejects(codexSilent.complete({prompt: 'p'}), (e) => !e.fatal && /exited 1/.test(e.message));
+
   // ---- cursor backend through a fake SDK ----------------------------------
   class CursorAgentError extends Error {
     constructor(message, isRetryable) { super(message); this.isRetryable = isRetryable; }
@@ -266,7 +319,7 @@ assert.throws(() => compileWorkflow(root, 'nope'), /no such workflow/);
   assert.strictEqual(recorded.result.searchNode.candidates.count, 5, 'candidate rows are replaced by their ids');
   assert.deepStrictEqual(landFiles({root, workflow: 'compute', files: [outcome], dryRun: true}).rejected, [], 'the record passes the same landing gates');
 
-  console.log(`PASS workflow runtime: schema, retry/abort policy, concurrency cap, landing gates for ${Object.keys(LANDING_POLICY).length} workflows, read-only guard, claude, cursor and exchange backends, outcome records`);
+  console.log(`PASS workflow runtime: schema, retry/abort policy, concurrency cap, landing gates for ${Object.keys(LANDING_POLICY).length} workflows, read-only guard, claude, codex, cursor and exchange backends, outcome records`);
 })().catch((error) => {
   console.error(error);
   process.exit(1);

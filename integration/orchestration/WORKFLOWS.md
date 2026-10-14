@@ -222,7 +222,7 @@ flowchart TB
 
 ## 5. 在哪里运行、现状
 
-在 Claude Code 里原生运行；在 Cursor 或终端里用 `npm run workflow:run -- <workflow> --backend claude|cursor|mock`（默认 dry run，加 `--land` 才落盘），
+在 Claude Code 里原生运行；在 Codex、Cursor 或终端里用 `npm run workflow:run -- <workflow> --backend codex|claude|cursor|exchange|mock`（默认 dry run，加 `--land` 才落盘），
 详见 [`README.md`](README.md) 的“在哪里运行”。
 
 这 19 个 workflow 目前经过结构测试、C 组与 `design.coupling` 的 mock runtime 行为测试，以及运行时与驱动器的单元/回归测试（后端用假 CLI、假 SDK）；

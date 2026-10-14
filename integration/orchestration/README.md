@@ -13,7 +13,7 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 | 宿主 | 怎么跑 | 谁回答 `agent()` |
 |---|---|---|
 | **Claude Code** | Workflow 工具原生执行，脚本零改动 | Claude Code 自己（`schema` 由它原生约束） |
-| **其他环境（Cursor、CI、本地终端）** | `npm run workflow:run -- <workflow> --backend claude\|cursor\|exchange\|mock` | 可切换的后端，见下 |
+| **其他环境（Codex、Cursor、CI、本地终端）** | `npm run workflow:run -- <workflow> --backend codex\|claude\|cursor\|exchange\|mock` | 可切换的后端，见下 |
 
 第二种由 [`runtime/`](runtime/)（注入 `args` / `agent` / `parallel` / `phase` / `log`）加
 [`../pipelines/run_workflow.js`](../pipelines/run_workflow.js)（主循环）实现。`runtime/` 不读写仓库文件，主循环做三件事：
@@ -29,6 +29,7 @@ K3 设计流程的 workflow 脚本，由 Architecture Council 拥有。
 |---|---|---|---|---|
 | `mock` | 按 schema 生成固定回复 | 由 schema 生成 | — | 测试与冒烟用，不代表设计质量 |
 | `claude` | `claude -p --output-format json --json-schema … --tools Read,Grep,Glob`，prompt 走 stdin | CLI 原生约束 + 运行时再校验 | 工具白名单 | 经假 CLI 测试；**本机的 claude 配置返回 403 Model disabled，未做过真实调用** |
+| `codex` | `codex exec --ephemeral --sandbox read-only --json --output-schema … --output-last-message …`，prompt 走 stdin | CLI 原生约束 + 运行时再校验；JSONL 仅作事件/错误来源 | Codex read-only sandbox + driver guard | 经假 CLI 测试；真实调用需要已登录 Codex CLI 和可用模型 |
 | `exchange` | 把每次 `agent()` 调用写成 `<dir>/<运行号>/NNN.request.json`（prompt 已附 schema），轮询 `NNN.answer.txt` 作为回复；默认目录 `scratch/wf_exchange`（被 git 忽略），`--exchange-dir` 可改，`--timeout` 内无人应答是致命错误 | 运行时校验，失败带错误清单重试 | 取决于回答者；主循环的工作区快照照常检查 | 给没有 API key 但有 Cursor / Claude 会话的环境：由会话（例如派子 agent）读请求、写回复。已通过文件级测试；同一协议的一次性脚本版本曾用 Cursor 子 agent 跑通过 `compute` 的前三次调用，正式后端本身尚未做过真实会话运行 |
 | `cursor` | `@cursor/sdk` 的 `Agent.prompt`，schema 放进 prompt | 运行时校验，失败带错误清单重试（最多 3 次） | 请求只读工具集 | 经假 SDK 测试；**未用真实 `CURSOR_API_KEY` 调用过**；`@cursor/sdk` 不是仓库依赖，用时 `npm install --no-save @cursor/sdk`（Node ≥ 22.13） |
 
