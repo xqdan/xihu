@@ -37,7 +37,7 @@
  * writes nothing -- the ledger included.
  *
  * Usage:
- *   node integration/pipelines/run_workflow.js <workflow> --backend mock|claude|cursor|exchange
+ *   node integration/pipelines/run_workflow.js <workflow> --backend mock|codex|claude|cursor|exchange
  *        [--args file.json] [--brief file.json] [--split S-CMP] [--run-id id] [--max N] [--dimension d]
  *        [--model name] [--concurrency N] [--timeout ms] [--exchange-dir dir]
  *        [--result-file file.json] [--land]
@@ -71,6 +71,7 @@ const {landFiles, scriptGateDecisions, recheckGateDecision} = require('../orches
 const {snapshot, changedBetween} = require('../orchestration/runtime/guard');
 const {createMockBackend} = require('../orchestration/runtime/backends/mock');
 const {createClaudeBackend} = require('../orchestration/runtime/backends/claude');
+const {createCodexBackend} = require('../orchestration/runtime/backends/codex');
 const {createCursorBackend} = require('../orchestration/runtime/backends/cursor');
 const {createExchangeBackend} = require('../orchestration/runtime/backends/exchange');
 const {buildOutcomeFile} = require('../orchestration/runtime/outcome');
@@ -118,6 +119,8 @@ function makeBackend(name, flags) {
       return createMockBackend();
     case 'claude':
       return createClaudeBackend({cwd: root, model: flags.model, timeoutMs});
+    case 'codex':
+      return createCodexBackend({cwd: root, model: flags.model, timeoutMs});
     case 'cursor':
       return createCursorBackend({cwd: root, model: flags.model});
     case 'exchange':
@@ -127,7 +130,7 @@ function makeBackend(name, flags) {
         onRequest: ({request}) => console.error(`  waiting for an answer: ${path.relative(root, request)} -> ${path.relative(root, request).replace('.request.json', '.answer.txt')}`),
       });
     default:
-      throw new Error(`unknown backend "${name}" (mock | claude | cursor | exchange)`);
+      throw new Error(`unknown backend "${name}" (mock | codex | claude | cursor | exchange)`);
   }
 }
 
@@ -376,7 +379,7 @@ async function main(argv, deps = {}) {
   }
   const [workflow] = positional;
   if (flags.help || !workflow || !flags.backend) {
-    console.error('usage: run_workflow.js <workflow> --backend mock|claude|cursor|exchange [--args f] [--brief f] [--split S-CMP] [--run-id id] [--max N] [--dimension sram|comm|joint] [--model m] [--concurrency N] [--timeout ms] [--exchange-dir d] [--result-file f] [--land]   (--list shows workflows)');
+    console.error('usage: run_workflow.js <workflow> --backend mock|codex|claude|cursor|exchange [--args f] [--brief f] [--split S-CMP] [--run-id id] [--max N] [--dimension sram|comm|joint] [--model m] [--concurrency N] [--timeout ms] [--exchange-dir d] [--result-file f] [--land]   (--list shows workflows)');
     return 1;
   }
 
