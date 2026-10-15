@@ -375,7 +375,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - note：这条线程的取值对 winner 的选择意味着什么。
   若这条线程是 keep-out 比例，说明它记的是被留出的份额还是可用份额——
   写反了本域每一个面积数字都会反过来。`,
-      { label: `thread:${d.name}`, phase: 'Deterministic search', effort: 'medium', schema: THREAD_SCHEMA },
+      { label: `thread:${d.name}`, phase: 'Deterministic search', effort: 'low', schema: THREAD_SCHEMA },
     ),
   ),
 )
@@ -425,7 +425,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
 - 若算力侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
 - 若算力侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
-      { label: 'constraint:compute', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+      { label: 'constraint:compute', phase: 'Constraint recall', effort: 'low', schema: CONSTRAINT_SCHEMA },
     ),
   () =>
     agent(
@@ -446,7 +446,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
 - 若 SRAM 侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
 - 若 SRAM 侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
-      { label: 'constraint:sram', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+      { label: 'constraint:sram', phase: 'Constraint recall', effort: 'low', schema: CONSTRAINT_SCHEMA },
     ),
   () =>
     agent(
@@ -467,7 +467,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
 - 若 MC 侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
 - 若 MC 侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
-      { label: 'constraint:mc', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+      { label: 'constraint:mc', phase: 'Constraint recall', effort: 'low', schema: CONSTRAINT_SCHEMA },
     ),
   () =>
     agent(
@@ -487,7 +487,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
 - 若通信侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
 - 若通信侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
-      { label: 'constraint:comm', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+      { label: 'constraint:comm', phase: 'Constraint recall', effort: 'low', schema: CONSTRAINT_SCHEMA },
     ),
 ])
 

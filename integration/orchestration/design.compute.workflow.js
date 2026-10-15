@@ -321,7 +321,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
 - 若内存侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
 - 若内存侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
-      { label: 'constraint:memory', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+      { label: 'constraint:memory', phase: 'Constraint recall', effort: 'low', schema: CONSTRAINT_SCHEMA },
     ),
   () =>
     agent(
@@ -340,7 +340,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
 - 若物理侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
 - 若物理侧结论动摇了方向级假设，用 PPA_DIRECTION_BACKFLOW。`,
-      { label: 'constraint:physical', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+      { label: 'constraint:physical', phase: 'Constraint recall', effort: 'low', schema: CONSTRAINT_SCHEMA },
     ),
 ])
 
