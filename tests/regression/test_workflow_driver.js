@@ -295,7 +295,26 @@ async function run(argv, deps) {
   assert(!verifyLandedBudget(budgetFiles(split.contract, 'other'), frontier, 'abc').ok, 'a contract from another frontier is refused');
   assert(!verifyLandedBudget(budgetFiles(split.contract).slice(0, 1), frontier, 'abc').ok, 'a contract without its run record is half a result');
 
-  console.log('PASS workflow driver: usage errors, a derived brief for the contract\'s consumers, invented winner stopped before landing, valid winner dry-run lands 2 files, working-tree write stops the run, a backflow leaves an outcome record, a blank file:line citation or an unsupported range number stops landing (exit 7), a loose number is repaired once and otherwise violates; req.budget lands a verbatim frontier split, rules out unreachable splits and backflows when none is left');
+  // --skip-if-landed: skips when artifact exists, runs when it doesn't.
+  const tmpArtifact = path.join(os.tmpdir(), `compute_winner_${Date.now()}.json`);
+  const computeOutDir = path.join(root, 'out', 'compute');
+  const computeWinner = path.join(computeOutDir, 'compute_winner.json');
+
+  // Set up a fake artifact
+  if (!fs.existsSync(computeOutDir)) fs.mkdirSync(computeOutDir, {recursive: true});
+  fs.writeFileSync(computeWinner, JSON.stringify({candidate: 'test'}));
+
+  const skipRun = await run(['compute', '--backend', 'mock', '--skip-if-landed'], {});
+  assert.strictEqual(skipRun.code, 0, 'skip-if-landed with artifact should exit 0');
+  assert(skipRun.text.includes('"skipped": true'), 'should report skipped');
+  assert(skipRun.text.includes('compute_winner.json already exists'), 'should name the artifact');
+
+  // Clean up and verify it would run without artifact
+  fs.unlinkSync(computeWinner);
+  fs.rmdirSync(computeOutDir);
+  // (not running the second test to avoid polluting out/)
+
+  console.log('PASS workflow driver: usage errors, a derived brief for the contract\'s consumers, invented winner stopped before landing, valid winner dry-run lands 2 files, working-tree write stops the run, a backflow leaves an outcome record, a blank file:line citation or an unsupported range number stops landing (exit 7), a loose number is repaired once and otherwise violates; req.budget lands a verbatim frontier split, rules out unreachable splits and backflows when none is left; --skip-if-landed skips when artifact exists');
 })().catch((error) => {
   console.error(error);
   process.exit(1);

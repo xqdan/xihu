@@ -85,8 +85,14 @@ function createRuntime({backend, concurrency = 4, maxAttempts = 3, onLog = () =>
         raw = await limited(() => backend.complete({prompt: prompt + feedback, schema, label, effort, phase: phaseTitle, attempt}));
       } catch (error) {
         if (error && error.fatal) throw error;
-        record.failures.push({label, attempt, kind: 'backend', error: String(error && error.message || error)});
-        feedback = '';
+        const errMsg = String(error && error.message || error);
+        record.failures.push({label, attempt, kind: 'backend', error: errMsg});
+        // Timeout retries with an empty prompt are a coin-flip. Give the model a
+        // concrete instruction so the next attempt can converge faster.
+        const isTimeout = errMsg.includes('timed out');
+        feedback = isTimeout
+          ? '\n\n[上一次调用超时。请减少工具调用次数，优先基于已注入的上下文作答，只在必要时读取最关键的一个文件。]'
+          : '';
         continue;
       }
       if (!schema) {
