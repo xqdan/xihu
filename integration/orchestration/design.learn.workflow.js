@@ -237,7 +237,7 @@ const raw = await parallel(
     agent(learnPrompt(u), {
       label: `learn:${u.key}`,
       phase: 'Learn',
-      effort: 'medium',
+      effort: 'low',
       schema: {
         type: 'object',
         properties: {

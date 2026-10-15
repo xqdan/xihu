@@ -118,7 +118,7 @@ const proposals = await parallel(
       label: `constraint:${expert}`,
       phase: 'Constraint collection',
       schema: PROPOSAL_SCHEMA,
-      effort: 'medium',
+      effort: 'low',
     }),
   ),
 )

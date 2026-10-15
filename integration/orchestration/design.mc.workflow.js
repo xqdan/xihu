@@ -354,7 +354,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - covered：产物里没有这条线程的取值时设 false，并在 note 里说明缺什么。
 - localViolations：只转录产物自报的违反项；产物没报的违反项不要在这里发明。
 - note：这条线程的取值对 winner 的选择意味着什么，以及它与口径的关系。`,
-      { label: `thread:${d.name}`, phase: 'Deterministic search', effort: 'medium', schema: THREAD_SCHEMA },
+      { label: `thread:${d.name}`, phase: 'Deterministic search', effort: 'low', schema: THREAD_SCHEMA },
     ),
   ),
 )
@@ -404,7 +404,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
 - 若 SRAM 侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
 - 若 SRAM 侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
-      { label: 'constraint:sram', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+      { label: 'constraint:sram', phase: 'Constraint recall', effort: 'low', schema: CONSTRAINT_SCHEMA },
     ),
   () =>
     agent(
@@ -423,7 +423,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
 - 若通信侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
 - 若通信侧结论动摇了方向级假设，用 DIRECTION_BACKFLOW。`,
-      { label: 'constraint:comm', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+      { label: 'constraint:comm', phase: 'Constraint recall', effort: 'low', schema: CONSTRAINT_SCHEMA },
     ),
   () =>
     agent(
@@ -442,7 +442,7 @@ ${JSON.stringify(candidateBrief, null, 2)}
 - 说不出否掉谁的约束不要提；只影响常数项、不改变取舍的也不要提。
 - 若物理侧无法支持其中任一候选，直接判 BLOCKED_CONFIG 并说明缺什么。
 - 若物理侧结论动摇了方向级假设，用 PPA_DIRECTION_BACKFLOW。`,
-      { label: 'constraint:physical', phase: 'Constraint recall', effort: 'high', schema: CONSTRAINT_SCHEMA },
+      { label: 'constraint:physical', phase: 'Constraint recall', effort: 'low', schema: CONSTRAINT_SCHEMA },
     ),
 ])
 

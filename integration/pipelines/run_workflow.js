@@ -102,7 +102,7 @@ function parseFlags(argv) {
       continue;
     }
     const key = token.slice(2);
-    const boolean = ['land', 'list', 'help'].includes(key);
+    const boolean = ['land', 'list', 'help', 'skip-if-landed'].includes(key);
     flags[key] = boolean ? true : argv[(i += 1)];
   }
   return {flags, positional};
@@ -371,6 +371,63 @@ function ledgerUpdate({land, landing, result}) {
   return {write: true, patch};
 }
 
+// Check if a workflow's primary artifact already exists. Used with --skip-if-landed to
+// avoid re-running expensive searches that have already produced a winner.
+//
+// Returns {skip: boolean, reason: string, artifact?: string}.
+//
+// For search domains (compute/sram/mc/comm/physical/coupling), checks <domain>_winner.json.
+// For procedural workflows (intake/req.budget/contract/arch.direction/integrate/converge),
+// checks the first file in their landing directory.
+//
+// verify/audit/backflow/explore always return skip=false — they must run every time.
+function shouldSkip(workflow, root) {
+  const name = workflow.replace(/^design\./, '');
+
+  // Workflows that must always run
+  const alwaysRun = ['verify', 'audit', 'backflow', 'explore'];
+  if (alwaysRun.includes(name)) {
+    return {skip: false, reason: `${name} must run every time`};
+  }
+
+  // Search domains: check for winner file
+  if (STAGES[name]) {
+    const {winner} = landedFiles(name);
+    const winnerPath = path.join(root, winner);
+    if (fs.existsSync(winnerPath)) {
+      return {skip: true, reason: `${winner} already exists`, artifact: winner};
+    }
+    return {skip: false, reason: `${winner} not found`};
+  }
+
+  // Procedural workflows: check for typical artifacts
+  const proceduralArtifacts = {
+    intake: 'teams/council/inputs/design_brief.intake.json',
+    'req.budget': 'out/budget/budget_contract.json',
+    'req.workload': 'out/requirements/workload/req_workload_outcome.json',
+    contract: 'out/contracts/l3_contracts.json',
+    'arch.direction': 'out/direction/direction_winner.json',
+    integrate: 'out/detailed/design_epochs.json',
+    converge: 'out/detailed/converge_outcome.json',
+    attribution: 'out/attribution/reviews', // directory check
+    learn: 'references/sota',
+  };
+
+  const artifact = proceduralArtifacts[name];
+  if (artifact) {
+    const artifactPath = path.join(root, artifact);
+    const exists = fs.existsSync(artifactPath);
+    if (exists) {
+      return {skip: true, reason: `${artifact} already exists`, artifact};
+    }
+    return {skip: false, reason: `${artifact} not found`};
+  }
+
+  // Unknown workflow: don't skip
+  return {skip: false, reason: `unknown workflow ${name}`};
+}
+
+
 async function main(argv, deps = {}) {
   const {flags, positional} = parseFlags(argv);
   if (flags.list) {
@@ -379,7 +436,7 @@ async function main(argv, deps = {}) {
   }
   const [workflow] = positional;
   if (flags.help || !workflow || !flags.backend) {
-    console.error('usage: run_workflow.js <workflow> --backend mock|codex|claude|cursor|exchange [--args f] [--brief f] [--split S-CMP] [--run-id id] [--max N] [--dimension sram|comm|joint] [--model m] [--concurrency N] [--timeout ms] [--exchange-dir d] [--result-file f] [--land]   (--list shows workflows)');
+    console.error('usage: run_workflow.js <workflow> --backend mock|codex|claude|cursor|exchange [--args f] [--brief f] [--split S-CMP] [--run-id id] [--max N] [--dimension sram|comm|joint] [--model m] [--concurrency N] [--timeout ms] [--exchange-dir d] [--result-file f] [--land] [--skip-if-landed]   (--list shows workflows)');
     return 1;
   }
 
@@ -391,6 +448,22 @@ async function main(argv, deps = {}) {
   } catch (error) {
     console.error(error.message);
     return 1;
+  }
+
+  // Skip if --skip-if-landed is set and the primary artifact already exists
+  if (flags['skip-if-landed']) {
+    const skipCheck = shouldSkip(workflow, root);
+    if (skipCheck.skip) {
+      const summary = {
+        workflow,
+        skipped: true,
+        reason: skipCheck.reason,
+        artifact: skipCheck.artifact,
+      };
+      console.log(JSON.stringify(summary, null, 2));
+      return 0;
+    }
+    // If skip check says no, proceed normally (artifact missing or workflow must run every time)
   }
 
   let before;
@@ -521,7 +594,7 @@ async function main(argv, deps = {}) {
   return landing.rejected.length ? 4 : 0;
 }
 
-module.exports = {main, parseFlags, prepareArgs, halfWinnerResult, verifyLandedBudget, ledgerUpdate, DERIVED_BRIEFS};
+module.exports = {main, parseFlags, prepareArgs, halfWinnerResult, verifyLandedBudget, ledgerUpdate, shouldSkip, DERIVED_BRIEFS};
 
 if (require.main === module) {
   main(process.argv.slice(2)).then((code) => { process.exitCode = code; });

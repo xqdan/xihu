@@ -812,7 +812,7 @@ const freezeDeclarations = (await parallel(FREEZE_DECLARANTS.map((d) => () => ag
     : '')
   + `  BLOCKED_CONFIG：产物里缺字段或组合不可实现，在 blockedFields 里列出缺哪些。\n`
   + `注意：你不判这一轮能不能通过——那是检点者的事。`,
-  {label: d.label, phase: 'Freeze declaration', effort: 'high', schema: d.schema})
+  {label: d.label, phase: 'Freeze declaration', effort: 'low', schema: d.schema})
 ))).filter(Boolean)
 
 if (freezeDeclarations.length < FREEZE_DECLARANTS.length) {
@@ -964,7 +964,7 @@ const eventDeclarations = (await parallel(EVENT_DECLARANTS.map((d) => () => agen
   + `（例如某个集合通信的相位在给定的 NoC 拓扑下无法排布），是方向级矛盾而非差一点。\n`
   + `  BLOCKED_CONFIG：产物缺字段或事件无法归位，在 blockedFields 里列出缺哪些。\n`
   + `注意：你不判事件流整体是否通过——那是检点者的事。`,
-  {label: d.label, phase: 'Event declaration', effort: 'high', schema: d.schema})
+  {label: d.label, phase: 'Event declaration', effort: 'low', schema: d.schema})
 ))).filter(Boolean)
 
 if (eventDeclarations.length < EVENT_DECLARANTS.length) {
