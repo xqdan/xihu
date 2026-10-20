@@ -395,6 +395,10 @@ if (!CANDIDATES.length) {
 }
 const sliced = CANDIDATES.slice(0, MAX_CANDIDATES)
 
+// 打分卡的形态候选主键是 morphologyId（例如 P1-compact-MC320-TP8），不是 candidateId。
+// 这里统一成一个 id：优先 candidateId（显式注入的候选），退回 morphologyId，最后才是序号。
+const candidateIdOf = (c, i) => c.candidateId || c.morphologyId || String(i + 1)
+
 const evaluations = (await parallel(sliced.map((c, i) => () => agent(
   `${head('architect')}\n\n`
   + `brief：\n${BRIEF_JSON}\n\n`
@@ -403,19 +407,25 @@ const evaluations = (await parallel(sliced.map((c, i) => () => agent(
   + (L2_BUDGET_ARTIFACT ? `L2 预算合同骨架（主循环已生成，只读；含本候选对照 L1 合同的"满足 / 差多少"）：${L2_BUDGET_ARTIFACT}\n` : '')
   + `\n你本次负责的形态候选（只评估这一个，不得评价其他候选，也不得给出 TPS）：\n`
   + `${JSON.stringify(c, null, 2)}\n\n`
+  + `该候选的 id 是 ${candidateIdOf(c, i)}。返回值里的 candidateId 必须原样使用这个字符串，不得改写成别的。\n`
   + `这个候选是一组**形态宏参数**（L/H 算力配比、片上 SRAM 总量与 local/shared 切分、MC 档位、die 数、TP）。\n`
   + `面积/功耗由 integration/detailed/k3_architecture_search.js 的 physical() 算、TPS 由 token time 算，`
-  + `对照 L1 预算合同的逐条"满足 / 差多少"已经在打分卡与 L2 骨架里——它们是**给定的裸值**，你不得重算、不得改写。\n\n`
+  + `对照 L1 预算合同的逐条"满足 / 差多少"**已经全部在你收到的这一行里**（checks / misses 字段）——`
+  + `它们是给定的裸值，你不得重算、不得改写。\n`
+  + `**不要读取打分卡文件本身**（${SCORECARD_ARTIFACT} 有两百多 KB，里面是全候选表；本候选的行已完整给出，`
+  + `翻全文既不会多出结论，也会让这次评估超时）。只在需要确认某个数字的出处时，读规格文件的最小相关片段。\n\n`
   + `任务：给出这个候选的 bottleneck 与 bottleneck 分类、它成立所依赖的前提`
   + `（每条前提必须写清"翻转到什么值这个候选就不成立"）、以及在给定资源包络下它是否站得住。\n`
   + `你拿不到其他候选的结论，也不得推测它们——独立评估要的就是互相看不见。\n`
-  + `所有数字必须带出处；没有出处的写 UNVERIFIED。`,
-  {label: `candidate:${c.candidateId || i + 1}`, phase: 'Candidate evaluation', effort: 'high', schema: CANDIDATE_SCHEMA})
+  + `所有数字必须带出处；没有出处的写 UNVERIFIED。\n`
+  + `时间预算：这是一次有界评估。先给出结论，再补理由；不要在工具调用上追求完备。`,
+  {label: `candidate:${candidateIdOf(c, i)}`, phase: 'Candidate evaluation', effort: 'medium', schema: CANDIDATE_SCHEMA})
 ))).filter(Boolean)
 
 if (evaluations.length < sliced.length) {
-  const missing = sliced.filter((c, i) => !evaluations.some((e) => e.candidateId === (c.candidateId || String(i + 1))))
-    .map((c) => c.candidateId || 'unknown')
+  const missing = sliced
+    .filter((c, i) => !evaluations.some((e) => e.candidateId === candidateIdOf(c, i)))
+    .map((c, i) => candidateIdOf(c, i))
   return {
     stage: STAGE, runId: RUN_ID, verdict: 'BLOCKED_CONFIG',
     reason: `候选评估不完整，缺：${missing.join(', ')}；不落盘`,

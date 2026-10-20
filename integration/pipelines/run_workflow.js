@@ -112,8 +112,14 @@ function readJson(file) {
   return JSON.parse(fs.readFileSync(path.resolve(root, file), 'utf8'));
 }
 
-function makeBackend(name, flags) {
-  const timeoutMs = flags.timeout ? Number(flags.timeout) : undefined;
+// 默认超时：arch.direction 的每个候选实例会读规格片段做有界判断，600 s 对它偏紧——
+// 实测同一 prompt 在不同次运行里 600 s 内收口的概率明显低于其他格。其余格维持 600 s。
+const WORKFLOW_TIMEOUT_MS = {'arch.direction': 900000};
+
+function makeBackend(name, flags, workflow) {
+  const timeoutMs = flags.timeout
+    ? Number(flags.timeout)
+    : (WORKFLOW_TIMEOUT_MS[workflow] || undefined);
   switch (name) {
     case 'mock':
       return createMockBackend();
@@ -297,6 +303,9 @@ function prepareArgs(workflow, flags, {designPoint = () => DESIGN_POINT.resolve(
       throw new Error(`--args names scorecard ${args.scorecardSha256} but ${files.scorecardArtifact} is ${scorecardSha256}; the scorecard was regenerated (npm run model:planning) between the two`);
     }
     const scorecard = JSON.parse(scorecardText);
+    // 候选上限：arch.direction 读 args.maxCandidates（默认 12），不是 C 组的 --max 分支。
+    // 不在这里显式传，--max 对这一格就是无声的无效参数。
+    if (flags.max) args.maxCandidates = Number(flags.max);
     // The candidates are stage_a.js's morphology rows, handed over as computed. The shapes that
     // satisfy every L1 contract entry go first, so the workflow's maxCandidates slice keeps them.
     if (!args.candidates) {
@@ -444,7 +453,7 @@ async function main(argv, deps = {}) {
   let backend;
   try {
     args = prepareArgs(workflow, flags, deps);
-    backend = deps.backend || makeBackend(flags.backend, flags);
+    backend = deps.backend || makeBackend(flags.backend, flags, workflow);
   } catch (error) {
     console.error(error.message);
     return 1;
