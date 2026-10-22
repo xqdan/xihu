@@ -102,7 +102,7 @@ out/rdma/k3_rdma_final_tuning_results.json
 teams/hardware/inputs/k3_mc_baseline.json
 ```
 
-数值由 `tests/regression/test_design_baseline.js` 回归，本文不再重复抄写，避免多处漂移。K3 MC640 是否达到 1000 目标以 `teams/hardware/inputs/k3_mc_baseline.json#acceptance.currentStatus` 为准；即使达到，也是模型结果而非架构门槛（1050）闭合，不能写成“已经达标”。规划估算（`out/workload/tps_observation_matrix.json`）是 ADR-0006 的规划 token 时间：`max(访存道, 串行道) × 1.17`（公式与系数见 `00_CURRENT_STATE.md` 第 3.2 节），系数在 K3 P1/MC640/TP32 详细点上标定（规划 1142.61 对 1124.70），MC320 样本外偏差约 −14.6%（ADR-0026 之前约 −6%，原因见 ADR-0026「未解决」）。它与详细模型不是同一个模型，只在标定点对齐；其余槽位不得当作 `MODEL_OBSERVED`。
+数值由 `tests/regression/test_design_baseline.js` 回归，本文不再重复抄写，避免多处漂移。K3 MC640 是否达到 1000 目标以 `teams/hardware/inputs/k3_mc_baseline.json#acceptance.currentStatus` 为准；即使达到，也是模型结果而非架构门槛（1050）闭合，不能写成“已经达标”。规划估算（`out/workload/tps_observation_matrix.json`）是 ADR-0006 的规划 token 时间：`max(访存道, 串行道) × 1.17`（公式与系数见 `00_CURRENT_STATE.md` 第 3.2 节），系数在 K3 P1/MC640/TP32 详细点上标定（规划 1142.61 对 1124.70），MC320 样本外偏差约 −14.6%（原因见 ADR-0026「未解决」）。它与详细模型不是同一个模型，只在标定点对齐；其余槽位不得当作 `MODEL_OBSERVED`。
 
 ## 6. 不同Agent对TPS的责任
 

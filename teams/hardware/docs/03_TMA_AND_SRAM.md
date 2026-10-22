@@ -298,14 +298,14 @@ context 按 TP rank 切分。KV = 层数 × 656 B × 2²⁰ token ÷ 32；index 
   （带 `candidateSetSha256`）。本节数字由 `tests/regression/test_sram_design.js` 对照新鲜搜索结果检查。
 
 **合同条款**：本域对 L1 合同的 `B-SRAM-CAP` 负责——每 Die Shared SRAM 窗口 ≥ 12 MiB
-（`out/requirements/budget_frontier.json` 的 S-CMP 拆分，prefetch depth 4；ADR-0026 之前是 16 MiB，下限下移是因为发布点被集合通信约束、窗口压力变小）。
+（`out/requirements/budget_frontier.json` 的 S-CMP 拆分，prefetch depth 4；发布点被集合通信约束、窗口压力小，所以下限就是网格的最小值 12 MiB）。
 窗口是本空间的一个维度，所以条款直接检查：低于下限的候选记 `belowContractCapacity`，不回放。
 回放只要求达到合同的 `target.tpsPerUser`（1000），**不要求保持发布点的 1124.70**——发布点是结果，不是需求。
 Die 面积与功耗上限属于 `B-AREA`（physical 的条款），这里只作为共享包络读取；
 面积和功耗都含 `O.chargeSharedPortCost()` 的端口放大计费（`A.physical()` 不带这一项）。
 
 **目标**：可行优先，然后 Die 面积最小（含端口计费），然后 Die 功耗最小。
-搜索共 486 个组合、486 个回放、425 个可行。网格 {12, 16, 24} 里没有低于下限的窗口，所以这次没有候选记 `belowContractCapacity`（ADR-0026 之前 162 个）。不可行原因（一个候选可有多条）：
+搜索共 486 个组合、486 个回放、425 个可行。网格 {12, 16, 24} 里没有低于下限的窗口，所以这次没有候选记 `belowContractCapacity`。不可行原因（一个候选可有多条）：
 
 | 原因 | 候选数 |
 | --- | ---: |

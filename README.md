@@ -42,7 +42,7 @@ TPS/usr = 1e6 / (raw × 1.17) = 1124.70
 
 每一项都能追溯到具体的硬件参数或软件开关。例如集合通信的单次成本 τ 从 1.15 µs 升到约 1.39 µs，
 TPS/usr 就跌破 1000，所以 τ 的物理推导被列为阻塞项（B-008）。现在发布点已被集合通信约束（comm 451.95 µs，占 raw 的 59%），
-τ 降到 1.0 µs 能到 1217.90；内存换 HBM3E 之前（ADR-0026）发布点被内存链路约束，τ 的影响小得多。
+τ 降到 1.0 µs 能到 1217.90。
 
 ## 多 agent 协作：策略无状态，上下文由 workflow 注入
 
@@ -139,7 +139,7 @@ flowchart LR
 |---|---|---|
 | 硬件规格 | P1：8 L + 4 H Core/Die、40 MiB SRAM、1.0 GHz、364.03 mm²；8 Die + 16 HBM3E 栈/卡，卡功耗上限 3200 W（ADR-0021、ADR-0026） | `MODEL` |
 | K3 发布点 | 1124.70 TPS/usr（MC640/TP32，**Stretch**，该槽位现为 HBM3E 1152 GB/s/栈，ADR-0017、ADR-0026）；MC320 下 585.93。集合通信按 reference-393 计数；按 repo-510 计数同一点为 956.61（ADR-0004） | `MODEL` |
-| 三模型规划（TP32/MC640） | K3 1142.6、DeepSeek-V4-Pro 1931.8、GLM-5.2 1919.1。K3 规划值比详细模型发布点（1124.70）高 1.6%：规划模型在这个点上拟合，现在拟合残差为 −11.92 µs（改 HBM3E 前几乎为 0），见 `OPEN_ISSUES.md` O-016。GLM/DeepSeek 计入 q all-gather（ADR-0024），口径比 K3 的 reference-393 保守；二者没有详细模型旁证 | `PLANNING_ESTIMATE` |
+| 三模型规划（TP32/MC640） | K3 1142.6、DeepSeek-V4-Pro 1931.8、GLM-5.2 1919.1。K3 规划值比详细模型发布点（1124.70）高 1.6%：规划模型在这个点上拟合，拟合残差为 −11.92 µs，见 `OPEN_ISSUES.md` O-016。GLM/DeepSeek 计入 q all-gather（ADR-0024），口径比 K3 的 reference-393 保守；二者没有详细模型旁证 | `PLANNING_ESTIMATE` |
 | D-Gate / Q-Gate | PASS（仅限规划比较）/ 阻塞（无事件时序回放） | — |
 
 主要阻塞项：MC 带宽档位未选定（B-002）、τ 无物理推导（B-008）、卡内与 TP32 拓扑未签核（B-004、B-005）、
