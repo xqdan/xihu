@@ -121,7 +121,7 @@ xychart-beta
   对照新鲜搜索结果检查。
 
 **口径**：配比 = BF16 dense 矩阵峰值 : vector 峰值（lanes × 2 × f），等价于 MAC : lane。
-P1 发布点每 Die **22.7:1**，但它是两类核的平均：L Core **4:1**，H Core **60:1**。
+P1 发布点每 Die **26.7:1**，但它是两类核的平均：L Core **4:1**，H Core **72:1**（ADR-0026 把 `hEngines` 从 5 提到 6，H Core 从 30720 MAC 变成 36864 MAC，之前是 22.7:1 和 60:1）。
 配比必须按核类分开看，不能只给一个整 Die 数。
 
 **判据（逐 kernel 掩盖）**：每个融合 kernel 的 vector 部分不长于同一 kernel 的矩阵部分：
@@ -145,30 +145,29 @@ vector lane-cycles / lanes  <=  matrix FLOPs / (2 × MACs × matrixUtil × fill)
 不搜索、已裁定的维度（理由见设计空间 `ruled`）：L/H 共用一个 lane 数（模型只有一个 `vectorLanes`；分核类配置省面积，待扩展 `A.physical()` / `mappedPlan()` 后再搜）；
 不在 TMA 通路上解码（写入 Local SRAM 的 BF16 字节翻 2–4 倍，O-007 的写端口模型尚未计入）；B=1 decode（B 最高 16 的 GEMV 上限只作敏感度）。
 
-**发布点的记账**：发布点 367.88 mm²（297.75 W）= 360.11 mm² + 7.78 mm²（共享端口放大，ADR-0023 把 `localWriteRatio` 从 1.70 降到 1 之后；之前是 16.15 mm²）。ADR-0026 换 HBM3E 前是 365.34 mm²（283.27 W）= 357.57 + 7.78。下文所有面积、功耗都是这一口径，候选的面积直接与它和 400 mm²、封装窗口比较。
+**发布点的记账**：发布点 364.03 mm²（290.48 W）= 356.26 mm² + 7.78 mm²（共享端口放大，ADR-0023 把 `localWriteRatio` 从 1.70 降到 1 之后；之前端口放大是 16.15 mm²）。ADR-0026 之前是 365.34 mm²（283.27 W）。下文所有面积、功耗都是这一口径，候选的面积直接与它和 400 mm²、封装窗口比较。
 
 **约束**：
 
 1. 三个模型（K3、GLM-5.2、DeepSeek-V4-Pro）的全部 H Core kernel（MLA、DSA indexer、KDA state）可掩盖；
    L Core 的 B=1 GEMV 解包只报告、不作要求，它的时间由 K3 系统回放计入；
 2. K3 详细模型在发布点只改 lanes、解包（原生输入时关掉）和 softmax op 数回放，TPS/usr 满足 L1 合同的 `B-SERIAL-CMP` 条目（`target.tpsPerUser` = 1000；`out/requirements/budget_frontier.json` 的 `S-CMP`，见 [23](../../council/docs/23_DESIGN_QUESTION_WORKFLOW_PROPOSAL.md)）；
-   本合同条目与"不低于发布值 99.9%"（1100.67）是两条不同的判据：搜索只回答前者。发布点 1154.55 TPS/usr 距离 1000 有余量，所以判据放宽后 832 lane 配多项式 exp 也进可行集；
+   本合同条目与"不低于发布值 99.9%"（1123.58）是两条不同的判据：搜索只回答前者。发布点 1124.70 TPS/usr 距离 1000 有余量，所以判据放宽到 1000 后，832 lane 配多项式 exp（1124.34）与配 SFU（1151.63）都满足，取舍落到面积上；
 3. Die 面积和功耗在限值内（`O.evaluate` 可行性，面积上限 400 mm²）。面积和功耗都**含共享端口放大**（发布点 +7.78 mm²、+2.74 W / Die，`O.chargeSharedPortCost`）和选项开销；
-   早期版本只用 `P.resize(A.physical(x))` 的面积，漏掉端口放大，发布点显示 360.11 mm² 而不是 367.88 mm²；
+   早期版本只用 `P.resize(A.physical(x))` 的面积，漏掉端口放大，发布点显示 356.26 mm² 而不是 364.03 mm²；
 4. 封装放得下：`8 × 面积 + 16 × 100 ≤ 5248 × (1 − 0.1254)`（8 个 Die、16 个 memory cube、放置窗口 5248 mm²）。
    0.1254 是发布点的**观测** keep-out（658.29 / 5248，`physical_design_space.json`），不是核实过的下限；更小的预留是未证实的假设，这里不用它放行任何候选。
-   发布点本身还剩 46.83 mm²（ADR-0023 之前只剩 0.19 mm²；ADR-0026 把 Die 加到 367.88 mm² 后从 67.17 降到 46.83），平摊到 8 个 Die，每个 Die 最多再加 5.85 mm²。
+   发布点本身还剩 77.64 mm²（ADR-0023 之前只剩 0.19 mm²；ADR-0026 之前是 67.17 mm²），平摊到 8 个 Die，每个 Die 最多再加 9.70 mm²。
 
 **目标**：可行优先，然后 Die 面积（含端口放大与选项开销）最小，然后功耗最小。都不可行时不选方案；排序只用来指出最接近的一个（违反的限值最少、能回放的优先）。
 expUnit 通过模拟器的 `softmaxOpsPerScore`（`k3_operator_sram_sim.js`，默认 8）进入 K3 回放，所以多项式 exp 的代价同时反映在 kernel 上限和系统 TPS 上。
 
-搜索共 52 个组合、13 个可行（ADR-0026 之前是 5 个：卡功耗上限提到 3200 W 后，960/1024 lane 以及一批原生输入组合进入可行集），设计空间 sha256 前缀 `3d160226761c`。
+搜索共 52 个组合、3 个可行，设计空间 sha256 前缀 `3d160226761c`。
 
 #### 2.5.2 结论
 
-> **这是 HW-02 搜索的推荐，不是基线。** 当前基线（`k3_mc_baseline.json`、ADR-0021、ADR-0026）是每 Core **1024 lane**、Die 367.88 mm²（297.75 W）、封装余量 46.83 mm²；
-> 下面的 832 lane、363.47 mm²、余量 82.15 mm² 属于搜索胜出方案。搜索只回答"在发布点上只改 lane、输入路径和 exp 单元，最小的可行方案是什么"，
-> 它**不是**对发布点的反驳：发布点的 1024 lane 是 `search:final` 联合调出来的（ADR-0026，同时 `hEngines` 5→6、`hMiB` 4→2、`reduceLanes` 4096→2048、`kvTile` 32768→16384）。
+> **这是 HW-02 搜索的推荐，不是基线。** 当前基线（`k3_mc_baseline.json`、ADR-0021、ADR-0026）仍是每 Core 512 lane、Die 364.03 mm²、封装余量 77.64 mm²；
+> 下表的 832 lane、371.39 mm²、余量 18.78 mm² 属于搜索胜出方案。要把它写进基线，需要改 `OPT`、重跑 `search:final` 和 `baseline:sync`（ADR-0005 第 5 条）并另立 ADR。
 
 | 维度 | 选项 |
 | --- | --- |
@@ -178,13 +177,13 @@ expUnit 通过模拟器的 `softmaxOpsPerScore`（`k3_operator_sram_sim.js`，�
 
 - 配比：整 Die **16.4:1**，L Core **2.5:1**，H Core **44.3:1**。
 - 绑定约束：GLM-5.2 DSA indexer（FP8 key 经 vector 反量化），上限 44.5:1，至少 829.0 lane；取网格上的 832。
-- K3 回放 1124.34 TPS/usr（发布值 1154.55），raw 760.18 µs，掩盖与 `B-SERIAL-CMP` 都满足。
-- 面积 363.47 mm²（Die 355.69 mm² + 共享端口 7.78 mm² + SFU 0.00 mm²），功耗 294.8 W。
-- 封装余量 **82.15 mm²**，平摊到 8 个 Die 是每 Die 10.27 mm²（见 2.5.3 的敏感度）。
-- **与发布点的差距**：搜索推荐 832 lane 比发布点少 192 lane/Core，Die 面积少 4.41 mm²（363.47 vs 367.88）、功耗少 2.9 W，但 K3 回放低 30.21 TPS/usr（1124.34 vs 1154.55，−2.6%）。本节没有解释这 30 TPS 来自哪里（回放只改 lane、输入和 exp，不改发布点的其余旋钮），也不据此判定发布点的 1024 lane "多余"或"必要"；是否回收这 192 lane，要让 `search:final` 把 lane 数当被约束项重跑，而不是在这里下结论。
+- K3 回放 1124.34 TPS/usr（发布值 1124.70），raw 760.18 µs，掩盖与 `B-SERIAL-CMP` 都满足。
+- 面积 371.39 mm²（Die 363.61 mm² + 共享端口 7.78 mm² + SFU 0.00 mm²），功耗 295.5 W。
+- 封装余量 **18.78 mm²**，平摊到 8 个 Die 是每 Die 2.35 mm²（见 2.5.3 的敏感度）。
 - 胜出方案从 SFU 换成多项式 exp：判据是合同的 1000 TPS/usr，832 lane 下 SFU 的 1151.63 超出需求，多付的 1.91 mm² SFU 面积没有换来任何约束收益，多项式方案的 1124.34 仍高于合同目标。
+- 这个结论依赖 ADR-0023 回收的端口面积：`localWriteRatio` 回到 1.70 时端口放大从 7.78 涨到 16.15 mm² / Die，胜出方案 379.76 mm² 超过每 Die 允许的 373.74 mm²（缺口 6.02 mm² / Die，整卡 48.2 mm²）。
 
-三个模型的 H Core kernel 都要掩盖，就至少需要 829.0 lane / Core；这个 lane 数在观测 keep-out 下装得进封装（余量 82.15 mm²，ADR-0026 之前的绑定值是 690.9 lane）。绑定 lane 数上升，是因为每个 H Core 的 MAC 数变多：`hEngines` 5→6 使 H Core 从 30720 MAC 变成 36864 MAC（`hRows` 48 × `hCols` 128 × 6），indexer 的 MAC:lane 上限仍是 44.47:1，最少 lane = MAC ÷ 上限，690.9 × 1.2 = 829.0。
+三个模型的 H Core kernel 都要掩盖，就至少需要 829.0 lane / Core（ADR-0026 之前是 690.9：`hEngines` 5→6 让 H Core 的 MAC 数乘 1.2，最少 lane = MAC ÷ 44.47 上限）；这个 lane 数的面积在观测 keep-out 下必须靠端口回收才装得进封装。
 
 #### 2.5.3 各备选的落选原因
 
@@ -194,32 +193,32 @@ expUnit 通过模拟器的 `softmaxOpsPerScore`（`k3_operator_sram_sim.js`，�
 
 | 维度 | 选项 | 结果 | 该选项最优组合（lanes / 输入 / exp） | H Core 配比 | K3 TPS/usr | 面积 | 功耗 | 封装余量 |
 | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: |
-| vectorLanes | `256` | `infeasible: hKernelExposed` | 256 / nativeTensor / sfu | 144.0:1 | 1081.36 | 361.28 mm² | 285.8 W | 99.68 mm² |
-| vectorLanes | `320` | `infeasible: hKernelExposed` | 320 / vectorUnpack / sfu | 115.2:1 | 1030.14 | 352.43 mm² | 286.8 W | 170.44 mm² |
-| vectorLanes | `384` | `infeasible: hKernelExposed` | 384 / vectorUnpack / sfu | 96.0:1 | 1073.51 | 354.05 mm² | 287.8 W | 157.49 mm² |
-| vectorLanes | `448` | `infeasible: hKernelExposed` | 448 / vectorUnpack / sfu | 82.3:1 | 1106.80 | 355.67 mm² | 288.8 W | 144.54 mm² |
-| vectorLanes | `512` | `infeasible: hKernelExposed` | 512 / vectorUnpack / polynomial | 72.0:1 | 1029.79 | 356.11 mm² | 289.8 W | 141.01 mm² |
-| vectorLanes | `576` | `infeasible: hKernelExposed` | 576 / vectorUnpack / polynomial | 64.0:1 | 1058.33 | 357.58 mm² | 290.8 W | 129.24 mm² |
-| vectorLanes | `640` | `area` | 640 / nativeTensor / polynomial | 57.6:1 | 1100.21 | 369.52 mm² | 291.8 W | 33.75 mm² |
-| vectorLanes | `704` | `area` | 704 / nativeTensor / polynomial | 52.4:1 | 1114.55 | 370.99 mm² | 292.8 W | 21.98 mm² |
-| vectorLanes | `768` | `area` | 768 / nativeTensor / polynomial | 48.0:1 | 1126.79 | 372.46 mm² | 293.8 W | 10.21 mm² |
-| vectorLanes | `832` | **选中** | 832 / vectorUnpack / polynomial | 44.3:1 | 1124.34 | 363.47 mm² | 294.8 W | 82.15 mm² |
-| vectorLanes | `896` | `area` | 896 / vectorUnpack / polynomial | 41.1:1 | 1134.28 | 364.94 mm² | 295.7 W | 70.38 mm² |
-| vectorLanes | `960` | `area` | 960 / vectorUnpack / polynomial | 38.4:1 | 1138.19 | 366.41 mm² | 296.7 W | 58.61 mm² |
-| vectorLanes | `1024` | `area` | 1024 / vectorUnpack / polynomial | 36.0:1 | 1139.97 | 367.88 mm² | 297.7 W | 46.83 mm² |
-| lowPrecisionInput | `vectorUnpack` | **选中** | 832 / vectorUnpack / polynomial | 44.3:1 | 1124.34 | 363.47 mm² | 294.8 W | 82.15 mm² |
-| lowPrecisionInput | `nativeTensor` | `area` | 640 / nativeTensor / polynomial | 57.6:1 | 1100.21 | 369.52 mm² | 291.8 W | 33.75 mm² |
-| expUnit | `sfu` | `area` | 832 / vectorUnpack / sfu | 44.3:1 | 1151.63 | 365.38 mm² | 294.8 W | 66.85 mm² |
-| expUnit | `polynomial` | **选中** | 832 / vectorUnpack / polynomial | 44.3:1 | 1124.34 | 363.47 mm² | 294.8 W | 82.15 mm² |
+| vectorLanes | `256` | `infeasible: hKernelExposed` | 256 / nativeTensor / sfu | 144.0:1 | 1081.36 | 369.20 mm² | 286.5 W | 36.30 mm² |
+| vectorLanes | `320` | `infeasible: hKernelExposed` | 320 / vectorUnpack / sfu | 115.2:1 | 1030.14 | 360.35 mm² | 287.5 W | 107.07 mm² |
+| vectorLanes | `384` | `infeasible: hKernelExposed` | 384 / vectorUnpack / sfu | 96.0:1 | 1073.51 | 361.97 mm² | 288.5 W | 94.12 mm² |
+| vectorLanes | `448` | `infeasible: hKernelExposed` | 448 / vectorUnpack / sfu | 82.3:1 | 1106.80 | 363.59 mm² | 289.5 W | 81.17 mm² |
+| vectorLanes | `512` | `infeasible: hKernelExposed` | 512 / vectorUnpack / polynomial | 72.0:1 | 1029.79 | 364.03 mm² | 290.5 W | 77.64 mm² |
+| vectorLanes | `576` | `infeasible: hKernelExposed` | 576 / vectorUnpack / polynomial | 64.0:1 | 1058.33 | 365.50 mm² | 291.5 W | 65.86 mm² |
+| vectorLanes | `640` | `infeasible: hKernelExposed` | 640 / vectorUnpack / polynomial | 57.6:1 | 1082.32 | 366.98 mm² | 292.5 W | 54.09 mm² |
+| vectorLanes | `704` | `infeasible: hKernelExposed` | 704 / vectorUnpack / polynomial | 52.4:1 | 1099.81 | 368.45 mm² | 293.5 W | 42.32 mm² |
+| vectorLanes | `768` | `infeasible: hKernelExposed` | 768 / vectorUnpack / polynomial | 48.0:1 | 1112.97 | 369.92 mm² | 294.5 W | 30.55 mm² |
+| vectorLanes | `832` | **选中** | 832 / vectorUnpack / polynomial | 44.3:1 | 1124.34 | 371.39 mm² | 295.5 W | 18.78 mm² |
+| vectorLanes | `896` | `area` | 896 / vectorUnpack / polynomial | 41.1:1 | 1134.28 | 372.86 mm² | 296.5 W | 7.01 mm² |
+| vectorLanes | `960` | `infeasible: packageArea` | 960 / vectorUnpack / polynomial | 38.4:1 | 1138.19 | 374.33 mm² | 297.5 W | -4.77 mm² |
+| vectorLanes | `1024` | `infeasible: packageArea` | 1024 / vectorUnpack / polynomial | 36.0:1 | 1139.97 | 375.80 mm² | 298.5 W | -16.54 mm² |
+| lowPrecisionInput | `vectorUnpack` | **选中** | 832 / vectorUnpack / polynomial | 44.3:1 | 1124.34 | 371.39 mm² | 295.5 W | 18.78 mm² |
+| lowPrecisionInput | `nativeTensor` | `infeasible: hKernelExposed` | 256 / nativeTensor / sfu | 144.0:1 | 1081.36 | 369.20 mm² | 286.5 W | 36.30 mm² |
+| expUnit | `sfu` | `area` | 832 / vectorUnpack / sfu | 44.3:1 | 1151.63 | 373.30 mm² | 295.5 W | 3.47 mm² |
+| expUnit | `polynomial` | **选中** | 832 / vectorUnpack / polynomial | 44.3:1 | 1124.34 | 371.39 mm² | 295.5 W | 18.78 mm² |
 
 - **512–768 lane**：K3 回放和封装都满足，但 GLM-5.2 的 DSA indexer 掩盖不住（需要至少 829.0 lane），只违反 `hKernelExposed`。
   这几档在各前提下都只能配多项式 exp：SFU 的 softmax op 数更少，回放更高，但掩盖判据与它无关，`infeasible: hKernelExposed` 是唯一违规。
 - **448 lane 及以下**：indexer 掩盖不住。**256 lane 配原生输入**的 K3 回放 1081.36 仍高于合同目标 1000，所以这一档不再有 `belowContractTarget`：判据从"发布值 99.9%"降到 1000 之后，掩盖是唯一还挡住它们的约束。
-- **832 lane 及以上**：全部可行。**896 lane**（364.94 mm²，余量 70.38 mm²）、**960 lane**（366.41 mm²，余量 58.61 mm²）、**1024 lane**（367.88 mm²，余量 46.83 mm²，即发布点）都落选于 `area`：比 832 lane 多占面积，没有换来任何约束收益。
-  **ADR-0026 之前 960 lane 及以上整卡功耗在端口放大后超限，回放不可行；卡功耗上限提到 3200 W 后这一限制消失了**，所以这几档现在进入可行集。这是放宽上限的直接后果，不是新的设计证据。多出来的 lane 在 K3 回放里并非毫无收益：vector 解包 + 多项式从 832 lane 的 1124.34 升到 1024 lane 的 1139.97（+15.63，+1.4%，见 2.5.4 的系统回放表），代价是 Die 面积 +4.41 mm²、封装余量 −35.32 mm²。搜索的目标是"可行优先，然后面积最小"，不为这 1.4% 付面积，所以它们落选于 `area`；发布点取 1024 lane，是 `search:final` 在 TPS 目标下的联合选择。
-- **`nativeTensor`**：去掉解包后 640 lane 就够（绑定仍是 GLM-5.2 indexer，上限 63.0:1），矩阵面积 +8% 使原生方案的面积压不下 vector 解包：
-  最小的可行原生组合是 **640 / nativeTensor / polynomial**（369.52 mm²，余量 33.75 mm²），比 vector 解包的胜出方案（363.47 mm²）大 6.05 mm²。
-  **盈亏平衡点第一次有意义**：ADR-0026 之前原生输入没有可行组合，盈亏点不适用；现在原生有 5 个可行组合，原生方案要在面积上胜出，矩阵面积开销必须低于 **3.4%**（8% 是 ASSUMPTION，多精度 MAC 开销常见 5–15%），所以在 8% 下 vector 解包仍然胜出。
+- **832 lane**：可行，配多项式 371.39 mm²（余量 18.78 mm²）是胜出方案；配 SFU 也可行但 373.30 mm²（余量只剩 3.47 mm²），落选于 `area`。
+- **896 lane**：配多项式可行（372.86 mm²，余量 7.01 mm²），比 832 lane 多占 1.47 mm²，落选于 `area`；配 SFU 封装缺口 9.47 mm²。**960 lane 及以上**封装缺口 4.77 mm²（960）和 16.54 mm²（1024），`packageArea`。ADR-0026 把卡功耗上限提到 3200 W，960 lane 及以上不再因整卡功耗超限而回放不可行，挡住它们的是封装窗口。
+- **`nativeTensor`**：去掉解包后 640 lane 就够掩盖（绑定仍是 GLM-5.2 indexer，上限 63.0:1），但矩阵面积 +8% 使 640 lane 的原生方案超出封装窗口 29.62 mm²（`packageArea`）；
+  最接近的原生组合是 **256 / nativeTensor / sfu**（369.20 mm²，余量 36.30 mm²），仍然掩盖不住 indexer（144.0:1）。
+  盈亏平衡点不适用：原生输入没有可行组合，没有可与 vector 解包比较面积的对象。多精度 MAC 开销（8% 是 ASSUMPTION）必须显著降低才会让原生方案进可行集。
 - **`polynomial`**：K3 MLA 的上限从 99.9 降到 53.9（vector 解包）/ 65.1（原生），但合同目标是 1000 TPS/usr，832 lane + vector 解包的多项式方案 1124.34 已经够用；
   它是可行集里面积最小的方案，用 1.91 mm² 的 SFU 面积换 27.29 TPS/usr 的余量（1151.63 vs 1124.34）不划算，所以 `sfu` 落选于 `area`。
 
@@ -227,7 +226,7 @@ expUnit 通过模拟器的 `softmaxOpsPerScore`（`k3_operator_sram_sim.js`，�
 
 **逐 kernel 上限**（核内 MAC:lane 不超过该值时 vector 可被完全掩盖；"—" 表示该前提下没有 vector 工作）：
 
-| Kernel | 核类 | vector 解包 + SFU | vector 解包 + 多项式 | 原生 + SFU | 原生 + 多项式 | 选定方案（704 / vectorUnpack / polynomial）下最少 lanes/core |
+| Kernel | 核类 | vector 解包 + SFU | vector 解包 + 多项式 | 原生 + SFU | 原生 + 多项式 | 选定方案（832 / vectorUnpack / polynomial）下最少 lanes/core |
 | --- | --- | ---: | ---: | ---: | ---: | ---: |
 | GEMV，FP8/FP4 权重，B=1 | L | 3.1 | 3.1 | — | — | 665.6 |
 | GEMV，B=2 | L | 6.2 | 6.2 | — | — | 332.8 |
@@ -243,38 +242,38 @@ expUnit 通过模拟器的 `softmaxOpsPerScore`（`k3_operator_sram_sim.js`，�
 
 GLM-5.2 / DeepSeek-V4-Pro 的 sparse MLA 每核只有约 2 个 token，矩阵填充率极低，vector 总能掩盖，不构成约束。
 RMSNorm、SiLU、残差、RoPE、Router top-k 相对相邻矩阵的强度在 1000 以上，也不构成约束。
-B=1 GEMV 的上限约 3:1：选定方案（704 lane）L Core 为 2.9:1，恰好能掩盖；P1（4:1）掩盖不住，解包时间在 K3 回放中计入。
+B=1 GEMV 的上限约 3:1：选定方案（832 lane）L Core 为 2.5:1，能掩盖；P1（4:1）掩盖不住，解包时间在 K3 回放中计入。
 
 **K3 系统回放**（发布点只改 lanes / 输入 / exp，TPS/usr；"—" 为不可行）：
 
 | lanes/core | 整 Die 配比 | H Core 配比 | vector 解包 + SFU | vector 解包 + 多项式 | 原生 + SFU | 原生 + 多项式 | Die 面积 |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 256 | 53.3:1 | 144.0:1 | 971.26 | 828.68 | 1081.36 | 907.52 | 350.23 mm² |
-| 320 | 42.7:1 | 115.2:1 | 1030.14 | 898.91 | 1116.25 | 963.79 | 351.70 mm² |
-| 384 | 35.6:1 | 96.0:1 | 1073.51 | 952.73 | 1133.73 | 1005.34 | 353.17 mm² |
-| 448 | 30.5:1 | 82.3:1 | 1106.80 | 995.29 | 1138.43 | 1037.29 | 354.64 mm² |
-| 512（P1） | 26.7:1 | 72.0:1 | 1124.70 | 1029.79 | 1141.98 | 1062.61 | 356.11 mm² |
-| 576 | 23.7:1 | 64.0:1 | 1135.68 | 1058.33 | 1144.75 | 1083.17 | 357.58 mm² |
-| 640 | 21.3:1 | 57.6:1 | 1144.63 | 1082.32 | 1146.98 | 1100.21 | 359.05 mm² |
-| 704 | 19.4:1 | 52.4:1 | 1148.81 | 1099.81 | 1148.81 | 1114.55 | 360.53 mm² |
-| 768 | 17.8:1 | 48.0:1 | 1150.34 | 1112.97 | 1150.34 | 1126.79 | 362.00 mm² |
-| 832 | 16.4:1 | 44.3:1 | 1151.63 | 1124.34 | 1151.63 | 1133.84 | 363.47 mm² |
-| 896 | 15.2:1 | 41.1:1 | 1152.74 | 1134.28 | 1152.74 | 1136.17 | 364.94 mm² |
-| 960 | 14.2:1 | 38.4:1 | 1153.70 | 1138.19 | 1153.70 | 1138.19 | 366.41 mm² |
-| 1024 | 13.3:1 | 36.0:1 | 1154.55 | 1139.97 | 1154.55 | 1139.97 | 367.88 mm² |
+| 256 | 53.3:1 | 144.0:1 | 971.26 | 828.68 | 1081.36 | 907.52 | 358.15 mm² |
+| 320 | 42.7:1 | 115.2:1 | 1030.14 | 898.91 | 1116.25 | 963.79 | 359.62 mm² |
+| 384 | 35.6:1 | 96.0:1 | 1073.51 | 952.73 | 1133.73 | 1005.34 | 361.09 mm² |
+| 448 | 30.5:1 | 82.3:1 | 1106.80 | 995.29 | 1138.43 | 1037.29 | 362.56 mm² |
+| 512（P1） | 26.7:1 | 72.0:1 | 1124.70 | 1029.79 | 1141.98 | 1062.61 | 364.03 mm² |
+| 576 | 23.7:1 | 64.0:1 | 1135.68 | 1058.33 | 1144.75 | 1083.17 | 365.50 mm² |
+| 640 | 21.3:1 | 57.6:1 | 1144.63 | 1082.32 | 1146.98 | 1100.21 | 366.98 mm² |
+| 704 | 19.4:1 | 52.4:1 | 1148.81 | 1099.81 | 1148.81 | 1114.55 | 368.45 mm² |
+| 768 | 17.8:1 | 48.0:1 | 1150.34 | 1112.97 | 1150.34 | 1126.79 | 369.92 mm² |
+| 832 | 16.4:1 | 44.3:1 | 1151.63 | 1124.34 | 1151.63 | 1133.84 | 371.39 mm² |
+| 896 | 15.2:1 | 41.1:1 | 1152.74 | 1134.28 | 1152.74 | 1136.17 | 372.86 mm² |
+| 960 | 14.2:1 | 38.4:1 | 1153.70 | 1138.19 | 1153.70 | 1138.19 | 374.33 mm² |
+| 1024 | 13.3:1 | 36.0:1 | 1154.55 | 1139.97 | 1154.55 | 1139.97 | 375.80 mm² |
 
-Die 面积含共享端口放大（发布点 365.34 mm² = 357.57 + 7.78），不含选项开销。960 lane 及以上整卡功耗超限，回放不可行，面积不含端口放大这一项，不能与上面各行比较。
+Die 面积含共享端口放大（发布点 364.03 mm² = 356.26 + 7.78），不含选项开销。卡功耗上限提到 3200 W 后，960、1024 lane 的回放也可行（它们落选于封装窗口，见 2.5.3）；ADR-0026 之前这两行是不可行的，面积也不含端口放大。
 
 发布点上 vector 解包比原生输入多出 13.19 µs 的 kernel 时间：MXFP4 routed expert 6.15 µs，BF16 权重 7.03 µs。
 后者是模型记账问题：`mappedPlan()` 对 BF16 权重也按参数计了解包，而 BF16 权重其实不需要解包。
 
-**只支持 K3 的变体**（同一设计空间，`requirements.models` 只留 K3）：52 个组合、25 个可行，最优为 448 / vectorUnpack / sfu
-（面积 355.67 mm²），绑定约束是 Kimi K3 KDA state update（上限 90.5:1，至少 407.5 lane）。
-原生输入的最优为 448 lane（30.5:1），面积 366.13 mm²。
-K3 单模型比三模型省 7.80 mm² / Die（355.67 vs 363.47 mm²），代价是放弃 GLM-5.2 / DeepSeek-V4-Pro 的 indexer 掩盖保证。
+**只支持 K3 的变体**（同一设计空间，`requirements.models` 只留 K3）：52 个组合、11 个可行，最优为 448 / vectorUnpack / sfu
+（面积 363.59 mm²），绑定约束是 Kimi K3 KDA state update（上限 90.5:1，至少 407.5 lane）。
+原生输入最接近为 256 lane（53.3:1），面积 369.20 mm²，没有可行组合。
+K3 单模型比三模型省 7.80 mm² / Die（363.59 vs 371.39 mm²），代价是放弃 GLM-5.2 / DeepSeek-V4-Pro 的 indexer 掩盖保证。
 
 - **三模型都要支持时，掩盖约束需要每 Core 至少 829.0 lane（整 Die 约 16.4:1，H Core 44.3:1）**；GLM-5.2 的 DSA indexer 是唯一的绑定约束。
-- **32:1 只在"只跑 K3 且张量核原生吃低精度"时接近成立**（384 lane，30.2:1），且需要多精度 MAC 开销足够低（见 2.5.3）。
+- **32:1 在当前发布点上不成立**：K3 单模型、原生输入的最接近组合也只到 256 lane（53.3:1）且不可行；ADR-0026 之前 384 lane（30.2:1）的原生方案是可行的，`hEngines` 5→6 让 H Core 的 MAC 变多、同样 lane 的配比变高，把它挤出了可行集。
 - 核类分开配 lanes（L 按每参数解包速率，H 按 attention/indexer 强度）比单一整 Die 配比更省面积，是下一步要加入搜索的维度。
 
 ## 3. 单元级结构与接口
@@ -444,15 +443,15 @@ GLM / DeepSeek 的 H 负载远低于 K3，瓶颈转到权重字节和集合通�
 
 | 项（SF4 面积） | L Core | H Core | Die 合计 |
 | --- | ---: | ---: | ---: |
-| 矩阵面积 | 1.64 mm² | 24.53 mm² | 111.18 mm² |
-| 矩阵功耗 | 1.97 W | 29.49 W | 133.69 W |
+| 矩阵面积 | 1.63 mm² | 29.43 mm² | 130.80 mm² |
+| 矩阵功耗 | 1.97 W | 35.39 W | 157.29 W |
 | 向量面积 / 功耗 | 0.98 mm² / 0.67 W | 0.98 mm² / 0.67 W | 11.77 mm² / 7.99 W |
 | Local SRAM 阵列 | 0.99 mm² | 3.96 mm² | 23.76 mm²（local 部分） |
 | Core 开销 | 1.02 mm² | 1.02 mm² | 12.26 mm² |
 | TMA | 1.79 mm² | 1.79 mm² | 21.46 mm² |
-| **小计** | **约 6.4 mm²** | **约 32.3 mm²** | — |
+| **小计** | **约 6.4 mm²** | **约 37.2 mm²** | — |
 
-8 个 L Core 合计约 51 mm²，4 个 H Core 合计约 129 mm²，两者占 Die 365.34 mm² 的 49%。
+8 个 L Core 合计约 51 mm²，4 个 H Core 合计约 149 mm²，两者占 Die 364.03 mm² 的 55%（ADR-0026 之前 H Core 合计约 129 mm²、占 49%）。
 
 ## 7. 当前模型风险
 

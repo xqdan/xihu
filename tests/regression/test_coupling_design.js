@@ -62,12 +62,16 @@ assert(composed, 'the composed point is in the candidate set');
 assert.deepStrictEqual(composed.departsFrom, {}, 'the composed point departs from nothing');
 assert.strictEqual(composed.feasible, stored.composition.composed.feasible);
 assert.strictEqual(composed.tpsPerUser, stored.composition.composed.tpsPerUser);
-// Today the five winners together miss the target: each one spent margin the others assumed.
-assert.strictEqual(composed.feasible, false, 'the composed point is not feasible at the current winners');
-assert(composed.violations.includes('belowContractTarget'), composed.violations.join(', '));
-assert(composed.tpsPerUser < cand.requirements.targetTpsPerUser);
+// Before ADR-0026 the five winners together missed the target (992.57 against 1000): each one spent margin
+// the others assumed. With the HBM3E point the composition reaches it (1006.85), because the memory winner
+// no longer binds. That is a result of this point, not an invariant: what must hold either way is that the
+// composed row's verdict follows from its own numbers, and that a miss would be named, not hidden. (It is not
+// an invariant that the composition is worse than every winner alone: 1006.85 here is above the sram winner's 1002.35.)
+assert.strictEqual(composed.feasible, composed.tpsPerUser >= cand.requirements.targetTpsPerUser && composed.violations.length === 0,
+  'the composed point is feasible exactly when it reaches the target and breaks nothing');
+if (!composed.feasible) assert(composed.violations.length > 0, 'an infeasible composition names what it breaks');
 for (const [d, alone] of Object.entries(stored.composition.domainAlone)) {
-  assert(alone.tpsPerUser >= cand.requirements.targetTpsPerUser, `${d} alone reaches the target; only the composition does not`);
+  assert(alone.tpsPerUser >= cand.requirements.targetTpsPerUser, `${d} alone reaches the target`);
 }
 // The composed point holds the compute winner to its own kernel check: same binding kernel, same lane floor.
 assert.deepStrictEqual(composed.kernel.binding, mvDesign.binding, 'the composed point carries the compute winner\'s kernel binding');
@@ -99,7 +103,16 @@ for (const r of cand.candidates) assert.strictEqual(r.pareto, r.feasible && !fea
 assert.strictEqual(cand.feasibleCandidates, feasible.length);
 assert.strictEqual(cand.paretoCandidates, cand.candidates.filter(r => r.pareto).length);
 // Rows below a clause are replayed and kept, with the clause named.
-for (const id of ['B-SRAM-CAP', 'B-MEM-BW']) assert(cand.infeasibleByCause[`clause:${id}`] > 0, `rows below ${id} are kept as rejected combinations`);
+// A clause only has rows below it if the grid reaches below its minimum. B-SRAM-CAP's minimum was 16 MiB
+// before ADR-0026 (grid {12,16,24} has 12 below it) and is 12 MiB now (nothing in the grid is below it), so the
+// requirement is conditional: where the grid goes under a clause, those rows are kept and named.
+for (const id of ['B-SRAM-CAP', 'B-MEM-BW']) {
+  const min = best.clauses[id].min;
+  const field = id === 'B-SRAM-CAP' ? 'sharedMiB' : 'mcGBs';
+  const gridBelow = space.couplings.sramDepthMc.fields[field].some(v => v < min);
+  if (gridBelow) assert(cand.infeasibleByCause[`clause:${id}`] > 0, `rows below ${id} are kept as rejected combinations`);
+  else assert(!cand.infeasibleByCause[`clause:${id}`], `${id}: the grid has nothing below the minimum ${min}, so no row can be rejected on it`);
+}
 assert(cand.candidates.some(r => r.tauSweep && r.tauSweep.length === space.couplings.tauOverlapCompute.tauSweepUs.length), 'tau rows carry the sweep');
 
 // 5. A row re-replayed from its stored point reproduces its numbers.

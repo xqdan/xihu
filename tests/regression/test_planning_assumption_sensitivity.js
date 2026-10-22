@@ -85,7 +85,13 @@ for (const id of ['GLM-5.2', 'DeepSeek-V4-Pro']) {
   assert(caseOf(mc640, 'collectivesPerLayerPlus1').meetsTarget, `${id} still meets the target with +1 collective/layer at MC640`);
   // At MC320 the memory lane binds: one collective fewer per layer (the count before ADR-0024) does not move the value; the memory-side factors do.
   assert(Math.abs(caseOf(mc320, 'collectivesPerLayerMinus1').deltaPct) < 1e-9);
-  assert(caseOf(mc320, 'kMemory1.3').deltaPct < -10);
+  // The 'kMemory1.3' case sets kMemory to the absolute value 1.3. It was a >10% hit while the calibrated kMemory was
+  // 1.1178 (1.3 / 1.1178 = +16%). ADR-0026 moved the calibrated value to 1.2316, so the same case is now a +5.5%
+  // change. Where the memory lane binds, TPS/usr is inversely proportional to kMemory, so the expected effect is
+  // exactly kMemoryCalibrated / 1.3 - 1: asserted as that, not as a threshold the calibration can walk under.
+  const kCal = workload.calibration.kMemory;
+  assert(Math.abs(caseOf(mc320, 'kMemory1.3').deltaPct - 100 * (kCal / 1.3 - 1)) < 1e-6, `${id} MC320 kMemory = 1.3 moves TPS/usr by kMemory_cal / 1.3 - 1 = ${(100 * (kCal / 1.3 - 1)).toFixed(2)}%`);
+  assert(caseOf(mc320, 'kMemory1.3').deltaPct < 0 && caseOf(mc320, 'kMemory1.0').deltaPct > 0, `${id} MC320: a larger kMemory costs, a smaller one gains`);
   // Full replication of the attention weights fails the target everywhere: the sharding decision matters.
   assert(!caseOf(mc640, 'attentionReplicated100pct').meetsTarget && !caseOf(mc320, 'attentionReplicated100pct').meetsTarget, `${id} full replication`);
 }

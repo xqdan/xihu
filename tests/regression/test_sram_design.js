@@ -101,17 +101,31 @@ for (const r of an.capacitySweep) {
 assert(an.capacitySweep.some(r => !r.contractHolds && r.tpsPerUser >= stored.contract.target.tpsPerUser),
   'some below-floor window replays above the target at the published compute; the clause, not the replay, rules it out');
 
-// 6. The ruled local capacity is a number: the published size is the smallest that
-// fits, and every larger size is area at the same TPS/usr.
+// 6. The ruled local capacity is a number. The sweep judges feasibility on the NOMINAL model; the published size
+// is chosen by search:final under the joint-pessimistic replays too (ADR-0026, robust_model.js). Two statements:
+//  (a) every size LARGER than the published one is the same TPS/usr at more area (nothing is gained by going up);
+//  (b) every SMALLER size is either infeasible nominally, or nominally feasible at the same TPS/usr and less area
+//      but NOT robust: it fails a joint-pessimistic replay. That is the exact case ADR-0026 records for H 2 MiB
+//      (1154.55 nominal, "H local tile" infeasible under both pessimistic replays), so the published H size is the
+//      smallest ROBUST one, not the smallest nominally feasible one -- the sweep alone would pick H 2 MiB.
 const local = an.localSweep, chosen = local.find(r => r.chosen);
 assert(chosen && chosen.feasible && chosen.lMiB === stored.hardware.x.lMiB && chosen.hMiB === stored.hardware.x.hMiB);
+const RM = require('../../integration/detailed/robust_model.js');
+const smallerNominalFeasible = [];
 for (const r of local) {
   if (r.chosen) continue;
+  const smaller = r.lMiB < chosen.lMiB || r.hMiB < chosen.hMiB, larger = r.lMiB > chosen.lMiB || r.hMiB > chosen.hMiB;
   if (r.feasible) {
     close(r.tpsPerUser, chosen.tpsPerUser, `local L${r.lMiB}/H${r.hMiB}: same TPS`);
-    assert(r.dieAreaMm2 > chosen.dieAreaMm2, `local L${r.lMiB}/H${r.hMiB}: larger and more area`);
-  } else assert(r.lMiB < chosen.lMiB || r.hMiB < chosen.hMiB, `local L${r.lMiB}/H${r.hMiB}: only a smaller size may fail`);
+    if (smaller && !larger) {
+      assert(r.dieAreaMm2 < chosen.dieAreaMm2, `local L${r.lMiB}/H${r.hMiB}: smaller and less area`);
+      const failed = RM.failedReplays({...stored.hardware.x, lMiB: r.lMiB, hMiB: r.hMiB});
+      assert(failed.length > 0, `local L${r.lMiB}/H${r.hMiB} is nominally feasible and smaller; it must fail a joint-pessimistic replay or the published size is not the smallest robust one`);
+      smallerNominalFeasible.push(`L${r.lMiB}/H${r.hMiB}`);
+    } else assert(r.dieAreaMm2 > chosen.dieAreaMm2, `local L${r.lMiB}/H${r.hMiB}: larger and more area`);
+  } else assert(smaller, `local L${r.lMiB}/H${r.hMiB}: only a smaller size may fail`);
 }
+assert(smallerNominalFeasible.length >= 1, 'the sweep still contains the nominally-feasible smaller size that robustness rules out (ADR-0026)');
 
 // 7. Every option loses on a stated criterion with the other dimensions at the winner.
 for (const [d, opts] of Object.entries(alt)) {
@@ -143,7 +157,12 @@ assert(cands.every(c => c.replayed || c.violations.includes('belowContractCapaci
 const causes = {};
 for (const c of cands) if (!c.feasible) for (const v of c.violations) causes[v] = (causes[v] || 0) + 1;
 assert.deepStrictEqual(storedCand.infeasibleByCause, causes, 'the exclusion histogram covers every infeasible candidate');
-assert(causes.belowContractCapacity > 0, 'the contract clause this space is bound by must appear in the histogram');
+// The clause shows up in the histogram only if the grid reaches below it. B-SRAM-CAP's minimum was 16 MiB before
+// ADR-0026 (the 12 MiB option was below it: 162 candidates) and is 12 MiB now (nothing in {12, 16, 24} is below it).
+// So: some option is below the clause <=> the clause appears; otherwise it must be absent and no replay was skipped.
+const minShared = stored.clause.min, sharedOptions = Object.keys(space.dimensions.sharedMiB.options).map(Number);
+if (sharedOptions.some(v => v < minShared)) assert(causes.belowContractCapacity > 0, 'the contract clause this space is bound by must appear in the histogram');
+else assert(!causes.belowContractCapacity && cands.every(c => c.replayed), `no sharedMiB option is below the ${minShared} MiB minimum, so no candidate is excluded on it`);
 assert.strictEqual(storedCand.candidateSetSha256, S.fingerprint([...cands].reverse()), 'fingerprint depends on enumeration order');
 
 // 9. The document quotes the design, the sweeps and the comparison.

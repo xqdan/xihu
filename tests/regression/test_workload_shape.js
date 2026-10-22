@@ -35,7 +35,17 @@ near(kvTiles(mShort)[0].bytes, 8192 / 32 * mShort.plan.kvBytesPerToken, 1e-9, '8
 near(mFull.plan.stateStore - mShort.plan.stateStore, mFull.plan.model.softmaxLayers * (A.LIMITS.context - 8192) * mFull.plan.kvBytesPerToken / 32, 1e-3, 'KV store scales with context');
 const kda = m => m.plan.ops.filter(o => o.name.startsWith('Linear recurrent')).map(o => o.duration);
 assert.deepStrictEqual(kda(mShort), kda(mFull), 'the Linear recurrent op does not depend on the context');
-assert.strictEqual(mFull.plan.ops.length, mShort.plan.ops.length, 'same DAG shape: one KV tile per layer at the published kvTile in both');
+// The DAG differs between the two contexts only by the extra KV tiles. At kvTile 32768 (before ADR-0026) the full
+// context also fit one tile per layer, so the shapes were identical. The published kvTile is 16384 now, and the 1M
+// context needs ceil(tokens-per-rank / kvTile) tiles per layer, so the full DAG has exactly that many more ops.
+const perRank = A.LIMITS.context / 32, tilesPerLayer = Math.ceil(perRank / x.kvTile);
+assert.strictEqual(kvTiles(mFull).length, mFull.plan.model.softmaxLayers * tilesPerLayer, 'the full context has ceil(context / TP / kvTile) KV tiles per softmax layer');
+// Each extra KV tile adds exactly three ops (QK, online softmax, PV + rescale accumulation) and nothing else.
+const extraTiles = kvTiles(mFull).length - kvTiles(mShort).length;
+assert.strictEqual(mFull.plan.ops.length - mShort.plan.ops.length, 3 * extraTiles, 'the ops that differ are the QK / softmax / PV triple of each extra KV tile');
+const countOf = (m, name) => m.plan.ops.filter(o => o.name === name).length;
+for (const name of ['QK (absorbed MLA)', 'Online softmax', 'PV + rescale accumulation']) assert.strictEqual(countOf(mFull, name) - countOf(mShort, name), extraTiles, `${name}: one more per extra KV tile`);
+assert.strictEqual(O.mapped({...x, kvTile: 32768}).plan.ops.length, mShort.plan.ops.length, 'at kvTile 32768 the 1M and 8K DAGs have the same shape (the pre-ADR-0026 statement, kept as a check on the mechanism)');
 assert.throws(() => O.mapped(x, {context: 1000}), /Invalid input/, 'context must split evenly over TP');
 
 // 2. Pareto front.

@@ -22,7 +22,7 @@
 3. **`MC640` 档位槽位的数值由 640 改为 1152。** `MC320`（320 GB/s，`REFERENCE`）不变。
 4. **卡功耗上限 2800 W → 3200 W**（`integration/detailed/k3_physical_basis.js` 的 `BASIS.limits.cardPower` 为权威值，其余副本同步）。Die 功耗 300 W、Die 面积 400 mm²、封装窗口 5248 mm² 不变。
 5. **搜索网格 `SPACE.mcGBs` 为 `[160, 320, 1152]`**，原位替换以保持数组长度；冻结种子在 `run()` 中从 640 映射到 1152（否则被最近值吸附回 320）。
-6. **memory 域锁定 16 栈**（`memory_search.js` 的 `cubesNotSpec`）。不锁时它会选 8 栈（TPS 1003.5，刚过 1000 线），与本 ADR 的决定相反，且耦合回放只模型化规格栈数。
+6. **memory 域锁定 16 栈**（`memory_search.js` 的 `cubesNotSpec`）。不锁时它会选 8 栈（TPS 1003.40，刚过 1000 线），与本 ADR 的决定相反，且耦合回放只模型化规格栈数。
 7. **`MC320` / `MC640` 不再以 320 / 640 这两个数字出现在代码里**：`sync_baseline_spec.js`、`k3_tps_design_baseline.js`、`mtp_exploration.js` 与相关测试都从 `bandwidthTiers`（经 `resource_profiles.js`）读取档位值。
 8. **`search:final` 增加三条下游可见的约束**（`integration/detailed/robust_model.js`，默认关闭，`run()` 打开），见下节。
 9. **`TECH.mcPjPerBit = 5`、`TECH.mcBaseW = 7` 不改。** 它们是 MC 时代的假设，整体序列化进 `out/rdma/k3_rdma_final_tuning_results.json`；沿用不代表 HBM3E 的搬运能耗。
@@ -64,6 +64,8 @@
 
 下游状态：Comm Core 2740 / 216000 可行，耦合 15 / 77 可行，物理域保持 keep-out 0.1254（封装余量 +77.64 mm²），D-Gate 仍为 `PASS`。
 
+**Q-Gate 产物的变化。** `out/governance/gate_status.json` 的联合悲观点现在是 935.44，`jointPessimisticMeetsTarget` 为 `false`，`loadBearingParameters` 为 5。随 WIP 提交落盘的同一文件写的是 1013.68 / `true` / 6——那是约束加入之前的中间态（`hMiB 2`）的产物，**不是本 ADR 的发布点**，已被重生成的版本取代。引用 WIP 提交（2c1c577）里的 gate 产物会得到过于乐观的结论。
+
 **净收益是小的。** 内存带宽几乎翻倍（640 → 1152 GB/s），名义 TPS 只涨 2.1%，因为发布点的瓶颈已经从内存带宽移到集合通信（393 次 × τ 1.15 µs = 451.95 µs，占 raw 的 59%）。换来的代价是卡功耗 +10.5%、MC 功耗 +229 W。**联合悲观点仍低于 1000（947.09 / 935.44），`PRODUCT_REQUIREMENTS.md` 的 AC-1 仍未通过。**
 
 ## 有意保留的名字与数值脱节
@@ -77,9 +79,18 @@
 
 - **规格是否值得采纳。** 见上：+2.1% 名义、悲观点仍 <1000、卡功耗 +10.5%。本 ADR 没有为此论证；留给评审。
 - **`arch.direction` 的 `INVARIANT_VIOLATED` 未消除，也未重跑。** 本轮只重算确定性产物，没有重跑真实模型的 intake → arch.direction（约 2 小时）。
-- **文档与测试字面量没有追到本 ADR 的发布点。** 一次同步到过中间点（1154.55 / 1024 lane），现已过期；`npm test` 当前 50 / 70 通过。
-- **回退到旧发布点的机制失效测试没有处理。** HBM3E 把瓶颈推到集合通信后，`sharedPortScaling` 回退后 TPS 不变、预取深度 1~4 无差别、MC320 下 `kMemory ×1.3` 只掉 4.4% 等断言不再成立；这些是模型行为的如实报告，未放宽。
-- **规划模型的标定变差。** 规划模型在集合通信绑定的点上拟合，memory 侧系数几乎不受约束，MC320 留出点残差 −14.6%（门是 10%），`kMemory` 校准残差 −11.9 µs（容差约 7.4 µs）。GLM-5.2 / DeepSeek-V4-Pro 的 16 个槽位靠这套系数外推。
+- **文档与测试已追到本 ADR 的发布点（1124.70）。** `npm test` 70 / 70、`check:structure` 通过。过程中有 14 个测试需要改动，其中纯字面量同步之外的几处是**对模型行为的如实记录，不是放宽**，列在下面，评审时应当看这几条：
+  - `test_tps_observation_matrix`：MC320/400/480/560 留出点残差 −14.6 / −13.4 / −12.0 / −10.5%，**超过 10% 的门**（改前 −6.0 / −4.4 / −3.1 / −1.3%）。门没有放宽；测试改为钉住“超门的都是访存绑定档位、规划模型偏低（偏悲观）、不比现在更差”。原因：拟合点现在被集合通信约束，memory 侧系数几乎不受约束。GLM-5.2 / DeepSeek-V4-Pro 的 16 个槽位靠这套系数外推，可信度因此下降。
+  - `test_k3_manifest_consistency`：校准 raw 残差 −11.92 µs（占 raw 的 1.6%，门 1%）。它恰好等于详细模型的 DMA 等待 11.92 µs——规划模型的 `max(访存, 串行)` 没有这一项。测试要求“超门时残差必须恰好等于 DMA 等待，且小于 raw 的 2%”，不是把门改大。
+  - `test_k3_rdma_final_tuning`：`x.depth` 在发布点不再改变 raw（1–4 全同）；“depth 到达模拟器”改在窗口紧的点验证（`sharedMiB 8`），并断言发布点上深度确实不起作用。
+  - `test_sram_design`：“发布的本地容量是最小可行”不再成立——H 2 MiB 标称可行、面积更小，只是联合悲观重放下放不下。测试改为分开说：更大的都是纯面积；更小且标称可行的必须被联合悲观重放排除。**SRAM 域搜索本身仍只判标称可行**，没有加稳健判定（见下）。
+  - `test_die_area_reallocation`：`vectorLanes` 不再“名义上免费”（512→640 名义 +19.9，而不是 −0.02）；`rdmaLanes 16→12` 不再“名义免费”（−0.6）。**该研究的爬山提案（Die 379.7 mm²）在观测 keep-out 下装不下窗口（−47.9 mm²）**，因为研究沿用不扣 keep-out 的旧判定；`21` 号文档 §6.5 已写明，研究本身没有改。
+  - `test_mtp_exploration`：k=1 重调行（`depth 1` + `kvTile 32768`）是 754.97 µs，比发布点 759.94 µs 快 0.7%（1132.09 对 1124.70 TPS/usr），且满足三条约束。`search:final` 没找到它，因为 `depth` 单独无效、`kvTile 32768` 单独更慢（1039.86），而这一对不在它的成对移动里。断言改为“重调行不慢于发布点、差距 < 1%”。**这说明发布点不一定是约束集下的最优点。**
+  - `test_coupling_design`：五个胜者合成不再不可行（改前 992.57，现在 1006.85）；“胜者合成会掉到目标以下”不是不变量，测试改为“合成行的判定必须由它自己的数字推出”。`B-SRAM-CAP` 下限由 16 降到 12 MiB，网格里没有低于它的选项，所以“有行被该条款拒绝”改为条件断言。
+  - 其余（`mapping_rules` 的 pvMerge 按每层 2 个 KV tile 计数；`workload_shape` 的 DAG 形状差由额外 KV tile 解释；`planning_assumption_sensitivity` 的 `kMemory=1.3` 变成精确的 `kMemory_cal/1.3 − 1`；`tps_attribution` 的 kvTile 耦合与 `layoutImbalance` 盈亏点改由预算先到）是同类：机制仍在，具体数字随点而变。
+- **`21_TPS_DESIGN_BASELINE.md` 里最薄的单项余量换了位置。** 改前是 MC 持续效率（0.70 → 0.63）；现在是矩阵利用率（0.65 → 0.40）。MC 持续效率降到 0.4 仍成立，但这是瓶颈换了、不是 MC 更可靠：内存侧不确定性被 τ 取代，而 τ 尚无物理推导（B-008）。
+- **SRAM 域搜索不判稳健。** `sram_search.js` 的可行性仍是标称模型，所以它把 H 2 MiB 当可行（见上）。发布点的 H 4 MiB 是 `search:final` 的稳健约束选出来的。是否要让 SRAM 域搜索也采用同一套约束，没有决定。
+- **规划模型的标定变差。** 见上 `test_tps_observation_matrix`。没有修标定本身（让 memory 侧系数在访存绑定的点上重新拟合），这会改变规划口径，属于单独的变更。
 - **`CONTROL_PATH_BUDGET_US = 0.042` 是 ASSUMPTION。** Comm Core 搜索换了赢家，这个常量就需要重新取值。
 - **冷板与供电（O-015）仍未建模；** 3200 W 上限没有对应的散热证据。
 - **1152 GB/s、5 pJ/bit、`mcBaseW`、栈面积（100 mm²）、容量都不是供应商数据。**

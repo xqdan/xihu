@@ -39,11 +39,18 @@ replayed.forEach((r, i) => {
     if (r[k] === null) assert.strictEqual(a[k], null, `${r.field} ${k}`); else near(a[k], r[k], `${r.field}->${r.to} ${k}`);
   }
 });
-// The statement the proposals rest on: the vector unit is idle nominally and valuable under stress.
+// The statement the proposals rest on: the vector unit pays under stress. Before ADR-0026 it was also free
+// nominally (512->640 moved nominal TPS by -0.02): the point was memory-bound, so vector lanes sat idle.
+// With HBM3E the nominal point is bound by collectives AND the vector unit, and 512->640 adds +19.93 nominal
+// (+39.03 at the compute-pessimistic point). So the claim kept here is the one that still holds: lanes are worth
+// more at the pessimistic point than nominally, and they cost area and power.
 const vec = art.marginals.find(m => m.field === 'vectorLanes' && m.to === 640);
-assert(Math.abs(vec.dNominalTps) < 0.5 && vec.dComputeTps > 10, 'vectorLanes must be ~free nominally and valuable at the pessimistic point');
+assert(vec.dComputeTps > 10 && vec.dComputeTps > vec.dNominalTps, 'vectorLanes must be worth more at the pessimistic point than nominally');
+assert(vec.dDieAreaMm2 > 0 && vec.dDiePowerW > 0, 'vectorLanes cost die area and die power');
+// rdmaLanes 16->12 was ~free nominally (-0.4); it now costs -0.60 nominal because the point is collective-bound
+// and the narrower link lengthens the collectives it is bound by. It still frees area and power.
 const rdma = art.marginals.find(m => m.field === 'rdmaLanes' && m.to === 12);
-assert(Math.abs(rdma.dNominalTps) < 0.5 && rdma.dDiePowerW < 0, 'rdmaLanes 16->12 must be ~free nominally and free power');
+assert(rdma.dNominalTps < 0 && rdma.dNominalTps > -1 && rdma.dDiePowerW < 0 && rdma.dDieAreaMm2 < 0, 'rdmaLanes 16->12 costs under 1 TPS nominally and frees die area and power');
 
 // Proposals: inside the limits, above the nominal floor, consistent with their path, and replayable.
 assert(art.proposals.length >= 1);
@@ -67,6 +74,16 @@ for (const p of art.proposals) {
   near(last.computeTps, s.compute.tps, `${p.floor} path end`);
   for (let i = 1; i < p.path.length; i++) assert(p.path[i].computeTps > p.path[i - 1].computeTps, `${p.floor}: climb must be monotone`);
 }
+
+// The study judges feasibility with the model's own limits (no package keep-out), which is not the ADR-0026
+// robustness criterion search:final applies. Say so in a test, not only in prose: a proposal that does not fit the
+// window less the observed keep-out is exactly a point search:final now refuses, and the doc must carry that.
+const RM = require('../../integration/detailed/robust_model.js');
+const O2 = require('../../integration/detailed/k3_rdma_final_tuning_model.js');
+const outsideKeepOut = art.proposals.filter(p => RM.packageReserveMm2(O2.evaluate(p.x)) < 0);
+const docText = fs.readFileSync('docs/architecture/21_TPS_DESIGN_BASELINE.md', 'utf8');
+const sec65 = docText.slice(docText.indexOf('### 6.5'), docText.indexOf('## 7.'));
+if (outsideKeepOut.length) assert(/装不下|放不进封装/.test(sec65) && /keep-out/.test(sec65), `doc 21 section 6.5 must state that ${outsideKeepOut.length} proposal(s) do not fit the window less the observed keep-out`);
 
 // Documentation.
 const state = fs.readFileSync('docs/architecture/21_TPS_DESIGN_BASELINE.md', 'utf8');

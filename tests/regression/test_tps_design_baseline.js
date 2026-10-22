@@ -92,8 +92,20 @@ assert(JP.allUnmeasured.replay.tpsPerUser <= JP.compute.replay.tpsPerUser + 1e-9
   }
   assert(sw.unpackParamsPerLaneCycle && sw.layoutImbalance, 'unpack rate and bank imbalance are listed unmeasured parameters');
 }
-const mcB = t.sensitivity.assumptions.mcUtil.breakEven.valueAtBudget;
-assert(mcB > 0.5 && mcB < A.TECH.mcUtil, 'the sustained-bandwidth break-even is the thinnest unmeasured margin and must stay visible');
+// The sustained-bandwidth break-even used to be the thinnest unmeasured margin (0.63 against a published 0.70).
+// With HBM3E the point is collective-bound and the budget holds down to the search floor (0.4), so the break-even is
+// reported as a floor, not a crossing. What must stay visible is the margin each assumption has to its break-even
+// (or floor), whichever is the thinnest, so a future change cannot hide the new thinnest one.
+const A_ = t.sensitivity.assumptions;
+const mcB = A_.mcUtil.breakEven;
+assert(mcB.valueAtBudget === null ? (mcB.floor !== undefined && mcB.floor < A.TECH.mcUtil && /holds all the way/.test(mcB.note)) : (mcB.valueAtBudget > 0.5 && mcB.valueAtBudget < A.TECH.mcUtil),
+  'the sustained-bandwidth break-even is either a crossing below the published value or a stated floor the budget holds down to');
+const rel = Object.entries(A_).filter(([, v]) => v.breakEven && v.published).map(([k, v]) => {
+  const edge = v.breakEven.valueAtBudget === null ? v.breakEven.floor : v.breakEven.valueAtBudget;
+  return [k, Math.abs(v.published - edge) / v.published];
+}).sort((p, q) => p[1] - q[1]);
+assert(rel.length >= 5 && rel[0][1] > 0 && rel[0][1] < 0.5, `the thinnest single-parameter margin is ${rel[0][0]} at ${(rel[0][1] * 100).toFixed(0)}% of its published value`);
+assert.strictEqual(rel[0][0], 'matrixUtil', 'the document names matrixUtil as the thinnest single-parameter margin (21_TPS_DESIGN_BASELINE.md 6.1); if this changes, change the text');
 
 // 4. The document quotes the spec, not hand-copied numbers.
 const doc = fs.readFileSync('docs/architecture/21_TPS_DESIGN_BASELINE.md', 'utf8');

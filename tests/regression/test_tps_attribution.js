@@ -174,11 +174,24 @@ assert(port.published && 'tmaPortWriteScale' in port.published, 'sharedPortScali
 const couplings = cards.sram.couplings;
 assert(couplings.length > 0, 'sram card must carry couplings');
 assert.deepStrictEqual(cards.comm.couplings, [], 'comm declares no couplings');
-const small = couplings.find(c => c.name === 'kvTile=16384 x kvCache off');
-assert(small, 'kvTile=16384 x kvCache off coupling');
-assert.strictEqual(small.both.feasible, td.sensitivity.kvTile16384.bf16.feasible, 'kvTile 16384 x bf16 feasibility');
-if (small.both.feasible) near(small.both.tpsPerUser, td.sensitivity.kvTile16384.bf16.tpsPerUser, 'kvTile 16384 x bf16 TPS');
-if (small.a.feasible) near(small.a.tpsPerUser, td.sensitivity.kvTile16384.fp8.tpsPerUser, 'kvTile 16384 alone TPS');
+// The kvTile x kvCache pairs are built from the neighbours of the PUBLISHED kvTile (KV_TILES = 16384, 32768, 65536).
+// Under ADR-0026 the published tile is 16384, so the pairs are 32768 and 65536; before it the published tile was 32768
+// and the pair was 16384. tpsDesign.sensitivity.kvTile16384 is the published-tile replay (fp8 = published, bf16 = kvCache
+// off at the published tile), so the cells reuse it as the cell for kvCache off at the published tile.
+const publishedTile = td.hardware.x.kvTile;
+assert.strictEqual(publishedTile, 16384, 'the published kvTile is the smallest on the list');
+const small = couplings.find(c => c.name === 'kvTile=32768 x kvCache off');
+assert(small, 'kvTile=32768 x kvCache off coupling');
+assert.strictEqual(couplings.find(c => c.name === 'kvTile=16384 x kvCache off'), undefined, 'the published tile is not paired with itself');
+// Alone, each move is within the budget; together they do not fit the H local tile: the interaction the pair exists to expose.
+assert(small.a.feasible && small.a.withinBudget, 'kvTile 32768 alone is feasible');
+near(small.a.tpsPerUser, 1039.8572139868081, 'kvTile 32768 alone TPS');
+near(small.b.tpsPerUser, td.sensitivity.kvTile16384.bf16.tpsPerUser, 'kvCache off at the published tile is the published bf16 replay');
+assert(small.b.feasible && !small.b.withinBudget, 'kvCache off alone is feasible but below the budget (976.33)');
+assert.strictEqual(small.both.feasible, false, 'kvTile 32768 and kvCache off together do not fit the H local tile');
+assert(small.both.reasons.includes('H local tile'));
+const big = couplings.find(c => c.name === 'kvTile=65536 x kvCache off');
+assert(big && !big.a.feasible && !big.both.feasible, 'kvTile 65536 does not fit the H local tile even alone');
 for (const c of couplings) {
   assert.strictEqual(c.between.length, 2, `${c.name}: two factors`);
   const labels = c.name.split(' @ ')[0].split(' x ');
@@ -198,15 +211,27 @@ for (const c of couplings) {
 // The kvCache feasibility wall moves with the H tile: on the published point bf16 does not fit,
 // but a smaller head tile or a larger H tile makes it fit (TUNING_CONTRACT.md §2 item 4).
 const kvOff = cards.sram.parameters.find(p => p.name === 'kvCache');
-assert.strictEqual(kvOff.moves[0].feasible, false, 'bf16 KV is infeasible on the published point');
+// bf16 KV used to be infeasible on the published point (kvTile 32768). With the published kvTile at 16384 it fits and
+// costs time instead: 976.33 against 1124.70. The H local tile wall has moved to the NEXT tile size up.
+assert.strictEqual(kvOff.moves[0].feasible, true, 'bf16 KV fits the H local tile at the published kvTile 16384');
+near(kvOff.moves[0].tpsPerUser, td.sensitivity.kvTile16384.bf16.tpsPerUser, 'bf16 KV move TPS is the published bf16 replay');
 for (const name of ['headTile=48 x kvCache off', 'hMiB=8 x kvCache off']) {
   const c = couplings.find(q => q.name === name);
   assert(c && c.both.feasible, `${name}: bf16 fits once the H tile has room`);
 }
 assert(cards.sram.parameters.some(p => p.name === 'headTile' && p.kind === 'mapping'), 'headTile is a mapping row');
 // A break-even says what it is bounded by: layoutImbalance runs into the H local tile, not the budget.
-assert.strictEqual(layout.breakEvenBy.by, 'feasibility', 'layoutImbalance break-even is a feasibility wall');
-assert(layout.breakEvenBy.reasons.some(r => /H local tile/.test(r)), 'layoutImbalance wall is the H local tile');
+// layoutImbalance runs into two limits: the raw budget (TPS falls through 1000) and the H local tile (capacity). The
+// break-even is whichever comes FIRST. It was the tile wall at 1.42 while the published point had 2 MiB of H local
+// SRAM (ADR-0026 before); it is the budget at 1.70 now, with the tile wall well beyond. Pin the order, not a name.
+assert(['budget', 'feasibility'].includes(layout.breakEvenBy.by), 'layoutImbalance break-even names what bounds it');
+if (layout.breakEvenBy.by === 'feasibility') assert(layout.breakEvenBy.reasons.some(r => /H local tile/.test(r)), 'a feasibility wall on layoutImbalance is the H local tile');
+else {
+  const x = td.hardware.x, ok = v => B.replayJoint({layoutImbalance: v}, x);
+  assert(ok(layout.breakEven.valueAtBudget * 1.2).feasible !== false, 'the budget is crossed before the H local tile wall: the tile still fits 20% past the break-even');
+  const wall = [2, 2.2, 2.4, 2.6, 3].find(v => ok(v).feasible === false);
+  assert(wall === undefined || wall > layout.breakEven.valueAtBudget, 'the H local tile wall lies beyond the budget break-even');
+}
 assert.strictEqual(tau.breakEvenBy.by, 'budget', 'tau break-even is the raw budget');
 for (const p of joint.parameters) if (p.breakEven && typeof p.breakEven.valueAtBudget === 'number') assert(p.breakEvenBy, `joint ${p.name}: breakEvenBy`);
 
