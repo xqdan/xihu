@@ -25,7 +25,7 @@
 | 4 | 专家预测命中率 | 预测准确率 | 真实 prompt 分布的路由统计 | ≥ 3 类负载统计 | ≥ 0.75 | SW-06 / HW-02 |
 | 5 | `mcUtil` | MC 持续效率 | MC 原型或供应商持续带宽 | 长稳态测量（非峰值） | ≥ 0.68 | HW-04 |
 | 6 | `layoutImbalance` | SRAM 形状不均衡 | memory compiler 实际宏 | 全 SRAM 实例统计 | ≤ 1.30 | HW-03 |
-| 7 | 冷板/VRM 建模 | 散热与供电损耗 | 热仿真 + VRM 选型 | 见 `HARDWARE_POWER_BUDGET.md` §2 | §2 合计 ≤ 55.125 W | Package/Power |
+| 7 | 冷板/VRM 建模 | 散热与供电损耗 | 热仿真 + VRM 选型 | 见 `HARDWARE_POWER_BUDGET.md` §2 | §2 合计 ≤ 168.08 W 余量 | Package/Power |
 | 8 | FP8 KV cache 精度 | 精度影响 | 见 `PRECISION_POLICY.md` §6 | 精度验收通过 | 见 §6 | Workload |
 | 9 | FP8 dense 精度 | 精度影响 | 同上 | 同上 | 同上 | Workload |
 | 10 | SF4 面积/密度系数 | 实际缩放 | SRAM compiler + MAC 宏 | 见 `HARDWARE_11_FLOORPLAN_AREA.md` §4 | Die ≤ 400 mm² | HW-01 |
@@ -71,7 +71,7 @@
 ## 5. 未开始
 
 **本文件中 14 项全部未开始。** 这是当前项目最大的结构性风险：
-发布点 1101.77 是一个 `MODEL` 等级的**点估计**，它成立的前提是一组未测量的输入同时取乐观值，
-而联合悲观点（906.51）已经跌破目标（`PRODUCT_REQUIREMENTS.md` §0）。
+发布点 1124.70 是一个 `MODEL` 等级的**点估计**，它成立的前提是一组未测量的输入同时取乐观值，
+而联合悲观点（935.44）已经跌破目标（`PRODUCT_REQUIREMENTS.md` §0）。
 
-换句话说：**今天没有一条路径能把 1101.77 变成可信结论，除了本文这 14 项。**
+换句话说：**今天没有一条路径能把 1124.70 变成可信结论，除了本文这 14 项。**

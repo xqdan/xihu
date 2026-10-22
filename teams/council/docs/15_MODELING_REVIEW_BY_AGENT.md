@@ -56,7 +56,7 @@ Review 范围：`k3-architecture-repo` 当前 baseline；目标是 K3、GLM-5.2�
 
 - 7-reticle placement window、die/MC 面积仍是规划守恒，不是坐标级 floorplan；缺少 shoreline、bump、RDL、clock/power/thermal keep-out。
 - 384 expert home、index cache home、MC home 尚无物理映射，无法约束远端通信。
-- Compute Die（365.34 mm²，上限 400 mm²）的 SRAM、PHY、NoC、DFT、spare 面积密度缺乏工艺证据（B-006）。
+- Compute Die（364.03 mm²，上限 400 mm²）的 SRAM、PHY、NoC、DFT、spare 面积密度缺乏工艺证据（B-006）。
 
 ### A3 Compute Die / AI Core
 
@@ -104,7 +104,7 @@ Review 范围：`k3-architecture-repo` 当前 baseline；目标是 K3、GLM-5.2�
 
 ### A11 PPA / Thermal / RAS
 
-- Die 300 W、卡 2800 W 是液冷假设上限（O-015），不是热/电/封装联合结果；VRM、RDL、MC 功耗和冷却路径缺少闭环。
+- Die 300 W、卡 3200 W 是液冷假设上限（O-015），不是热/电/封装联合结果；VRM、RDL、MC 功耗和冷却路径缺少闭环。
 - single die/MC/link、power cap、thermal throttle 的 degraded TPS 尚未量化。
 
 ### A12 Verification

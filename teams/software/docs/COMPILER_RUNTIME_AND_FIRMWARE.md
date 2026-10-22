@@ -115,10 +115,10 @@ xychart-beta
   title "每 token launch 时间（µs）"
   x-axis ["无融合、无 batching", "只有融合", "融合 + batching（发布点）"]
   y-axis "µs" 0 --> 40
-  bar [35.21, 24.83, 11.17]
+  bar [36.28, 25.90, 11.66]
 ```
 
-（前两项按 2347 × 0.015 与 1655 × 0.015 推导；`launchBatching` 单独回退后 1088.47 TPS/usr，21 号文档第 5 节。）
+（前两项按 2419 × 0.015 与 1727 × 0.015 推导；`launchBatching` 单独回退后 1108.48 TPS/usr，21 号文档第 5 节。）
 
 软件侧冻结目标：
 

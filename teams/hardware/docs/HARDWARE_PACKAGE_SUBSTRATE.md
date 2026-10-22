@@ -20,11 +20,11 @@
 | 项 | 值 | 依据 |
 | --- | ---: | --- |
 | 裸片数 | 8 Compute Die + 16 MC | ADR-0011 |
-| 裸片面积合计 | 4522.728 mm² | 8 × 365.341 + 16 × 100 |
+| 裸片面积合计 | 4512.265 mm² | 8 × 364.033 + 16 × 100 |
 | Placement window | 5248 mm²（约 82 × 64 mm） | ADR-0018 |
 | 理论 reticle 面积 | 6006 mm²（26 × 33 mm/reticle × 7） | `09` 号文档 §1 |
 | Keep-out | 658.10 mm² | `reserveFraction` 0.1254（选中值） |
-| 未占用余量 | 67.172 mm² | 见 `HARDWARE_11_FLOORPLAN_AREA.md` §1 |
+| 未占用余量 | 77.636 mm² | 见 `HARDWARE_11_FLOORPLAN_AREA.md` §1 |
 
 拓扑：4 × 2 Compute Die 阵列，每 Die 本地 2 颗 MC，Die 之间双向环。
 **一个 package 对软件表现为一个 TP rank**，32 个 package 组成 TP32。
@@ -63,7 +63,7 @@
 | # | 项 | 为什么重要 | 状态 |
 | ---: | --- | --- | --- |
 | 1 | 层数与叠层 | 决定 PDN 阻抗与信号完整性 | `OPEN` |
-| 2 | PDN 阻抗目标 | 2744.88 W 的电流下，IR-drop 直接影响时序（见 `HARDWARE_14_TIMING_SIGNOFF.md` §4） | `OPEN` |
+| 2 | PDN 阻抗目标 | 3031.92 W 的电流下，IR-drop 直接影响时序（见 `HARDWARE_14_TIMING_SIGNOFF.md` §4） | `OPEN` |
 | 3 | UCIe 通道损耗预算 | 819.20 GB/s/端口需要眼图余量 | `OPEN` |
 | 4 | Scale-out 通道：电 vs 光 | 168 GB/s/Die 的传输距离超过电通道能力时需光 | `OPEN`，且功耗未计入（`HARDWARE_POWER_BUDGET.md` §2 #1） |
 | 5 | 去耦电容布置 | 与 PDN 联合 | `OPEN` |
@@ -79,7 +79,7 @@
 1. 全部裸片落在 5248 mm² placement window 内，keep-out 与余量按 §1；
 2. PHY shoreline 满足 §2 的抽象预算，且**在真实 bump map 下重新核算**；
 3. PDN 满足 IR-drop 目标（与 `HARDWARE_14_TIMING_SIGNOFF.md` 联合签核）；
-4. 散热方案（冷板）能带走 2744.88 W 且维持 Die ≤ 300 W；
+4. 散热方案（冷板）能带走 3031.92 W 且维持 Die ≤ 300 W；
 5. 任何使面积/功耗变化 > 5% 的封装改动走变更评审。
 
 ## 5. 未闭合项

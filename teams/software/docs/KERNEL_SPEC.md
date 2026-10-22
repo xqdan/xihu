@@ -5,34 +5,34 @@
 | Owner | SW-03 Kernel Optimization |
 | 共签 | SW-04 Fusion（融合边界）、HW AI Core（[`02_AI_CORE.md`](../../hardware/docs/02_AI_CORE.md)） |
 | Evidence class | `MODEL`（逐算子时长来自 `A.mappedPlan`，未经 kernel 实测或 RTL 回标，B-003） |
-| 载荷条件 | K3，B=1，context 1M，TP32，PP1，8 Die/卡，P1 发布点 1101.77 TPS/usr |
+| 载荷条件 | K3，B=1，context 1M，TP32，PP1，8 Die/卡，P1 发布点 1124.70 TPS/usr |
 | 数据来源 | `F.mapped(best.x).plan.ops`（`integration/detailed/k3_rdma_final_tuning_model.js`），`best.x` 取自 `out/rdma/k3_rdma_final_tuning_results.json#search.best.x` |
 | 上游 | 时间账与机制回退见 [`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md) 第 2、4、5 节；精度口径见 [`PRECISION_POLICY.md`](PRECISION_POLICY.md) |
 
-本文把发布点的 2347 个非通信算子实例（每 token）归成 8 个 kernel 族，给出每族的单元、shape、限制因素、时长和
+本文把发布点的 2419 个非通信算子实例（每 token）归成 8 个 kernel 族，给出每族的单元、shape、限制因素、时长和
 contract 要求的必填字段（[`../contract.json`](../contract.json) 的 `requiredFields`）。集合通信的 393 次见
 [`COLLECTIVE_SCHEDULE.md`](COLLECTIVE_SCHEDULE.md)。
 
 ## 0. 结论
 
 ```mermaid
-pie title "非通信服务时间 434.62 µs 的 kernel 族构成"
+pie title "非通信服务时间 431.13 µs 的 kernel 族构成"
   "K1 L-GEMV BF16 dense" : 150.86
-  "K5 PV + rescale（H）" : 97.15
-  "K3 QK absorbed MLA（H）" : 89.60
+  "K5 PV + rescale（H）" : 99.96
+  "K3 QK absorbed MLA（H）" : 77.38
   "K2 L-GEMV MXFP4 routed" : 53.72
-  "K6 KDA state update（H）" : 18.40
+  "K6 KDA state update（H）" : 16.57
+  "K4 online softmax（H）" : 15.46
   "K7 独立向量算子" : 14.77
-  "K4 online softmax（H）" : 7.73
-  "K8 epilogue 融合算子" : 2.40
+  "K8 epilogue 融合算子" : 2.39
 ```
 
 1. **L 侧 GEMV 在模型中是向量 unpack 受限，不是矩阵受限。** B=1 下所有 L 侧权重算子的限制因素都是 `unpack`
    （第 2.2 节）。这决定了 L 侧 kernel 的优化方向是 “减少进入向量 lane 的参数”，不是 “提高矩阵利用率”。
-2. **H 侧三件套（QK / softmax / PV）占 kernel 本体的 69%**（155.41 / 224.84 µs），其中 QK 与 softmax 已按块流水
+2. **H 侧三件套（QK / softmax / PV）占 kernel 本体的 67%**（138.34 / 205.95 µs），其中 QK 与 softmax 已按块流水
    （`softmaxFusion`），PV 的 m/l/O 按层合并（`pvMerge='layer'`）。
-3. **每 token 1655 次 launch**（2347 个算子减去 692 个 epilogue 融合算子），合 11.17 µs（第 7 节）。
-4. 服务时间 ≠ 关键路径：`tmaFill` 134.77 µs 中 106.91 µs 被 TMA 通道掩盖，shared 专家 26.27 µs 与集合通信重叠。
+3. **每 token 1727 次 launch**（2419 个算子减去 692 个 epilogue 融合算子），合 11.66 µs（第 7 节）。
+4. 服务时间 ≠ 关键路径：`tmaFill` 135.45 µs 中 108.07 µs 被 TMA 通道掩盖，shared 专家 26.98 µs 与集合通信重叠。
 
 ## 1. Kernel 族目录
 
@@ -42,13 +42,13 @@ pie title "非通信服务时间 434.62 µs 的 kernel 族构成"
 | --- | --- | --- | --- | ---: | ---: | --- | --- |
 | K1 | L-GEMV BF16 dense | L | MLA Q/KV 投影 48、线性注意力投影 138、attention 输出投影 186、Latent Wdown 92、Router logits 92、Latent Wup 92、Shared gate/up 184、Shared down 184、LM head 9（共 1025） | 150.86 | 30.48 | `unpack` | BF16 权重，BF16 激活，FP32 累加 |
 | K2 | L-GEMV MXFP4 routed | L | Expert gate/up 92、Expert down 92（共 184） | 53.72 | 26.66 | `unpack` | MXFP4 权重（32 权重/8-bit scale），BF16 激活 |
-| K3 | QK（吸收式 MLA） | H | 24 | 89.60 | 78.27 | `matrix/vector` | FP8 KV（kernel 内反量化）× BF16 Q |
-| K4 | Online softmax | H 向量 | 24 | 7.73 | 7.57 | `matrix/vector` | FP32 |
-| K5 | PV + rescale | H | 24 | 97.15 | 69.57 | `matrix/vector`（另有 reduce 14.23、dieLink 6.73） | FP8 KV × BF16 P，FP32 m/l/O |
-| K6 | KDA recurrent state update | H | 69 | 18.40 | 10.94 | `matrix/vector` | BF16 state，FP32 累加 |
+| K3 | QK（吸收式 MLA） | H | 48 | 77.38 | 65.22 | `matrix/vector` | FP8 KV（kernel 内反量化）× BF16 Q |
+| K4 | Online softmax | H 向量 | 48 | 15.46 | 15.14 | `matrix/vector` | FP32 |
+| K5 | PV + rescale | H | 48 | 99.96 | 57.98 | `matrix/vector`（另有 reduce 28.47、dieLink 6.73） | FP8 KV × BF16 P，FP32 m/l/O |
+| K6 | KDA recurrent state update | H | 69 | 16.57 | 9.12 | `matrix/vector` | BF16 state，FP32 累加 |
 | K7 | 独立向量算子 | V | 两类残差加 185、Top-k 92、Q/new-KV all-gather（本地）24、Final RMSNorm、采样、采样候选（共 304） | 14.77 | ≈0.2 | 访存/launch | BF16 |
 | K8 | epilogue 融合算子 | 宿主 kernel 的向量单元 | Attention/MoE RMSNorm、RoPE、KV append、SiLU×up、Shared SiLU×up、dispatch pack、专家加权和（共 693，其中 692 融合） | 2.40 | 1.19 | 访存 | BF16 / FP32 |
-| **合计** | | | **2347** | **434.62** | **224.84** | | |
+| **合计** | | | **2419** | **431.13** | **205.95** | | |
 
 ```mermaid
 flowchart LR
@@ -57,14 +57,14 @@ flowchart LR
     K2["K2 MXFP4 GEMV<br/>184 次 · 53.72 µs"]
   end
   subgraph HCORE["H core × 32 / 卡"]
-    K3["K3 QK<br/>24 次 · 89.60 µs"]
-    K4["K4 softmax<br/>24 次 · 7.73 µs"]
-    K5["K5 PV<br/>24 次 · 97.15 µs"]
-    K6["K6 KDA state<br/>69 次 · 18.40 µs"]
+    K3["K3 QK<br/>48 次 · 77.38 µs"]
+    K4["K4 softmax<br/>48 次 · 15.46 µs"]
+    K5["K5 PV<br/>48 次 · 99.96 µs"]
+    K6["K6 KDA state<br/>69 次 · 16.57 µs"]
   end
   subgraph VEC["向量"]
     K7["K7 独立向量<br/>304 次 · 14.77 µs"]
-    K8["K8 epilogue 融合<br/>693 次 · 2.40 µs"]
+    K8["K8 epilogue 融合<br/>693 次 · 2.39 µs"]
   end
   K8 -.->|"并入 prologue/epilogue"| K1
   K8 -.-> K2
@@ -144,11 +144,11 @@ local SRAM 读按 196.6 TB/s/卡、BF16 每参数 2 B 折算为 98.3 T 参数/s�
 
 | 项 | 值 |
 | --- | --- |
-| H tensor engine | 每 H core 5 个 48×128，BF16 |
+| H tensor engine | 每 H core 6 个 48×128，BF16 |
 | head tile | 96（K3 全部 96 head 一次） |
-| KV tile | 32768 token；1M / TP32 = 32768，所以每 rank 每层恰好一个 KV tile |
-| KV 每层每 rank | 32768 × 656 B = 21495808 B（FP8 FlashMLA 布局） |
-| H local SRAM | 4 MiB/core，发布点占用 2.74 MiB；BF16 KV 放不下（21 号文档第 5 节） |
+| KV tile | 16384 token；1M / TP32 = 32768，所以每 rank 每层 2 个 KV tile（24 个 MLA 层共 48 个） |
+| KV 每层每 rank | 32768 × 656 B = 21495808 B（FP8 FlashMLA 布局），分 2 个 tile，每个 16384 × 656 B = 10747904 B |
+| H local SRAM | 4 MiB/core，发布点占用 1.58 MiB；BF16 KV 在 tile 16384 下放得下（976.33 TPS/usr），32768 下放不下（21 号文档第 5、6 节） |
 | QK 维度 | 512 latent + 64 RoPE；PV 维度 512 |
 
 ### 3.2 流水
@@ -167,14 +167,14 @@ sequenceDiagram
     SM->>PV: P 块（BF16）
     PV->>ACC: rescale 后累加 O、更新 m、l
   end
-  Note over ACC: pvMerge='layer'：跨 context tile 常驻，<br/>每（层, head tile）只在最后合并一次
+  Note over ACC: pvMerge='layer'：跨 context tile 常驻，<br/>每（层, head tile）只在最后一个 KV tile 上合并一次
   ACC->>ACC: 跨 Die 双向环 reduce-scatter（dieLink 6.73 µs）
   ACC-->>TMA: (m, l, O) 交给 LSE merge 集合通信
 ```
 
 - **softmaxFusion**：softmax 只暴露一个块，或超出 QK 本体的部分；FP8 反量化的向量时间从可掩盖预算中扣除。
-  单独回退后 1033.22 TPS/usr。
-- **pvMerge**：`'tile'` 时每个 KV tile 都合并一次；发布点 `'layer'`。单独回退后 1081.42。
+  单独回退后 1061.26 TPS/usr。
+- **pvMerge**：`'tile'` 时每个 KV tile 都合并一次；发布点 `'layer'`。单独回退后 1025.55。
 - **FP8 KV**：QK 与 PV 都在 kernel 内反量化 latent（与权重 unpack 同速率），精度见 PRECISION_POLICY。
 
 ### 3.3 K6：KDA recurrent state update
@@ -208,7 +208,7 @@ flowchart TB
 K7 的服务时间几乎全是 `localTma`（装载 / flush）和 launch；向量本体约 0.2 µs。残差加不能融合的原因是它们头接集合通信，
 结果要等规约完成。Top-k 是 MoE 关键路径上的串行点（92 × 约 0.047 µs）。
 
-`epilogueFusion` 单独回退后 1077.23 TPS/usr。
+`epilogueFusion` 单独回退后 1097.41 TPS/usr。
 
 ## 5. contract 必填字段
 
@@ -216,26 +216,26 @@ K7 的服务时间几乎全是 `localTma`（装载 / flush）和 launch；向量
 
 | 字段 | K1/K2 | K3–K5 | K6 | K7/K8 |
 | --- | --- | --- | --- | --- |
-| applicable models/operators | K3 全部 L 侧权重算子；GLM/DS 见 [`MULTI_MODEL_LOWERING.md`](MULTI_MODEL_LOWERING.md) | K3 24 个 MLA 层 | K3 69 个 KDA 层 | K3 全部 |
+| applicable models/operators | K3 全部 L 侧权重算子；GLM/DS 见 [`MULTI_MODEL_LOWERING.md`](MULTI_MODEL_LOWERING.md) | K3 24 个 MLA 层（每层 2 个 KV tile） | K3 69 个 KDA 层 | K3 全部 |
 | shape/dtype legality | 第 2.1 节 | 第 3.1 节；BF16 KV 不合法（H local 放不下） | 第 3.3 节 | 融合只在前一个算子不是集合通信时合法 |
 | workspace/alias | local 双缓冲；y_routed partial 跨 shared 专家存活（B-007） | m/l/O 累加器常驻 H local | state 常驻 shared | epilogue 原地 |
 | precision impact | MXFP4 已是模型 dtype | FP8 KV 未评估（B-001、O-013） | 无变化 | 无变化 |
-| fallback | 无融合的独立算子 | `pvMerge='tile'`、`softmaxFusion=false`、`kvCache='bf16'`（需 KV tile 16384） | — | `epilogueFusion=false` |
-| launch count | 1209 | 72 | 69 | 305（K8 仅 1 次） |
-| resource occupancy | L local 0.36 MiB/core | H local 2.74 MiB/core | — | — |
+| fallback | 无融合的独立算子 | `pvMerge='tile'`、`softmaxFusion=false`、`kvCache='bf16'`（KV tile 16384 下可行） | — | `epilogueFusion=false` |
+| launch count | 1209 | 144 | 69 | 305（K8 仅 1 次） |
+| resource occupancy | L local 0.36 MiB/core | H local 1.58 MiB/core | — | — |
 | measured or estimated gain | 估计（`MODEL`） | 估计（逐项回退见 21 号文档第 5 节） | 估计 | 估计 |
 | schedule trace | **缺**：无 kernel trace | **缺** | **缺** | **缺** |
 
 ## 6. Launch
 
 ```text
-非通信算子         2347
+非通信算子         2419
 − epilogue 融合      692
-= launch 次数      1655 / token
-× launchUs 0.015 µs × launchScale 0.45 = 11.17 µs / token
+= launch 次数      1727 / token
+× launchUs 0.015 µs × launchScale 0.45 = 11.66 µs / token
 ```
 
-`launchScale 0.45` 是未回标的假设（B-003）。`launchBatching` 单独回退后 1088.47 TPS/usr。
+`launchScale 0.45` 是未回标的假设（B-003）。`launchBatching` 单独回退后 1108.48 TPS/usr。
 runtime 侧的持久化执行见 [`COMPILER_RUNTIME_AND_FIRMWARE.md`](COMPILER_RUNTIME_AND_FIRMWARE.md) 第 4 节。
 
 ## 7. 证据缺口与下一步

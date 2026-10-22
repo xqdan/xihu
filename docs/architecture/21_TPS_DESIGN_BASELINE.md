@@ -66,7 +66,7 @@ P1 数字虽已高于 1050，但架构闸门要求可制造的 MC 路线和详�
 `integration/detailed/k3_physical_basis.js` 的 `resize()` 在其结果上按 SF4 重算面积，并按液冷限值重做全部限值检查。
 功耗、频率和带宽系数不变。
 
-- 矩阵密度取 3.2 TF/mm²、限值取液冷的 300 W / 2800 W：功耗允许 UCIe 128 lane（MC 不再被 UCIe 端口截断），
+- 矩阵密度取 3.2 TF/mm²、限值取液冷的 300 W / 3200 W：功耗允许 UCIe 128 lane（MC 不再被 UCIe 端口截断），
   面积和功耗一起买到更多 H 算力。
 
 当前发布点的硬件：8 个 L core；4 个 H core，每个 5 × 48×128 engine；每 core 512 向量 lane；
@@ -142,7 +142,7 @@ UCIe 回到 128 lane 后，LSE merge 的协议时间降到 0.98 µs；2026-10-10
 | 封装 | 7-reticle placement window 5248 mm²；当前占用 4512.26 mm² | `BASELINE`（ADR-0018） |
 | 工艺 | 三星 SF4 级 4 nm（面积按第 1.2 节折算） | `ASSUMPTION`（B-006） |
 | 散热 | 液冷（冷板）；冷板、VRM、卡供电未建模 | `ASSUMPTION`（O-015） |
-| 卡功耗 | 3031.92 W（上限 2800 W），其中 MC 628.10 W | `MODEL` |
+| 卡功耗 | 3031.92 W（上限 3200 W），其中 MC 628.10 W | `MODEL` |
 | 时钟 | 1.0 GHz（固定，第 1.1 节） | `BASELINE`；实现性待 B-006 |
 
 ### 3.2 计算单元
@@ -181,7 +181,7 @@ Shared SRAM 端口放大（`localWriteRatio` 1、`tmaDedicatedPort` ×1.55、`sh
 | TMA | 每 core 4 engine × 512 B/cycle | 1.64 TB/s/core | `MODEL`（O-007） |
 | 片上 NoC | 6×6 抽象 mesh，256 B/cycle × 4 lane | 7.99 TB/s | `OPEN`（O-003） |
 | UCIe（Die 间） | 每端口 128 lane × 64 Gbps，8 Die 双向环（ADR-0016 口径） | 819.20 GB/s/端口；环切面 1638.40 GB/s | `ASSUMPTION`（B-004，待硬件评审） |
-| MC 接口 | 2 × 640 GB/s，利用率 0.7；UCIe 端口 819.20 GB/s 不再截断 | 1612.80 GB/s/Die | `BLOCKER`（B-002） |
+| MC 接口 | 2 × min(1152 × 0.7, 819.2 端口)；UCIe 端口 819.20 GB/s 不再截断 | 1612.80 GB/s/Die | `BLOCKER`（B-002） |
 | RDMA（scale-out） | 16 lane × 112 Gbps | 168.00 GB/s/Die；800.00 GB/s/卡（上限） | `BLOCKER`（B-005） |
 
 发布点的数据搬运：
@@ -519,7 +519,7 @@ k=1 的 755.0 比发布点的 759.94 低 0.7%：重调网格里 `depth` 1 + `kvT
 | --- | --- | --- |
 | 目标、B=1、TP32 | `FROZEN` | — |
 | K3 结构、dtype、FP8 KV | `MODEL` | B-001：模型清单、权重 manifest、FP8 KV 精度评估 |
-| MC 640 GB/s | `BLOCKER` | B-002：供应商规格（或放弃 MC640 另选架构） |
+| MC 1152 GB/s（MC640 槽位） | `BLOCKER` | B-002：供应商规格（或放弃 MC640 槽位另选架构） |
 | MC 持续效率 0.7、矩阵/向量利用率、预测命中率 | `ASSUMPTION` | B-003、B-006：第 6.1 节；单项盈亏点最薄的是矩阵利用率（0.40），MC 持续效率降到 0.4 仍成立 |
 | GLM-5.2、DeepSeek-V4-Pro、K3 TP8/TP16 的规划 TPS | `ASSUMPTION` | 第 6.2 节：没有详细模型，是 K3 因子的外推；第 6.3 节：注意力权重切分与每层集合通信次数未定 |
 | launchScale、预测命中率 0.8 | `ASSUMPTION` | B-003：runtime trace、专家预测实测 |
@@ -527,7 +527,7 @@ k=1 的 755.0 比发布点的 759.94 低 0.7%：重调网格里 `depth` 1 + `kvT
 | 频率 1.0 GHz（固定）、面积、功耗系数 | `MODEL` | B-006：synthesis/floorplan/IP 回标 |
 | SF4 面积折算（逻辑 ×1.277、SRAM ×1.248、PHY ×1） | `ASSUMPTION` | B-006：SF4 PDK/标准单元/memory compiler 数据；SF4/SF4X 节距未公开，按 SF4E 取 |
 | 矩阵密度 3.2 TF/mm² | `ASSUMPTION` | B-006：MAC 阵列宏的面积数据 |
-| 液冷 Die 300 W / 卡 2800 W | `ASSUMPTION` | O-015：冷板、VRM、卡供电方案 |
+| 液冷 Die 300 W / 卡 3200 W | `ASSUMPTION` | O-015：冷板、VRM、卡供电方案 |
 | τ = 1.15 µs | `MODEL` | B-008：由 B-004/B-005 给出物理推导 |
 | TMA 独立端口、TMA 通道 | `MODEL` | O-007：TMA/SRAM 微架构可实现性 |
 | 调度机制（第 4.3–4.7 节） | `MODEL` | kernel/调度器 trace 或 RTL 性能模型（B-003 的要求同样适用） |

@@ -155,7 +155,7 @@ raw = max(访存道, 串行道)，e2e = raw × 1.17，TPS/usr = 1e6 / e2e
 
 - Shared SRAM 物理容量：8 × 16 = 128 MiB/卡；
 - usable 0.85，再乘 window fraction（1.0）：108.8 MiB/卡；
-- 模拟峰值：100.24 MiB/卡；
+- 模拟峰值：108.65 MiB/卡；
 - Local SRAM 24 MiB/Die 由 tile-fit 约束单独检查。
 
 不应据整卡峰值扩大单 Die SRAM。
@@ -173,7 +173,7 @@ raw = max(访存道, 串行道)，e2e = raw × 1.17，TPS/usr = 1e6 / e2e
 | 冲突 | 当前处理 |
 | --- | --- |
 | 卡内互联有“4×2 mesh”“双向 ring”“4+4 hierarchy”三种描述 | `BLOCKER`（B-004），统一拓扑后才可冻结；定案前模型统一按 8 Die 双向环计算（ADR-0016 2026-10-10，`ASSUMPTION`） |
-| 参考 MC 320 GB/s；发布点使用 640 GB/s | `BLOCKER`（B-002），档位定义见 ADR-0019，必须选定可制造档 |
+| 参考 MC 320 GB/s；发布点使用 1152 GB/s（MC640 槽位，ADR-0026） | `BLOCKER`（B-002），档位定义见 ADR-0019，必须选定可制造档 |
 | NoC 的 512 B/cycle 是分析参数，尚无可布线证明 | `OPEN`，需物理和拥塞模型 |
 | τ = 1.15 µs 无链路/协议推导 | `BLOCKER`（B-008） |
 | launchScale 0.45、预测命中率 0.8 为假设 | `ASSUMPTION`（B-003），需 runtime trace 回标 |

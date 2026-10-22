@@ -427,7 +427,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 - `spec/package/CLOCK_RESET_POWER_DOMAIN_SPEC.md`
 - `spec/package/RAS_AND_SECURITY_SPEC.md`
 
-**当前风险**：发布点的 Die 功耗 283.27 W 和卡功耗 2744.88 W（液冷上限 300 W / 2800 W）（`teams/hardware/inputs/k3_mc_baseline.json`）是模型结果，不是物理签核结果。必须纳入高速 PHY、ECC、VRM、BMC、冷却、PVT 和老化余量。
+**当前风险**：发布点的 Die 功耗 290.48 W 和卡功耗 3031.92 W（液冷上限 300 W / 3200 W）（`teams/hardware/inputs/k3_mc_baseline.json`）是模型结果，不是物理签核结果。必须纳入高速 PHY、ECC、VRM、BMC、冷却、PVT 和老化余量。
 
 ### M10：性能模型、验证与签核
 
@@ -634,7 +634,7 @@ MC 颗数、每颗带宽、SRAM 常驻或归约延迟一变，Stage 的两项都
 | 优先级 | 问题 | 影响 | 关闭证据 |
 |---|---|---|---|
 | B-001 | 正式 K3 逐层结构和 dtype 未冻结 | FLOP、byte、容量、tile 全部可能变化 | 模型 manifest |
-| B-002 | MC 档位未选定：320 为基线，480 为默认上限，560/640 为激进（ADR-0019） | 发布点使用 640 GB/s，不能作为承诺；1M、16 卡路线 A 约 883 TPS | 选定颗数与每颗带宽的供应商规格 |
+| B-002 | MC 档位未选定：320 为基线，480 为默认上限，560/640 为激进（ADR-0019） | 发布点使用 1152 GB/s（MC640 槽位，ADR-0026），不能作为承诺；1M、16 卡路线 A 约 883 TPS | 选定颗数与每颗带宽的供应商规格 |
 | B-003 | Final Tuning 仍含经验缩放因子 | 性能可能高估 | 精确 tile/transaction 模型 |
 | B-004 | 卡内拓扑未定；2026-10-10 起模型按 8 Die 双向环计算（ADR-0016，`ASSUMPTION`） | 封装、packet 级时延无法签核；τ 推导与 Comm Core 余量按环口径 | 硬件评审选定拓扑并给出 packet 模型 |
 | B-005 | 选定 PP×TP 的跨卡拓扑未定义 | 归约延迟档位和互联 200/400 GB/s 的可实现性未知 | PHY、布线、功耗和 P99 方案 |

@@ -108,7 +108,7 @@ B=1 的 TPS/usr 目标不依赖这一点，但它决定吞吐型部署的上限�
 | DeepSeek-V4-Pro | 20.42 + 15.27 GB | 0.08 GB | 8.44 GB | 0.28 GB | 44.49 GB | 1.39 GB |
 
 来源：`out/workload/planning_operator_workload.json#operators`（全局 byte/token，TP 前；规划口径）。
-K3 的详细模型每 rank 读 4.97 GB（含预测错取 0.16 GB），DMA busy 775.30 µs。
+K3 的详细模型每 rank 读 4.97 GB（含预测错取 0.16 GB），DMA busy 474.57 µs。
 
 ```mermaid
 xychart-beta
@@ -144,7 +144,7 @@ xychart-beta
 
 ## 5. 关键阻塞：带宽差一倍
 
-K3 要达到 1000 TPS/usr，需要每颗 MC 至少约 580 GB/s（560 档只有 977.00）；参考 MC 为 320 GB/s。可选路线：
+K3 要达到 1000 TPS/usr，需要每颗 MC 至少约 580 GB/s（560 档只有 978.18）；参考 MC 为 320 GB/s。可选路线：
 
 ```mermaid
 flowchart TB

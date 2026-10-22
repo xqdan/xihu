@@ -132,7 +132,7 @@ GLM-5.2 没有详细模型，旁证来自对 HF 参考实现的追踪（[ADR-002
   规划原按 FP8 计。现在按 BF16 计，dense_projection 字节 +4.13 MB / token（+0.02%）。
 - 参考实现在 q·k 打分之后还要按头加权求和（每 full 层 2 × 32 × context）。现在计入 indexer 行，+1.41 GFLOP / token（+0.78%）。
 
-两项对 GLM 规划 TPS/usr 的影响都在 0.02% 以内（例如 TP32 / MC640 由 1927.72 变为 1927.49）。
+两项对 GLM 规划 TPS/usr 的影响都在 0.02% 以内。
 
 ## 4. 规划 token 时间
 
@@ -157,10 +157,10 @@ flowchart LR
 | 系数 | 值 | 定义 |
 | --- | ---: | --- |
 | `expertReread` | 0.20 | 错误预测字节 / 预测字节 |
-| `kMemory` | 1.1178 | DMA busy /（字节 + 重读 × expert 字节）的规划访存时间 |
-| `kFlop` | 1.1529 | （kernel + reduce + dieLink）/ 规划计算时间 |
-| `fixedPerLayerUs` | 0.2987 | （localTma + launch − 通信重叠）/ 层数 |
-| `kTmaExposedUsPerGB` | 5.793 | （tmaFill − tmaHidden）/ 每 rank 非通信 GB |
+| `kMemory` | 1.2316 | DMA busy /（字节 + 重读 × expert 字节）的规划访存时间 |
+| `kFlop` | 1.2972 | （kernel + reduce + dieLink）/ 规划计算时间 |
+| `fixedPerLayerUs` | 0.2962 | （localTma + launch − 通信重叠）/ 层数 |
+| `kTmaExposedUsPerGB` | 5.691 | （tmaFill − tmaHidden）/ 每 rank 非通信 GB |
 | τ | 1.15 µs | 与详细模型相同，不缩放；敏感性列 1.5 / 2.0 µs |
 
 ```mermaid
@@ -168,7 +168,7 @@ xychart-beta
   title "K3 拟合槽位：两条道的时间（µs）"
   x-axis ["访存道（DMA busy）", "串行计算", "集合通信", "串行道合计"]
   y-axis "µs" 0 --> 800
-  bar [775.30, 301.45, 451.95, 753.40]
+  bar [474.57, 296.07, 451.95, 748.02]
 ```
 
 拟合槽位上访存道略长，是绑定道。**样本外核对**：同一套系数回放 MC320（不拟合），规划 / 详细 = 0.94
