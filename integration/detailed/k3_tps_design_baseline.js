@@ -13,6 +13,11 @@
 const A = require('./k3_architecture_search.js');
 const O = require('./k3_rdma_final_tuning_model.js');
 const P = require('./k3_physical_basis.js');
+const {mcProfiles} = require('../../teams/hardware/src/resource_profiles.js');
+
+// The bandwidth sweep ends at the MC640 profile's tier, read from bandwidthTiers (ADR-0026 put HBM3E
+// there), so the published point's own tier is always in the sweep. 400/480/560 are the grid tiers between.
+const MC_SWEEP_GBS = [mcProfiles.MC320.payloadGBsPerCube, 400, 480, 560, mcProfiles.MC640.payloadGBsPerCube];
 
 const pick = r => r.feasible === false
   ? {feasible: false, reasons: r.reasons || [r.reason]}
@@ -211,7 +216,7 @@ function build(x, budgetUs) {
       }])),
       jointPessimistic: Object.fromEntries(Object.entries(JOINT_PESSIMISTIC).map(([name, values]) => [name, {values, replay: pick(replayJoint(values, x))}])),
       depth: Object.fromEntries([1, 2, 3, 4].map(d => [d, pick(O.evaluate({...x, depth: d}))])),
-      mcGBs: Object.fromEntries([320, 400, 480, 560, 640].map(g => [g, pick(O.evaluate({...x, mcGBs: g}))])),
+      mcGBs: Object.fromEntries(MC_SWEEP_GBS.map(g => [g, pick(O.evaluate({...x, mcGBs: g}))])),
       kvTile16384: {fp8: pick(O.evaluate({...x, kvTile: 16384})), bf16: pick(withOpt({kvCache: 'bf16'}, {...x, kvTile: 16384}))}
     },
     regenerate: 'npm run search:final && npm run baseline:sync && npm run model:planning; enforced by tests/regression/test_tps_design_baseline.js'

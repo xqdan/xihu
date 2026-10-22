@@ -28,6 +28,7 @@ const path = require('path');
 const crypto = require('crypto');
 const O = require('./k3_rdma_final_tuning_model.js');
 const E = require('../../teams/model/src/design_engine.js');
+const {mcProfiles} = require('../../teams/hardware/src/resource_profiles.js');
 const BP = require('./baseline_point.js');
 
 const root = path.resolve(__dirname, '../..');
@@ -35,8 +36,11 @@ const BASELINE_FILE = 'teams/hardware/inputs/k3_mc_baseline.json';
 const SPACE_FILE = 'teams/hardware/inputs/memory_design_space.json';
 const MARGIN = 1.17;
 const LAYERS = 93;
+// The MC640 profile's tier is read from bandwidthTiers (ADR-0026 put HBM3E there): the check row below
+// has to run at the published point's own tier, or it compares two different points.
+const STRETCH_GBS = mcProfiles.MC640.payloadGBsPerCube;
 const SCENARIO = {
-  mcGBs: [320, 400, 480, 560, 640],
+  mcGBs: [mcProfiles.MC320.payloadGBsPerCube, 400, 480, 560, STRETCH_GBS],
   verifyTokens: [1, 2, 3, 4],
   unions: ['worst', 'expected'],
   dtypes: {bf16Dense: 2, fp8Dense: 1},
@@ -125,7 +129,7 @@ function build() {
       alphaForGoal.push({dtype, mcGBs, union, draftLayerEquiv: d, minAcceptance: found});
     }
 
-  const published = find('bf16Dense', 640, 'worst', 1);
+  const published = find('bf16Dense', STRETCH_GBS, 'worst', 1);
   return {
     status: 'EXPLORATORY: Batch=1 + MTP/speculative verify scenario. Not the baseline; no gate or published number depends on it',
     unit: {tpsPerUser: 'tokens/s per user', rawUs: 'microseconds per verify step (before the timing margin)'},

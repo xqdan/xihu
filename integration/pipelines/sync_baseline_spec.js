@@ -82,12 +82,16 @@ function build({spec, baseline, results, point = {kind: 'published'}}) {
 
 // Every model-derived field, replayed at x under whatever OPT and model are in force.
 function fields({spec, baseline, results, x, model, source}) {
-  const reference = O.evaluate({...x, mcGBs: 320});
-  const stretch = O.evaluate({...x, mcGBs: 640});
+  // The MC320 / MC640 profiles are slots of bandwidthTiers.tiersGBsPerCube (REFERENCE / STRETCH_AGGRESSIVE), not
+  // the numbers 320 and 640: ADR-0026 puts HBM3E (1152 GB/s) in the STRETCH_AGGRESSIVE slot. Read the slot.
+  const tierGBs = classification => spec.bandwidthTiers.tiersGBsPerCube.find(t => t.classification === classification).gbs;
+  const referenceGBs = tierGBs('REFERENCE'), stretchGBs = tierGBs('STRETCH_AGGRESSIVE');
+  const reference = O.evaluate({...x, mcGBs: referenceGBs});
+  const stretch = O.evaluate({...x, mcGBs: stretchGBs});
   const replay = O.evaluate(x);
   if (!reference.feasible || !stretch.feasible) throw new Error('the synced point must be feasible at MC320 and MC640');
   if (!replay.feasible) throw new Error('the synced point does not replay from the current model');
-  if (x.mcGBs !== 640) console.warn(`warning: the synced point uses mcGBs=${x.mcGBs}; the MC640 point below is a replay, not the searched optimum`);
+  if (x.mcGBs !== stretchGBs) console.warn(`warning: the synced point uses mcGBs=${x.mcGBs}; the MC640 point below (${stretchGBs} GB/s) is a replay, not the searched optimum`);
 
   const D = A.LIMITS.dies;
   const optionArea = extraArea(stretch.p, model);

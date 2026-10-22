@@ -59,10 +59,11 @@ const published = S.evaluate(ctx, {vectorLanes: String(pubHw.x.vectorLanes), low
 close(published.areaMm2, pubDie.estimatedAreaMm2, 'published die area (port charge included)');
 close(published.diePowerW, pubDie.estimatedPowerW, 'published die power (port charge included)');
 close(published.area.sharedPorts, pubDie.sharedPortScalingCost.areaMm2PerDie, 'the port charge is its own term');
-// ... and the package arithmetic matches the physical design document: 67.172 mm2 left.
+// ... and the package arithmetic matches the physical design document: 77.636 mm2 left
+// (5248 x (1 - 0.1254) - 8 x 364.033 - 16 x 100; it was 67.172 before ADR-0026).
 const pk = ctx.pkg;
 close(pk.keepOutFraction, JSON.parse(fs.readFileSync('teams/hardware/inputs/physical_design_space.json', 'utf8')).dimensions.reserveFraction.options['0.1254'].reserve, 'the keep-out is the physical domain\'s observed value');
-assert(Math.abs(published.packageReserveMm2 - 67.172) < 1e-3, `published point leaves ${published.packageReserveMm2} mm2 (09_PACKAGE_POWER_RAS.md: 67.172)`);
+assert(Math.abs(published.packageReserveMm2 - 77.636) < 1e-3, `published point leaves ${published.packageReserveMm2} mm2 (09_PACKAGE_POWER_RAS.md: 77.636)`);
 
 const publishedTps = spec.tpsDesign.point.tpsPerUser;
 const winPick = hasDesign ? Object.fromEntries(Object.entries(stored.design).map(([d, v]) => [d, v.option])) : null;

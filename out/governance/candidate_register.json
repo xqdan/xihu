@@ -1,7 +1,7 @@
 {
   "schemaVersion": "candidate-register-v0.4",
   "provenance": {
-    "sourceCommit": "e69c915f36907916023a261be9a3d91eb46e0fad",
+    "sourceCommit": "2c1c57722e1e27cb8223a865348520d59de37b79",
     "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
     "seed": 20261002,
     "runId": "stage-a-20261002-token-time",
@@ -29,61 +29,61 @@
     "ranking": [
       {
         "candidateId": "P1-compact-MC640-TP32",
-        "minTpsPerUser": 1102.412443534703,
+        "minTpsPerUser": 1142.612622800775,
         "worstModel": "K3",
         "formallyEligible": true,
         "planningTpsMeetsArchitectureGate": true,
-        "minTpsPerUserAtMaxTau": 785.9689091279434,
-        "maxTauUsForTarget": 1.4077663415307384,
+        "minTpsPerUserAtMaxTau": 789.8733492761025,
+        "maxTauUsForTarget": 1.4214441818764358,
         "tauConditional": true
       },
       {
-        "candidateId": "P1-compact-MC320-TP32",
-        "minTpsPerUser": 551.2062217673515,
-        "worstModel": "K3",
-        "formallyEligible": false,
-        "planningTpsMeetsArchitectureGate": false,
-        "minTpsPerUserAtMaxTau": 551.2062217673515,
-        "maxTauUsForTarget": null,
-        "tauConditional": false
-      },
-      {
         "candidateId": "P1-compact-MC640-TP16",
-        "minTpsPerUser": 551.2062217673515,
+        "minTpsPerUser": 840.7870293330693,
         "worstModel": "K3",
         "formallyEligible": false,
         "planningTpsMeetsArchitectureGate": false,
-        "minTpsPerUserAtMaxTau": 551.2062217673515,
+        "minTpsPerUserAtMaxTau": 632.8311549494973,
         "maxTauUsForTarget": null,
         "tauConditional": false
       },
       {
-        "candidateId": "P1-compact-MC320-TP16",
-        "minTpsPerUser": 275.60311088367575,
+        "candidateId": "P1-compact-MC320-TP32",
+        "minTpsPerUser": 500.2788197058632,
         "worstModel": "K3",
         "formallyEligible": false,
         "planningTpsMeetsArchitectureGate": false,
-        "minTpsPerUserAtMaxTau": 275.60311088367575,
+        "minTpsPerUserAtMaxTau": 500.2788197058632,
         "maxTauUsForTarget": null,
         "tauConditional": false
       },
       {
         "candidateId": "P1-compact-MC640-TP8",
-        "minTpsPerUser": 275.60311088367575,
+        "minTpsPerUser": 450.250937735277,
         "worstModel": "K3",
         "formallyEligible": false,
         "planningTpsMeetsArchitectureGate": false,
-        "minTpsPerUserAtMaxTau": 275.60311088367575,
+        "minTpsPerUserAtMaxTau": 450.250937735277,
+        "maxTauUsForTarget": null,
+        "tauConditional": false
+      },
+      {
+        "candidateId": "P1-compact-MC320-TP16",
+        "minTpsPerUser": 250.1394098529316,
+        "worstModel": "K3",
+        "formallyEligible": false,
+        "planningTpsMeetsArchitectureGate": false,
+        "minTpsPerUserAtMaxTau": 250.1394098529316,
         "maxTauUsForTarget": null,
         "tauConditional": false
       },
       {
         "candidateId": "P1-compact-MC320-TP8",
-        "minTpsPerUser": 137.80155544183788,
+        "minTpsPerUser": 125.0697049264658,
         "worstModel": "K3",
         "formallyEligible": false,
         "planningTpsMeetsArchitectureGate": false,
-        "minTpsPerUserAtMaxTau": 137.80155544183788,
+        "minTpsPerUserAtMaxTau": 125.0697049264658,
         "maxTauUsForTarget": null,
         "tauConditional": false
       }
@@ -92,13 +92,13 @@
       {
         "candidateId": "P1-compact-MC320-TP32",
         "role": "MC320_REFERENCE_NOT_FORMAL",
-        "minTpsPerUser": 551.2062217673515,
+        "minTpsPerUser": 500.2788197058632,
         "worstModel": "K3",
         "missesTargetModels": [
           {
             "modelId": "K3",
-            "tpsPerUser": 551.2062217673515,
-            "fractionOfTarget": 0.5512062217673515
+            "tpsPerUser": 500.2788197058632,
+            "fractionOfTarget": 0.5002788197058632
           }
         ]
       }
@@ -121,80 +121,80 @@
             "memoryBytesPerToken": 4810366240,
             "collectiveBytesPerToken": 17683392,
             "collectivesPerToken": 393,
-            "effectiveBytesPerSecond": 7168000000000,
+            "effectiveBytesPerSecond": 12902400000000,
             "source": "out/workload/planning_operator_workload.json",
             "scope": "model_total_per_rank"
           },
-          "memoryTimeUs": 671.0890401785714,
-          "expertMemoryTimeUs": 112.608,
-          "computeTimeUs": 213.2020751474418,
+          "memoryTimeUs": 372.82724454365075,
+          "expertMemoryTimeUs": 62.559999999999995,
+          "computeTimeUs": 185.89540848077513,
           "computeTimeUsByCore": {
             "L": 48.71218812231923,
-            "H": 163.84,
+            "H": 136.53333333333333,
             "V": 0.47352941176470587,
             "REDUCE": 0.17635761335784314
           },
           "commTimeUs": 451.95,
-          "memoryLaneUs": 775.3004419656204,
+          "memoryLaneUs": 474.5691696945295,
           "serialSplitUs": {
-            "flop": 245.8060622717325,
-            "fixed": 27.7758733444343,
-            "tmaExposed": 27.866746863107796
+            "flop": 241.15099413986485,
+            "fixed": 27.54800964258336,
+            "tmaExposed": 27.374287440967322
           },
-          "serialComputeUs": 301.44868247927457,
-          "serialLaneUs": 753.3986824792746,
-          "rawLatencyUsPerToken": 775.3004419656204,
-          "e2eLatencyUsPerToken": 907.1015170997758,
-          "tpsPerUser": 1102.412443534703,
-          "uncalibratedTpsPerUser": 1273.6027613763827,
-          "bottleneck": "memory",
-          "boundingOperatorId": "dense_projection",
+          "serialComputeUs": 296.0732912234155,
+          "serialLaneUs": 748.0232912234155,
+          "rawLatencyUsPerToken": 748.0232912234155,
+          "e2eLatencyUsPerToken": 875.1872507313961,
+          "tpsPerUser": 1142.612622800775,
+          "uncalibratedTpsPerUser": 1339.981198166163,
+          "bottleneck": "collective",
+          "boundingOperatorId": "collective_reduce",
           "tauSensitivity": [
             {
               "tauUs": 1.15,
-              "tpsPerUser": 1102.412443534703,
-              "bound": "memory"
+              "tpsPerUser": 1142.612622800775,
+              "bound": "collective"
             },
             {
               "tauUs": 1.5,
-              "tpsPerUser": 959.3154706985462,
+              "tpsPerUser": 965.1384737677548,
               "bound": "collective"
             },
             {
               "tauUs": 2,
-              "tpsPerUser": 785.9689091279434,
+              "tpsPerUser": 789.8733492761025,
               "bound": "collective"
             }
           ],
           "tpsPerUserTauRange": {
-            "min": 785.9689091279434,
-            "max": 1102.412443534703
+            "min": 789.8733492761025,
+            "max": 1142.612622800775
           },
-          "maxTauUsForTarget": 1.4077663415307384,
+          "maxTauUsForTarget": 1.4214441818764358,
           "rereadSensitivity": [
             {
               "prediction": 0.7,
               "expertReread": 0.30000000000000004,
-              "tpsPerUser": 1084.800655999361,
-              "bound": "memory"
+              "tpsPerUser": 1142.612622800775,
+              "bound": "collective"
             },
             {
               "prediction": 0.8,
               "expertReread": 0.19999999999999996,
-              "tpsPerUser": 1102.4124435347032,
-              "bound": "memory"
+              "tpsPerUser": 1142.612622800775,
+              "bound": "collective"
             },
             {
               "prediction": 0.9,
               "expertReread": 0.09999999999999998,
-              "tpsPerUser": 1120.6055247273462,
-              "bound": "memory"
+              "tpsPerUser": 1142.612622800775,
+              "bound": "collective"
             }
           ],
           "shapeVariants": [],
           "tpsPerUserShapeRange": {
-            "min": 1102.412443534703,
-            "max": 1102.412443534703
+            "min": 1142.612622800775,
+            "max": 1142.612622800775
           },
           "dtypePolicy": "dense BF16, router/LM head BF16, routed MXFP4",
           "status": "PLANNING_ESTIMATE"
@@ -212,80 +212,80 @@
             "memoryBytesPerToken": 1386964992,
             "collectiveBytesPerToken": 8183808,
             "collectivesPerToken": 333,
-            "effectiveBytesPerSecond": 7168000000000,
+            "effectiveBytesPerSecond": 12902400000000,
             "source": "out/workload/planning_operator_workload.json",
             "scope": "model_total_per_rank"
           },
-          "memoryTimeUs": 193.49399999999997,
-          "expertMemoryTimeUs": 98.74285714285713,
-          "computeTimeUs": 25.27952818627451,
+          "memoryTimeUs": 107.49666666666667,
+          "expertMemoryTimeUs": 54.857142857142854,
+          "computeTimeUs": 24.219658905228762,
           "computeTimeUsByCore": {
             "L": 18.838694852941178,
-            "INDEXER": 5.665882352941177,
-            "H": 0.6933333333333332,
+            "INDEXER": 4.7215686274509805,
+            "H": 0.5777777777777778,
             "REDUCE": 0.08161764705882353
           },
           "commTimeUs": 382.95,
-          "memoryLaneUs": 238.3571564471575,
+          "memoryLaneUs": 145.90080400198292,
           "serialSplitUs": {
-            "flop": 29.145407122600275,
-            "fixed": 23.29589377275135,
-            "tmaExposed": 8.034773323217138
+            "flop": 31.418714805580404,
+            "fixed": 23.104782280876364,
+            "tmaExposed": 7.892783307403003
           },
-          "serialComputeUs": 60.47607421856876,
-          "serialLaneUs": 443.4260742185688,
-          "rawLatencyUsPerToken": 443.4260742185688,
-          "e2eLatencyUsPerToken": 518.8085068357254,
-          "tpsPerUser": 1927.4934524476448,
-          "uncalibratedTpsPerUser": 2093.677197968041,
+          "serialComputeUs": 62.41628039385977,
+          "serialLaneUs": 445.36628039385977,
+          "rawLatencyUsPerToken": 445.36628039385977,
+          "e2eLatencyUsPerToken": 521.0785480608159,
+          "tpsPerUser": 1919.096465823591,
+          "uncalibratedTpsPerUser": 2099.127073954672,
           "bottleneck": "collective",
           "boundingOperatorId": "collective_reduce",
           "tauSensitivity": [
             {
               "tauUs": 1.15,
-              "tpsPerUser": 1927.4934524476448,
+              "tpsPerUser": 1919.096465823591,
               "bound": "collective"
             },
             {
               "tauUs": 1.5,
-              "tpsPerUser": 1526.316737538414,
+              "tpsPerUser": 1521.0466123205679,
               "bound": "collective"
             },
             {
               "tauUs": 2,
-              "tpsPerUser": 1176.5024135450165,
+              "tpsPerUser": 1173.3686872549197,
               "bound": "collective"
             }
           ],
           "tpsPerUserTauRange": {
-            "min": 1176.5024135450165,
-            "max": 1927.4934524476448
+            "min": 1173.3686872549197,
+            "max": 1919.096465823591
           },
-          "maxTauUsForTarget": 2.3850594008477057,
+          "maxTauUsForTarget": 2.3792329558768617,
           "rereadSensitivity": [
             {
               "prediction": 0.7,
               "expertReread": 0.30000000000000004,
-              "tpsPerUser": 1927.4934524476448,
+              "tpsPerUser": 1919.096465823591,
               "bound": "collective"
             },
             {
               "prediction": 0.8,
               "expertReread": 0.19999999999999996,
-              "tpsPerUser": 1927.4934524476448,
+              "tpsPerUser": 1919.096465823591,
               "bound": "collective"
             },
             {
               "prediction": 0.9,
               "expertReread": 0.09999999999999998,
-              "tpsPerUser": 1927.4934524476448,
+              "tpsPerUser": 1919.096465823591,
               "bound": "collective"
             }
           ],
           "shapeVariants": [],
           "tpsPerUserShapeRange": {
-            "min": 1927.4934524476448,
-            "max": 1927.4934524476448
+            "min": 1919.096465823591,
+            "max": 1919.096465823591
           },
           "dtypePolicy": "dense FP8, router/LM head BF16, routed FP8",
           "status": "PLANNING_ESTIMATE"
@@ -303,86 +303,86 @@
             "memoryBytesPerToken": 1381614381.5714285,
             "collectiveBytesPerToken": 8744960,
             "collectivesPerToken": 305,
-            "effectiveBytesPerSecond": 7168000000000,
+            "effectiveBytesPerSecond": 12902400000000,
             "source": "out/workload/planning_operator_workload.json",
             "scope": "model_total_per_rank"
           },
-          "memoryTimeUs": 192.74754207190688,
-          "expertMemoryTimeUs": 66.5696578244579,
-          "computeTimeUs": 56.30624583524816,
+          "memoryTimeUs": 107.08196781772605,
+          "expertMemoryTimeUs": 36.98314323580995,
+          "computeTimeUs": 50.68201925572746,
           "computeTimeUsByCore": {
             "L": 22.4736723058364,
-            "INDEXER": 32.66091503267974,
-            "H": 1.0844444444444443,
+            "INDEXER": 27.217429193899783,
+            "H": 0.9037037037037037,
             "REDUCE": 0.0872140522875817
           },
           "commTimeUs": 350.75,
-          "memoryLaneUs": 230.33030684414888,
+          "memoryLaneUs": 140.98748892414676,
           "serialSplitUs": {
-            "flop": 64.91689426800853,
-            "fixed": 18.21858359151067,
-            "tmaExposed": 8.003776908612311
+            "flop": 65.74675204954524,
+            "fixed": 18.069124604275107,
+            "tmaExposed": 7.862334659514531
           },
-          "serialComputeUs": 91.13925476813151,
-          "serialLaneUs": 441.88925476813154,
-          "rawLatencyUsPerToken": 441.88925476813154,
-          "e2eLatencyUsPerToken": 517.0104280787139,
-          "tpsPerUser": 1934.196963330403,
-          "uncalibratedTpsPerUser": 2099.711927886217,
+          "serialComputeUs": 91.67821131333487,
+          "serialLaneUs": 442.4282113133349,
+          "rawLatencyUsPerToken": 442.4282113133349,
+          "e2eLatencyUsPerToken": 517.6410072366018,
+          "tpsPerUser": 1931.8407661294943,
+          "uncalibratedTpsPerUser": 2129.129749753165,
           "bottleneck": "collective",
           "boundingOperatorId": "collective_reduce",
           "tauSensitivity": [
             {
               "tauUs": 1.15,
-              "tpsPerUser": 1934.196963330403,
+              "tpsPerUser": 1931.8407661294943,
               "bound": "collective"
             },
             {
               "tauUs": 1.5,
-              "tpsPerUser": 1557.8558174115199,
+              "tpsPerUser": 1556.326957431316,
               "bound": "collective"
             },
             {
               "tauUs": 2,
-              "tpsPerUser": 1219.0172621036693,
+              "tpsPerUser": 1218.0809392685953,
               "bound": "collective"
             }
           ],
           "tpsPerUserTauRange": {
-            "min": 1219.0172621036693,
-            "max": 1934.196963330403
+            "min": 1218.0809392685953,
+            "max": 1931.8407661294943
           },
-          "maxTauUsForTarget": 2.503480655517125,
+          "maxTauUsForTarget": 2.5017135848771144,
           "rereadSensitivity": [
             {
               "prediction": 0.7,
               "expertReread": 0.30000000000000004,
-              "tpsPerUser": 1934.196963330403,
+              "tpsPerUser": 1931.8407661294943,
               "bound": "collective"
             },
             {
               "prediction": 0.8,
               "expertReread": 0.19999999999999996,
-              "tpsPerUser": 1934.196963330403,
+              "tpsPerUser": 1931.8407661294943,
               "bound": "collective"
             },
             {
               "prediction": 0.9,
               "expertReread": 0.09999999999999998,
-              "tpsPerUser": 1934.196963330403,
+              "tpsPerUser": 1931.8407661294943,
               "bound": "collective"
             }
           ],
           "shapeVariants": [
             {
               "variant": "expertHiddenFromTotal",
-              "tpsPerUser": 1947.672174278378,
+              "tpsPerUser": 1946.6548354573592,
               "bound": "collective"
             }
           ],
           "tpsPerUserShapeRange": {
-            "min": 1934.196963330403,
-            "max": 1947.672174278378
+            "min": 1931.8407661294943,
+            "max": 1946.6548354573592
           },
           "dtypePolicy": "dense FP8, router/LM head BF16, routed FP4",
           "status": "PLANNING_ESTIMATE"

@@ -12,10 +12,10 @@
   },
   "inputs": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "5b4c8ff39f873b5c17edc0d33384c699b4dc24dc0059f60c3cdc32c2d6523ca5",
+    "baselineSha256": "2627bf313136ddb4af65e658435879d94f236b55ba0706ad67975f8c8da36e87",
     "goalTpsPerUser": 1000,
     "margin": 1.17,
-    "publishedTpsPerUser": 1101.771070241925
+    "publishedTpsPerUser": 1124.6970453558893
   },
   "assumptions": {
     "acceptance": "per-token acceptance of a drafted chain, swept; unmeasured (model_profiles.json: mtpAcceptanceRateMustBeMeasured)",
@@ -31,7 +31,7 @@
       400,
       480,
       560,
-      640
+      1152
     ],
     "verifyTokens": [
       1,
@@ -81,7 +81,7 @@
   },
   "checkRow": {
     "description": "k = 1, BF16 dense, MC640 must reproduce the published Batch=1 step",
-    "verifyRawUs": 775.7517671190814
+    "verifyRawUs": 754.9740235198537
   },
   "rows": [
     {
@@ -104,11 +104,11 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1708.1426913193889,
+      "verifyRawUs": 1707.799286225199,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
-        "windowFraction": 1,
+        "windowFraction": 0.75,
         "kvTile": 16384
       }
     },
@@ -118,9 +118,9 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1997.2060613209737,
+      "verifyRawUs": 1968.4806804652171,
       "tunedKnobs": {
-        "depth": 4,
+        "depth": 1,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -132,9 +132,9 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 2485.8438977297974,
+      "verifyRawUs": 2400.391461312574,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 4,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -146,7 +146,21 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1704.0284154768349,
+      "verifyRawUs": 1703.6880089868903,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 8,
+        "windowFraction": 0.75,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1956.1530440167328,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -158,23 +172,9 @@
       "dtype": "bf16Dense",
       "mcGBs": 320,
       "union": "expected",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1994.9657802687566,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 320,
-      "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 2461.290308171711,
+      "verifyRawUs": 2377.3887052870987,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -204,7 +204,7 @@
       "feasible": true,
       "verifyRawUs": 1393.2556123479023,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 1,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -216,7 +216,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1727.359465138595,
+      "verifyRawUs": 1667.6859192251322,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -230,7 +230,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 2164.606351483898,
+      "verifyRawUs": 2080.56961877197,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -244,9 +244,9 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1389.8322615165382,
+      "verifyRawUs": 1389.8289810162887,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 1,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -258,7 +258,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1716.7300819586108,
+      "verifyRawUs": 1657.056536045149,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -272,7 +272,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 2143.8833735391277,
+      "verifyRawUs": 2059.8610993894326,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -300,7 +300,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1184.2631260957123,
+      "verifyRawUs": 1179.0864088054357,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -314,7 +314,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1548.4947229525517,
+      "verifyRawUs": 1489.140882567935,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -328,7 +328,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1943.829458790934,
+      "verifyRawUs": 1859.9534793037549,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -342,7 +342,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1181.298369068202,
+      "verifyRawUs": 1176.1607758906687,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -356,7 +356,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1540.0292119835058,
+      "verifyRawUs": 1480.675371598889,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -370,7 +370,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1931.988481034245,
+      "verifyRawUs": 1848.1125015470661,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -384,7 +384,7 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 873.7663571003084,
+      "verifyRawUs": 873.7663571003093,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -398,9 +398,9 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1046.2369320183655,
+      "verifyRawUs": 1036.0681473311022,
       "tunedKnobs": {
-        "depth": 4,
+        "depth": 2,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -412,7 +412,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1434.6858325928686,
+      "verifyRawUs": 1375.2516446330621,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -426,7 +426,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1810.1614737522868,
+      "verifyRawUs": 1726.3634814445943,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -440,7 +440,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1043.0656177607511,
+      "verifyRawUs": 1033.4484619232924,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -454,7 +454,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1428.0793478005014,
+      "verifyRawUs": 1367.7568178145325,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -468,7 +468,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1798.5022370584757,
+      "verifyRawUs": 1714.6813691097589,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -478,13 +478,13 @@
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 775.7517671190814,
+      "verifyRawUs": 754.9740235198537,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 1,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 32768
@@ -492,13 +492,27 @@
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1012.8608537797503,
+      "verifyRawUs": 966.1469766263483,
       "tunedKnobs": {
         "depth": 2,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1228.7111396041043,
+      "tunedKnobs": {
+        "depth": 1,
         "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
@@ -506,25 +520,25 @@
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
-      "union": "worst",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1345.0862125516376,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1700.5927008466979,
+      "verifyRawUs": 1473.8233649884814,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "verifyTokens": 2,
+      "feasible": true,
+      "verifyRawUs": 965.7925147270649,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -534,13 +548,13 @@
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
-      "verifyTokens": 2,
+      "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1012.4129631497543,
+      "verifyRawUs": 1228.6080446566784,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 1,
         "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
@@ -548,27 +562,13 @@
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
-      "union": "expected",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1338.9211720895655,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1685.4902199713028,
+      "verifyRawUs": 1471.1045645203237,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 1,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -594,7 +594,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1233.246228622795,
+      "verifyRawUs": 1220.58100418554,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -608,9 +608,9 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1535.0564974448105,
+      "verifyRawUs": 1509.7027100325834,
       "tunedKnobs": {
-        "depth": 4,
+        "depth": 2,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -622,7 +622,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 2025.2935327525347,
+      "verifyRawUs": 1941.4955404448422,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -636,7 +636,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1228.7480197516322,
+      "verifyRawUs": 1216.246626034409,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -650,9 +650,9 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1522.0200024032097,
+      "verifyRawUs": 1496.4432418146885,
       "tunedKnobs": {
-        "depth": 4,
+        "depth": 2,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -664,7 +664,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 2004.3206889400535,
+      "verifyRawUs": 1919.734304146936,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -678,12 +678,12 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 790.8175674361394,
+      "verifyRawUs": 790.739623920051,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
-        "windowFraction": 0.5,
-        "kvTile": 16384
+        "windowFraction": 0.75,
+        "kvTile": 32768
       }
     },
     {
@@ -692,7 +692,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1023.4679533430402,
+      "verifyRawUs": 1014.3848178624095,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -706,7 +706,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1372.7691068289182,
+      "verifyRawUs": 1313.4184231750703,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -720,7 +720,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1811.5072851102384,
+      "verifyRawUs": 1727.7092928025454,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -734,7 +734,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1023.0318896653461,
+      "verifyRawUs": 1010.6499420805001,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -748,7 +748,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1361.8135866244845,
+      "verifyRawUs": 1302.4629029706366,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -762,7 +762,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1794.7973392413412,
+      "verifyRawUs": 1710.9958020618535,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -776,7 +776,7 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 773.7733039241293,
+      "verifyRawUs": 763.4466885395129,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 4,
@@ -790,7 +790,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1006.9574651114058,
+      "verifyRawUs": 970.309838188328,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 4,
@@ -804,7 +804,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1292.5215182216375,
+      "verifyRawUs": 1231.836513413942,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 4,
@@ -818,7 +818,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1681.4625961922088,
+      "verifyRawUs": 1590.2881505803643,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -832,11 +832,11 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1006.5224907617917,
+      "verifyRawUs": 969.874863838714,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 4,
-        "windowFraction": 1,
+        "windowFraction": 0.75,
         "kvTile": 16384
       }
     },
@@ -846,7 +846,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1292.4245288980464,
+      "verifyRawUs": 1231.7395240903509,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 4,
@@ -860,7 +860,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1664.089368556215,
+      "verifyRawUs": 1580.291376248524,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -874,7 +874,7 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 770.9538413332156,
+      "verifyRawUs": 760.6272259485993,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -888,7 +888,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1004.2767638210426,
+      "verifyRawUs": 967.6291368979648,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -902,7 +902,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1289.9884587405418,
+      "verifyRawUs": 1229.3034539328453,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -916,7 +916,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1587.7458551578238,
+      "verifyRawUs": 1503.9714025937196,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -930,7 +930,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1003.8322968113997,
+      "verifyRawUs": 967.1846698883218,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -944,7 +944,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1289.8914694169505,
+      "verifyRawUs": 1229.2064646092542,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -958,7 +958,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1570.2184030015424,
+      "verifyRawUs": 1486.4439504374368,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -968,39 +968,39 @@
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 768.8392443900309,
+      "verifyRawUs": 751.7217593965804,
       "tunedKnobs": {
         "depth": 1,
-        "weightTileMiB": 4,
+        "weightTileMiB": 8,
         "windowFraction": 0.75,
         "kvTile": 32768
       }
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1002.3766700848554,
+      "verifyRawUs": 959.8176404269752,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 4,
-        "windowFraction": 0.75,
+        "windowFraction": 1,
         "kvTile": 16384
       }
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1288.0886641297177,
+      "verifyRawUs": 1221.493187199464,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -1010,11 +1010,11 @@
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1563.7462682230823,
+      "verifyRawUs": 1468.0012751254585,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -1024,25 +1024,25 @@
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1001.9322030752126,
+      "verifyRawUs": 959.373173417332,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 4,
-        "windowFraction": 0.75,
+        "windowFraction": 1,
         "kvTile": 16384
       }
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1287.9916748061264,
+      "verifyRawUs": 1221.3961978758718,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -1052,11 +1052,11 @@
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1561.0317083768718,
+      "verifyRawUs": 1465.286715279245,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -1073,7 +1073,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 594.9837214577547,
+      "tpsPerUser": 595.102273227635,
       "meetsGoal": false
     },
     {
@@ -1083,7 +1083,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 694.1476750340471,
+      "tpsPerUser": 694.2859854322409,
       "meetsGoal": false
     },
     {
@@ -1093,7 +1093,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 825.8191523185778,
+      "tpsPerUser": 837.6811900248814,
       "meetsGoal": false
     },
     {
@@ -1103,7 +1103,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1028.0605773761888,
+      "tpsPerUser": 1042.8276039085258,
       "meetsGoal": true
     },
     {
@@ -1113,7 +1113,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 589.6235527262309,
+      "tpsPerUser": 589.7399778588855,
       "meetsGoal": false
     },
     {
@@ -1123,7 +1123,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 687.8941448472692,
+      "tpsPerUser": 688.0299741686998,
       "meetsGoal": false
     },
     {
@@ -1133,7 +1133,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 813.2540818995665,
+      "tpsPerUser": 824.7553836216439,
       "meetsGoal": false
     },
     {
@@ -1143,7 +1143,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1012.4183468545623,
+      "tpsPerUser": 1026.7362938963322,
       "meetsGoal": true
     },
     {
@@ -1153,7 +1153,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 596.4071837630121,
+      "tpsPerUser": 596.5252631674608,
       "meetsGoal": false
     },
     {
@@ -1163,7 +1163,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 695.8083810568475,
+      "tpsPerUser": 695.9461403620377,
       "meetsGoal": false
     },
     {
@@ -1173,7 +1173,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 826.7321760952141,
+      "tpsPerUser": 842.8769917658652,
       "meetsGoal": false
     },
     {
@@ -1183,7 +1183,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1029.1971988124094,
+      "tpsPerUser": 1049.2958468921995,
       "meetsGoal": true
     },
     {
@@ -1193,7 +1193,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 591.0214526772896,
+      "tpsPerUser": 591.1374089203204,
       "meetsGoal": false
     },
     {
@@ -1203,7 +1203,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 689.5250281235046,
+      "tpsPerUser": 689.6603104070404,
       "meetsGoal": false
     },
     {
@@ -1213,7 +1213,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 814.1395183242156,
+      "tpsPerUser": 829.7915932422111,
       "meetsGoal": false
     },
     {
@@ -1223,7 +1223,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1013.5206248525949,
+      "tpsPerUser": 1033.0058609749976,
       "meetsGoal": true
     },
     {
@@ -1252,8 +1252,8 @@
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 972.6453248801121,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 989.4136844710529,
       "meetsGoal": false
     },
     {
@@ -1263,7 +1263,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1189.7858437413022,
+      "tpsPerUser": 1231.7190765864127,
       "meetsGoal": true
     },
     {
@@ -1292,8 +1292,8 @@
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 963.9206158289031,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 974.7607358262827,
       "meetsGoal": false
     },
     {
@@ -1303,7 +1303,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1172.7567293196028,
+      "tpsPerUser": 1213.4776507225151,
       "meetsGoal": true
     },
     {
@@ -1313,7 +1313,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 731.2645113335661,
+      "tpsPerUser": 731.2662217218045,
       "meetsGoal": false
     },
     {
@@ -1323,7 +1323,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 853.1419298891605,
+      "tpsPerUser": 853.1439253421053,
       "meetsGoal": false
     },
     {
@@ -1332,8 +1332,8 @@
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 975.0193484447547,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 995.6643856765677,
       "meetsGoal": false
     },
     {
@@ -1343,7 +1343,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1197.0449533829835,
+      "tpsPerUser": 1239.500561760625,
       "meetsGoal": true
     },
     {
@@ -1353,7 +1353,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 724.689141742356,
+      "tpsPerUser": 724.6908215099782,
       "meetsGoal": false
     },
     {
@@ -1363,7 +1363,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 845.470665366082,
+      "tpsPerUser": 845.4726250949744,
       "meetsGoal": false
     },
     {
@@ -1372,8 +1372,8 @@
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 966.2521889898079,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 980.8270980239187,
       "meetsGoal": false
     },
     {
@@ -1383,7 +1383,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1179.8089144655673,
+      "tpsPerUser": 1221.0296526420211,
       "meetsGoal": true
     },
     {
@@ -1393,7 +1393,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 858.2542382286427,
+      "tpsPerUser": 861.9882559033614,
       "meetsGoal": false
     },
     {
@@ -1403,7 +1403,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1001.2966112667499,
+      "tpsPerUser": 1005.6529652205883,
       "meetsGoal": true
     },
     {
@@ -1413,7 +1413,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1144.338984304857,
+      "tpsPerUser": 1149.317674537815,
       "meetsGoal": true
     },
     {
@@ -1423,7 +1423,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1328.2979224835067,
+      "tpsPerUser": 1380.4861325231404,
       "meetsGoal": true
     },
     {
@@ -1432,8 +1432,8 @@
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 853.4396084689857,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 854.2569495943245,
       "meetsGoal": false
     },
     {
@@ -1443,7 +1443,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 992.3543828420478,
+      "tpsPerUser": 996.6331078600452,
       "meetsGoal": false
     },
     {
@@ -1453,7 +1453,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1134.119294676626,
+      "tpsPerUser": 1139.0092661257659,
       "meetsGoal": true
     },
     {
@@ -1463,7 +1463,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1310.3233569436761,
+      "tpsPerUser": 1361.0817122130238,
       "meetsGoal": true
     },
     {
@@ -1473,7 +1473,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 860.388778816727,
+      "tpsPerUser": 864.1129495116271,
       "meetsGoal": false
     },
     {
@@ -1483,7 +1483,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1003.786908619515,
+      "tpsPerUser": 1008.1317744302315,
       "meetsGoal": true
     },
     {
@@ -1493,7 +1493,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1147.1850384223026,
+      "tpsPerUser": 1152.1505993488358,
       "meetsGoal": true
     },
     {
@@ -1503,7 +1503,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1335.4988464085793,
+      "tpsPerUser": 1388.2656712159578,
       "meetsGoal": true
     },
     {
@@ -1512,8 +1512,8 @@
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 853.4396084689857,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 856.3436545798191,
       "meetsGoal": false
     },
     {
@@ -1523,7 +1523,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 994.8003445421566,
+      "tpsPerUser": 999.067597009789,
       "meetsGoal": false
     },
     {
@@ -1533,7 +1533,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1136.9146794767503,
+      "tpsPerUser": 1141.7915394397587,
       "meetsGoal": true
     },
     {
@@ -1543,7 +1543,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1317.3301992364104,
+      "tpsPerUser": 1368.6434871298125,
       "meetsGoal": true
     },
     {
@@ -1552,8 +1552,8 @@
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 978.1800909996986,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 981.0395492936818,
       "meetsGoal": false
     },
     {
@@ -1563,7 +1563,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1133.5208590181342,
+      "tpsPerUser": 1144.5461408426288,
       "meetsGoal": true
     },
     {
@@ -1573,7 +1573,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1295.4524103064389,
+      "tpsPerUser": 1308.0527323915755,
       "meetsGoal": true
     },
     {
@@ -1582,8 +1582,8 @@
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1457.3839615947438,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1495.9876447632037,
       "meetsGoal": true
     },
     {
@@ -1593,7 +1593,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 978.1800909996986,
+      "tpsPerUser": 978.1800909996975,
       "meetsGoal": false
     },
     {
@@ -1603,7 +1603,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1123.5212960024917,
+      "tpsPerUser": 1134.3519834042784,
       "meetsGoal": true
     },
     {
@@ -1613,7 +1613,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1284.0243382885617,
+      "tpsPerUser": 1296.4022667477466,
       "meetsGoal": true
     },
     {
@@ -1622,8 +1622,8 @@
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1444.527380574632,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1476.0910138156337,
       "meetsGoal": true
     },
     {
@@ -1632,8 +1632,8 @@
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 978.1800909996986,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 983.5039787643233,
       "meetsGoal": false
     },
     {
@@ -1643,7 +1643,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1136.9364259754218,
+      "tpsPerUser": 1147.4213085583772,
       "meetsGoal": true
     },
     {
@@ -1653,7 +1653,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1299.3559154004818,
+      "tpsPerUser": 1311.3386383524307,
       "meetsGoal": true
     },
     {
@@ -1662,8 +1662,8 @@
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1461.7754048255422,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1504.0740380411485,
       "meetsGoal": true
     },
     {
@@ -1673,7 +1673,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 978.1800909996986,
+      "tpsPerUser": 978.1800909996975,
       "meetsGoal": false
     },
     {
@@ -1683,7 +1683,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1126.8767774656906,
+      "tpsPerUser": 1137.1760993640587,
       "meetsGoal": true
     },
     {
@@ -1693,7 +1693,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1287.8591742465032,
+      "tpsPerUser": 1299.6298278446384,
       "meetsGoal": true
     },
     {
@@ -1702,168 +1702,168 @@
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1448.8415710273161,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1483.9631735424514,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1101.771070241925,
+      "tpsPerUser": 1132.0930629057311,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1171.7376968251588,
+      "tpsPerUser": 1228.1886601467154,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1339.12879637161,
+      "tpsPerUser": 1403.6441830248173,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1531.44183384709,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1684.097611379003,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1101.771070241925,
+      "tpsPerUser": 1132.0930629057311,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1162.2442166671096,
+      "tpsPerUser": 1218.0394249851001,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1328.2791047624107,
+      "tpsPerUser": 1392.0450571258284,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1512.907425929702,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1657.159240579206,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1101.771070241925,
+      "tpsPerUser": 1132.0930629057311,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1172.2518365099877,
+      "tpsPerUser": 1228.6356684482562,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1339.716384582843,
+      "tpsPerUser": 1404.1550496551497,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1538.4065527699054,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1687.1593647973507,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1101.771070241925,
+      "tpsPerUser": 1132.0930629057311,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1162.7500571301696,
+      "tpsPerUser": 1218.479074711442,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1328.857208148765,
+      "tpsPerUser": 1392.5475139559337,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1519.704208663314,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1660.123741215521,
       "meetsGoal": true
     },
     {
@@ -1883,7 +1883,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 962.1883615337262,
+      "tpsPerUser": 972.0883929617069,
       "meetsGoal": false
     },
     {
@@ -1893,7 +1893,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1099.6438417528298,
+      "tpsPerUser": 1110.9581633848077,
       "meetsGoal": true
     },
     {
@@ -1903,7 +1903,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1340.4729653479676,
+      "tpsPerUser": 1362.6800130511529,
       "meetsGoal": true
     },
     {
@@ -1923,7 +1923,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 954.2407268044016,
+      "tpsPerUser": 963.9770585431007,
       "meetsGoal": false
     },
     {
@@ -1933,7 +1933,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1090.5608306336017,
+      "tpsPerUser": 1101.6880669064008,
       "meetsGoal": true
     },
     {
@@ -1943,7 +1943,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1322.858898556683,
+      "tpsPerUser": 1344.481464094007,
       "meetsGoal": true
     },
     {
@@ -1963,7 +1963,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 965.6813034700941,
+      "tpsPerUser": 975.52340350971,
       "meetsGoal": false
     },
     {
@@ -1973,7 +1973,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1103.635775394393,
+      "tpsPerUser": 1114.8838897253827,
       "meetsGoal": true
     },
     {
@@ -1983,7 +1983,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1351.8002933154635,
+      "tpsPerUser": 1374.5893892800625,
       "meetsGoal": true
     },
     {
@@ -2003,7 +2003,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 957.6761009403475,
+      "tpsPerUser": 967.354883587616,
       "meetsGoal": false
     },
     {
@@ -2013,7 +2013,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1094.4869725032543,
+      "tpsPerUser": 1105.5484383858468,
       "meetsGoal": true
     },
     {
@@ -2023,7 +2023,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1333.8892711249875,
+      "tpsPerUser": 1356.0735127265643,
       "meetsGoal": true
     },
     {
@@ -2033,7 +2033,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1080.7813203642243,
+      "tpsPerUser": 1080.8878534045368,
       "meetsGoal": true
     },
     {
@@ -2043,7 +2043,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1159.510073274727,
+      "tpsPerUser": 1169.8073542186564,
       "meetsGoal": true
     },
     {
@@ -2053,7 +2053,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1325.1543694568304,
+      "tpsPerUser": 1336.9226905356072,
       "meetsGoal": true
     },
     {
@@ -2063,7 +2063,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1500.5800799214067,
+      "tpsPerUser": 1567.5233981858626,
       "meetsGoal": true
     },
     {
@@ -2073,7 +2073,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1080.7813203642243,
+      "tpsPerUser": 1080.8878534045368,
       "meetsGoal": true
     },
     {
@@ -2083,7 +2083,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1150.0338272671004,
+      "tpsPerUser": 1160.163691862965,
       "meetsGoal": true
     },
     {
@@ -2093,7 +2093,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1314.324374019543,
+      "tpsPerUser": 1325.9013621291026,
       "meetsGoal": true
     },
     {
@@ -2103,7 +2103,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1482.4393192763632,
+      "tpsPerUser": 1547.7405518285,
       "meetsGoal": true
     },
     {
@@ -2113,7 +2113,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1080.7813203642243,
+      "tpsPerUser": 1080.8878534045368,
       "meetsGoal": true
     },
     {
@@ -2123,7 +2123,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1160.0002360687042,
+      "tpsPerUser": 1174.0943329354652,
       "meetsGoal": true
     },
     {
@@ -2133,7 +2133,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1325.7145555070904,
+      "tpsPerUser": 1341.8220947833886,
       "meetsGoal": true
     },
     {
@@ -2143,7 +2143,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1512.5030505946024,
+      "tpsPerUser": 1580.5385175587055,
       "meetsGoal": true
     },
     {
@@ -2153,7 +2153,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1080.7813203642243,
+      "tpsPerUser": 1080.8878534045368,
       "meetsGoal": true
     },
     {
@@ -2163,7 +2163,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1150.516009296475,
+      "tpsPerUser": 1164.3801525175932,
       "meetsGoal": true
     },
     {
@@ -2173,7 +2173,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1314.8754391959712,
+      "tpsPerUser": 1330.7201743058206,
       "meetsGoal": true
     },
     {
@@ -2183,7 +2183,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1494.0746373053303,
+      "tpsPerUser": 1560.42790146471,
       "meetsGoal": true
     },
     {
@@ -2193,7 +2193,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1104.5881918726168,
+      "tpsPerUser": 1119.5291924520789,
       "meetsGoal": true
     },
     {
@@ -2203,7 +2203,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1178.5753836772237,
+      "tpsPerUser": 1222.849292715504,
       "meetsGoal": true
     },
     {
@@ -2213,7 +2213,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1346.9432956311125,
+      "tpsPerUser": 1397.5420488177185,
       "meetsGoal": true
     },
     {
@@ -2223,7 +2223,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1592.9811567801682,
+      "tpsPerUser": 1670.7087496641302,
       "meetsGoal": true
     },
     {
@@ -2233,7 +2233,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1104.5881918726168,
+      "tpsPerUser": 1119.5291924520789,
       "meetsGoal": true
     },
     {
@@ -2243,7 +2243,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1168.9955308695992,
+      "tpsPerUser": 1212.67577299762,
       "meetsGoal": true
     },
     {
@@ -2253,7 +2253,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1335.9948924223988,
+      "tpsPerUser": 1385.915169140137,
       "meetsGoal": true
     },
     {
@@ -2263,7 +2263,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1572.987477179425,
+      "tpsPerUser": 1649.0193122607855,
       "meetsGoal": true
     },
     {
@@ -2273,7 +2273,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1104.5881918726168,
+      "tpsPerUser": 1119.5291924520789,
       "meetsGoal": true
     },
     {
@@ -2283,7 +2283,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1179.0805359480332,
+      "tpsPerUser": 1223.3931193123692,
       "meetsGoal": true
     },
     {
@@ -2293,7 +2293,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1347.5206125120378,
+      "tpsPerUser": 1398.163564928422,
       "meetsGoal": true
     },
     {
@@ -2303,7 +2303,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1593.0991816198239,
+      "tpsPerUser": 1670.8385737298993,
       "meetsGoal": true
     },
     {
@@ -2313,7 +2313,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1104.5881918726168,
+      "tpsPerUser": 1119.5291924520789,
       "meetsGoal": true
     },
     {
@@ -2323,7 +2323,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1169.4925026928884,
+      "tpsPerUser": 1213.2105865033852,
       "meetsGoal": true
     },
     {
@@ -2333,7 +2333,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1336.5628602204438,
+      "tpsPerUser": 1386.5263845752972,
       "meetsGoal": true
     },
     {
@@ -2343,7 +2343,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1573.1025578193808,
+      "tpsPerUser": 1649.1457872810072,
       "meetsGoal": true
     },
     {
@@ -2353,7 +2353,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1108.6277918050384,
+      "tpsPerUser": 1123.679018503359,
       "meetsGoal": true
     },
     {
@@ -2363,7 +2363,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1181.7308691729459,
+      "tpsPerUser": 1226.2466483573091,
       "meetsGoal": true
     },
     {
@@ -2373,7 +2373,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1350.549564769081,
+      "tpsPerUser": 1401.4247409797817,
       "meetsGoal": true
     },
     {
@@ -2383,7 +2383,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1596.1434138226034,
+      "tpsPerUser": 1674.1874695017148,
       "meetsGoal": true
     },
     {
@@ -2393,7 +2393,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1108.6277918050384,
+      "tpsPerUser": 1123.679018503359,
       "meetsGoal": true
     },
     {
@@ -2403,7 +2403,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1172.1346679598023,
+      "tpsPerUser": 1216.054223512081,
       "meetsGoal": true
     },
     {
@@ -2413,7 +2413,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1339.5824776683455,
+      "tpsPerUser": 1389.776255442378,
       "meetsGoal": true
     },
     {
@@ -2423,7 +2423,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1576.1429997574992,
+      "tpsPerUser": 1652.4875939166984,
       "meetsGoal": true
     },
     {
@@ -2433,7 +2433,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1108.6277918050384,
+      "tpsPerUser": 1123.679018503359,
       "meetsGoal": true
     },
     {
@@ -2443,7 +2443,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1182.2498187874794,
+      "tpsPerUser": 1226.8054412635033,
       "meetsGoal": true
     },
     {
@@ -2453,7 +2453,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1351.1426500428336,
+      "tpsPerUser": 1402.0633614440037,
       "meetsGoal": true
     },
     {
@@ -2463,7 +2463,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1596.2619077314728,
+      "tpsPerUser": 1674.317834786116,
       "meetsGoal": true
     },
     {
@@ -2473,7 +2473,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1108.6277918050384,
+      "tpsPerUser": 1123.679018503359,
       "meetsGoal": true
     },
     {
@@ -2483,7 +2483,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1172.6452217524325,
+      "tpsPerUser": 1216.6037636942478,
       "meetsGoal": true
     },
     {
@@ -2493,7 +2493,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1340.1659677170655,
+      "tpsPerUser": 1390.4043013648545,
       "meetsGoal": true
     },
     {
@@ -2503,167 +2503,167 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1576.2585425971129,
+      "tpsPerUser": 1652.6146015312636,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1111.6769349865112,
+      "tpsPerUser": 1136.990973078839,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1183.9792075497157,
+      "tpsPerUser": 1236.2644572403888,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1353.119094342532,
+      "tpsPerUser": 1412.873665417587,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1598.5233580509062,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1690.786602376845,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1111.6769349865112,
+      "tpsPerUser": 1136.990973078839,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1174.372811570184,
+      "tpsPerUser": 1226.025800292165,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1342.14035608021,
+      "tpsPerUser": 1401.1723431910455,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1578.5179625956348,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1663.7506316499962,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1111.6769349865112,
+      "tpsPerUser": 1136.990973078839,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1184.5001341650577,
+      "tpsPerUser": 1236.8324196604794,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1353.71443904578,
+      "tpsPerUser": 1413.522765326262,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1598.6422055992257,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1693.8679257032818,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1111.6769349865112,
+      "tpsPerUser": 1136.990973078839,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1174.8853174140909,
+      "tpsPerUser": 1226.5843918924843,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1342.7260770446753,
+      "tpsPerUser": 1401.8107335914103,
       "meetsGoal": true
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1578.6338539147735,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1666.73411409771,
       "meetsGoal": true
     }
   ],
@@ -2708,7 +2708,7 @@
       "mcGBs": 400,
       "union": "worst",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.7
+      "minAcceptance": 0.65
     },
     {
       "dtype": "bf16Dense",
@@ -2782,28 +2782,28 @@
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 1,
       "minAcceptance": 0
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 2,
       "minAcceptance": 0
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "minAcceptance": 0
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 2,
       "minAcceptance": 0
@@ -2813,7 +2813,7 @@
       "mcGBs": 320,
       "union": "worst",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.5
+      "minAcceptance": 0.45
     },
     {
       "dtype": "fp8Dense",
@@ -2834,7 +2834,7 @@
       "mcGBs": 320,
       "union": "expected",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.5
+      "minAcceptance": 0.45
     },
     {
       "dtype": "fp8Dense",
@@ -2922,28 +2922,28 @@
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 1,
       "minAcceptance": 0
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "worst",
       "draftLayerEquiv": 2,
       "minAcceptance": 0
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "minAcceptance": 0
     },
     {
       "dtype": "fp8Dense",
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 2,
       "minAcceptance": 0

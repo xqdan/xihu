@@ -217,6 +217,12 @@ function evaluate(ctx, pick, req = ctx.space.requirements, holdDims = null) {
   const perf = cubeScale > 1 ? null
     : conditional ? replayVariant(ctx, tier.gbs * cubeScale, conditional.variant) : replay(ctx, tier.gbs * cubeScale);
   if (cubeScale > 1) violations.push('cubesAboveReplayModel');
+  // ADR-0026 fixes the card at the spec's cube count (card.memoryCubes = 16, 2 per compute die). The
+  // other cube counts stay in the table as comparison rows, but they are not selectable: with the
+  // HBM3E tier an 8-cube card just clears the 1000 TPS/usr target on power alone, and the coupling
+  // replay (coupling_search.js) only models the spec count, so letting this domain pick fewer cubes
+  // would hand it a winner the next stage refuses.
+  if (cubes !== ctx.cubesPerComputeDie * ctx.dies) violations.push('cubesNotSpec');
   const specCubes = ctx.cubesPerComputeDie * ctx.dies;
   const mcPowerW = sys.mcPowerW * cubes / specCubes;
   const cardPowerW = sys.cardPowerW - sys.mcPowerW + mcPowerW;

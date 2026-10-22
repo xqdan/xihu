@@ -4,7 +4,7 @@
   "document": "teams/hardware/docs/09_PACKAGE_POWER_RAS.md",
   "designSpace": {
     "file": "teams/hardware/inputs/physical_design_space.json",
-    "sha256": "3f5c6046eca584bae6ebc544e4bb66184020bd66e514d2a388ff00479bad1955",
+    "sha256": "15b1f18e71f5f9cc7cca3f766bb8cbb0daf54b4ea7947f0195ab8e6498f8618f",
     "dimensions": [
       "process",
       "matrixTFPerMm2",
@@ -15,7 +15,7 @@
     "feasible": 2,
     "constraints": [
       "die area <= 400 mm2 and die power <= 300 W, both including any keep-out and port scaling the candidate charges",
-      "card power <= 2800 W (the MC term and the fixed overhead are charged, not assumed away)",
+      "card power <= 3200 W (ADR-0026; the MC term and the fixed overhead are charged, not assumed away)",
       "package area (dies + cubes) + reserve <= the 5248 mm2 placement window",
       "PHY shoreline <= the die edge budget (4 x sqrt(dieArea) x phyEdgeFraction); the published point sits at 24.21 / 52.95 mm and this constraint is what a naive lane increase breaks first",
       "the K3 detailed replay at the candidate reaches the contract target of requirements.contractEntry",
@@ -39,14 +39,14 @@
     "contractEntry": "B-AREA",
     "dieAreaLimitMm2": 400,
     "diePowerLimitW": 300,
-    "cardPowerLimitW": 2800,
+    "cardPowerLimitW": 3200,
     "placementWindowMm2": 5248
   },
   "contract": {
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "8843cd681d8198540f72eeb396770092d8fa7e82ac9f4f40f661ebcc0ee805c8",
+    "sha256": "803e687cdb1663ab025e567266661f14d15c6745ba54312368ee9d706106f5fd",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -55,8 +55,8 @@
     },
     "point": {
       "tauUs": 1.15,
-      "computeScale": 0.7444849443828728,
-      "mcGBs": 640
+      "computeScale": 0.7054374305145951,
+      "mcGBs": 1152
     }
   },
   "clause": {
@@ -92,7 +92,7 @@
       "lEngines": 8,
       "hRows": 48,
       "hCols": 128,
-      "hEngines": 5,
+      "hEngines": 6,
       "ghz": 1,
       "vectorLanes": 512,
       "lMiB": 1,
@@ -106,20 +106,20 @@
       "tmaBytes": 512,
       "nocBytes": 256,
       "nocLanes": 4,
-      "reduceLanes": 4096,
+      "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "rdmaLanes": 16,
       "weightTileMiB": 8,
-      "kvTile": 32768,
+      "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
       "windowFraction": 1
     },
-    "publishedDieAreaMm2": 365.3410392708195,
-    "publishedDiePowerW": 283.2693760000001,
-    "publishedCardPowerW": 2744.875008000001
+    "publishedDieAreaMm2": 364.0330728842648,
+    "publishedDiePowerW": 290.47833600000007,
+    "publishedCardPowerW": 3031.9226880000006
   },
   "design": {
     "process": {
@@ -136,8 +136,8 @@
       "option": "liquid",
       "cooling": "liquid",
       "diePowerLimitW": 300,
-      "cardPowerLimitW": 2800,
-      "evidence": "card.cooling and BASIS.limits (ADR-0005, decision 2026-09-25): cold plate, die 300 W, card 2800 W. This is the published point. ASSUMPTION (O-015): cold plate, VRM and card power delivery are not modelled"
+      "cardPowerLimitW": 3200,
+      "evidence": "card.cooling and BASIS.limits (ADR-0005, decision 2026-09-25, card limit raised 2800 -> 3200 W by ADR-0026): cold plate, die 300 W, card 3200 W. This is the published point. ASSUMPTION (O-015): cold plate, VRM and card power delivery are not modelled"
     },
     "reserveFraction": {
       "option": "0.1254",
@@ -169,44 +169,44 @@
   },
   "evaluation": {
     "k3System": {
-      "publishedTpsPerUser": 1101.771070241925,
-      "tpsPerUser": 1101.771070241925,
-      "rawLatencyUs": 775.7517671190814,
+      "publishedTpsPerUser": 1124.6970453558893,
+      "tpsPerUser": 1124.6970453558893,
+      "rawLatencyUs": 759.9387392632482,
       "contractTargetTpsPerUser": 1000
     },
     "process": "SF4",
     "matrixTFPerMm2": 3.2,
-    "dieAreaMm2": 365.3410392708195,
-    "diePowerW": 283.2693760000001,
+    "dieAreaMm2": 364.0330728842648,
+    "diePowerW": 290.47833600000007,
     "diePowerLimitW": 300,
-    "cardPowerW": 2744.875008000001,
-    "cardPowerLimitW": 2800,
-    "mcPowerW": 398.72,
-    "packageAreaMm2": 4522.728314166556,
-    "reserveMm2": 67.17248583344463,
+    "cardPowerW": 3031.9226880000006,
+    "cardPowerLimitW": 3200,
+    "mcPowerW": 628.096,
+    "packageAreaMm2": 4512.2645830741185,
+    "reserveMm2": 77.63621692588185,
     "shorelineMm": 24.21333333333333,
-    "edgeBudgetMm": 52.94630302642081,
+    "edgeBudgetMm": 52.84937603884258,
     "area": {
-      "matrix": 111.17714285714285,
+      "matrix": 130.79663865546215,
       "vector": 11.771697478991596,
       "sram": 39.60695389266818,
       "banks": 32.699159663865544,
       "cores": 12.26218487394958,
       "tma": 21.45882352941176,
       "noc": 35.91593949579831,
-      "reduce": 44.40954621848739,
+      "reduce": 23.482084033613443,
       "ucie": 22.336,
       "rdma": 10.6,
       "misc": 15.327731092436974,
       "sharedPorts": 7.775860168067228
     },
     "power": {
-      "matrix": 133.69344,
+      "matrix": 157.28639999999996,
       "vector": 7.9872000000000005,
       "sram": 28.483200000000007,
       "noc": 11.9808,
       "tma": 3.84,
-      "reduce": 32.768,
+      "reduce": 16.384,
       "ucie": 31.45728,
       "rdma": 6.720000000000001,
       "control": 23.6,
@@ -214,9 +214,9 @@
     },
     "areaConservation": {
       "windowMm2": 5248,
-      "placedMm2": 4522.728314166556,
+      "placedMm2": 4512.2645830741185,
       "keepOutMm2": 658.0992000000001,
-      "overUnderMm2": 67.17248583344417,
+      "overUnderMm2": 77.6362169258814,
       "toleranceMm2": 0,
       "satisfied": true
     }

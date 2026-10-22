@@ -35,8 +35,11 @@ assert.equal(baseline.acceptance.currentStatus,
 assert(baseline.acceptance.architectureGateTpsPerUser === undefined || /^not-met \(engineering model/.test(baseline.acceptance.architectureGateStatus),
   'architecture gate cannot be closed by the engineering model');
 
-const reference = Final.evaluate({...candidate, mcGBs: 320});
-const stretch = Final.evaluate({...candidate, mcGBs: 640});
+// MC320 / MC640 are profile slots of bandwidthTiers (REFERENCE / STRETCH_AGGRESSIVE), not the numbers
+// 320 and 640: ADR-0026 puts HBM3E in the STRETCH_AGGRESSIVE slot. Replay each at its slot's own tier.
+const tierGBs = classification => baseline.bandwidthTiers.tiersGBsPerCube.find(t => t.classification === classification).gbs;
+const reference = Final.evaluate({...candidate, mcGBs: tierGBs('REFERENCE')});
+const stretch = Final.evaluate({...candidate, mcGBs: tierGBs('STRETCH_AGGRESSIVE')});
 
 assert(reference.feasible);
 assert(stretch.feasible);

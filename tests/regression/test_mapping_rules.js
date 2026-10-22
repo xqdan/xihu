@@ -74,10 +74,17 @@ const report = Object.fromEntries(A.checkRules(m.plan, O.OPT).map(r => [r.key, r
 assert.deepStrictEqual(Object.keys(report), ['epilogueFusion', 'softmaxFusion', 'pvMerge', 'countBasis']);
 assert.deepStrictEqual(report.epilogueFusion.refused, {'Attention RMSNorm': 1});
 assert.deepStrictEqual(report.epilogueFusion.unmet.map(u => u.ops), [{'KV append source': 24, 'Dispatch local pack': 92}]);
-for (const k of ['softmaxFusion', 'pvMerge', 'countBasis']) {
+for (const k of ['softmaxFusion', 'countBasis']) {
   assert.strictEqual(report[k].applied, report[k].matched, k);
   assert.deepStrictEqual(report[k].unmet, [], k);
 }
+// pvMerge 'layer' merges on the LAST PV of each (layer, head tile) only; every other PV is refused by design, not
+// unmet. While the published kvTile held one tile per layer, matched === applied. The published kvTile is 16384
+// since ADR-0026, so a layer has two KV tiles: 48 PVs match, 24 carry the merge, the 24 first-tile PVs are refused.
+const kvTilesPerLayer = Math.ceil(O.mapped(x).plan.c.context / 32 / x.kvTile);
+assert.deepStrictEqual(report.pvMerge.unmet, [], 'pvMerge: no assumption is violated');
+assert.strictEqual(report.pvMerge.matched, m.plan.model.softmaxLayers * kvTilesPerLayer, 'one PV per KV tile matches');
 assert.strictEqual(report.pvMerge.applied, m.plan.model.softmaxLayers, 'published headTile 96: one head tile, one merge per layer');
+assert.deepStrictEqual(report.pvMerge.refused, {'PV + rescale accumulation': report.pvMerge.matched - report.pvMerge.applied}, 'the PVs that are not the last of their layer are the refused ones');
 
 console.log(`PASS mapping rules: ${Object.keys(A.RULES).length} mapper rules + ${O.GAIN_RULES.length} GAIN rules select as before; published report refuses 1 and flags 2 over-cap epilogue ops`);

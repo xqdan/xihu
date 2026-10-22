@@ -34,7 +34,7 @@ const SHAPE_SEED = args.shapeIntent || '(架构师未给出初始形态意图，
 const MC_PROFILE = args.mcProfile || 'MC320'
 const BUDGET = args.budget || {}
 const EXPERTS = ['compute-expert', 'memory-expert', 'comm-expert', 'physical-expert', 'software-expert', 'model-expert']
-const MAX_ROUNDS = 2
+const MAX_ROUNDS = 3
 
 if (!OBJECTIVE || !SOURCE_COMMIT) {
   throw new Error('design-intake 需要 args.objective 与 args.sourceCommit')
@@ -65,6 +65,19 @@ const CONSTRAINTS_CONTRACT = [
   `本次硬件规格绑定：physicalProfile=P1（ADR-0021，唯一一份规格），mcProfile=${MC_PROFILE}`,
   '',
   `预算（已知的填，未知的必须是 null，不得猜）：${JSON.stringify(BUDGET)}`,
+  '',
+  '本阶段允许读的权威来源（路径 + 字段，正文自己读；不要读别的规格）：',
+  '  唯一硬件规格：teams/hardware/inputs/k3_mc_baseline.json',
+  '    · SRAM 容量账：#computeDieCandidate（lCores/lCore.localSramMiB/hCores/hCore.localSramMiB/sharedSramMiB/physicalDataSramMiB）与 #sramAccounting',
+  '    · MC 带宽档位与持续效率：#bandwidthTiers（tiersGBsPerCube、sustainedEfficiency）',
+  '    · 发布点时间账与敏感度：#tpsDesign',
+  '  设计空间：teams/hardware/inputs/*_design_space.json',
+  '  ADR 目录：teams/council/adr/',
+  '  未决问题清单：docs/architecture/OPEN_ISSUES.md（引用其中的 O-* / B-* 编号即可，不得把未决项当已知值）',
+  '',
+  '读数规则：规格里有的，引用「文件:行号」或字段路径并照抄原值；规格里没有的，写 null 或 UNVERIFIED。',
+  '若某个数字本身在 OPEN_ISSUES 里仍是未决项（例如 O-001「320 GB/s 是峰值还是持续 payload」），',
+  '可以引用它，但必须标为 ASSUMPTION 并指明未决编号——不得当成实测能力继续推导。',
   '',
   '硬约束格式：id 形如 C-<域>-<序>，source 必须写规格文件路径或 ADR 编号，不得写 TBD。',
   '你只提本域约束。跨域冲突不要在这里裁决，写进 unresolved 交给 architect。',
@@ -322,8 +335,11 @@ const rounds = []
 let finalBrief = null
 let finalGaps = []
 let verdict = null
+// architect 自己写的未决项（跨域矛盾）。schema 要求了它，但此前没有任何分支消费它，
+// 于是「三个专家阻塞」在返回值里只留下 blockedExperts 三个名字，没有可执行的缺口清单。
+let architectUnresolved = []
 
-for (let round = 1; round <= MAX_ROUNDS; round++) {
+for (let round = 1; round <= MAX_ROUNDS; round += 1) {
   const label = round === 1 ? 'architect' : `architect:rev${round}`
 
   const assembled = await agent(assemblePrompt(JSON.stringify({ constraints, unresolved }), finalGaps), {
@@ -335,6 +351,9 @@ for (let round = 1; round <= MAX_ROUNDS; round++) {
 
   verdict = assembled && assembled.verdict
   finalBrief = assembled && assembled.brief
+  if (assembled && Array.isArray(assembled.unresolved) && assembled.unresolved.length) {
+    architectUnresolved = assembled.unresolved
+  }
   rounds.push({ round, verdict })
 
   // DIRECTION_BACKFLOW 就地终止：方向问题不在 intake 解决，继续走只会产出一份错的 brief。
@@ -440,6 +459,42 @@ const ledgerSeed = {
     : [],
 }
 
+// 缺口有三个来源，但它们此前只有第一类进了 openGaps：
+//   1. framing-critic 指出的框架缺口（对象，带 fix 与 consequence）；
+//   2. architect 写在 unresolved 里的跨域矛盾（字符串）——schema 要求了它，却没人消费；
+//   3. 阻塞或缺位的专家——此前只留下名字，回流下游看不到要补齐什么。
+// 三类合成一份清单，DIRECTION_BACKFLOW 的产物里才有可执行的缺口。
+const coverageGaps = [
+  ...finalGaps.map((g, i) => ({
+    id: `FRAME-${String(i + 1).padStart(2, '0')}`,
+    owner: 'architect',
+    gap: g.gap || '',
+    fix: g.fix || '',
+    consequence: g.consequence || '',
+  })),
+  ...architectUnresolved.map((u, i) => ({
+    id: `UNRESOLVED-${String(i + 1).padStart(2, '0')}`,
+    owner: 'architect',
+    gap: String(u),
+    fix: '由 arch.direction 裁定该跨域矛盾；intake 不在此裁决',
+    consequence: '',
+  })),
+  ...blocked.map((p) => ({
+    id: `BLOCKED-${p.agentId}`,
+    owner: p.agentId,
+    gap: `${p.agentId} 报 BLOCKED_CONFIG，本域约束未给出`,
+    fix: (p.blockedFields && p.blockedFields.length) ? `补齐字段：${p.blockedFields.join('、')}` : '补齐该域的必要输入后重跑 intake',
+    consequence: '该域覆盖不完整，架构师不得用现有材料推断代替',
+  })),
+  ...absent.map((agentId) => ({
+    id: `ABSENT-${agentId}`,
+    owner: agentId,
+    gap: `${agentId} 未返回（超时或失败），本域约束缺失`,
+    fix: '重跑 intake 或单独补齐该域约束',
+    consequence: '该域覆盖不完整，架构师不得用现有材料推断代替',
+  })),
+]
+
 return {
   stage: STAGE,
   runId: RUN_ID,
@@ -454,7 +509,7 @@ return {
   brief: briefLanded ? finalBrief : null,
   // 未通过时也保留草稿，供人看差在哪，但标注了未被采纳
   draftBrief: briefLanded ? null : finalBrief,
-  openGaps: finalGaps,
+  openGaps: coverageGaps,
   ledgerSeed,
   files: briefLanded
     ? [{ path: `${REPO}/teams/council/inputs/design_brief.intake.json`, content: JSON.stringify(finalBrief, null, 2) }]

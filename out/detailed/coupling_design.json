@@ -4,15 +4,15 @@
   "document": "teams/council/docs/23_DESIGN_QUESTION_WORKFLOW_PROPOSAL.md#l3-designcoupling--跨域联合",
   "designSpace": {
     "file": "teams/hardware/inputs/coupling_design_space.json",
-    "sha256": "801733d2850dca77380eb4b1c97b3a303bc8cb9710c61e3ddccb84813b0fc236",
+    "sha256": "03e7aba8026e29b2122bed6ae7a7dc4cc961e4061bd796d2de021a01f4b7404b",
     "couplings": [
       "sramDepthMc",
       "tauOverlapCompute",
       "areaReallocation"
     ],
-    "candidates": 76,
-    "feasible": 8,
-    "pareto": 4,
+    "candidates": 77,
+    "feasible": 15,
+    "pareto": 2,
     "constraints": [
       "every contract entry holds at the row: B-SRAM-CAP on sharedMiB, B-MEM-BW on mcGBs, B-TAU on the slowest collective (protocol + the comm winner's control path), B-SERIAL-CMP through the contract target, B-AREA on die area (shared-port charge, option overheads and the comm core included) and its die / card power limits",
       "the K3 detailed replay at the row is feasible and reaches the contract target",
@@ -38,7 +38,7 @@
     "limits": {
       "dieAreaMm2": 400,
       "diePowerW": 300,
-      "cardPowerW": 2800
+      "cardPowerW": 3200
     },
     "package": {
       "dies": 8,
@@ -52,7 +52,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "8843cd681d8198540f72eeb396770092d8fa7e82ac9f4f40f661ebcc0ee805c8",
+    "sha256": "803e687cdb1663ab025e567266661f14d15c6745ba54312368ee9d706106f5fd",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -61,48 +61,48 @@
     },
     "point": {
       "tauUs": 1.15,
-      "computeScale": 0.7444849443828728,
-      "mcGBs": 640
+      "computeScale": 0.7054374305145951,
+      "mcGBs": 1152
     }
   },
   "winners": {
     "compute": {
       "design": "out/detailed/matrix_vector_design.json",
-      "designSha256": "a759787b3178ff65c6a8d4ab10b6aa3128a4bd653afbafddda58d8e8df8d0d5b",
+      "designSha256": "7ff54e2a12ec5b856b254b19c6b441ae46bf87b88b06d9954397649f62c6ebd3",
       "candidates": "out/detailed/matrix_vector_candidates.json",
-      "candidateSetSha256": "457dbdc40aa8c15a566ed1ae7d36549d9cc5ddc35dd3c4871c5747c60d047692",
-      "optionId": "vectorLanes=704|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "candidateSetSha256": "947015006b9228bf545154f25f3b962b34cfc0fea8a14eb091e14675d51b290a",
+      "optionId": "vectorLanes=832|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
       "landed": null
     },
     "sram": {
       "design": "out/detailed/sram_design.json",
-      "designSha256": "3ae2800f6a83fc6a6edf90fbef1060712d137228c119097a703552f56cd29090",
+      "designSha256": "860d15f9dd12505628fc08d0f4002938586de2df0802cff30a7ab593255e21a7",
       "candidates": "out/detailed/sram_candidates.json",
-      "candidateSetSha256": "353b255e7c38fde3bad7c279d4f97e48757a8baa5e741a165a97043ab48b0fbf",
-      "optionId": "sharedMiB=16|lBanks=16|hBanks=32|sharedSlices=8|tmaEngines=1|sharedPortScaling=off",
+      "candidateSetSha256": "166af5ade56a3816e7d5bb96c64a40f0f73329f418f028476dbe3f4147d0a5b6",
+      "optionId": "sharedMiB=12|lBanks=32|hBanks=16|sharedSlices=8|tmaEngines=1|sharedPortScaling=off",
       "landed": null
     },
     "mc": {
       "design": "out/detailed/memory_design.json",
-      "designSha256": "b73c112482c759f719e669b726f21540746012526140e5c290ecf40b7b2ee7e5",
+      "designSha256": "b867e519778487c7fff25c7bca513d971793b108f22735415cb303fc29fa4865",
       "candidates": "out/detailed/memory_candidates.json",
-      "candidateSetSha256": "7cc3996cd9394515a56f82991d07e0e464d10a25857008a927dc6bc317bbe390",
-      "optionId": "mcGBs=640|cubesPerCard=16|capacityGBPerCube=16|route=mcX|eccOverhead=0",
+      "candidateSetSha256": "e59e1cf03b40413f39e09f2345d7fd73f8c08208a0af433da38ef3746a8bb378",
+      "optionId": "mcGBs=1152|cubesPerCard=16|capacityGBPerCube=16|route=mcX|eccOverhead=0",
       "landed": null
     },
     "comm": {
       "design": "out/detailed/comm_core_design.json",
-      "designSha256": "d074b46c85af50f6045dc9d2d11b376d8a5349d9d113a5e7a4efafdfcddd7004",
+      "designSha256": "983819d2f8a987bd81eaec80ec4f71e499727cac37af4fdfcd3aef63bc63b2d6",
       "candidates": "out/detailed/comm_candidates.json",
-      "candidateSetSha256": "99fe7ca7ba39aa7eedf8db97d2eb9809e14a90548a39c1388f78c3828ac667f9",
+      "candidateSetSha256": "5b450d9507dd499d051869b43ba6f31a3b3863dff75d75faa53e567f07e9486d",
       "optionId": "placement=spare23|trigger=counterCompare|wqeGeneration=templatePatch|txLanes=2|doorbell=directPush|commitCounting=hwCounters|signal=putWithSignal|graphStore=localSram|localSramKiB=64|managementCores=1",
       "landed": null
     },
     "physical": {
       "design": "out/detailed/physical_design.json",
-      "designSha256": "7a7601ea00b42ad33c2bf2d6718af5a4d15de373bdec92a6585984e07564a515",
+      "designSha256": "1dc857720c19a9029aede545f1313638c6748ea8762bc330d3687c874cfce807",
       "candidates": "out/detailed/physical_candidates.json",
-      "candidateSetSha256": "a765f744abd76ad23d4cf475496accc873aa6a214863865aca9525955d0adc3f",
+      "candidateSetSha256": "6dacd4ccf36fe2b366569558a607f41c90a2cf355a051fdd23be26d71b07cb57",
       "optionId": "process=SF4|matrixTFPerMm2=3.2|cooling=liquid|reserveFraction=0.1254",
       "landed": null
     }
@@ -110,54 +110,50 @@
   "composition": {
     "domainAlone": {
       "compute": {
-        "optionId": "vectorLanes=704|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
-        "tpsPerUser": 1087.0239806476652
+        "optionId": "vectorLanes=832|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+        "tpsPerUser": 1124.3403792802756
       },
       "sram": {
-        "optionId": "sharedMiB=16|lBanks=16|hBanks=32|sharedSlices=8|tmaEngines=1|sharedPortScaling=off",
-        "tpsPerUser": 1009.5725363124718
+        "optionId": "sharedMiB=12|lBanks=32|hBanks=16|sharedSlices=8|tmaEngines=1|sharedPortScaling=off",
+        "tpsPerUser": 1002.3474393601256
       },
       "mc": {
-        "optionId": "mcGBs=640|cubesPerCard=16|capacityGBPerCube=16|route=mcX|eccOverhead=0",
-        "tpsPerUser": 1101.771070241925
+        "optionId": "mcGBs=1152|cubesPerCard=16|capacityGBPerCube=16|route=mcX|eccOverhead=0",
+        "tpsPerUser": 1124.6970453558893
       },
       "comm": {
         "optionId": "placement=spare23|trigger=counterCompare|wqeGeneration=templatePatch|txLanes=2|doorbell=directPush|commitCounting=hwCounters|signal=putWithSignal|graphStore=localSram|localSramKiB=64|managementCores=1",
-        "tpsPerUser": 1101.771070241925
+        "tpsPerUser": 1124.6970453558893
       },
       "physical": {
         "optionId": "process=SF4|matrixTFPerMm2=3.2|cooling=liquid|reserveFraction=0.1254",
-        "tpsPerUser": 1101.771070241925
+        "tpsPerUser": 1124.6970453558893
       }
     },
     "composed": {
-      "feasible": false,
-      "violations": [
-        "belowContractTarget"
-      ],
-      "tpsPerUser": 992.5661815374486,
-      "dieAreaMm2": 317.73725992619273,
-      "diePowerW": 262.82752000000005,
-      "cardPowerW": 2581.3401600000007
+      "feasible": true,
+      "violations": [],
+      "tpsPerUser": 1006.8490495351058,
+      "dieAreaMm2": 317.04648050331247,
+      "diePowerW": 273.36287999999996,
+      "cardPowerW": 2894.9990399999997
     },
     "targetTpsPerUser": 1000,
     "note": "each domain alone replays with the other domains at the published point; the composed point is all five winners at once"
   },
   "jointPoint": {
-    "optionId": "areaReallocation:hEngines=4|lBanks=32",
+    "optionId": "sramDepthMc:sharedMiB=12|depth=1|mcGBs=1152",
     "couplings": [
-      "areaReallocation"
+      "sramDepthMc"
     ],
     "change": {
-      "hEngines": 4,
-      "lBanks": 32
+      "sharedMiB": 12,
+      "depth": 1,
+      "mcGBs": 1152
     },
     "departsFrom": {
       "sram": [
-        "lBanks"
-      ],
-      "compute": [
-        "hEngines"
+        "depth"
       ]
     },
     "x": {
@@ -168,29 +164,29 @@
       "lEngines": 8,
       "hRows": 48,
       "hCols": 128,
-      "hEngines": 4,
+      "hEngines": 6,
       "ghz": 1,
-      "vectorLanes": 704,
+      "vectorLanes": 832,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 32,
-      "hBanks": 32,
+      "hBanks": 16,
       "bankBytes": 64,
-      "sharedMiB": 16,
+      "sharedMiB": 12,
       "sharedSlices": 8,
       "tmaEngines": 1,
       "tmaBytes": 512,
       "nocBytes": 256,
       "nocLanes": 4,
-      "reduceLanes": 4096,
+      "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "rdmaLanes": 16,
       "weightTileMiB": 8,
-      "kvTile": 32768,
+      "kvTile": 16384,
       "headTile": 96,
-      "depth": 4,
+      "depth": 1,
       "windowFraction": 1
     },
     "opt": {
@@ -219,63 +215,63 @@
   "evaluation": {
     "feasible": true,
     "violations": [],
-    "tpsPerUser": 1004.0377672020464,
-    "rawLatencyUs": 851.2636502535665,
-    "dieAreaMm2": 301.38768009425996,
+    "tpsPerUser": 1059.3172592251185,
+    "rawLatencyUs": 806.841243506276,
+    "dieAreaMm2": 317.04648050331247,
     "area": {
-      "die": 301.28379422880266,
+      "die": 316.94259463785517,
       "matrixOverhead": 0,
       "vectorOverhead": 0,
       "commCore": 0.10388586545729403
     },
-    "diePowerW": 242.61376,
-    "cardPowerW": 2419.63008,
-    "packageReserveMm2": 578.7993592459206,
+    "diePowerW": 273.36287999999996,
+    "cardPowerW": 2894.9990399999997,
+    "packageReserveMm2": 453.52895597350016,
     "shorelineMm": 24.21333333333333,
-    "edgeBudgetMm": 48.601079687120254,
+    "edgeBudgetMm": 49.84806858806852,
     "kernel": {
       "hidden": true,
-      "hCoreRatio": 34.90909090909091,
+      "hCoreRatio": 44.30769230769231,
       "binding": {
         "model": "GLM-5.2",
         "kernel": "DSA indexer",
         "maxCoreRatio": 44.46650124069479,
-        "minLanesPerCore": 552.6857142857143
+        "minLanesPerCore": 829.0285714285715
       }
     },
     "clauses": {
       "B-SERIAL-CMP": {
         "through": "contract target",
-        "tpsPerUser": 1004.0377672020464,
+        "tpsPerUser": 1059.3172592251185,
         "target": 1000,
         "holds": true
       },
       "B-SRAM-CAP": {
-        "sharedMiB": 16,
-        "min": 16,
+        "sharedMiB": 12,
+        "min": 12,
         "holds": true
       },
       "B-MEM-BW": {
-        "mcGBs": 640,
-        "min": 640,
+        "mcGBs": 1152,
+        "min": 1152,
         "holds": true
       },
       "B-TAU": {
         "slowest": "LSE merge / output reduce-scatter",
-        "latencyUs": 1.08662935501998,
+        "latencyUs": 1.089924107142857,
         "tauUs": 1.15,
         "max": 1.15,
         "holds": true
       },
       "B-AREA": {
-        "dieAreaMm2": 301.38768009425996,
+        "dieAreaMm2": 317.04648050331247,
         "max": 400,
-        "diePowerW": 242.61376,
-        "cardPowerW": 2419.63008,
+        "diePowerW": 273.36287999999996,
+        "cardPowerW": 2894.9990399999997,
         "limits": {
           "dieAreaMm2": 400,
           "diePowerW": 300,
-          "cardPowerW": 2800
+          "cardPowerW": 3200
         },
         "holds": true
       }

@@ -74,7 +74,20 @@ assert(!('overlapDepth' in O.OPT),'prefetch depth is searched as x.depth');
 // thresholds that ARE consumed (partialThreshold*) stay.
 assert(!('reduceStartThreshold' in O.OPT),'reduceStartThreshold is not consumed by any model path');
 assert.equal(mm0.plan.c.depth,b.x.depth);assert.deepStrictEqual(d.search.space.depth,[1,2,3,4]);
-assert(O.evaluate({...b.x,depth:1}).rawUs>b.rawUs,'x.depth must reach the simulator');
+// x.depth must reach the simulator. It used to show at the published point (depth 1 was slower). With HBM3E the
+// published point is collective-bound with room in the shared window, and depth 1..4 all give the same raw, so
+// the check moves to a point where the window is tight and the lookahead decides whether a layer's weights are
+// resident in time: kvTile 32768 (depth 1: 755.0 us, depth 2: 821.9 us) and sharedMiB 8 (depth 1: 779.2, depth 2: 879.9).
+{
+  const tight = {...b.x, sharedMiB: 8};
+  const r1 = O.evaluate({...tight, depth: 1}), r2 = O.evaluate({...tight, depth: 2});
+  assert(r1.feasible && r2.feasible && r1.rawUs !== r2.rawUs, 'x.depth must reach the simulator: it changes raw where the shared window is tight');
+  assert.equal(O.mapped({...tight, depth: 1}).plan.c.depth, 1);
+  assert.equal(O.mapped({...tight, depth: 3}).plan.c.depth, 3);
+  // and the published point is insensitive to it, which is a property of this point, not of the knob
+  const flat = [1, 2, 3, 4].map(depth => O.evaluate({...b.x, depth}).rawUs);
+  assert(flat.every(v => Math.abs(v - flat[0]) < 1e-9), 'depth is inert at the collective-bound published point');
+}
 // Attention and small-op mapping (2026-09-25).
 assert.equal(O.OPT.pvMerge,'layer');assert.equal(O.OPT.softmaxFusion,true);assert.equal(O.OPT.epilogueFusion,true);
 {// pvMerge=layer: exactly one merging PV op per (layer, head tile), always the last context tile.
@@ -169,7 +182,7 @@ assert(b.p.dieArea<=P.BASIS.limits.dieArea&&b.p.diePower<=P.BASIS.limits.diePowe
 // Only area terms change: logic x1.277, SRAM x1.248, PHY x1, matrix also x(1.6/3.2); power is unchanged.
 {const n4=A.physical(b.x),q=P.resize(n4),S=P.PROCESS.SF4;
  assert.equal(P.BASIS.process,'SF4');assert.equal(P.BASIS.matrixTFPerMm2,3.2);assert.equal(P.BASIS.cooling,'liquid');
- assert.deepStrictEqual([P.BASIS.limits.diePower,P.BASIS.limits.cardPower,P.BASIS.limits.dieArea],[300,2800,400]);
+ assert.deepStrictEqual([P.BASIS.limits.diePower,P.BASIS.limits.cardPower,P.BASIS.limits.dieArea],[300,3200,400]);
  assert(Math.abs(q.area.matrix-n4.area.matrix*S.logic*A.TECH.matrixTFPerMm2/3.2)<1e-9&&Math.abs(q.area.sram-n4.area.sram*S.sram)<1e-9&&q.area.ucie===n4.area.ucie&&q.area.rdma===n4.area.rdma);
  assert(Math.abs(q.area.noc-n4.area.noc*S.logic)<1e-9&&q.diePower===n4.diePower&&q.cardPower===n4.cardPower,'the basis rescales area only');}
 assert(b.localPortModel&&b.localPortModel.chargedCost&&b.localPortModel.chargedCost.powerWPerDie>0);

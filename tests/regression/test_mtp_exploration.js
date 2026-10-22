@@ -6,6 +6,8 @@
 //    time, the TPS/acceptance tables follow from the rows, and the model preset is left untouched.
 // 4. The artifact is isolated from the baseline, and the document quotes it.
 const assert = require('assert');
+// The MC640 profile's tier (ADR-0026: HBM3E), read from bandwidthTiers rather than written as 640.
+const STRETCH_GBS = require('../../teams/hardware/src/resource_profiles.js').mcProfiles.MC640.payloadGBsPerCube;
 const fs = require('fs');
 const {build} = require('../../integration/detailed/k3_operator_sram_sim.js');
 const O = require('../../integration/detailed/k3_rdma_final_tuning_model.js');
@@ -39,7 +41,18 @@ assert(shared.ops.find(o => o.name === 'QK (absorbed MLA)').flops === indep.ops.
 assert(/^EXPLORATORY/.test(art.status), 'the artifact must declare itself EXPLORATORY');
 assert.strictEqual(art.inputs.baselineSha256, base.sha256, 'artifact was built from a different k3_mc_baseline.json; rerun npm run mtp:explore');
 assert.strictEqual(art.inputs.goalTpsPerUser, base.goal);
-near(art.checkRow.verifyRawUs, base.point.rawLatencyUs, 1e-9, 'k=1 BF16 MC640 row is the published step');
+// The published step, replayed at the published knobs, is the published raw: the exploration and the baseline
+// are the same model at the same point.
+const replayedPublished = M.step(base.x, {dtype: 'bf16Dense', mcGBs: base.x.mcGBs, tokens: 1, union: 'worst', knobs: {}});
+near(replayedPublished.rawUs, base.point.rawLatencyUs, 1e-9, 'k=1 BF16 MC640 replay at the published knobs is the published step');
+// The k=1 row is the best step over the exploration's retune grid, which can only be at or below the published
+// step. Under ADR-0026 it is BELOW: depth 1 with kvTile 32768 gives 754.97 us against the published 759.94 us
+// (1132.09 against 1124.70 TPS/usr, feasible under every robustness constraint). search:final does not reach
+// it because depth and kvTile are not in its pair moves and neither knob helps alone (depth is inert; kvTile
+// 32768 alone is 1039.86). The gap is recorded and bounded here, not hidden: if it grows, the published point
+// has stopped being near the best this grid finds.
+assert(art.checkRow.verifyRawUs <= base.point.rawLatencyUs + 1e-9, 'the retuned k=1 row can never be slower than the published step');
+assert((base.point.rawLatencyUs - art.checkRow.verifyRawUs) / base.point.rawLatencyUs < 0.01, 'the published step must stay within 1% of the best step the retune grid finds');
 const denseBefore = E.MODEL_PRESETS.kimiK3.dtype.dense;
 for (const r of art.rows) {
   assert(r.feasible && r.tunedKnobs, `row ${r.dtype}/${r.mcGBs}/${r.union}/k${r.verifyTokens} has no feasible tuning`);
@@ -75,8 +88,11 @@ for (const p of art.perf) {
   assert.strictEqual(p.bestVerifyTokens, bestK);
   assert.strictEqual(p.meetsGoal, best >= base.goal);
 }
-near(art.perf.find(p => p.dtype === 'bf16Dense' && p.mcGBs === 640 && p.acceptance === 0.2 && p.union === 'worst' && p.draftLayerEquiv === 1).tpsPerUser,
-  base.point.tpsPerUser, 1e-9, 'at the published point and the reported 0.2 acceptance gain k=1 stays optimal and equals the baseline');
+// At the reported 0.2 acceptance gain k=1 stays the optimum (the perf row's best k is 1), and its TPS/usr is the
+// retuned k=1 step's: at or above the published value, within the same 1% bound as the check row above.
+const atReported = art.perf.find(p => p.dtype === 'bf16Dense' && p.mcGBs === STRETCH_GBS && p.acceptance === 0.2 && p.union === 'worst' && p.draftLayerEquiv === 1);
+assert.strictEqual(atReported.bestVerifyTokens, 1, 'at the published point and the reported 0.2 acceptance gain k=1 stays optimal');
+assert(atReported.tpsPerUser >= base.point.tpsPerUser - 1e-9 && atReported.tpsPerUser < base.point.tpsPerUser * 1.01, 'and its TPS/usr is the published value or the retuned k=1 step within 1% above it');
 for (const r of art.alphaForGoal) {
   if (r.minAcceptance === null) continue;
   const at = a => {
@@ -100,9 +116,9 @@ for (const dtype of ['bf16Dense', 'fp8Dense']) {
   table.push(`| ${dtype === 'bf16Dense' ? 'BF16' : 'FP8 稠密'} | ${cells.join(' | ')} |`);
 }
 for (const row of table) assert(doc.includes(row), `doc 21 section 6.4 table is stale: ${row}`);
-const step640 = k => find('bf16Dense', 640, 'worst', k).verifyRawUs.toFixed(1);
+const step640 = k => find('bf16Dense', STRETCH_GBS, 'worst', k).verifyRawUs.toFixed(1);
 for (const k of [1, 2, 3, 4]) assert(doc.includes(step640(k)), `doc 21 section 6.4 must quote the k=${k} step time ${step640(k)}`);
-const mc640 = a => Math.round(art.perf.find(p => p.dtype === 'bf16Dense' && p.mcGBs === 640 && p.acceptance === a && p.union === 'worst' && p.draftLayerEquiv === 1).tpsPerUser);
+const mc640 = a => Math.round(art.perf.find(p => p.dtype === 'bf16Dense' && p.mcGBs === STRETCH_GBS && p.acceptance === a && p.union === 'worst' && p.draftLayerEquiv === 1).tpsPerUser);
 assert(doc.includes(`${mc640(0.4)} / ${mc640(0.6)} / ${mc640(0.8)} TPS/usr`), 'doc 21 section 6.4 MC640 TPS list is stale');
 for (const f of fs.readdirSync('out/governance')) assert(!fs.readFileSync(`out/governance/${f}`, 'utf8').includes('mtp_exploration'), `${f}: no gate may depend on the exploratory scenario`);
 

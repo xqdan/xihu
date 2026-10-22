@@ -4,7 +4,7 @@
   "status": "UNVERIFIED",
   "document": "teams/hardware/docs/09_PACKAGE_POWER_RAS.md",
   "scope": "Every alternative the physical domain considers for the 7-reticle package: how many compute dies and cubes the window holds, which process and matrix density the area is derived on, what cooling and per-die power ceiling apply, and which keep-out fraction is reserved. integration/detailed/physical_search.js enumerates the product of the searched dimensions, drops combinations that violate a stated constraint, scores the rest on package area conservation, die and card power and PHY shoreline, and writes only the winner to out/detailed/physical_design.json. The per-option comparison is quoted in the document.",
-  "evidence": "UNVERIFIED: this file was drafted from the repository documents and the published baseline by an agent, not derived by the physical domain owner. The limits (die area 400 mm2, die power 300 W, card power 2800 W, placement window 5248 mm2) come from k3_mc_baseline.json#tpsDesign.hardware.limits and #package (ADR-0018, ADR-0005); the process and matrix-density scaling comes from integration/detailed/k3_physical_basis.js (ASSUMPTION B-006). Every option below carries an evidence string saying where its number came from. Anything labelled ASSUMPTION is a placeholder the domain owner must calibrate or delete. This space does not include thermal resistance, VRM or cold-plate models: the document carries cooling as ASSUMPTION (O-015) and this search cannot improve on that.",
+  "evidence": "UNVERIFIED: this file was drafted from the repository documents and the published baseline by an agent, not derived by the physical domain owner. The limits (die area 400 mm2, die power 300 W, card power 3200 W, placement window 5248 mm2) come from k3_mc_baseline.json#tpsDesign.hardware.limits and #package (ADR-0018, ADR-0005); the process and matrix-density scaling comes from integration/detailed/k3_physical_basis.js (ASSUMPTION B-006). Every option below carries an evidence string saying where its number came from. Anything labelled ASSUMPTION is a placeholder the domain owner must calibrate or delete. This space does not include thermal resistance, VRM or cold-plate models: the document carries cooling as ASSUMPTION (O-015) and this search cannot improve on that.",
   "caliber": {
     "dieArea": "per compute die, mm2, on the searched process basis, including the charged shared-port scaling cost",
     "diePower": "per compute die, W, at the published frequency",
@@ -22,13 +22,13 @@
     "areaConservationReason": "the document states all unit areas + keep-out = package usable area, error 0; a non-zero residual means a term is unaccounted for, not that the budget is loose",
     "dieAreaLimitMm2": 400,
     "diePowerLimitW": 300,
-    "cardPowerLimitW": 2800,
+    "cardPowerLimitW": 3200,
     "placementWindowMm2": 5248,
     "limitsReason": "k3_mc_baseline.json#tpsDesign.hardware.limits; the die limits reflect liquid cooling (ADR-0005). ADR-0021 makes this the single hardware spec"
   },
   "constraints": [
     "die area <= 400 mm2 and die power <= 300 W, both including any keep-out and port scaling the candidate charges",
-    "card power <= 2800 W (the MC term and the fixed overhead are charged, not assumed away)",
+    "card power <= 3200 W (ADR-0026; the MC term and the fixed overhead are charged, not assumed away)",
     "package area (dies + cubes) + reserve <= the 5248 mm2 placement window",
     "PHY shoreline <= the die edge budget (4 x sqrt(dieArea) x phyEdgeFraction); the published point sits at 24.21 / 52.95 mm and this constraint is what a naive lane increase breaks first",
     "the K3 detailed replay at the candidate reaches the contract target of requirements.contractEntry",
@@ -59,7 +59,7 @@
     "cooling": {
       "question": "Which cooling and per-die power ceiling the design is checked against",
       "options": {
-        "liquid": {"cooling": "liquid", "diePowerLimitW": 300, "cardPowerLimitW": 2800, "evidence": "card.cooling and BASIS.limits (ADR-0005, decision 2026-09-25): cold plate, die 300 W, card 2800 W. This is the published point. ASSUMPTION (O-015): cold plate, VRM and card power delivery are not modelled"},
+        "liquid": {"cooling": "liquid", "diePowerLimitW": 300, "cardPowerLimitW": 3200, "evidence": "card.cooling and BASIS.limits (ADR-0005, decision 2026-09-25, card limit raised 2800 -> 3200 W by ADR-0026): cold plate, die 300 W, card 3200 W. This is the published point. ASSUMPTION (O-015): cold plate, VRM and card power delivery are not modelled"},
         "air": {"cooling": "air", "diePowerLimitW": 260, "cardPowerLimitW": 2400, "evidence": "the superseded air-cooled limits, kept as the sensitivity that shows what the liquid decision bought; NOT a candidate the search may pick unless the domain owner reopens ADR-0005"}
       }
     },
