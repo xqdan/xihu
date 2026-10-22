@@ -4,7 +4,7 @@
   "document": "teams/hardware/docs/04_MEMORY_SUBSYSTEM_MC.md",
   "designSpace": {
     "file": "teams/hardware/inputs/memory_design_space.json",
-    "sha256": "a3351d596698789f35e0affb9a467126078af817293d1c30ef92727ecfa552a9",
+    "sha256": "b4a9ef75b3c39c9d8afb209696eb6c66533193f45ed465c7576a079b5b55f52f",
     "dimensions": [
       "mcGBs",
       "cubesPerCard",
@@ -38,14 +38,14 @@
     "contractEntry": "B-MEM-BW",
     "capacityFloorGBPerRank": 49.198161184,
     "dieAreaLimitMm2": 400,
-    "cardPowerLimitW": 2800,
+    "cardPowerLimitW": 3200,
     "placementWindowMm2": 5248
   },
   "contract": {
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "8843cd681d8198540f72eeb396770092d8fa7e82ac9f4f40f661ebcc0ee805c8",
+    "sha256": "803e687cdb1663ab025e567266661f14d15c6745ba54312368ee9d706106f5fd",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -54,8 +54,8 @@
     },
     "point": {
       "tauUs": 1.15,
-      "computeScale": 0.7444849443828728,
-      "mcGBs": 640
+      "computeScale": 0.7054374305145951,
+      "mcGBs": 1152
     }
   },
   "clause": {
@@ -63,7 +63,7 @@
     "quantity": "mcPayloadGBsPerCube",
     "owner": "mc",
     "ownerAgent": "memory-expert",
-    "min": 640,
+    "min": 1152,
     "source": "out/requirements/budget_frontier.json#B-MEM-BW"
   },
   "caliber": {
@@ -87,7 +87,7 @@
       "lEngines": 8,
       "hRows": 48,
       "hCols": 128,
-      "hEngines": 5,
+      "hEngines": 6,
       "ghz": 1,
       "vectorLanes": 512,
       "lMiB": 1,
@@ -101,27 +101,27 @@
       "tmaBytes": 512,
       "nocBytes": 256,
       "nocLanes": 4,
-      "reduceLanes": 4096,
+      "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
-      "mcGBs": 640,
+      "mcGBs": 1152,
       "rdmaLanes": 16,
       "weightTileMiB": 8,
-      "kvTile": 32768,
+      "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
       "windowFraction": 1
     },
     "cubesPerComputeDie": 2,
-    "publishedDieGBs": 896,
-    "publishedTier": 640
+    "publishedDieGBs": 1612.8,
+    "publishedTier": 1152
   },
   "design": {
     "mcGBs": {
-      "option": "640",
-      "gbs": 640,
+      "option": "1152",
+      "gbs": 1152,
       "classification": "STRETCH_AGGRESSIVE",
-      "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube; the P1 Final Tuning stretch point, not a manufacturing default. This is the published point"
+      "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube; ADR-0026: the MC640 profile slot now carries HBM3E at 9.0 Gb/s x 1024 bit = 1152 GB/s per stack, set just under the UCIe port limit (1152 x 0.7 = 806.4 < 819.2 GB/s; 9.2 Gb/s = 1177.6 GB/s would be port-capped) (ASSUMPTION: derived from a pin rate, not a vendor datasheet). Not a manufacturing default. This is the published point"
     },
     "cubesPerCard": {
       "option": "16",
@@ -164,22 +164,22 @@
   },
   "evaluation": {
     "k3System": {
-      "publishedTpsPerUser": 1101.771070241925,
-      "tpsPerUser": 1101.771070241925,
-      "rawLatencyUs": 775.7517671190814,
+      "publishedTpsPerUser": 1124.6970453558893,
+      "tpsPerUser": 1124.6970453558893,
+      "rawLatencyUs": 759.9387392632482,
       "contractTargetTpsPerUser": 1000
     },
     "classification": "STRETCH_AGGRESSIVE",
-    "mcGBs": 640,
-    "dieGBs": 896,
+    "mcGBs": 1152,
+    "dieGBs": 1612.8,
     "portCapped": false,
     "capacityGBPerCard": 256,
     "capacityMarginGB": 206.801838816,
-    "mcPowerW": 398.72,
-    "cardPowerW": 2722.9593600000007,
-    "packageAreaMm2": 4460.521432822018,
-    "areaReserveMm2": 787.4785671779819,
-    "dieAreaMm2": 357.56517910275227
+    "mcPowerW": 628.096,
+    "cardPowerW": 3010.0070400000004,
+    "packageAreaMm2": 4450.05770172958,
+    "areaReserveMm2": 797.94229827042,
+    "dieAreaMm2": 356.25721271619756
   },
   "conditionalAlternative": {
     "route": "fewerBytesPerToken",
@@ -196,29 +196,29 @@
     "tunedSoftwareKnobs": {
       "depth": 2,
       "weightTileMiB": 8,
-      "windowFraction": 0.5,
-      "kvTile": 16384
+      "windowFraction": 0.75,
+      "kvTile": 32768
     },
     "mcGBs": 400,
     "classification": "GRID",
     "cubes": 16,
-    "tpsPerUser": 1080.7813203642243,
+    "tpsPerUser": 1080.8878534045368,
     "dieGBs": 560,
     "mcPowerW": 291.20000000000005,
-    "cardPowerW": 2615.4393600000003,
+    "cardPowerW": 2673.1110400000007,
     "versusWinner": {
-      "winnerMcGBs": 640,
-      "winnerTpsPerUser": 1101.771070241925,
-      "mcGBsRatio": 0.625,
-      "mcPowerSavedW": 107.51999999999998,
-      "tpsDeltaPct": -1.9050917604046202,
+      "winnerMcGBs": 1152,
+      "winnerTpsPerUser": 1124.6970453558893,
+      "mcGBsRatio": 0.3472222222222222,
+      "mcPowerSavedW": 336.89599999999996,
+      "tpsDeltaPct": -3.895199345659328,
       "riskClassWinner": "STRETCH_AGGRESSIVE",
       "riskClassAlternative": "GRID"
     },
     "resplit": {
       "entry": "B-MEM-BW",
       "quantity": "mcPayloadGBsPerCube",
-      "currentMin": 640,
+      "currentMin": 1152,
       "proposedMin": 400
     },
     "status": "NOT the baseline: reported so that the cost of the open precision decision is a number; it cannot win until the condition closes"

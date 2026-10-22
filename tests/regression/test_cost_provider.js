@@ -35,6 +35,10 @@ for (const o of base.m.plan.ops) {
   assert(!('costObservations' in o), `${o.name} cites observations`);
 }
 const qk = base.m.plan.ops.find(o => o.name.startsWith('QK'));
+// How many ops share the QK name: one per softmax layer per KV tile. It follows the published kvTile
+// (ADR-0026 moved it 32768 -> 16384, so two tiles a layer), so it is counted from the plan, not typed.
+const QK_OPS = base.m.plan.ops.filter(o => o.name === qk.name).length;
+assert.strictEqual(QK_OPS % base.m.plan.model.softmaxLayers, 0, 'QK ops are a whole number of KV tiles per softmax layer');
 const obs = (id, op, shape, kernelUs, extra = {}) => ({id, op, shape, hardware, kernelUs, evidence: 'EMULATION_OBSERVED',
   source: 'synthetic test row', environment: 'test', repeats: 3, errorUs: 0.01, ...extra});
 
@@ -45,16 +49,16 @@ const qkSame = same.m.plan.ops.filter(o => o.name === qk.name);
 assert(qkSame.every(o => o.costSource === 'measured' && o.costEvidence === 'EMULATION_OBSERVED' && o.costObservations[0] === 'qk-equal'), 'every QK op takes the observation');
 assert(same.m.plan.ops.filter(o => o.name !== qk.name).every(o => o.costSource === 'analytical'), 'other ops stay analytical');
 
-// 2a. Measured: twice the analytical kernel on all 24 QK ops.
+// 2a. Measured: twice the analytical kernel on all QK ops.
 const slow = CP.withObservations([obs('qk-slow', qk.name, qk.costShape, 2 * qk.timing.kernel)], run);
-near(slow.m.services.kernel - base.m.services.kernel, 24 * qk.timing.kernel, 1e-6, 'measured kernel replaces the analytical line');
+near(slow.m.services.kernel - base.m.services.kernel, QK_OPS * qk.timing.kernel, 1e-6, 'measured kernel replaces the analytical line');
 assert(slow.r.rawUs > base.r.rawUs + 1, 'a slower measured QK costs wall time');
 near(slow.r.rawUs, slow.r.computeUs - slow.r.tmaHiddenUs + slow.r.commUs + slow.r.waitUs - slow.r.overlapUs, 1e-5, 'conservation with a measured kernel');
 const cov = CP.withObservations([obs('qk-slow', qk.name, qk.costShape, 2 * qk.timing.kernel, {evidence: 'SILICON_OBSERVED'})], () => C.coverage(x));
-near(cov.ledger.bySource.measured, 24 * 2 * qk.timing.kernel, 1e-6, 'coverage books the measured kernel');
+near(cov.ledger.bySource.measured, QK_OPS * 2 * qk.timing.kernel, 1e-6, 'coverage books the measured kernel');
 near(cov.ledger.byEvidence.SILICON_OBSERVED, cov.ledger.bySource.measured, 1e-9, 'coverage by evidence');
 near(cov.ledger.bySource.measured + cov.ledger.bySource.fitted + cov.ledger.bySource.analytical + cov.ledger.nonKernelUs, cov.ledger.rawUs, 1e-6, 'coverage sums to raw');
-assert(cov.shares.measured > 0.05 && cov.calibrationQueue[0].costSource.measured === 24, 'measured share and queue');
+assert(cov.shares.measured > 0.05 && cov.calibrationQueue[0].costSource.measured === QK_OPS, 'measured share and queue');
 
 // 2b. Fitted: two samples at 0.5x and 1.5x the shape interpolate to their mean; never extrapolated.
 const scaled = f => Object.fromEntries(CP.SHAPE_KEYS.map(k => [k, qk.costShape[k] * f]));
@@ -70,7 +74,7 @@ CP.withObservations(pair, () => {
   assert.strictEqual(CP.kernelCost(qk.name, {...qk.costShape, flops: qk.costShape.flops * 1.2}, x, 99).source, 'analytical', 'off the segment falls back');
   assert.strictEqual(CP.kernelCost(qk.name, qk.costShape, {...x, ghz: x.ghz * 1.2}, 99).source, 'analytical', 'other hardware falls back');
   assert.strictEqual(CP.kernelCost('PV + rescale accumulation', qk.costShape, x, 99).source, 'analytical', 'other op falls back');
-  near(C.coverage(x).ledger.bySource.fitted, 24 * 2, 1e-9, 'coverage books the fitted kernel');
+  near(C.coverage(x).ledger.bySource.fitted, QK_OPS * 2, 1e-9, 'coverage books the fitted kernel');
 });
 
 // 3. Schema.

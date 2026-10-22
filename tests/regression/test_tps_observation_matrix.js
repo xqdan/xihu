@@ -77,7 +77,10 @@ assert.deepStrictEqual([corr.fittedPoint, corr.detailedHoldout, corr.uncorrobora
 assert.strictEqual(corr.fittedPoint + corr.detailedHoldout + corr.uncorroborated + kinds('NONE'), 18);
 // The held-out rows are the only evidence of how the K3 factors move with bandwidth: keep them in a band.
 const holdoutRows = require('../../out/workload/planning_operator_workload.json').calibration.validation;
-assert.deepStrictEqual(holdoutRows.holdout.map(h => h.mcGBsPerCube), [320, 400, 480, 560, 640]);
+// 320..560 are fixed grid tiers; the last row is the fitted point, which sits at the MC640 profile's tier
+// (ADR-0026: HBM3E, read from bandwidthTiers rather than written as 640).
+const {mcProfiles} = require('../../teams/hardware/src/resource_profiles.js');
+assert.deepStrictEqual(holdoutRows.holdout.map(h => h.mcGBsPerCube), [320, 400, 480, 560, mcProfiles.MC640.payloadGBsPerCube]);
 assert.strictEqual(holdoutRows.degreesOfFreedom, 0);
 for (const h of holdoutRows.holdout.filter(x => x.role === 'HELD_OUT')) assert(Math.abs(h.residualPct) < 10, `held-out residual at ${h.mcGBsPerCube} GB/s: ${h.residualPct.toFixed(2)}%`);
 assert(Math.abs(corr.heldOutMaxAbsResidualPct - holdoutRows.heldOutMaxAbsResidualPct) < 1e-9);

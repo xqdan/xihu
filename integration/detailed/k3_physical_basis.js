@@ -21,9 +21,9 @@
  * which was ~2-3x above the tensor-array area implied by shipping N4-class
  * parts; the SF4 logic factor applies on top. Needs a MAC-array macro (B-006).
  *
- * Cooling (ASSUMPTION): liquid (cold plate). Die 300 W and card 2800 W replace
- * the air-cooled 260 W / 2400 W. Cold plate, VRM and card power delivery are
- * not modeled.
+ * Cooling (ASSUMPTION): liquid (cold plate). Die 300 W and card 3200 W replace
+ * the air-cooled 260 W / 2400 W (ADR-0005 set card 2800 W; ADR-0026 raises it to 3200 W
+ * for 16 HBM3E stacks). Cold plate, VRM and card power delivery are not modeled (O-015).
  */
 const A = require('./k3_architecture_search.js');
 
@@ -35,7 +35,7 @@ const BASIS = {
   process: 'SF4',
   matrixTFPerMm2: 3.2,
   cooling: 'liquid',
-  limits: {dieArea: A.LIMITS.dieArea, diePower: 300, cardPower: 2800, packageArea: A.LIMITS.packageArea, packageUtil: A.LIMITS.packageUtil}
+  limits: {dieArea: A.LIMITS.dieArea, diePower: 300, cardPower: 3200, packageArea: A.LIMITS.packageArea, packageUtil: A.LIMITS.packageUtil}
 };
 // Every physical() area term must be classified; a new term fails loudly.
 const CLASS = {matrix: 'logic', vector: 'logic', banks: 'logic', cores: 'logic', tma: 'logic', noc: 'logic', reduce: 'logic', misc: 'logic', sram: 'sram', ucie: 'phy', rdma: 'phy'};

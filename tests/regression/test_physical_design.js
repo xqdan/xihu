@@ -51,21 +51,22 @@ assert(!/"(alternatives|candidates|perOption|sweep)"\s*:\s*[[{]/.test(JSON.strin
 assert(stored.designSpace.feasible > 0 && stored.designSpace.feasible <= stored.designSpace.candidates);
 
 // 3. The winner reproduces the published hardware point. This is the test that
-// keeps the model and the basis honest: 09 section 0 publishes dieArea 365.34,
-// diePower 283.27, card power 2744.88, package 4522.73 and shoreline 24.21/52.95,
+// keeps the model and the basis honest: 09 section 0 publishes dieArea 367.88,
+// diePower 297.75, card power 3090.06, package 4543.07 and shoreline 24.21/53.13
+// (the HBM3E point of ADR-0026; before it these were 365.34 / 283.27 / 2744.88 / 4522.73 / 24.21/52.95),
 // and tpsDesign.hardware is the single hardware spec (ADR-0021 P1). A replay
-// that dropped the shared-port charge reproduces 357.565 mm2 / 280.530 W instead
+// that dropped the shared-port charge reproduces 360.108 mm2 / 295.006 W instead (357.565 / 280.530 at the pre-ADR-0026 point)
 // and would fail here -- which is exactly how that modelling error was caught.
 const ev = stored.evaluation, hw = stored.hardware, req = stored.requirements;
 const D = result.ctx.space.dimensions;
 const tol = v => v * 1e-9 * Math.max(1, Math.abs(v));
 for (const [label, got, want] of [
-  ['die area', ev.dieAreaMm2, 365.3410392708195],
-  ['die power', ev.diePowerW, 283.2693760000001],
-  ['card power', ev.cardPowerW, 2744.875008000001],
-  ['package area', ev.packageAreaMm2, 4522.728314166556],
+  ['die area', ev.dieAreaMm2, 367.8833795847228],
+  ['die power', ev.diePowerW, 297.7455360000001],
+  ['card power', ev.cardPowerW, 3090.0602880000006],
+  ['package area', ev.packageAreaMm2, 4543.067036677782],
   ['shoreline', ev.shorelineMm, 24.21333333333333],
-  ['edge budget', ev.edgeBudgetMm, 52.94630302642081]]) {
+  ['edge budget', ev.edgeBudgetMm, 53.134197577704875]]) {
   assert(Math.abs(got - want) <= tol(want) + 1e-12, `${label}: ${got} does not reproduce the published ${want}`);
 }
 assert.strictEqual(hw.publishedDieAreaMm2, ev.dieAreaMm2, 'the artifact must carry the published point it claims to reproduce');
@@ -207,8 +208,8 @@ const must = [
   ['conservation', `\`${f3(con.placedMm2, 3)} + ${f3(con.keepOutMm2, 3)} ≤ ${f2(con.windowMm2, 0)}\``],
   ['die margin', `**${f3(ev.diePowerLimitW - ev.diePowerW)} W**`],
   ['card margin', `**${f3(ev.cardPowerLimitW - ev.cardPowerW)} W**`],
-  ['port area', `357.565 + ${f3(portAreaMm2)} = ${f3(ev.dieAreaMm2)} mm²`],
-  ['port power', `280.530 + ${f3(portPowerW)} = ${f3(ev.diePowerW)} W`],
+  ['port area', `360.108 + ${f3(portAreaMm2)} = ${f3(ev.dieAreaMm2)} mm²`],
+  ['port power', `295.006 + ${f3(portPowerW)} = ${f3(ev.diePowerW)} W`],
   ...an.process.map(r => [`process ${r.process}`, `| \`${r.process}\` | ${f3(r.dieAreaMm2)} | ${f3(r.packageAreaMm2)} | ${f3(r.reserveMm2)} | ${f3(r.cardPowerW)} |`]),
   ...an.cooling.map(r => [`cooling ${r.cooling}`, `| \`${r.cooling}\` | ${f3(r.diePowerW)} / ${r.diePowerLimitW} | ${f3(r.cardPowerW)} / ${r.cardPowerLimitW} | ${f3(r.diePowerMarginW)} |`]),
   ...an.matrix.map(r => [`matrix ${r.matrixTFPerMm2}`, `| \`${r.matrixTFPerMm2}\` | ${f3(r.matrixAreaMm2)} | ${f3(r.dieAreaMm2)} | ${f3(r.reserveMm2)} |`]),

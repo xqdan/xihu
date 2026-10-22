@@ -27,7 +27,7 @@
       "fields": {
         "sharedMiB": [12, 16, 24],
         "depth": [0, 1, 2, 4],
-        "mcGBs": [480, 560, 640]
+        "mcGBs": [480, 560, 1152]
       },
       "evidence": "sharedMiB: sram_design_space.json options; depth: A.SPACE.depth (the prefetch depth the sram search left to coupling); mcGBs: memory_design_space.json options around the winner. Rows below B-SRAM-CAP or B-MEM-BW are replayed anyway and kept as rejected combinations with the clause named: they are the numbers an L1-b re-split would need"
     },

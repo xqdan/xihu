@@ -6,6 +6,8 @@
 //    time, the TPS/acceptance tables follow from the rows, and the model preset is left untouched.
 // 4. The artifact is isolated from the baseline, and the document quotes it.
 const assert = require('assert');
+// The MC640 profile's tier (ADR-0026: HBM3E), read from bandwidthTiers rather than written as 640.
+const STRETCH_GBS = require('../../teams/hardware/src/resource_profiles.js').mcProfiles.MC640.payloadGBsPerCube;
 const fs = require('fs');
 const {build} = require('../../integration/detailed/k3_operator_sram_sim.js');
 const O = require('../../integration/detailed/k3_rdma_final_tuning_model.js');
@@ -75,7 +77,7 @@ for (const p of art.perf) {
   assert.strictEqual(p.bestVerifyTokens, bestK);
   assert.strictEqual(p.meetsGoal, best >= base.goal);
 }
-near(art.perf.find(p => p.dtype === 'bf16Dense' && p.mcGBs === 640 && p.acceptance === 0.2 && p.union === 'worst' && p.draftLayerEquiv === 1).tpsPerUser,
+near(art.perf.find(p => p.dtype === 'bf16Dense' && p.mcGBs === STRETCH_GBS && p.acceptance === 0.2 && p.union === 'worst' && p.draftLayerEquiv === 1).tpsPerUser,
   base.point.tpsPerUser, 1e-9, 'at the published point and the reported 0.2 acceptance gain k=1 stays optimal and equals the baseline');
 for (const r of art.alphaForGoal) {
   if (r.minAcceptance === null) continue;
@@ -100,9 +102,9 @@ for (const dtype of ['bf16Dense', 'fp8Dense']) {
   table.push(`| ${dtype === 'bf16Dense' ? 'BF16' : 'FP8 稠密'} | ${cells.join(' | ')} |`);
 }
 for (const row of table) assert(doc.includes(row), `doc 21 section 6.4 table is stale: ${row}`);
-const step640 = k => find('bf16Dense', 640, 'worst', k).verifyRawUs.toFixed(1);
+const step640 = k => find('bf16Dense', STRETCH_GBS, 'worst', k).verifyRawUs.toFixed(1);
 for (const k of [1, 2, 3, 4]) assert(doc.includes(step640(k)), `doc 21 section 6.4 must quote the k=${k} step time ${step640(k)}`);
-const mc640 = a => Math.round(art.perf.find(p => p.dtype === 'bf16Dense' && p.mcGBs === 640 && p.acceptance === a && p.union === 'worst' && p.draftLayerEquiv === 1).tpsPerUser);
+const mc640 = a => Math.round(art.perf.find(p => p.dtype === 'bf16Dense' && p.mcGBs === STRETCH_GBS && p.acceptance === a && p.union === 'worst' && p.draftLayerEquiv === 1).tpsPerUser);
 assert(doc.includes(`${mc640(0.4)} / ${mc640(0.6)} / ${mc640(0.8)} TPS/usr`), 'doc 21 section 6.4 MC640 TPS list is stale');
 for (const f of fs.readdirSync('out/governance')) assert(!fs.readFileSync(`out/governance/${f}`, 'utf8').includes('mtp_exploration'), `${f}: no gate may depend on the exploratory scenario`);
 

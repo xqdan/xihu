@@ -22,7 +22,7 @@
     "minTpsPerUser": 1000,
     "minTpsReason": "the program goal (baseline.goal.target) is 1000 TPS/usr. The search reads the contract's target instead; this copy is for the exploration scripts (die_area_reallocation.js, mtp_exploration.js) that run without a contract",
     "dieAreaLimitMm2": 400,
-    "cardPowerLimitW": 2800,
+    "cardPowerLimitW": 3200,
     "placementWindowMm2": 5248,
     "limitsReason": "k3_mc_baseline.json#tpsDesign.hardware.limits (ADR-0021 P1) and package.placementWindowMm2 (ADR-0018); the die limits reflect liquid cooling (ADR-0005). Caliber caveat: this domain's card power is 8 x die + MC + the fixed 80 W, but it does not charge the shared-port term the physical domain adds (21.915648 W, O.chargeSharedPortCost), so 2800 W is a looser check here than in the HW-09 space by exactly that difference (2722.9593600 + 21.915648 = 2744.8750080). Stated rather than silently tolerated; see 04 section 5.1.1 and 09 section 3"
   },
@@ -47,7 +47,7 @@
         "400": {"gbs": 400, "classification": "GRID", "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube (GRID)"},
         "480": {"gbs": 480, "classification": "DEFAULT_SEARCH_CAP", "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube; 1.5x the reference value, the default search cap"},
         "560": {"gbs": 560, "classification": "AGGRESSIVE", "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube; above the default cap, a report must mark it"},
-        "640": {"gbs": 640, "classification": "STRETCH_AGGRESSIVE", "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube; the P1 Final Tuning stretch point, not a manufacturing default. This is the published point"}
+        "1152": {"gbs": 1152, "classification": "STRETCH_AGGRESSIVE", "evidence": "k3_mc_baseline.json#bandwidthTiers.tiersGBsPerCube; ADR-0026: the MC640 profile slot now carries HBM3E at 9.0 Gb/s x 1024 bit = 1152 GB/s per stack, set just under the UCIe port limit (1152 x 0.7 = 806.4 < 819.2 GB/s; 9.2 Gb/s = 1177.6 GB/s would be port-capped) (ASSUMPTION: derived from a pin rate, not a vendor datasheet). Not a manufacturing default. This is the published point"}
       }
     },
     "cubesPerCard": {
