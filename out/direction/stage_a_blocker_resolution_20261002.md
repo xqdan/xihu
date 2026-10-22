@@ -2,7 +2,7 @@
 
 Run ID: `stage-a-20261002-token-time`
 Manifest hash: `a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083`
-Source commit: `2c1c57722e1e27cb8223a865348520d59de37b79`
+Source commit: `4fa22b29ed3469e44b1c594a17c355e5a2ef52c0`
 
 ## Planning token time (integration/planning/token_time.js)
 
@@ -107,7 +107,7 @@ Axes: L/H ratio 8+4 / 4+4 / 12+4 / 16+4 / 8+8 / 8+12 / 8+16; local SRAM 1/4 MiB 
 
 Area and power from `A.physical(x, dies)` rescaled by `k3_physical_basis.resize`; TPS/usr from token time with the shape's peaks and MC bandwidth carried on the slot. Both are the SAME authorities the published grid uses, so a row here is comparable with a row above.
 
-| Morphology | L/H | local/shared MiB per die | MC | dies | TP | die mm2 (max 400) | die W (max 300) | card W (max 2800) | package mm2 (max 5248) | worst min TPS | worst model | contract |
+| Morphology | L/H | local/shared MiB per die | MC | dies | TP | die mm2 (max 400) | die W (max 300) | card W (max 3200) | package mm2 (max 5248) | worst min TPS | worst model | contract |
 |---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
 | `P1-compact-N12x4-MC640-TP32` | 12+4 | 28/16 | MC640 | 8 | 32 | 396.2 | 310.6 **OVER** | 3193 | 4770 | 1176.1 | K3 | all entries satisfied |
 | `P1-compact-L1H2S16-MC640-TP32` | 8+4 | 16/16 | MC640 | 8 | 32 | 356.1 | 289.8 | 3026 | 4449 | 1142.6 | K3 | all entries satisfied |
