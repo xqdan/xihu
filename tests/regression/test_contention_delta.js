@@ -31,11 +31,18 @@ near(plain.rawUs, spec.tpsDesign.point.rawLatencyUs, 1e-6, 'published raw');
 const ev = D.evaluate(x, 'none');
 assert(!('contention' in ev.services), "contention 'none' books no contention service");
 
-// 2. Proportional: conserved; zero at the published point; a real cost where the pair exceeds the caps.
+// 2. Proportional: conserved; negligible at the published point; a real cost where the pair exceeds the caps.
+// "Negligible", not "zero": the published point's overlapping pair (Shared SiLU x up + Wdown + Router
+// all-gather) draws 1.00097x the fabric cap on one layer, so proportional sharing books 5.2e-6 us there
+// -- 6.9e-9 of raw. The tighter claim ("no cap is reached at the published point") stopped holding when
+// the point moved to the ADR-0026 numbers; the headroom over the cap is the quantity to watch, so it is
+// asserted as a bound rather than asserted away.
 const prop = simulate(m.plan, m.window, {contention: 'proportional'});
 conserved(prop, 'published proportional');
-near(prop.rawUs, plain.rawUs, 1e-6, 'published point under proportional sharing');
-assert(Object.values(prop.contention.peakForegroundLoad).every(v => v.load < 1), 'published overlap stays under every cap');
+near(prop.rawUs, plain.rawUs, 1e-4, 'published point under proportional sharing');
+const peak = prop.contention.peakForegroundLoad;
+assert(prop.contentionUs >= 0 && prop.contentionUs / prop.rawUs < 1e-3, `published contention stays negligible (${prop.contentionUs} us)`);
+assert(Object.values(peak).every(v => v.load < 1.01), `published overlap stays within 1% of every cap (${JSON.stringify(Object.fromEntries(Object.entries(peak).map(([k, v]) => [k, v.load])))})`);
 const evp = D.evaluate(x, 'proportional');
 near(Object.values(evp.services).reduce((a, v) => a + v, 0) + evp.waitUs, evp.rawUs, 1e-6, 'services + wait = raw with contention booked');
 const c = m.plan.c, R = c.sramReadTBs * 1e6, F = c.fabricTBs * 1e6;

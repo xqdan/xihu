@@ -7,7 +7,7 @@
   },
   "inputs": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "2627bf313136ddb4af65e658435879d94f236b55ba0706ad67975f8c8da36e87",
+    "baselineSha256": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39",
     "goalTpsPerUser": 1000,
     "pessimisticPoints": {
       "compute": {
@@ -15,14 +15,14 @@
         "vectorUtil": 0.25,
         "unpackParamsPerLaneCycle": 1,
         "layoutImbalance": 1.3,
-        "kvTile": 16384
+        "kvTile": 32768
       },
       "allUnmeasured": {
         "matrixUtil": 0.5,
         "vectorUtil": 0.25,
         "unpackParamsPerLaneCycle": 1,
         "layoutImbalance": 1.3,
-        "kvTile": 16384,
+        "kvTile": 32768,
         "mcUtil": 0.65,
         "prediction": 0.7,
         "launchScale": 0.7
@@ -38,33 +38,33 @@
   "published": {
     "feasible": true,
     "nominal": {
-      "tps": 1124.6970453558893,
-      "dieAreaMm2": 364.0330728842648,
-      "diePowerW": 290.47833600000007,
-      "cardPowerW": 3031.9226880000006,
-      "packageAreaMm2": 4512.2645830741185
+      "tps": 1138.4842104608174,
+      "dieAreaMm2": 361.6787333884665,
+      "diePowerW": 292.4751360000001,
+      "cardPowerW": 3047.8970880000006,
+      "packageAreaMm2": 4493.429867107732
     },
     "compute": {
-      "tps": 947.091984280225,
-      "dieAreaMm2": 364.0330728842648,
-      "diePowerW": 290.47833600000007,
-      "cardPowerW": 3031.9226880000006,
-      "packageAreaMm2": 4512.2645830741185
+      "tps": 941.5128132476201,
+      "dieAreaMm2": 361.6787333884665,
+      "diePowerW": 292.4751360000001,
+      "cardPowerW": 3047.8970880000006,
+      "packageAreaMm2": 4493.429867107732
     },
     "allUnmeasured": {
-      "tps": 935.4383556784363,
-      "dieAreaMm2": 364.0330728842648,
-      "diePowerW": 290.47833600000007,
-      "cardPowerW": 2995.0586880000005,
-      "packageAreaMm2": 4512.2645830741185
+      "tps": 926.5200864481925,
+      "dieAreaMm2": 361.6787333884665,
+      "diePowerW": 292.4751360000001,
+      "cardPowerW": 3011.0330880000006,
+      "packageAreaMm2": 4493.429867107732
     }
   },
   "envelope": {
     "published": {
-      "dieAreaMm2": 364.0330728842648,
-      "diePowerW": 290.47833600000007,
-      "cardPowerW": 3031.9226880000006,
-      "packageAreaMm2": 4512.2645830741185
+      "dieAreaMm2": 361.6787333884665,
+      "diePowerW": 292.4751360000001,
+      "cardPowerW": 3047.8970880000006,
+      "packageAreaMm2": 4493.429867107732
     },
     "limits": {
       "dieAreaMm2": 400,
@@ -73,44 +73,31 @@
       "packageAreaMm2": 5248
     },
     "headroom": {
-      "dieAreaMm2": 35.96692711573519,
-      "diePowerW": 9.52166399999993,
-      "cardPowerW": 168.07731199999944,
-      "packageAreaMm2": 735.7354169258815
+      "dieAreaMm2": 38.321266611533474,
+      "diePowerW": 7.524863999999923,
+      "cardPowerW": 152.10291199999938,
+      "packageAreaMm2": 754.5701328922678
     },
     "headroomFraction": {
-      "dieArea": 0.08991731778933798,
-      "diePower": 0.0317388799999998,
-      "cardPower": 0.05252415999999982,
-      "packageArea": 0.14019348645691343
+      "dieArea": 0.0958031665288337,
+      "diePower": 0.025082879999999697,
+      "cardPower": 0.04753215999999982,
+      "packageArea": 0.14378241861514252
     }
   },
   "marginals": [
     {
       "field": "vectorLanes",
-      "from": 512,
-      "to": 384,
+      "from": 1024,
+      "to": 768,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1073.5123500762402,
-      "dNominalTps": -51.18469527964908,
-      "computeTps": 845.1985635844319,
-      "dComputeTps": -101.89342069579311,
-      "dDieAreaMm2": -2.942924369747857,
-      "dDiePowerW": -1.9968000000000643
-    },
-    {
-      "field": "vectorLanes",
-      "from": 512,
-      "to": 640,
-      "feasible": true,
-      "reason": null,
-      "nominalTps": 1144.6258136596803,
-      "dNominalTps": 19.928768303791003,
-      "computeTps": 986.1220874489351,
-      "dComputeTps": 39.03010316871007,
-      "dDieAreaMm2": 2.942924369747857,
-      "dDiePowerW": 1.9968000000000075
+      "nominalTps": 1134.392902186717,
+      "dNominalTps": -4.091308274100356,
+      "computeTps": 920.7810476185987,
+      "dComputeTps": -20.731765629021425,
+      "dDieAreaMm2": -5.885848739495827,
+      "dDiePowerW": -3.9936000000000718
     },
     {
       "field": "reduceLanes",
@@ -118,10 +105,10 @@
       "to": 1024,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1084.0866087277088,
-      "dNominalTps": -40.61043662818042,
-      "computeTps": 918.1296023722716,
-      "dComputeTps": -28.962381907953386,
+      "nominalTps": 1096.8904310255489,
+      "dNominalTps": -41.593779435268516,
+      "computeTps": 912.8854949895419,
+      "dComputeTps": -28.627318258078162,
       "dDieAreaMm2": -10.463731092436944,
       "dDiePowerW": -8.192000000000064
     },
@@ -129,14 +116,14 @@
       "field": "reduceLanes",
       "from": 2048,
       "to": 3072,
-      "feasible": true,
-      "reason": null,
-      "nominalTps": 1138.918534860588,
-      "dNominalTps": 14.221489504698638,
-      "computeTps": 957.1564789578176,
-      "dComputeTps": 10.06449467759262,
-      "dDieAreaMm2": 10.463731092437001,
-      "dDiePowerW": 8.19199999999995
+      "feasible": false,
+      "reason": "die power after shared-port scaling",
+      "nominalTps": null,
+      "dNominalTps": null,
+      "computeTps": null,
+      "dComputeTps": null,
+      "dDieAreaMm2": null,
+      "dDiePowerW": null
     },
     {
       "field": "tmaEngines",
@@ -144,10 +131,10 @@
       "to": 3,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1123.2564021609298,
-      "dNominalTps": -1.4406431949594207,
-      "computeTps": 946.0702040368799,
-      "dComputeTps": -1.0217802433451197,
+      "nominalTps": 1138.4842104608174,
+      "dNominalTps": 0,
+      "computeTps": 940.5596083869898,
+      "dComputeTps": -0.9532048606303078,
       "dDieAreaMm2": -5.3647058823529505,
       "dDiePowerW": -0.9600000000000364
     },
@@ -157,10 +144,10 @@
       "to": 12,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1124.0952973206838,
-      "dNominalTps": -0.6017480352054463,
-      "computeTps": 946.5448278162623,
-      "dComputeTps": -0.5471564639626649,
+      "nominalTps": 1138.0851535279114,
+      "dNominalTps": -0.3990569329059781,
+      "computeTps": 941.180354681727,
+      "dComputeTps": -0.33245856589314826,
       "dDieAreaMm2": -1.400000000000034,
       "dDiePowerW": -1.6800000000000068
     },
@@ -170,11 +157,11 @@
       "to": 40,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1089.374899751002,
-      "dNominalTps": -35.32214560488728,
-      "computeTps": 918.370484277246,
-      "dComputeTps": -28.72150000297904,
-      "dDieAreaMm2": -19.619495798319235,
+      "nominalTps": 1102.3046885061824,
+      "dNominalTps": -36.17952195463499,
+      "computeTps": 905.3987244423893,
+      "dComputeTps": -36.114088805230836,
+      "dDieAreaMm2": -19.619495798319292,
       "dDiePowerW": -23.592960000000005
     },
     {
@@ -182,7 +169,7 @@
       "from": 48,
       "to": 56,
       "feasible": false,
-      "reason": "die power",
+      "reason": "die power, card power",
       "nominalTps": null,
       "dNominalTps": null,
       "computeTps": null,
@@ -196,11 +183,11 @@
       "to": 5,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1086.849541558098,
-      "dNominalTps": -37.847503797791205,
-      "computeTps": 889.3420029833458,
-      "dComputeTps": -57.74998129687924,
-      "dDieAreaMm2": -19.619495798319235,
+      "nominalTps": 1102.3046885061824,
+      "dNominalTps": -36.17952195463499,
+      "computeTps": 902.8365183745283,
+      "dComputeTps": -38.67629487309182,
+      "dDieAreaMm2": -19.619495798319292,
       "dDiePowerW": -23.592960000000005
     },
     {
@@ -209,11 +196,11 @@
       "to": 12,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1113.901219335594,
-      "dNominalTps": -10.79582602029518,
-      "computeTps": 910.144294341882,
-      "dComputeTps": -36.947689938343046,
-      "dDieAreaMm2": -5.213881008403348,
+      "nominalTps": 1134.2195829540253,
+      "dNominalTps": -4.264627506792067,
+      "computeTps": 938.6041555362044,
+      "dComputeTps": -2.9086577114156853,
+      "dDieAreaMm2": -5.213881008403405,
       "dDiePowerW": -1.8368640000000482
     },
     {
@@ -222,25 +209,25 @@
       "to": 128,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1086.3424417555,
-      "dNominalTps": -38.35460360038928,
-      "computeTps": 947.091984280225,
-      "dComputeTps": 0,
-      "dDieAreaMm2": -6.5398319327730405,
+      "nominalTps": 1086.486662691063,
+      "dNominalTps": -51.99754776975442,
+      "computeTps": 884.294121490897,
+      "dComputeTps": -57.21869175672305,
+      "dDieAreaMm2": -6.539831932773097,
       "dDiePowerW": -7.864320000000021
     },
     {
       "field": "nocLanes",
-      "from": 4,
+      "from": 2,
       "to": 3,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1124.0116380801933,
-      "dNominalTps": -0.6854072756959795,
-      "computeTps": 946.6105256820649,
-      "dComputeTps": -0.4814585981600885,
-      "dDieAreaMm2": -7.063018487394913,
-      "dDiePowerW": -2.995200000000068
+      "nominalTps": 1153.5339236085142,
+      "dNominalTps": 15.04971314769682,
+      "computeTps": 953.7310760561905,
+      "dComputeTps": 12.218262808570444,
+      "dDieAreaMm2": 7.06301848739497,
+      "dDiePowerW": 2.995200000000011
     },
     {
       "field": "lBanks",
@@ -248,12 +235,12 @@
       "to": 32,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1112.84543033577,
-      "dNominalTps": -11.851615020119198,
-      "computeTps": 946.917507936007,
-      "dComputeTps": -0.17447634421796465,
-      "dDieAreaMm2": -6.5398319327730405,
-      "dDiePowerW": -6.758400000000108
+      "nominalTps": 1121.7348426115166,
+      "dNominalTps": -16.749367849300825,
+      "computeTps": 932.6489333598631,
+      "dComputeTps": -8.86387988775698,
+      "dDieAreaMm2": -6.539831932773097,
+      "dDiePowerW": -6.7584000000000515
     },
     {
       "field": "hBanks",
@@ -261,26 +248,26 @@
       "to": 32,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1124.0545208543906,
-      "dNominalTps": -0.6425245014986558,
-      "computeTps": 913.767384108702,
-      "dComputeTps": -33.324600171523,
-      "dDieAreaMm2": -3.2699159663865203,
-      "dDiePowerW": -3.3792000000000826
+      "nominalTps": 1131.1304243181216,
+      "dNominalTps": -7.353786142695753,
+      "computeTps": 929.99537012011,
+      "dComputeTps": -11.517443127510091,
+      "dDieAreaMm2": -3.269915966386577,
+      "dDiePowerW": -3.3792000000000257
     }
   ],
   "proposals": [
     {
       "floor": "nominalWithin1Percent",
-      "nominalFloorTps": 1113.4500749023302,
+      "nominalFloorTps": 1127.0993683562092,
       "changed": {
-        "vectorLanes": {
-          "from": 512,
-          "to": 1024
-        },
         "reduceLanes": {
           "from": 2048,
           "to": 3072
+        },
+        "nocLanes": {
+          "from": 2,
+          "to": 4
         },
         "lBanks": {
           "from": 64,
@@ -318,7 +305,7 @@
         "kvTile": 16384,
         "headTile": 96,
         "depth": 4,
-        "windowFraction": 1
+        "windowFraction": 0.75
       },
       "result": {
         "feasible": true,
@@ -330,14 +317,14 @@
           "packageAreaMm2": 4637.8293561833625
         },
         "compute": {
-          "tps": 1036.1980177481353,
+          "tps": 958.4074651171798,
           "dieAreaMm2": 379.7286695229203,
           "diePowerW": 299.89913600000006,
           "cardPowerW": 3107.2890880000004,
           "packageAreaMm2": 4637.8293561833625
         },
         "allUnmeasured": {
-          "tps": 1022.2696904034013,
+          "tps": 946.6361893259159,
           "dieAreaMm2": 379.7286695229203,
           "diePowerW": 299.89913600000006,
           "cardPowerW": 3070.4250880000004,
@@ -349,13 +336,13 @@
           "step": 1,
           "move": [
             {
-              "field": "vectorLanes",
-              "to": 1024
+              "field": "nocLanes",
+              "to": 4
             }
           ],
-          "nominalTps": 1154.5457130708246,
-          "computeTps": 1035.7723121733413,
-          "allUnmeasuredTps": 1021.854773698136,
+          "nominalTps": 1154.361337315765,
+          "computeTps": 957.4667180971798,
+          "allUnmeasuredTps": 941.5979387098444,
           "dieAreaMm2": 375.80477036325647,
           "diePowerW": 298.46553600000004,
           "cardPowerW": 3095.8202880000003
@@ -373,15 +360,15 @@
             }
           ],
           "nominalTps": 1148.395540926423,
-          "computeTps": 1036.1980177481353,
-          "allUnmeasuredTps": 1022.2696904034013,
+          "computeTps": 958.4074651171798,
+          "allUnmeasuredTps": 946.6361893259159,
           "dieAreaMm2": 379.7286695229203,
           "diePowerW": 299.89913600000006,
           "cardPowerW": 3107.2890880000004
         }
       ],
       "holdOut": {
-        "allUnmeasuredGainTps": 86.83133472496502,
+        "allUnmeasuredGainTps": 20.116102877723392,
         "note": "tuned on the compute point, scored on the point that also moves mcUtil, prediction and launch scale"
       }
     },
@@ -389,13 +376,13 @@
       "floor": "nominalAtGoal",
       "nominalFloorTps": 1000,
       "changed": {
-        "vectorLanes": {
-          "from": 512,
-          "to": 1024
-        },
         "reduceLanes": {
           "from": 2048,
           "to": 3072
+        },
+        "nocLanes": {
+          "from": 2,
+          "to": 4
         },
         "lBanks": {
           "from": 64,
@@ -433,7 +420,7 @@
         "kvTile": 16384,
         "headTile": 96,
         "depth": 4,
-        "windowFraction": 1
+        "windowFraction": 0.75
       },
       "result": {
         "feasible": true,
@@ -445,14 +432,14 @@
           "packageAreaMm2": 4637.8293561833625
         },
         "compute": {
-          "tps": 1036.1980177481353,
+          "tps": 958.4074651171798,
           "dieAreaMm2": 379.7286695229203,
           "diePowerW": 299.89913600000006,
           "cardPowerW": 3107.2890880000004,
           "packageAreaMm2": 4637.8293561833625
         },
         "allUnmeasured": {
-          "tps": 1022.2696904034013,
+          "tps": 946.6361893259159,
           "dieAreaMm2": 379.7286695229203,
           "diePowerW": 299.89913600000006,
           "cardPowerW": 3070.4250880000004,
@@ -464,13 +451,13 @@
           "step": 1,
           "move": [
             {
-              "field": "vectorLanes",
-              "to": 1024
+              "field": "nocLanes",
+              "to": 4
             }
           ],
-          "nominalTps": 1154.5457130708246,
-          "computeTps": 1035.7723121733413,
-          "allUnmeasuredTps": 1021.854773698136,
+          "nominalTps": 1154.361337315765,
+          "computeTps": 957.4667180971798,
+          "allUnmeasuredTps": 941.5979387098444,
           "dieAreaMm2": 375.80477036325647,
           "diePowerW": 298.46553600000004,
           "cardPowerW": 3095.8202880000003
@@ -488,15 +475,15 @@
             }
           ],
           "nominalTps": 1148.395540926423,
-          "computeTps": 1036.1980177481353,
-          "allUnmeasuredTps": 1022.2696904034013,
+          "computeTps": 958.4074651171798,
+          "allUnmeasuredTps": 946.6361893259159,
           "dieAreaMm2": 379.7286695229203,
           "diePowerW": 299.89913600000006,
           "cardPowerW": 3107.2890880000004
         }
       ],
       "holdOut": {
-        "allUnmeasuredGainTps": 86.83133472496502,
+        "allUnmeasuredGainTps": 20.116102877723392,
         "note": "tuned on the compute point, scored on the point that also moves mcUtil, prediction and launch scale"
       }
     }

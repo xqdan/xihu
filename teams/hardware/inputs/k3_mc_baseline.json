@@ -99,7 +99,7 @@
         1,
         256
       ],
-      "vectorLanes": 512,
+      "vectorLanes": 1024,
       "localSramMiB": 1,
       "tmaEngines": 4,
       "tmaBytesPerCyclePerEngine": 512
@@ -110,7 +110,7 @@
         48,
         128
       ],
-      "vectorLanes": 512,
+      "vectorLanes": 1024,
       "localSramMiB": 4,
       "tmaEngines": 4,
       "tmaBytesPerCyclePerEngine": 512
@@ -125,10 +125,10 @@
     ],
     "reduceLanes": 2048,
     "bf16DenseTflops": 327.67999999999995,
-    "vectorTops": 12.288,
-    "estimatedAreaMm2": 364.0330728842648,
-    "estimatedPowerW": 290.47833600000007,
-    "estimatedCardPowerW": 3031.9226880000006,
+    "vectorTops": 24.576,
+    "estimatedAreaMm2": 361.6787333884665,
+    "estimatedPowerW": 292.4751360000001,
+    "estimatedCardPowerW": 3047.8970880000006,
     "sharedPortScalingCost": {
       "extraTBsPerDie": 3.6526080000000007,
       "areaMm2PerDie": 7.775860168067228,
@@ -174,29 +174,29 @@
     "profile": "P1-compact-executable",
     "source": "out/rdma/k3_rdma_final_tuning_results.json",
     "referenceMc320GBs": {
-      "tpsPerUser": 585.9326458591736,
-      "rawLatencyUs": 1458.7015431570244,
-      "e2eLatencyUs": 1706.6808054937185,
-      "computeUs": 431.127698078668,
+      "tpsPerUser": 579.5285360078923,
+      "rawLatencyUs": 1474.8209994774356,
+      "e2eLatencyUs": 1725.5405693885996,
+      "computeUs": 463.11653746235044,
       "commUs": 451.94999999999703,
-      "dmaWaitUs": 626.698086427566,
-      "commOverlapUs": 21.557884940039568,
-      "tmaFillUs": 135.4453612583327,
-      "tmaHiddenUs": 29.51635640918613,
-      "readBytesPerRankPerToken": 4924659385.599884,
+      "dmaWaitUs": 619.400230114246,
+      "commOverlapUs": 26.18022663710643,
+      "tmaFillUs": 187.99444293902036,
+      "tmaHiddenUs": 33.46554146205716,
+      "readBytesPerRankPerToken": 4924659385.599907,
       "effectiveDmaTBsPerCard": 3.3817640105355022
     },
     "stretchMc640GBs": {
-      "tpsPerUser": 1124.6970453558893,
-      "rawLatencyUs": 759.9387392632482,
-      "e2eLatencyUs": 889.1283249380003,
-      "computeUs": 431.127698078668,
+      "tpsPerUser": 1138.4842104608174,
+      "rawLatencyUs": 750.7358001521186,
+      "e2eLatencyUs": 878.3608861779787,
+      "computeUs": 463.11653746235044,
       "commUs": 451.94999999999703,
-      "dmaWaitUs": 11.915448039844115,
-      "commOverlapUs": 26.983333037886034,
-      "tmaFillUs": 135.4453612583327,
-      "tmaHiddenUs": 108.07107381736537,
-      "readBytesPerRankPerToken": 4965018092.799933,
+      "dmaWaitUs": 12.456727538698805,
+      "commOverlapUs": 34.412998259455144,
+      "tmaFillUs": 187.99444293902036,
+      "tmaHiddenUs": 142.37446658947522,
+      "readBytesPerRankPerToken": 4965018092.800013,
       "effectiveDmaTBsPerCard": 10.616752122371338
     }
   },
@@ -204,13 +204,13 @@
     "physicalMiBPerDie": 40,
     "physicalMiBPerCard": 320,
     "sharedPhysicalMiBPerCard": 128,
-    "sharedUsableWindowMiBPerCard": 108.8,
-    "simulatedPeakReservedMiBPerCard": 108.64545996881301,
+    "sharedUsableWindowMiBPerCard": 81.6,
+    "simulatedPeakReservedMiBPerCard": 81.418897468813,
     "note": "The simulator peak and window are card-aggregate shared-SRAM values, not per-die values. Per-core local SRAM is accounted separately by tile-fit constraints."
   },
   "acceptance": {
     "currentStatus": "target-met-in-model-only",
-    "reason": "The best stretch-MC candidate is 1124.70 TPS/usr and the reference-compatible 320 GB/s MC point is about 585.93 TPS/usr (single hardware spec P1, engineering model).",
+    "reason": "The best stretch-MC candidate is 1138.48 TPS/usr and the reference-compatible 320 GB/s MC point is about 579.53 TPS/usr (single hardware spec P1, engineering model).",
     "nextGate": "Freeze an implementable MC bandwidth/topology and reproduce at least 1050 TPS/usr in the detailed tile model before microarchitecture freeze.",
     "architectureGateTpsPerUser": 1050,
     "architectureGateStatus": "not-met (engineering model; gate requires the selected manufacturable MC route in the detailed tile model)"
@@ -246,14 +246,14 @@
       "integration/detailed/k3_rdma_final_tuning_model.js#OPT.oneWayUs": 0.05
     },
     "ceilingTpsByCount": {
-      "209": 1593.332856132225,
-      "301": 1330.8468664733018,
-      "393": 1142.6126228007734,
-      "485": 1001.0278045661893,
-      "510": 968.4191253012821
+      "209": 1622.8114978249782,
+      "301": 1351.350410961755,
+      "393": 1157.6934609230022,
+      "485": 1012.5838709098043,
+      "510": 979.2305063140415
     },
-    "overlapUs": 26.983333037886034,
-    "tmaHiddenUs": 108.07107381736537,
+    "overlapUs": 34.412998259455144,
+    "tmaHiddenUs": 142.37446658947522,
     "note": "ceiling(N) = 1e6 / ((computeUs - tmaHiddenUs + N x 1.15us - overlapUs) x 1.17), analytic given the simulator conservation identity raw = compute - tmaHidden + comm + wait - overlap, with DMA wait taken as zero; overlapUs is the shared-expert compute hidden under collectives and tmaHiddenUs the shared->local fills hidden on the TMA lanes, both held at their observed values (fewer collectives leave less time to hide fills under, so the ceiling is optimistic). The published point uses the spec tau as a per-collective floor; after the 2026-09-25 attention/small-op mapping (layer PV merge, softmax and epilogue fusion) the 393 ceiling is above 1000 TPS, so the remaining margin is DMA wait, not the collective count.",
     "blocker": "B-008 (tau basis unified at 1.15 us on 2026-09-25; physical derivation still depends on B-004/B-005)",
     "adr": "teams/council/adr/ADR-0004-collective-tau-basis-and-count-basis.md"
@@ -263,51 +263,51 @@
     "document": "docs/architecture/21_TPS_DESIGN_BASELINE.md",
     "adr": "teams/council/adr/ADR-0005-tps-design-baseline.md",
     "point": {
-      "tpsPerUser": 1124.6970453558893,
-      "rawLatencyUs": 759.9387392632482,
-      "e2eLatencyUs": 889.1283249380003,
+      "tpsPerUser": 1138.4842104608174,
+      "rawLatencyUs": 750.7358001521186,
+      "e2eLatencyUs": 878.3608861779787,
       "rawBudgetUs": 854.7008547008547,
-      "rawMarginUs": 94.76211543760655
+      "rawMarginUs": 103.96505454873613
     },
     "ledger": {
       "identity": "raw = compute - tmaHidden + comm + wait - overlap; TPS = 1e6 / (raw x engineeringMargin)",
-      "computeUs": 431.127698078668,
-      "tmaHiddenUs": 108.07107381736537,
+      "computeUs": 463.11653746235044,
+      "tmaHiddenUs": 142.37446658947522,
       "commUs": 451.94999999999703,
-      "dmaWaitUs": 11.915448039844115,
-      "overlapUs": 26.983333037886034,
-      "tmaFillUs": 135.4453612583327,
-      "tmaExposedUs": 27.37428744096733,
+      "dmaWaitUs": 12.456727538698805,
+      "overlapUs": 34.412998259455144,
+      "tmaFillUs": 187.99444293902036,
+      "tmaExposedUs": 45.61997634954514,
       "services": {
-        "kernel": 205.95345808217252,
-        "localTma": 42.874092680469154,
-        "tmaFill": 135.4453612583327,
+        "kernel": 184.61426947106307,
+        "localTma": 43.6530389945717,
+        "tmaFill": 187.99444293902036,
         "reduce": 28.46769230769231,
         "dieLink": 6.729843750000002,
         "launch": 11.657250000000241,
-        "assumedGain": 1.0658141036401503e-14,
+        "assumedGain": 1.4432899320127035e-14,
         "memoryTransport": 192.3679999999996,
-        "tpReduce": 2.0061188186813204,
+        "tpReduce": 1.8625473901098928,
         "cardLocal": 94.56383653846176,
         "portTail": 0,
-        "tauFloor": 163.0120446428572,
-        "commOverlap": -26.983333037886034,
-        "tmaHidden": -108.07107381736537
+        "tauFloor": 163.15561607142854,
+        "commOverlap": -34.412998259455144,
+        "tmaHidden": -142.37446658947522
       },
       "opTimeUsByCategory": {
-        "attentionCommon": 40.644469135742085,
-        "mlaAttention": 206.94956564270308,
+        "attentionCommon": 48.860695809545355,
+        "mlaAttention": 208.24058690166893,
         "collective": 451.94999999999703,
-        "linearAttention": 53.186943531806094,
-        "moe": 127.62709754464153,
-        "headAndSampling": 2.7196222237723218
+        "linearAttention": 62.40663481960261,
+        "moe": 140.23240149668086,
+        "headAndSampling": 3.376218434852908
       },
       "collectives": [
         {
           "name": "LSE merge / output reduce-scatter",
           "count": 24,
-          "timeUs": 24.794618131868134,
-          "avgProtocolUs": 1.033109088827839,
+          "timeUs": 24.65104670329671,
+          "avgProtocolUs": 1.0271269459706962,
           "workspaceBytes": 1325568
         },
         {
@@ -341,17 +341,17 @@
       ]
     },
     "dataMovement": {
-      "readBytesPerRankPerToken": 4965018092.799933,
-      "predictedExpertBytes": 807174143.9999865,
+      "readBytesPerRankPerToken": 4965018092.800013,
+      "predictedExpertBytes": 807174143.9999926,
       "mispredictedBytes": 161434828.7999997,
-      "dmaBusyUs": 474.5691696945295,
+      "dmaBusyUs": 560.1565860325059,
       "effectiveDmaTBsPerCard": 10.616752122371338,
       "dmaPreemptions": 69,
       "tmaCancels": 0,
       "kvBytesPerTokenPerLayer": 656,
       "backingGBPerRank": 49.198161184,
-      "sharedWindowMiBPerCard": 108.8,
-      "sharedPeakReservedMiBPerCard": 108.64545996881301,
+      "sharedWindowMiBPerCard": 81.6,
+      "sharedPeakReservedMiBPerCard": 81.418897468813,
       "localTileMiB": {
         "lCore": 0.36134033203125,
         "hCore": 1.5767578125
@@ -369,7 +369,7 @@
         "hCols": 128,
         "hEngines": 6,
         "ghz": 1,
-        "vectorLanes": 512,
+        "vectorLanes": 1024,
         "lMiB": 1,
         "hMiB": 4,
         "lBanks": 64,
@@ -380,7 +380,7 @@
         "tmaEngines": 4,
         "tmaBytes": 512,
         "nocBytes": 256,
-        "nocLanes": 4,
+        "nocLanes": 2,
         "reduceLanes": 2048,
         "ucieLanes": 128,
         "ucieGbps": 64,
@@ -390,12 +390,12 @@
         "kvTile": 16384,
         "headTile": 96,
         "depth": 4,
-        "windowFraction": 1
+        "windowFraction": 0.75
       },
       "perDie": {
         "lTensorTflops": 32.768,
         "hTensorTflops": 294.912,
-        "vectorTops": 12.288,
+        "vectorTops": 24.576,
         "reduceTops": 1.3312000000000002,
         "localSramMiB": 24,
         "dataSramMiB": 40,
@@ -409,7 +409,7 @@
           6,
           6
         ],
-        "nocTBs": 7.9872000000000005,
+        "nocTBs": 3.9936000000000003,
         "coreTmaTBs": 1.6384,
         "uciePortGBs": 819.2,
         "mcGBsPerDie": 1612.8,
@@ -418,20 +418,20 @@
       },
       "perCard": {
         "rdmaGBs": 800,
-        "powerW": 3031.9226880000006,
+        "powerW": 3047.8970880000006,
         "mcPowerW": 628.096,
-        "packageAreaMm2": 4512.2645830741185,
+        "packageAreaMm2": 4493.429867107732,
         "shorelineMm": 24.21333333333333,
-        "shorelineBudgetMm": 52.84937603884258
+        "shorelineBudgetMm": 52.67445800431107
       },
       "areaMm2": {
         "matrix": 130.79663865546215,
-        "vector": 11.771697478991596,
+        "vector": 23.543394957983192,
         "sram": 39.60695389266818,
         "banks": 32.699159663865544,
         "cores": 12.26218487394958,
         "tma": 21.45882352941176,
-        "noc": 35.91593949579831,
+        "noc": 21.789902521008397,
         "reduce": 23.482084033613443,
         "ucie": 22.336,
         "rdma": 10.6,
@@ -440,9 +440,9 @@
       },
       "powerW": {
         "matrix": 157.28639999999996,
-        "vector": 7.9872000000000005,
+        "vector": 15.974400000000001,
         "sram": 28.483200000000007,
-        "noc": 11.9808,
+        "noc": 5.9904,
         "tma": 3.84,
         "reduce": 16.384,
         "ucie": 31.45728,
@@ -450,8 +450,8 @@
         "control": 23.6,
         "sharedPorts": 2.7394560000000006
       },
-      "dieAreaMm2": 364.0330728842648,
-      "diePowerW": 290.47833600000007,
+      "dieAreaMm2": 361.6787333884665,
+      "diePowerW": 292.4751360000001,
       "limits": {
         "dieAreaMm2": 400,
         "diePowerW": 300,
@@ -474,7 +474,7 @@
         "matrixTFPerMm2": 3.2,
         "matrixTFPerMm2N4Ref": 1.6,
         "cooling": "liquid",
-        "dieAreaMm2AtN4Ref": 389.2004317460318
+        "dieAreaMm2AtN4Ref": 387.3572317460318
       },
       "tech": {
         "matrixUtil": 0.65,
@@ -540,8 +540,8 @@
           "role": "shared->local fills issued ahead on per-domain (L/H) TMA lanes",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 974.2509945094558,
-            "rawLatencyUs": 877.2902050063643
+            "tpsPerUser": 914.3814865745411,
+            "rawLatencyUs": 934.7311458620383
           }
         },
         {
@@ -553,8 +553,8 @@
           "role": "KV context tiles of the next x.depth layers prefetched into shared SRAM",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 1027.051402323425,
-            "rawLatencyUs": 832.188975904542
+            "tpsPerUser": 1023.9180376492153,
+            "rawLatencyUs": 834.7356167912995
           }
         },
         {
@@ -566,8 +566,8 @@
           "role": "demand fetches (routed-expert misses) park in-flight prefetches",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 1087.1260407923937,
-            "rawLatencyUs": 786.2021721767176
+            "tpsPerUser": 1084.171843968576,
+            "rawLatencyUs": 788.3444487658431
           }
         },
         {
@@ -579,8 +579,8 @@
           "role": "shared experts run under the Wdown + Router all-gather",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 1092.7616858973474,
-            "rawLatencyUs": 782.1475310959466
+            "tpsPerUser": 1054.9775382835692,
+            "rawLatencyUs": 810.1602391378292
           }
         },
         {
@@ -592,8 +592,8 @@
           "role": "online softmax pipelined on H vector lanes under QK; coupled to kvCache -- under fp8 the in-kernel dequant shares the same lanes and is charged against this hiding budget, so the two are not independent and their per-mechanism ablations understate the joint effect",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 1061.2649912650509,
-            "rawLatencyUs": 805.3604535489602
+            "tpsPerUser": 1105.0546881798605,
+            "rawLatencyUs": 773.4466572949756
           }
         },
         {
@@ -605,8 +605,8 @@
           "role": "launch cost scaled once by OPT.launchScale",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 1108.475532022371,
-            "rawLatencyUs": 771.0597392632437
+            "tpsPerUser": 1123.5444901613848,
+            "rawLatencyUs": 760.7183001521252
           }
         },
         {
@@ -618,8 +618,8 @@
           "role": "elementwise ops folded into the adjacent kernel",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 1097.4118691819922,
-            "rawLatencyUs": 778.8332518564306
+            "tpsPerUser": 1110.1100552611388,
+            "rawLatencyUs": 769.9244328525587
           }
         },
         {
@@ -631,8 +631,8 @@
           "role": "PV m/l/O merged once per layer, cross-die ring reduce-scatter by heads",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 1025.5465672794799,
-            "rawLatencyUs": 833.4100878209399
+            "tpsPerUser": 1036.9976237633675,
+            "rawLatencyUs": 824.2071487098113
           }
         },
         {
@@ -644,31 +644,8 @@
           "role": "FlashMLA FP8 KV layout, BF16 compute with in-kernel dequant; coupled to softmaxFusion -- the dequant runs on the H vector lanes and is charged against the softmax hiding budget, so ablating either alone understates the joint effect",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 976.3297693827479,
-            "rawLatencyUs": 875.422302488237
-          }
-        },
-        {
-          "key": "sharedPortScaling",
-          "on": {
-            "localWriteRatio": 1,
-            "tmaDedicatedPort": true,
-            "sharedReadScale": 1.18,
-            "sharedReadPerWrite": 0.18
-          },
-          "off": {
-            "localWriteRatio": 1,
-            "tmaDedicatedPort": false,
-            "sharedReadScale": 1,
-            "sharedReadPerWrite": 0
-          },
-          "layer": "hardware/SRAM ports",
-          "evidence": "MODEL (O-007)",
-          "role": "shared-SRAM write/read port scaling and dedicated TMA port, charged in area/power",
-          "ablation": {
-            "feasible": true,
-            "tpsPerUser": 1124.6949531049956,
-            "rawLatencyUs": 759.9401529643605
+            "tpsPerUser": 969.7336142250987,
+            "rawLatencyUs": 881.3769494665139
           }
         }
       ],
@@ -682,8 +659,8 @@
           ],
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 897.6254536316919,
-            "rawLatencyUs": 952.1798331841314
+            "tpsPerUser": 868.5204899268166,
+            "rawLatencyUs": 984.0883025947652
           }
         },
         "kernelMapping": {
@@ -695,8 +672,8 @@
           ],
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 936.9019989947567,
-            "rawLatencyUs": 912.2628146998308
+            "tpsPerUser": 971.7980067813284,
+            "rawLatencyUs": 879.50463855312
           }
         },
         "schedulerAndKernelMapping": {
@@ -712,8 +689,8 @@
           ],
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 766.8216026679901,
-            "rawLatencyUs": 1114.6019513888339
+            "tpsPerUser": 760.6503366326109,
+            "rawLatencyUs": 1123.644877992961
           }
         }
       },
@@ -723,8 +700,17 @@
           "note": "acts on duration only through GAIN, which is 1",
           "ablation": {
             "feasible": true,
-            "tpsPerUser": 1124.6970453558893,
-            "rawLatencyUs": 759.9387392632482
+            "tpsPerUser": 1138.4842104608174,
+            "rawLatencyUs": 750.7358001521186
+          }
+        },
+        {
+          "key": "sharedPortScaling",
+          "note": "buys 0 TPS at the published point but still charges its area and power",
+          "ablation": {
+            "feasible": true,
+            "tpsPerUser": 1138.4842104608174,
+            "rawLatencyUs": 750.7358001521186
           }
         }
       ],
@@ -733,15 +719,15 @@
         "off": "repo-510",
         "ablation": {
           "feasible": true,
-          "tpsPerUser": 956.6074115316865,
-          "rawLatencyUs": 893.4708684018426
+          "tpsPerUser": 966.748495700078,
+          "rawLatencyUs": 884.0984583916181
         },
         "note": "counting basis, not an optimization (ADR-0004)"
       }
     },
     "sensitivity": {
-      "tauBreakEvenUs": 1.39112497566821,
-      "tauHeadroomUsPerCollective": 0.24112497566821006,
+      "tauBreakEvenUs": 1.4145421235336797,
+      "tauHeadroomUsPerCollective": 0.26454212353367973,
       "assumptions": {
         "mcUtil": {
           "where": "A.TECH.mcUtil",
@@ -750,18 +736,18 @@
           "replays": {
             "0.6": {
               "feasible": true,
-              "tpsPerUser": 1122.1453133771784,
-              "rawLatencyUs": 761.6668220344566
+              "tpsPerUser": 1135.8321641141124,
+              "rawLatencyUs": 752.4886877697068
             },
             "0.65": {
               "feasible": true,
-              "tpsPerUser": 1123.5225519543114,
-              "rawLatencyUs": 760.7331541446545
+              "tpsPerUser": 1137.258651825777,
+              "rawLatencyUs": 751.5448252063869
             },
             "0.75": {
               "feasible": true,
-              "tpsPerUser": 1124.9359144417228,
-              "rawLatencyUs": 759.7773737404598
+              "tpsPerUser": 1138.7334748917294,
+              "rawLatencyUs": 750.5714669379677
             }
           },
           "lowerIsWorse": true,
@@ -778,23 +764,23 @@
           "replays": {
             "0.55": {
               "feasible": true,
-              "tpsPerUser": 1090.1846431055492,
-              "rawLatencyUs": 783.9964175849288
+              "tpsPerUser": 1096.3965179870613,
+              "rawLatencyUs": 779.5545139727826
             },
             "0.6": {
               "feasible": true,
-              "tpsPerUser": 1108.6114940570662,
-              "rawLatencyUs": 770.965175160685
+              "tpsPerUser": 1118.7998499306068,
+              "rawLatencyUs": 763.9443773199177
             },
             "0.7": {
               "feasible": true,
-              "tpsPerUser": 1138.8608671394934,
-              "rawLatencyUs": 750.4875084940174
+              "tpsPerUser": 1155.6799526094808,
+              "rawLatencyUs": 739.5653552447399
             }
           },
           "lowerIsWorse": true,
           "breakEven": {
-            "valueAtBudget": 0.40056797018478396
+            "valueAtBudget": 0.400416952063233
           }
         },
         "vectorUtil": {
@@ -804,23 +790,25 @@
           "replays": {
             "0.25": {
               "feasible": true,
-              "tpsPerUser": 1097.2200631200176,
-              "rawLatencyUs": 778.9694004231535
+              "tpsPerUser": 1133.5781666480161,
+              "rawLatencyUs": 753.9849300628294
             },
             "0.3": {
               "feasible": true,
-              "tpsPerUser": 1117.8982461176074,
-              "rawLatencyUs": 764.5605113606528
+              "tpsPerUser": 1136.4348740298065,
+              "rawLatencyUs": 752.0896042815716
             },
             "0.45": {
               "feasible": true,
-              "tpsPerUser": 1130.0928482722377,
-              "rawLatencyUs": 756.3102943334075
+              "tpsPerUser": 1140.8342636167806,
+              "rawLatencyUs": 749.1893274586629
             }
           },
           "lowerIsWorse": true,
           "breakEven": {
-            "valueAtBudget": 0.1332636295506745
+            "valueAtBudget": null,
+            "floor": 0.1,
+            "note": "the budget holds all the way to 0.1"
           }
         },
         "prediction": {
@@ -830,18 +818,18 @@
           "replays": {
             "0.6": {
               "feasible": true,
-              "tpsPerUser": 1109.8917747516912,
-              "rawLatencyUs": 770.0758525686628
+              "tpsPerUser": 1123.3161801186372,
+              "rawLatencyUs": 760.8729134575333
             },
             "0.7": {
               "feasible": true,
-              "tpsPerUser": 1117.2453638857244,
-              "rawLatencyUs": 765.0072959159546
+              "tpsPerUser": 1130.8493355530736,
+              "rawLatencyUs": 755.8043568048253
             },
             "0.9": {
               "feasible": true,
-              "tpsPerUser": 1132.2487950776833,
-              "rawLatencyUs": 754.87018261054
+              "tpsPerUser": 1146.2228791085827,
+              "rawLatencyUs": 745.6672434994105
             }
           },
           "lowerIsWorse": true,
@@ -858,28 +846,28 @@
           "replays": {
             "1": {
               "feasible": true,
-              "tpsPerUser": 1044.5575581774187,
-              "rawLatencyUs": 818.2419896440816
+              "tpsPerUser": 1122.6476161303074,
+              "rawLatencyUs": 761.3260318023499
             },
             "1.5": {
               "feasible": true,
-              "tpsPerUser": 1100.6412026300522,
-              "rawLatencyUs": 776.548118186465
+              "tpsPerUser": 1138.4842104608174,
+              "rawLatencyUs": 750.7358001521186
             },
             "0.8": {
               "feasible": true,
-              "tpsPerUser": 1005.1820300083986,
-              "rawLatencyUs": 850.2946025544383
+              "tpsPerUser": 1105.9811088883102,
+              "rawLatencyUs": 772.7987827567572
             },
             "0.5": {
               "feasible": true,
-              "tpsPerUser": 876.8817118712332,
-              "rawLatencyUs": 974.7048468794665
+              "tpsPerUser": 1055.6261630932563,
+              "rawLatencyUs": 809.6624397754232
             }
           },
           "lowerIsWorse": true,
           "breakEven": {
-            "valueAtBudget": 0.7787128057456358
+            "valueAtBudget": 0.4263870719039916
           }
         },
         "layoutImbalance": {
@@ -889,23 +877,23 @@
           "replays": {
             "1.3": {
               "feasible": true,
-              "tpsPerUser": 1087.6205881781705,
-              "rawLatencyUs": 785.8446814918517
+              "tpsPerUser": 1106.4121099691815,
+              "rawLatencyUs": 772.4977402178489
             },
             "1.4": {
               "feasible": true,
-              "tpsPerUser": 1064.2297872706097,
-              "rawLatencyUs": 803.1168314625679
+              "tpsPerUser": 1085.6855269949826,
+              "rawLatencyUs": 787.2453242206706
             },
             "1.8": {
               "feasible": true,
-              "tpsPerUser": 979.9306722757707,
-              "rawLatencyUs": 872.205431345378
+              "tpsPerUser": 1006.1210228430781,
+              "rawLatencyUs": 849.5010394332652
             }
           },
           "lowerIsWorse": false,
           "breakEven": {
-            "valueAtBudget": 1.6986543269114467
+            "valueAtBudget": 1.8334094002434997
           }
         },
         "launchScale": {
@@ -915,13 +903,13 @@
           "replays": {
             "1": {
               "feasible": true,
-              "tpsPerUser": 1108.475532022371,
-              "rawLatencyUs": 771.0597392632437
+              "tpsPerUser": 1123.5444901613848,
+              "rawLatencyUs": 760.7183001521252
             },
             "0.7": {
               "feasible": true,
-              "tpsPerUser": 1117.265162880935,
-              "rawLatencyUs": 764.9937392632538
+              "tpsPerUser": 1131.6444716484853,
+              "rawLatencyUs": 755.2733001521209
             }
           },
           "lowerIsWorse": false
@@ -934,12 +922,12 @@
             "vectorUtil": 0.25,
             "unpackParamsPerLaneCycle": 1,
             "layoutImbalance": 1.3,
-            "kvTile": 16384
+            "kvTile": 32768
           },
           "replay": {
             "feasible": true,
-            "tpsPerUser": 947.091984280225,
-            "rawLatencyUs": 902.4475646369386
+            "tpsPerUser": 941.5128132476201,
+            "rawLatencyUs": 907.7952447112012
           }
         },
         "allUnmeasured": {
@@ -948,77 +936,77 @@
             "vectorUtil": 0.25,
             "unpackParamsPerLaneCycle": 1,
             "layoutImbalance": 1.3,
-            "kvTile": 16384,
+            "kvTile": 32768,
             "mcUtil": 0.65,
             "prediction": 0.7,
             "launchScale": 0.7
           },
           "replay": {
             "feasible": true,
-            "tpsPerUser": 935.4383556784363,
-            "rawLatencyUs": 913.6901961658117
+            "tpsPerUser": 926.5200864481925,
+            "rawLatencyUs": 922.4849705928597
           }
         }
       },
       "depth": {
         "1": {
           "feasible": true,
-          "tpsPerUser": 1124.6970453558893,
-          "rawLatencyUs": 759.9387392632482
+          "tpsPerUser": 1134.1157185067739,
+          "rawLatencyUs": 753.6275538321531
         },
         "2": {
           "feasible": true,
-          "tpsPerUser": 1124.6970453558893,
-          "rawLatencyUs": 759.9387392632482
+          "tpsPerUser": 1138.4842104608174,
+          "rawLatencyUs": 750.7358001521186
         },
         "3": {
           "feasible": true,
-          "tpsPerUser": 1124.6970453558893,
-          "rawLatencyUs": 759.9387392632482
+          "tpsPerUser": 1138.4842104608174,
+          "rawLatencyUs": 750.7358001521186
         },
         "4": {
           "feasible": true,
-          "tpsPerUser": 1124.6970453558893,
-          "rawLatencyUs": 759.9387392632482
+          "tpsPerUser": 1138.4842104608174,
+          "rawLatencyUs": 750.7358001521186
         }
       },
       "mcGBs": {
         "320": {
           "feasible": true,
-          "tpsPerUser": 585.9326458591736,
-          "rawLatencyUs": 1458.7015431570244
+          "tpsPerUser": 579.5285360078923,
+          "rawLatencyUs": 1474.8209994774356
         },
         "400": {
           "feasible": true,
-          "tpsPerUser": 722.1740654969775,
-          "rawLatencyUs": 1183.5108674425694
+          "tpsPerUser": 704.0101639499352,
+          "rawLatencyUs": 1214.0461863582352
         },
         "480": {
           "feasible": true,
-          "tpsPerUser": 852.3235898313405,
-          "rawLatencyUs": 1002.7891576601612
+          "tpsPerUser": 820.9062386295132,
+          "rawLatencyUs": 1041.1674494370527
         },
         "560": {
           "feasible": true,
-          "tpsPerUser": 978.1800909996975,
-          "rawLatencyUs": 873.7663571003093
+          "tpsPerUser": 926.6558996090797,
+          "rawLatencyUs": 922.3497687344569
         },
         "1152": {
           "feasible": true,
-          "tpsPerUser": 1124.6970453558893,
-          "rawLatencyUs": 759.9387392632482
+          "tpsPerUser": 1138.4842104608174,
+          "rawLatencyUs": 750.7358001521186
         }
       },
       "kvTile16384": {
         "fp8": {
           "feasible": true,
-          "tpsPerUser": 1124.6970453558893,
-          "rawLatencyUs": 759.9387392632482
+          "tpsPerUser": 1138.4842104608174,
+          "rawLatencyUs": 750.7358001521186
         },
         "bf16": {
           "feasible": true,
-          "tpsPerUser": 976.3297693827479,
-          "rawLatencyUs": 875.422302488237
+          "tpsPerUser": 969.7336142250987,
+          "rawLatencyUs": 881.3769494665139
         }
       }
     },

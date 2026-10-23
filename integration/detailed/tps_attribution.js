@@ -165,7 +165,9 @@ function field(name, list, {kind = 'hardware', owner}) {
 // `alsoReads`: OPT keys the mechanism depends on but does not switch (reported with the published
 // value so a reader does not go looking for them elsewhere).
 function mechanism(key, owner, {note, alsoReads = []} = {}) {
-  const m = B.MECHANISMS.find(d => d.key === key);
+  // A switch can be on at the publisher point yet buy no TPS there (B.NO_EFFECT); it is still a mechanism
+  // for this report -- it has a published state, a switch-back and a cost -- so both lists are searched.
+  const m = B.MECHANISMS.find(d => d.key === key) || B.NO_EFFECT.find(d => d.key === key);
   if (!m) throw new Error(`unknown mechanism ${key}`);
   const off = m.patch || {[key]: m.off};
   return {name: key, kind: 'mechanism', where: m.patch ? `OPT.{${Object.keys(m.patch).join(', ')}}` : `OPT.${key}`, owner, role: m.role, note,
@@ -235,7 +237,8 @@ function countBasis(owner) {
 // ---- coupling factors ----------------------------------------------------------------------------
 // One move of a coupling, as a wrapper around the evaluation, so that two factors compose.
 const switchOff = key => {
-  const m = B.MECHANISMS.find(d => d.key === key);
+  // Same as mechanism(): a no-effect switch still has a published state and a switch-back.
+  const m = B.MECHANISMS.find(d => d.key === key) || B.NO_EFFECT.find(d => d.key === key);
   if (!m) throw new Error(`unknown mechanism ${key}`);
   const patch = m.patch || {[key]: m.off};
   return {name: key, label: `${key} off`, to: m.patch ? m.patch : m.off, apply: (y, fn) => B.withOpt(patch, y, fn)};

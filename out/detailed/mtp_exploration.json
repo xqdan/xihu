@@ -12,10 +12,10 @@
   },
   "inputs": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "2627bf313136ddb4af65e658435879d94f236b55ba0706ad67975f8c8da36e87",
+    "baselineSha256": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39",
     "goalTpsPerUser": 1000,
     "margin": 1.17,
-    "publishedTpsPerUser": 1124.6970453558893
+    "publishedTpsPerUser": 1138.4842104608174
   },
   "assumptions": {
     "acceptance": "per-token acceptance of a drafted chain, swept; unmeasured (model_profiles.json: mtpAcceptanceRateMustBeMeasured)",
@@ -81,7 +81,7 @@
   },
   "checkRow": {
     "description": "k = 1, BF16 dense, MC640 must reproduce the published Batch=1 step",
-    "verifyRawUs": 754.9740235198537
+    "verifyRawUs": 749.7337483373253
   },
   "rows": [
     {
@@ -90,12 +90,12 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 1457.3936966173123,
+      "verifyRawUs": 1474.8209994774356,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
-        "windowFraction": 0.75,
-        "kvTile": 32768
+        "windowFraction": 0.5,
+        "kvTile": 16384
       }
     },
     {
@@ -104,7 +104,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1707.799286225199,
+      "verifyRawUs": 1725.6952846205822,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -118,7 +118,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1968.4806804652171,
+      "verifyRawUs": 1995.0425980711934,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -132,10 +132,10 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 2400.391461312574,
+      "verifyRawUs": 2404.6141849612322,
       "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
+        "depth": 2,
+        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -146,7 +146,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1703.6880089868903,
+      "verifyRawUs": 1721.7805515760754,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -160,7 +160,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1956.1530440167328,
+      "verifyRawUs": 1986.4070901991497,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -174,10 +174,10 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 2377.3887052870987,
+      "verifyRawUs": 2380.792644850435,
       "tunedKnobs": {
         "depth": 4,
-        "weightTileMiB": 8,
+        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -188,10 +188,10 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 1183.5108674425694,
+      "verifyRawUs": 1212.1362359649804,
       "tunedKnobs": {
         "depth": 1,
-        "weightTileMiB": 8,
+        "weightTileMiB": 4,
         "windowFraction": 0.5,
         "kvTile": 16384
       }
@@ -202,206 +202,206 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1393.2556123479023,
+      "verifyRawUs": 1422.6957207265932,
       "tunedKnobs": {
         "depth": 1,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1667.6859192251322,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "verifyTokens": 4,
-      "feasible": true,
-      "verifyRawUs": 2080.56961877197,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "verifyTokens": 2,
-      "feasible": true,
-      "verifyRawUs": 1389.8289810162887,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1657.056536045149,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "verifyTokens": 4,
-      "feasible": true,
-      "verifyRawUs": 2059.8610993894326,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "n/a",
-      "verifyTokens": 1,
-      "feasible": true,
-      "verifyRawUs": 1001.477838876182,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 32768
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "verifyTokens": 2,
-      "feasible": true,
-      "verifyRawUs": 1179.0864088054357,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1489.140882567935,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "verifyTokens": 4,
-      "feasible": true,
-      "verifyRawUs": 1859.9534793037549,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "verifyTokens": 2,
-      "feasible": true,
-      "verifyRawUs": 1176.1607758906687,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1480.675371598889,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "verifyTokens": 4,
-      "feasible": true,
-      "verifyRawUs": 1848.1125015470661,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "n/a",
-      "verifyTokens": 1,
-      "feasible": true,
-      "verifyRawUs": 873.7663571003093,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
+        "weightTileMiB": 4,
         "windowFraction": 0.75,
         "kvTile": 16384
       }
     },
     {
       "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1687.5826764420185,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 4,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "verifyTokens": 4,
+      "feasible": true,
+      "verifyRawUs": 2090.0198960215034,
+      "tunedKnobs": {
+        "depth": 2,
+        "weightTileMiB": 4,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "verifyTokens": 2,
+      "feasible": true,
+      "verifyRawUs": 1419.1908981066515,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 4,
+        "windowFraction": 0.75,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1678.4800743097596,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 4,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "verifyTokens": 4,
+      "feasible": true,
+      "verifyRawUs": 2069.970324186771,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 4,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "n/a",
+      "verifyTokens": 1,
+      "feasible": true,
+      "verifyRawUs": 1032.6215634492107,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 4,
+        "windowFraction": 0.5,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "verifyTokens": 2,
+      "feasible": true,
+      "verifyRawUs": 1222.8583188794585,
+      "tunedKnobs": {
+        "depth": 2,
+        "weightTileMiB": 4,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1518.8483849018517,
+      "tunedKnobs": {
+        "depth": 2,
+        "weightTileMiB": 4,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "verifyTokens": 4,
+      "feasible": true,
+      "verifyRawUs": 1895.5430355832284,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 4,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "verifyTokens": 2,
+      "feasible": true,
+      "verifyRawUs": 1219.8108976913659,
+      "tunedKnobs": {
+        "depth": 2,
+        "weightTileMiB": 4,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1512.9124638620856,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 4,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "verifyTokens": 4,
+      "feasible": true,
+      "verifyRawUs": 1881.7837502646016,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 4,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "n/a",
+      "verifyTokens": 1,
+      "feasible": true,
+      "verifyRawUs": 909.2116952794338,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 4,
+        "windowFraction": 0.5,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
       "mcGBs": 560,
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1036.0681473311022,
+      "verifyRawUs": 1095.5215570376351,
       "tunedKnobs": {
         "depth": 2,
-        "weightTileMiB": 8,
+        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -412,10 +412,10 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1375.2516446330621,
+      "verifyRawUs": 1421.0250098520553,
       "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
+        "depth": 2,
+        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -426,10 +426,10 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1726.3634814445943,
+      "verifyRawUs": 1770.9459628599209,
       "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
+        "depth": 2,
+        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -440,10 +440,10 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1033.4484619232924,
+      "verifyRawUs": 1092.3832912184216,
       "tunedKnobs": {
         "depth": 2,
-        "weightTileMiB": 8,
+        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -454,10 +454,10 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1367.7568178145325,
+      "verifyRawUs": 1415.827816329482,
       "tunedKnobs": {
         "depth": 4,
-        "weightTileMiB": 8,
+        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -468,10 +468,10 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1714.6813691097589,
+      "verifyRawUs": 1753.5819182461832,
       "tunedKnobs": {
         "depth": 1,
-        "weightTileMiB": 8,
+        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -482,7 +482,7 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 754.9740235198537,
+      "verifyRawUs": 749.7337483373253,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -496,9 +496,9 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 966.1469766263483,
+      "verifyRawUs": 957.0916646080408,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 1,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -510,7 +510,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1228.7111396041043,
+      "verifyRawUs": 1217.3749488393346,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -524,7 +524,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1473.8233649884814,
+      "verifyRawUs": 1464.1192838304416,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -538,9 +538,9 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 965.7925147270649,
+      "verifyRawUs": 957.1411293291043,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 1,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -552,9 +552,9 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1228.6080446566784,
+      "verifyRawUs": 1218.199511764585,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
@@ -566,7 +566,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1471.1045645203237,
+      "verifyRawUs": 1462.0260670444711,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -580,7 +580,7 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 963.2632102886806,
+      "verifyRawUs": 970.8650070768821,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -594,7 +594,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1220.58100418554,
+      "verifyRawUs": 1235.493014168394,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -608,7 +608,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1509.7027100325834,
+      "verifyRawUs": 1519.680134889246,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -622,7 +622,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1941.4955404448422,
+      "verifyRawUs": 1940.4789821233865,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -636,7 +636,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1216.246626034409,
+      "verifyRawUs": 1231.9989135182936,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -650,7 +650,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1496.4432418146885,
+      "verifyRawUs": 1507.6875968844768,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -664,9 +664,9 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1919.734304146936,
+      "verifyRawUs": 1922.0520069125487,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 4,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -678,25 +678,25 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 790.739623920051,
+      "verifyRawUs": 804.0684867073234,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 8,
+        "windowFraction": 0.5,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "verifyTokens": 2,
+      "feasible": true,
+      "verifyRawUs": 1043.281269459181,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
         "windowFraction": 0.75,
-        "kvTile": 32768
-      }
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "verifyTokens": 2,
-      "feasible": true,
-      "verifyRawUs": 1014.3848178624095,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
         "kvTile": 16384
       }
     },
@@ -706,7 +706,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1313.4184231750703,
+      "verifyRawUs": 1323.7816949030191,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -720,7 +720,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1727.7092928025454,
+      "verifyRawUs": 1748.3562645110717,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -734,11 +734,11 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1010.6499420805001,
+      "verifyRawUs": 1039.3072206882907,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
-        "windowFraction": 1,
+        "windowFraction": 0.75,
         "kvTile": 16384
       }
     },
@@ -748,10 +748,10 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1302.4629029706366,
+      "verifyRawUs": 1320.5918995526504,
       "tunedKnobs": {
         "depth": 4,
-        "weightTileMiB": 8,
+        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -762,10 +762,10 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1710.9958020618535,
+      "verifyRawUs": 1729.1762436985505,
       "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
+        "depth": 2,
+        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -776,12 +776,12 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 763.4466885395129,
+      "verifyRawUs": 756.3093075802574,
       "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
-        "windowFraction": 0.75,
-        "kvTile": 32768
+        "depth": 1,
+        "weightTileMiB": 8,
+        "windowFraction": 0.5,
+        "kvTile": 16384
       }
     },
     {
@@ -790,7 +790,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 970.309838188328,
+      "verifyRawUs": 965.2115555730692,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 4,
@@ -804,10 +804,10 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1231.836513413942,
+      "verifyRawUs": 1240.9746469261308,
       "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
+        "depth": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -818,7 +818,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1590.2881505803643,
+      "verifyRawUs": 1625.675277957303,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -832,7 +832,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 969.874863838714,
+      "verifyRawUs": 964.7126503616777,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 4,
@@ -846,9 +846,9 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1231.7395240903509,
+      "verifyRawUs": 1237.9940801647708,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 4,
         "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
@@ -860,7 +860,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1580.291376248524,
+      "verifyRawUs": 1605.4184780431829,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -874,12 +874,12 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 760.6272259485993,
+      "verifyRawUs": 752.9896325223102,
       "tunedKnobs": {
         "depth": 1,
-        "weightTileMiB": 4,
-        "windowFraction": 0.75,
-        "kvTile": 32768
+        "weightTileMiB": 8,
+        "windowFraction": 0.5,
+        "kvTile": 16384
       }
     },
     {
@@ -888,7 +888,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 967.6291368979648,
+      "verifyRawUs": 959.614791569846,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -902,9 +902,9 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1229.3034539328453,
+      "verifyRawUs": 1221.263431158063,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
@@ -916,7 +916,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1503.9714025937196,
+      "verifyRawUs": 1544.9279270385175,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -930,7 +930,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 967.1846698883218,
+      "verifyRawUs": 959.2192201385524,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -944,9 +944,9 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1229.2064646092542,
+      "verifyRawUs": 1220.476386323516,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
@@ -958,7 +958,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1486.4439504374368,
+      "verifyRawUs": 1528.7401534040498,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -972,12 +972,12 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 751.7217593965804,
+      "verifyRawUs": 742.7539677603085,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
-        "windowFraction": 0.75,
-        "kvTile": 32768
+        "windowFraction": 0.5,
+        "kvTile": 16384
       }
     },
     {
@@ -986,11 +986,11 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 959.8176404269752,
+      "verifyRawUs": 947.4051971770351,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 1,
         "weightTileMiB": 4,
-        "windowFraction": 1,
+        "windowFraction": 0.75,
         "kvTile": 16384
       }
     },
@@ -1000,7 +1000,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1221.493187199464,
+      "verifyRawUs": 1205.1336851280935,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -1014,7 +1014,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1468.0012751254585,
+      "verifyRawUs": 1456.9524087252728,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -1028,11 +1028,11 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 959.373173417332,
+      "verifyRawUs": 947.0283820735052,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 1,
         "weightTileMiB": 4,
-        "windowFraction": 1,
+        "windowFraction": 0.75,
         "kvTile": 16384
       }
     },
@@ -1042,7 +1042,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1221.3961978758718,
+      "verifyRawUs": 1205.9721570911408,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -1056,7 +1056,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1465.286715279245,
+      "verifyRawUs": 1454.8784731722549,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -1073,7 +1073,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 595.102273227635,
+      "tpsPerUser": 588.9230399804425,
       "meetsGoal": false
     },
     {
@@ -1083,7 +1083,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 694.2859854322409,
+      "tpsPerUser": 687.0768799771829,
       "meetsGoal": false
     },
     {
@@ -1093,7 +1093,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 837.6811900248814,
+      "tpsPerUser": 826.547965251579,
       "meetsGoal": false
     },
     {
@@ -1103,7 +1103,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1042.8276039085258,
+      "tpsPerUser": 1028.9678751091085,
       "meetsGoal": true
     },
     {
@@ -1113,7 +1113,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 589.7399778588855,
+      "tpsPerUser": 583.6087976408957,
       "meetsGoal": false
     },
     {
@@ -1123,7 +1123,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 688.0299741686998,
+      "tpsPerUser": 680.8769305810449,
       "meetsGoal": false
     },
     {
@@ -1133,7 +1133,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 824.7553836216439,
+      "tpsPerUser": 813.8126803842338,
       "meetsGoal": false
     },
     {
@@ -1143,7 +1143,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1026.7362938963322,
+      "tpsPerUser": 1013.1137449681278,
       "meetsGoal": true
     },
     {
@@ -1153,7 +1153,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 596.5252631674608,
+      "tpsPerUser": 590.2498268993924,
       "meetsGoal": false
     },
     {
@@ -1163,7 +1163,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 695.9461403620377,
+      "tpsPerUser": 688.624798049291,
       "meetsGoal": false
     },
     {
@@ -1173,7 +1173,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 842.8769917658652,
+      "tpsPerUser": 830.084746254502,
       "meetsGoal": false
     },
     {
@@ -1182,8 +1182,8 @@
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1049.2958468921995,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1039.0012659366148,
       "meetsGoal": true
     },
     {
@@ -1193,7 +1193,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 591.1374089203204,
+      "tpsPerUser": 584.9117211548397,
       "meetsGoal": false
     },
     {
@@ -1203,7 +1203,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 689.6603104070404,
+      "tpsPerUser": 682.3970080139796,
       "meetsGoal": false
     },
     {
@@ -1213,7 +1213,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 829.7915932422111,
+      "tpsPerUser": 817.2410869650869,
       "meetsGoal": false
     },
     {
@@ -1222,8 +1222,8 @@
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1033.0058609749976,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1019.0370085252858,
       "meetsGoal": true
     },
     {
@@ -1233,7 +1233,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 729.4839936600841,
+      "tpsPerUser": 714.3692916140071,
       "meetsGoal": false
     },
     {
@@ -1243,7 +1243,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 851.0646592700981,
+      "tpsPerUser": 833.4308402163416,
       "meetsGoal": false
     },
     {
@@ -1253,7 +1253,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 989.4136844710529,
+      "tpsPerUser": 977.5704231212819,
       "meetsGoal": false
     },
     {
@@ -1263,7 +1263,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1231.7190765864127,
+      "tpsPerUser": 1216.975424702004,
       "meetsGoal": true
     },
     {
@@ -1273,7 +1273,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 722.9404618716774,
+      "tpsPerUser": 707.9425051953912,
       "meetsGoal": false
     },
     {
@@ -1283,7 +1283,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 843.4305388502903,
+      "tpsPerUser": 825.9329227279563,
       "meetsGoal": false
     },
     {
@@ -1293,7 +1293,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 974.7607358262827,
+      "tpsPerUser": 962.922778804602,
       "meetsGoal": false
     },
     {
@@ -1303,7 +1303,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1213.4776507225151,
+      "tpsPerUser": 1198.7406021853208,
       "meetsGoal": true
     },
     {
@@ -1313,7 +1313,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 731.2662217218045,
+      "tpsPerUser": 716.1174375510342,
       "meetsGoal": false
     },
     {
@@ -1323,7 +1323,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 853.1439253421053,
+      "tpsPerUser": 835.4703438095398,
       "meetsGoal": false
     },
     {
@@ -1333,7 +1333,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 995.6643856765677,
+      "tpsPerUser": 982.7908317706463,
       "meetsGoal": false
     },
     {
@@ -1343,7 +1343,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1239.500561760625,
+      "tpsPerUser": 1223.4743007757024,
       "meetsGoal": true
     },
     {
@@ -1353,7 +1353,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 724.6908215099782,
+      "tpsPerUser": 709.6593006154327,
       "meetsGoal": false
     },
     {
@@ -1363,7 +1363,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 845.4726250949744,
+      "tpsPerUser": 827.9358507180048,
       "meetsGoal": false
     },
     {
@@ -1373,7 +1373,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 980.8270980239187,
+      "tpsPerUser": 967.9875119259724,
       "meetsGoal": false
     },
     {
@@ -1383,7 +1383,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1221.0296526420211,
+      "tpsPerUser": 1205.0456781119249,
       "meetsGoal": true
     },
     {
@@ -1393,7 +1393,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 861.9882559033614,
+      "tpsPerUser": 831.1773064055462,
       "meetsGoal": false
     },
     {
@@ -1403,8 +1403,8 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1005.6529652205883,
-      "meetsGoal": true
+      "tpsPerUser": 969.7068574731372,
+      "meetsGoal": false
     },
     {
       "dtype": "bf16Dense",
@@ -1413,7 +1413,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1149.317674537815,
+      "tpsPerUser": 1108.2364085407282,
       "meetsGoal": true
     },
     {
@@ -1423,7 +1423,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1380.4861325231404,
+      "tpsPerUser": 1353.2740097897477,
       "meetsGoal": true
     },
     {
@@ -1432,8 +1432,8 @@
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 854.2569495943245,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 827.6999870561903,
       "meetsGoal": false
     },
     {
@@ -1443,7 +1443,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 996.6331078600452,
+      "tpsPerUser": 961.0590382667506,
       "meetsGoal": false
     },
     {
@@ -1453,7 +1453,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1139.0092661257659,
+      "tpsPerUser": 1098.353186590572,
       "meetsGoal": true
     },
     {
@@ -1463,7 +1463,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1361.0817122130238,
+      "tpsPerUser": 1334.0500810901253,
       "meetsGoal": true
     },
     {
@@ -1473,7 +1473,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 864.1129495116271,
+      "tpsPerUser": 833.2350834747359,
       "meetsGoal": false
     },
     {
@@ -1483,8 +1483,8 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1008.1317744302315,
-      "meetsGoal": true
+      "tpsPerUser": 972.1075973871918,
+      "meetsGoal": false
     },
     {
       "dtype": "bf16Dense",
@@ -1493,7 +1493,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1152.1505993488358,
+      "tpsPerUser": 1110.9801112996477,
       "meetsGoal": true
     },
     {
@@ -1503,7 +1503,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1388.2656712159578,
+      "tpsPerUser": 1358.5067804628918,
       "meetsGoal": true
     },
     {
@@ -1512,8 +1512,8 @@
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 856.3436545798191,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 827.6999870561903,
       "meetsGoal": false
     },
     {
@@ -1523,7 +1523,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 999.067597009789,
+      "tpsPerUser": 963.4170975840054,
       "meetsGoal": false
     },
     {
@@ -1533,7 +1533,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1141.7915394397587,
+      "tpsPerUser": 1101.0481115245775,
       "meetsGoal": true
     },
     {
@@ -1543,7 +1543,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1368.6434871298125,
+      "tpsPerUser": 1339.1349602013088,
       "meetsGoal": true
     },
     {
@@ -1552,8 +1552,8 @@
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 981.0395492936818,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 940.0460411347592,
       "meetsGoal": false
     },
     {
@@ -1563,7 +1563,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1144.5461408426288,
+      "tpsPerUser": 1082.586929029062,
       "meetsGoal": true
     },
     {
@@ -1573,7 +1573,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1308.0527323915755,
+      "tpsPerUser": 1237.2422046046422,
       "meetsGoal": true
     },
     {
@@ -1583,7 +1583,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1495.9876447632037,
+      "tpsPerUser": 1447.6620901649562,
       "meetsGoal": true
     },
     {
@@ -1593,7 +1593,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 978.1800909996975,
+      "tpsPerUser": 940.0460411347592,
       "meetsGoal": false
     },
     {
@@ -1603,7 +1603,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1134.3519834042784,
+      "tpsPerUser": 1073.0952955159566,
       "meetsGoal": true
     },
     {
@@ -1613,7 +1613,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1296.4022667477466,
+      "tpsPerUser": 1226.3946234468074,
       "meetsGoal": true
     },
     {
@@ -1623,7 +1623,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1476.0910138156337,
+      "tpsPerUser": 1428.276122961616,
       "meetsGoal": true
     },
     {
@@ -1632,8 +1632,8 @@
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 983.5039787643233,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 940.0460411347592,
       "meetsGoal": false
     },
     {
@@ -1643,7 +1643,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1147.4213085583772,
+      "tpsPerUser": 1085.6694635905048,
       "meetsGoal": true
     },
     {
@@ -1653,7 +1653,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1311.3386383524307,
+      "tpsPerUser": 1240.765101246291,
       "meetsGoal": true
     },
     {
@@ -1663,7 +1663,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1504.0740380411485,
+      "tpsPerUser": 1452.903751658858,
       "meetsGoal": true
     },
     {
@@ -1673,7 +1673,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 978.1800909996975,
+      "tpsPerUser": 940.0460411347592,
       "meetsGoal": false
     },
     {
@@ -1683,7 +1683,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1137.1760993640587,
+      "tpsPerUser": 1076.123938879745,
       "meetsGoal": true
     },
     {
@@ -1693,7 +1693,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1299.6298278446384,
+      "tpsPerUser": 1229.8559301482799,
       "meetsGoal": true
     },
     {
@@ -1703,7 +1703,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1483.9631735424514,
+      "tpsPerUser": 1433.3780925129843,
       "meetsGoal": true
     },
     {
@@ -1713,7 +1713,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1132.0930629057311,
+      "tpsPerUser": 1140.0058442031102,
       "meetsGoal": true
     },
     {
@@ -1723,7 +1723,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1228.1886601467154,
+      "tpsPerUser": 1239.7835395612815,
       "meetsGoal": true
     },
     {
@@ -1733,7 +1733,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1403.6441830248173,
+      "tpsPerUser": 1416.8954737843217,
       "meetsGoal": true
     },
     {
@@ -1743,7 +1743,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 4,
-      "tpsPerUser": 1684.097611379003,
+      "tpsPerUser": 1695.269588979387,
       "meetsGoal": true
     },
     {
@@ -1753,7 +1753,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1132.0930629057311,
+      "tpsPerUser": 1140.0058442031102,
       "meetsGoal": true
     },
     {
@@ -1763,7 +1763,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1218.0394249851001,
+      "tpsPerUser": 1229.5137582216814,
       "meetsGoal": true
     },
     {
@@ -1773,7 +1773,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1392.0450571258284,
+      "tpsPerUser": 1405.1585808247785,
       "meetsGoal": true
     },
     {
@@ -1782,8 +1782,8 @@
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 4,
-      "tpsPerUser": 1657.159240579206,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1668.8813233034373,
       "meetsGoal": true
     },
     {
@@ -1793,7 +1793,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1132.0930629057311,
+      "tpsPerUser": 1140.0058442031102,
       "meetsGoal": true
     },
     {
@@ -1803,7 +1803,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1228.6356684482562,
+      "tpsPerUser": 1239.7200031230605,
       "meetsGoal": true
     },
     {
@@ -1813,817 +1813,817 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1404.1550496551497,
+      "tpsPerUser": 1416.8228607120689,
       "meetsGoal": true
     },
     {
       "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 4,
-      "tpsPerUser": 1687.1593647973507,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1132.0930629057311,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1218.479074711442,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1392.5475139559337,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 4,
-      "tpsPerUser": 1660.123741215521,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 887.2973093664702,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 972.0883929617069,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1110.9581633848077,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1362.6800130511529,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 887.2973093664702,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 963.9770585431007,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1101.6880669064008,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1344.481464094007,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 887.2973093664702,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 975.52340350971,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1114.8838897253827,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1374.5893892800625,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 887.2973093664702,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 967.354883587616,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1105.5484383858468,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1356.0735127265643,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1080.8878534045368,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1169.8073542186564,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1336.9226905356072,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1567.5233981858626,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1080.8878534045368,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1160.163691862965,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1325.9013621291026,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1547.7405518285,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1080.8878534045368,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1174.0943329354652,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1341.8220947833886,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1580.5385175587055,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1080.8878534045368,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1164.3801525175932,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1330.7201743058206,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1560.42790146471,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1119.5291924520789,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1222.849292715504,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1397.5420488177185,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1670.7087496641302,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1119.5291924520789,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1212.67577299762,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1385.915169140137,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1649.0193122607855,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1119.5291924520789,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1223.3931193123692,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1398.163564928422,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1670.8385737298993,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1119.5291924520789,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1213.2105865033852,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1386.5263845752972,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1649.1457872810072,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1123.679018503359,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1226.2466483573091,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1401.4247409797817,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1674.1874695017148,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1123.679018503359,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1216.054223512081,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1389.776255442378,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1652.4875939166984,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1123.679018503359,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1226.8054412635033,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1402.0633614440037,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1674.317834786116,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1123.679018503359,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1216.6037636942478,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1390.4043013648545,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1652.6146015312636,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1136.990973078839,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1236.2644572403888,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1412.873665417587,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 4,
-      "tpsPerUser": 1690.786602376845,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1136.990973078839,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1226.025800292165,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1401.1723431910455,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 4,
-      "tpsPerUser": 1663.7506316499962,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1136.990973078839,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1236.8324196604794,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1413.522765326262,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "fp8Dense",
       "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 4,
-      "tpsPerUser": 1693.8679257032818,
+      "tpsPerUser": 1697.6572490738974,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1140.0058442031102,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1229.4512700089608,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1405.0871657245266,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 4,
+      "tpsPerUser": 1670.4738002323302,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 880.3498410909064,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 960.3901260128632,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1097.5887154432721,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1353.7100170233716,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 880.3498410909064,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 952.4100800070308,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1088.468662865178,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1335.6088382576725,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 880.3498410909064,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 963.0910244829932,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1100.675456551992,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1364.3306996939712,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 880.3498410909064,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 955.0662184295655,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1091.504249633789,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1345.9463057755122,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1062.9702181226776,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1137.5133506678392,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1300.0152579061019,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1555.0751696527516,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1062.9702181226776,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1128.2402280557058,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1289.4174034922348,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1535.279285608842,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1062.9702181226776,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1141.8270298331984,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1304.9451769522263,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1558.7827950347616,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1062.9702181226776,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1132.4837316206792,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1294.2671218522046,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1538.8930070504716,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1130.0943226989923,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1229.350879699988,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1404.972433942843,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1658.7693214853443,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1130.0943226989923,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1219.1646715078614,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1393.3310531518414,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1637.5841420721076,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1130.0943226989923,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1229.9813291088326,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1405.6929475529512,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1662.7111496936452,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1130.0943226989923,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1219.7847139561745,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1394.0396730927707,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1641.425809553121,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1135.076524012475,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1236.506182997623,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1413.1499234258547,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1685.2872428602595,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1135.076524012475,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1226.2464061678484,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1401.4244641918265,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1663.518485246734,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1135.076524012475,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1237.0118363516945,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1413.727812973365,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1686.359798132386,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1135.076524012475,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1226.7437014386649,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1401.9928016441881,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1664.5635026126615,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1150.7186656681345,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1252.450772403068,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1431.3723113177919,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1707.8521992690423,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1150.7186656681345,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1242.0677021681638,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1419.5059453350443,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1685.8003765295905,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1150.7186656681345,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1252.944945139032,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1431.9370801588934,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1706.6803087474427,
       "meetsGoal": true
     },
     {
@@ -2633,7 +2633,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1136.990973078839,
+      "tpsPerUser": 1150.7186656681345,
       "meetsGoal": true
     },
     {
@@ -2643,7 +2643,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1226.5843918924843,
+      "tpsPerUser": 1242.5537136937342,
       "meetsGoal": true
     },
     {
@@ -2653,7 +2653,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1401.8107335914103,
+      "tpsPerUser": 1420.061387078553,
       "meetsGoal": true
     },
     {
@@ -2662,8 +2662,8 @@
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 4,
-      "tpsPerUser": 1666.73411409771,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1684.658543462561,
       "meetsGoal": true
     }
   ],
@@ -2729,56 +2729,56 @@
       "mcGBs": 480,
       "union": "worst",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.4
+      "minAcceptance": 0.45
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 480,
       "union": "worst",
       "draftLayerEquiv": 2,
+      "minAcceptance": 0.5
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 1,
       "minAcceptance": 0.45
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 480,
       "union": "expected",
-      "draftLayerEquiv": 1,
-      "minAcceptance": 0.4
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.45
+      "minAcceptance": 0.5
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 560,
       "union": "worst",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.25
+      "minAcceptance": 0.3
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 560,
       "union": "worst",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.25
+      "minAcceptance": 0.35
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 560,
       "union": "expected",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.25
+      "minAcceptance": 0.3
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 560,
       "union": "expected",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.25
+      "minAcceptance": 0.35
     },
     {
       "dtype": "bf16Dense",
@@ -2813,7 +2813,7 @@
       "mcGBs": 320,
       "union": "worst",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.45
+      "minAcceptance": 0.5
     },
     {
       "dtype": "fp8Dense",
@@ -2827,14 +2827,14 @@
       "mcGBs": 320,
       "union": "expected",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.45
+      "minAcceptance": 0.5
     },
     {
       "dtype": "fp8Dense",
       "mcGBs": 320,
       "union": "expected",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.45
+      "minAcceptance": 0.5
     },
     {
       "dtype": "fp8Dense",

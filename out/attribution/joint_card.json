@@ -5,7 +5,7 @@
   "status": "MODEL: one-at-a-time replays of the detailed model at one design point. Changes no baseline, gate or published number",
   "inputs": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "2627bf313136ddb4af65e658435879d94f236b55ba0706ad67975f8c8da36e87",
+    "baselineSha256": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39",
     "pointSource": "teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware.x",
     "x": {
       "nL": 8,
@@ -17,7 +17,7 @@
       "hCols": 128,
       "hEngines": 6,
       "ghz": 1,
-      "vectorLanes": 512,
+      "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 64,
@@ -28,7 +28,7 @@
       "tmaEngines": 4,
       "tmaBytes": 512,
       "nocBytes": 256,
-      "nocLanes": 4,
+      "nocLanes": 2,
       "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
@@ -38,13 +38,13 @@
       "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
-      "windowFraction": 1
+      "windowFraction": 0.75
     },
     "point": {
       "kind": "published",
       "source": "teams/hardware/inputs/k3_mc_baseline.json#tpsDesign.hardware.x",
       "optionId": null,
-      "sha256": "cd97a8131b545a304cb06fe95f9e8c6c2ae2d70a381997c4b8f6648162ce8bef",
+      "sha256": "f9e5917a0d7d373da154b40a59b022a4825b52c9ea16a3afb40cd60b4bc5591f",
       "opt": {
         "stripeKiB": 64,
         "oneWayUs": 0.05,
@@ -111,7 +111,7 @@
         "vectorUtil": 0.25,
         "unpackParamsPerLaneCycle": 1,
         "layoutImbalance": 1.3,
-        "kvTile": 16384,
+        "kvTile": 32768,
         "mcUtil": 0.65,
         "prediction": 0.7,
         "launchScale": 0.7
@@ -122,21 +122,21 @@
   "published": {
     "nominal": {
       "feasible": true,
-      "tpsPerUser": 1124.6970453558893,
-      "rawUs": 759.9387392632482,
-      "dieAreaMm2": 364.0330728842648,
-      "diePowerW": 290.47833600000007,
-      "cardPowerW": 3031.9226880000006
+      "tpsPerUser": 1138.4842104608174,
+      "rawUs": 750.7358001521186,
+      "dieAreaMm2": 361.6787333884665,
+      "diePowerW": 292.4751360000001,
+      "cardPowerW": 3047.8970880000006
     },
     "stress": {
       "feasible": true,
-      "tpsPerUser": 935.4383556784363,
-      "rawUs": 913.6901961658117,
-      "dieAreaMm2": 364.0330728842648,
-      "diePowerW": 290.47833600000007,
-      "cardPowerW": 2995.0586880000005
+      "tpsPerUser": 926.5200864481925,
+      "rawUs": 922.4849705928597,
+      "dieAreaMm2": 361.6787333884665,
+      "diePowerW": 292.4751360000001,
+      "cardPowerW": 3011.0330880000006
     },
-    "rawMarginUs": 94.76211543760655
+    "rawMarginUs": 103.96505454873613
   },
   "criticalPath": null,
   "classes": {
@@ -156,24 +156,24 @@
       "evidence": "ASSUMPTION",
       "measurementNeeded": "kernel cycle counts on RTL / Palladium",
       "alone": {
-        "tpsPerUser": 1068.8651964628991,
-        "rawUs": 799.6339084940183,
-        "dTps": -55.83184889299014,
+        "tpsPerUser": 1069.0048139313062,
+        "rawUs": 799.5294722365744,
+        "dTps": -69.47939652951118,
         "withinBudget": true
       },
       "leaveOut": {
-        "tpsPerUser": 959.3293460416618,
-        "recoveryTps": 23.890990363225455,
+        "tpsPerUser": 973.8922438288206,
+        "recoveryTps": 47.372157380628096,
         "withinBudget": false
       },
       "closesGapAlone": false,
       "breakEven": {
-        "valueAtBudget": 0.40056797018478396
+        "valueAtBudget": 0.400416952063233
       },
       "breakEvenBy": {
         "by": "budget",
-        "past": 0.400566970184784,
-        "rawUs": 854.7015459896027
+        "past": 0.40041595206323305,
+        "rawUs": 854.7015465112144
       },
       "classification": "graded"
     },
@@ -188,24 +188,21 @@
       "evidence": "ASSUMPTION",
       "measurementNeeded": "vector kernel cycle counts on RTL / Palladium",
       "alone": {
-        "tpsPerUser": 1097.2200631200176,
-        "rawUs": 778.9694004231535,
-        "dTps": -27.476982235871674,
+        "tpsPerUser": 1133.5781666480161,
+        "rawUs": 753.9849300628294,
+        "dTps": -4.906043812801272,
         "withinBudget": true
       },
       "leaveOut": {
-        "tpsPerUser": 951.4450273025345,
-        "recoveryTps": 16.006671624098203,
+        "tpsPerUser": 926.7710910413799,
+        "recoveryTps": 0.2510045931874174,
         "withinBudget": false
       },
       "closesGapAlone": false,
       "breakEven": {
-        "valueAtBudget": 0.1332636295506745
-      },
-      "breakEvenBy": {
-        "by": "budget",
-        "past": 0.1332626295506745,
-        "rawUs": 854.7020717319913
+        "valueAtBudget": null,
+        "floor": 0.1,
+        "note": "the budget holds all the way to 0.1"
       },
       "classification": "graded"
     },
@@ -220,26 +217,26 @@
       "evidence": "ASSUMPTION (no RTL or microbenchmark)",
       "measurementNeeded": "unpack microbenchmark on RTL",
       "alone": {
-        "tpsPerUser": 1044.5575581774187,
-        "rawUs": 818.2419896440816,
-        "dTps": -80.13948717847052,
+        "tpsPerUser": 1122.6476161303074,
+        "rawUs": 761.3260318023499,
+        "dTps": -15.836594330510025,
         "withinBudget": true
       },
       "leaveOut": {
-        "tpsPerUser": 1006.311001128886,
-        "recoveryTps": 70.87264545044968,
-        "withinBudget": true
+        "tpsPerUser": 926.5200864481925,
+        "recoveryTps": 0,
+        "withinBudget": false
       },
-      "closesGapAlone": true,
+      "closesGapAlone": false,
       "breakEven": {
-        "valueAtBudget": 0.7787128057456358
+        "valueAtBudget": 0.4263870719039916
       },
       "breakEvenBy": {
         "by": "budget",
-        "past": 0.7787118057456358,
-        "rawUs": 854.7010673501594
+        "past": 0.42638607190399164,
+        "rawUs": 855.7797496763972
       },
-      "classification": "loadBearing"
+      "classification": "graded"
     },
     {
       "name": "layoutImbalance",
@@ -252,24 +249,24 @@
       "evidence": "ASSUMPTION",
       "measurementNeeded": "two roles, one factor: capacity (it scales the local tile bytes of the H/L tile check) needs the memory-compiler macro shape imbalance over every SRAM instance (VV_MEASUREMENT_PLAN.md item 6); time (it scales every kernel time) needs the per-bank access histogram from Palladium",
       "alone": {
-        "tpsPerUser": 1087.6205881781705,
-        "rawUs": 785.8446814918517,
-        "dTps": -37.076457177718794,
+        "tpsPerUser": 1106.4121099691815,
+        "rawUs": 772.4977402178489,
+        "dTps": -32.072100491635865,
         "withinBudget": true
       },
       "leaveOut": {
-        "tpsPerUser": 977.5694207371852,
-        "recoveryTps": 42.131065058748845,
+        "tpsPerUser": 956.4745357495815,
+        "recoveryTps": 29.95444930138899,
         "withinBudget": false
       },
       "closesGapAlone": false,
       "breakEven": {
-        "valueAtBudget": 1.6986543269114467
+        "valueAtBudget": 1.8334094002434997
       },
       "breakEvenBy": {
         "by": "budget",
-        "past": 1.6986560255657737,
-        "rawUs": 854.7011480948247
+        "past": 1.8334112336529,
+        "rawUs": 854.7011400512441
       },
       "classification": "graded"
     },
@@ -280,23 +277,23 @@
       "dimension": "sram",
       "owner": "memory-expert",
       "published": 16384,
-      "pessimistic": 16384,
+      "pessimistic": 32768,
       "evidence": "MODEL (mapping choice)",
       "measurementNeeded": "FlashMLA tile sweep on the target kernel",
       "alone": {
-        "tpsPerUser": 1124.6970453558893,
-        "rawUs": 759.9387392632482,
-        "dTps": 0,
+        "tpsPerUser": 1029.518717845512,
+        "rawUs": 830.1945752763962,
+        "dTps": -108.9654926153055,
         "withinBudget": true
       },
       "leaveOut": {
-        "tpsPerUser": 935.4383556784363,
-        "recoveryTps": 0,
-        "withinBudget": false
+        "tpsPerUser": 1012.1041270996658,
+        "recoveryTps": 85.58404065147329,
+        "withinBudget": true
       },
-      "closesGapAlone": false,
+      "closesGapAlone": true,
       "breakEven": null,
-      "classification": "insensitive"
+      "classification": "loadBearing"
     },
     {
       "name": "mcUtil",
@@ -309,14 +306,14 @@
       "evidence": "ASSUMPTION",
       "measurementNeeded": "sustained MC payload bandwidth on silicon or a vendor model",
       "alone": {
-        "tpsPerUser": 1123.5225519543114,
-        "rawUs": 760.7331541446545,
-        "dTps": -1.17449340157782,
+        "tpsPerUser": 1137.258651825777,
+        "rawUs": 751.5448252063869,
+        "dTps": -1.2255586350404428,
         "withinBudget": true
       },
       "leaveOut": {
-        "tpsPerUser": 908.9919337203276,
-        "recoveryTps": -26.446421958108772,
+        "tpsPerUser": 931.5739956490188,
+        "recoveryTps": 5.053909200826297,
         "withinBudget": false
       },
       "closesGapAlone": false,
@@ -338,14 +335,14 @@
       "evidence": "ASSUMPTION (B-003)",
       "measurementNeeded": "expert-router trace: prefetch hit rate",
       "alone": {
-        "tpsPerUser": 1117.2453638857244,
-        "rawUs": 765.0072959159546,
-        "dTps": -7.4516814701648855,
+        "tpsPerUser": 1130.8493355530736,
+        "rawUs": 755.8043568048253,
+        "dTps": -7.634874907743779,
         "withinBudget": true
       },
       "leaveOut": {
-        "tpsPerUser": 940.988752648685,
-        "recoveryTps": 5.550396970248698,
+        "tpsPerUser": 931.9503450572752,
+        "recoveryTps": 5.430258609082671,
         "withinBudget": false
       },
       "closesGapAlone": false,
@@ -367,14 +364,14 @@
       "evidence": "ASSUMPTION (B-003)",
       "measurementNeeded": "runtime launch trace with batching",
       "alone": {
-        "tpsPerUser": 1117.265162880935,
-        "rawUs": 764.9937392632538,
-        "dTps": -7.431882474954364,
+        "tpsPerUser": 1131.6444716484853,
+        "rawUs": 755.2733001521209,
+        "dTps": -6.839738812332143,
         "withinBudget": true
       },
       "leaveOut": {
-        "tpsPerUser": 940.6463515074922,
-        "recoveryTps": 5.207995829055903,
+        "tpsPerUser": 931.1964203372719,
+        "recoveryTps": 4.6763338890793875,
         "withinBudget": false
       },
       "closesGapAlone": false,
@@ -389,9 +386,9 @@
         "vectorUtil": 0.25,
         "unpackParamsPerLaneCycle": 1,
         "layoutImbalance": 1.3,
-        "kvTile": 16384
+        "kvTile": 32768
       },
-      "tpsPerUser": 947.091984280225,
+      "tpsPerUser": 941.5128132476201,
       "withinBudget": false
     },
     "allUnmeasured": {
@@ -400,14 +397,14 @@
         "vectorUtil": 0.25,
         "unpackParamsPerLaneCycle": 1,
         "layoutImbalance": 1.3,
-        "kvTile": 16384,
+        "kvTile": 32768,
         "mcUtil": 0.65,
         "prediction": 0.7,
         "launchScale": 0.7
       },
-      "tpsPerUser": 935.4383556784363,
+      "tpsPerUser": 926.5200864481925,
       "withinBudget": false,
-      "gapToGoalTps": -64.56164432156368
+      "gapToGoalTps": -73.4799135518075
     },
     "byDimension": [
       {
@@ -418,11 +415,11 @@
           "vectorUtil",
           "unpackParamsPerLaneCycle"
         ],
-        "aloneTpsPerUser": 990.3035657050049,
-        "aloneDTps": -134.3934796508844,
-        "leaveOutTpsPerUser": 1072.2851333952458,
-        "recoveryTps": 136.84677771680947,
-        "leaveOutWithinBudget": true
+        "aloneTpsPerUser": 1064.6781720572617,
+        "aloneDTps": -73.8060384035557,
+        "leaveOutTpsPerUser": 988.0865208768386,
+        "recoveryTps": 61.56643442864606,
+        "leaveOutWithinBudget": false
       },
       {
         "dimension": "sram",
@@ -431,11 +428,11 @@
           "layoutImbalance",
           "kvTile"
         ],
-        "aloneTpsPerUser": 1087.6205881781705,
-        "aloneDTps": -37.076457177718794,
-        "leaveOutTpsPerUser": 977.5694207371852,
-        "recoveryTps": 42.131065058748845,
-        "leaveOutWithinBudget": false
+        "aloneTpsPerUser": 1004.5449459702648,
+        "aloneDTps": -133.93926449055255,
+        "leaveOutTpsPerUser": 1049.9597683083591,
+        "recoveryTps": 123.43968186016662,
+        "leaveOutWithinBudget": true
       },
       {
         "dimension": "mc",
@@ -444,10 +441,10 @@
           "mcUtil",
           "prediction"
         ],
-        "aloneTpsPerUser": 1115.61900318894,
-        "aloneDTps": -9.078042166949217,
-        "leaveOutTpsPerUser": 913.9184239826534,
-        "recoveryTps": -21.51993169578293,
+        "aloneTpsPerUser": 1129.1613617439648,
+        "aloneDTps": -9.322848716852604,
+        "leaveOutTpsPerUser": 936.7343489815869,
+        "recoveryTps": 10.21426253339439,
         "leaveOutWithinBudget": false
       },
       {
@@ -456,35 +453,34 @@
         "keys": [
           "launchScale"
         ],
-        "aloneTpsPerUser": 1117.265162880935,
-        "aloneDTps": -7.431882474954364,
-        "leaveOutTpsPerUser": 940.6463515074922,
-        "recoveryTps": 5.207995829055903,
+        "aloneTpsPerUser": 1131.6444716484853,
+        "aloneDTps": -6.839738812332143,
+        "leaveOutTpsPerUser": 931.1964203372719,
+        "recoveryTps": 4.6763338890793875,
         "leaveOutWithinBudget": false
       }
     ],
     "routing": {
-      "routeTo": "compute",
-      "owner": "compute-expert",
-      "recoveryTps": 136.84677771680947,
+      "routeTo": "sram",
+      "owner": "memory-expert",
+      "recoveryTps": 123.43968186016662,
       "closesGap": true,
       "note": "the dimension whose pessimistic values, if they were wrong, recover the most TPS/usr"
     }
   },
   "loadBearing": [
-    "unpackParamsPerLaneCycle"
+    "kvTile"
   ],
   "graded": [
     "matrixUtil",
     "vectorUtil",
+    "unpackParamsPerLaneCycle",
     "layoutImbalance",
     "mcUtil",
     "prediction",
     "launchScale"
   ],
-  "insensitive": [
-    "kvTile"
-  ],
+  "insensitive": [],
   "owners": [
     "compute-expert",
     "memory-expert",

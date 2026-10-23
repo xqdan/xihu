@@ -108,10 +108,17 @@ for (const row of tradeoffs.softwareReschedule.rows) {
 assert(tradeoffs.provenance.modelVersion && tradeoffs.provenance.seed && tradeoffs.provenance.manifestHash && tradeoffs.provenance.units);
 assert.deepStrictEqual(tradeoffs.inputs.sourceArtifacts.map(a => a.path), T.TRADEOFF_SOURCE_FILES);
 
-// Mechanism switch-backs are the ablations tpsDesign publishes.
+// Mechanism switch-backs are the ablations tpsDesign publishes. A switch that is on at the published point
+// but buys no TPS there is published under noEffectAtPublishedPoint instead of mechanisms (B.NO_EFFECT);
+// its switch-back is still an ablation, so both lists are searched.
+const ablationOf = key => {
+  const m = td.software.mechanisms.find(q => q.key === key) || td.software.noEffectAtPublishedPoint.find(q => q.key === key);
+  assert(m, `tpsDesign publishes no ablation for ${key}`);
+  return m.ablation;
+};
 for (const dim of ['sram', 'comm']) {
   for (const p of cards[dim].parameters.filter(q => q.kind === 'mechanism')) {
-    const pub = td.software.mechanisms.find(m => m.key === p.name).ablation;
+    const pub = ablationOf(p.name);
     const mv = p.moves[0];
     assert.strictEqual(mv.feasible, pub.feasible, `${p.name}: feasibility vs tpsDesign`);
     if (pub.feasible) { near(mv.tpsPerUser, pub.tpsPerUser, `${p.name} ablation TPS`); near(mv.rawUs, pub.rawLatencyUs, `${p.name} ablation raw`); }
@@ -185,7 +192,7 @@ assert(small, 'kvTile=32768 x kvCache off coupling');
 assert.strictEqual(couplings.find(c => c.name === 'kvTile=16384 x kvCache off'), undefined, 'the published tile is not paired with itself');
 // Alone, each move is within the budget; together they do not fit the H local tile: the interaction the pair exists to expose.
 assert(small.a.feasible && small.a.withinBudget, 'kvTile 32768 alone is feasible');
-near(small.a.tpsPerUser, 1039.8572139868081, 'kvTile 32768 alone TPS');
+near(small.a.tpsPerUser, 1029.518718, 'kvTile 32768 alone TPS');
 near(small.b.tpsPerUser, td.sensitivity.kvTile16384.bf16.tpsPerUser, 'kvCache off at the published tile is the published bf16 replay');
 assert(small.b.feasible && !small.b.withinBudget, 'kvCache off alone is feasible but below the budget (976.33)');
 assert.strictEqual(small.both.feasible, false, 'kvTile 32768 and kvCache off together do not fit the H local tile');
@@ -196,11 +203,12 @@ for (const c of couplings) {
   assert.strictEqual(c.between.length, 2, `${c.name}: two factors`);
   const labels = c.name.split(' @ ')[0].split(' x ');
   ['a', 'b'].forEach((side, i) => {
-    const mech = td.software.mechanisms.find(m => labels[i] === `${m.key} off`);
+    const mech = [...td.software.mechanisms, ...td.software.noEffectAtPublishedPoint].find(m => labels[i] === `${m.key} off`);
     // An unshifted mechanism-off cell is that mechanism's published ablation.
     if (mech && !c.at) {
-      assert.strictEqual(c[side].feasible, mech.ablation.feasible, `${c.name}.${side}: feasibility vs ablation`);
-      if (mech.ablation.feasible) near(c[side].tpsPerUser, mech.ablation.tpsPerUser, `${c.name}.${side}: TPS vs ablation`);
+      const abl = ablationOf(mech.key);
+      assert.strictEqual(c[side].feasible, abl.feasible, `${c.name}.${side}: feasibility vs ablation`);
+      if (abl.feasible) near(c[side].tpsPerUser, abl.tpsPerUser, `${c.name}.${side}: TPS vs ablation`);
     }
   });
   const cells = [c.a, c.b, c.both, ...(c.at ? [c.at] : [])];

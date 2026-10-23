@@ -29,7 +29,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "803e687cdb1663ab025e567266661f14d15c6745ba54312368ee9d706106f5fd",
+    "sha256": "b4aa762049c5c448fdd99d38f8e274f3df39d58df17105ebf309c489b0d499bb",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -38,7 +38,7 @@
     },
     "point": {
       "tauUs": 1.15,
-      "computeScale": 0.7054374305145951,
+      "computeScale": 0.6608414806234413,
       "mcGBs": 1152
     }
   },
@@ -47,7 +47,7 @@
     "quantity": "computeScale",
     "owner": "compute",
     "ownerAgent": "compute-expert",
-    "min": 0.7054374305145951,
+    "min": 0.6608414806234413,
     "source": "out/requirements/budget_frontier.json#B-SERIAL-CMP"
   },
   "fieldCaliber": {
@@ -57,15 +57,15 @@
   },
   "ranking": "feasible first, then die area including the option overheads, then die power, then pick",
   "totalCandidates": 52,
-  "feasibleCandidates": 3,
+  "feasibleCandidates": 21,
   "infeasibleByCause": {
     "hKernelExposed": 30,
-    "belowContractTarget": 7,
-    "packageArea": 24
+    "belowContractTarget": 8,
+    "packageArea": 1
   },
   "winner": "vectorLanes=832|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
   "closest": null,
-  "candidateSetSha256": "947015006b9228bf545154f25f3b962b34cfc0fea8a14eb091e14675d51b290a",
+  "candidateSetSha256": "8967ca977fbec16c36b70ef4fdb03d915e282aa5697d9879f2096a4543b2a111",
   "candidates": [
     {
       "optionId": "vectorLanes=832|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -90,18 +90,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 371.3903838086346,
+      "areaMm2": 357.2643468338447,
       "area": {
-        "die": 363.61452364056737,
+        "die": 349.48848666577743,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 295.47033600000003,
-      "packagePlacedMm2": 4571.123070469077,
-      "packageReserveMm2": 18.777729530923352,
-      "tpsPerUser": 1124.3403792802756,
-      "rawLatencyUs": 760.1798089364847
+      "diePowerW": 289.47993600000007,
+      "packagePlacedMm2": 4458.1147746707575,
+      "packageReserveMm2": 131.78602532924288,
+      "tpsPerUser": 1109.1027425704046,
+      "rawLatencyUs": 770.6236959797251
     },
     {
       "optionId": "vectorLanes=896|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -126,18 +126,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 372.8618459935085,
+      "areaMm2": 358.7358090187186,
       "area": {
-        "die": 365.08598582544124,
+        "die": 350.95994885065136,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 296.46873600000004,
-      "packagePlacedMm2": 4582.894767948068,
-      "packageReserveMm2": 7.0060320519323795,
-      "tpsPerUser": 1134.2769858698705,
-      "rawLatencyUs": 753.5204058163885
+      "diePowerW": 290.47833600000007,
+      "packagePlacedMm2": 4469.886472149748,
+      "packageReserveMm2": 120.0143278502519,
+      "tpsPerUser": 1118.7706842967552,
+      "rawLatencyUs": 763.9642928596298
     },
     {
       "optionId": "vectorLanes=832|lowPrecisionInput=vectorUnpack|expUnit=sfu",
@@ -162,18 +162,666 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 373.30328464897076,
+      "areaMm2": 359.1772476741808,
       "area": {
-        "die": 363.61452364056737,
+        "die": 349.48848666577743,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 1.9129008403361345
       },
-      "diePowerW": 295.47033600000003,
-      "packagePlacedMm2": 4586.426277191766,
-      "packageReserveMm2": 3.474522808234724,
-      "tpsPerUser": 1151.6296640191206,
-      "rawLatencyUs": 742.1664111342865
+      "diePowerW": 289.47993600000007,
+      "packagePlacedMm2": 4473.417981393446,
+      "packageReserveMm2": 116.48281860655425,
+      "tpsPerUser": 1135.6486308658589,
+      "rawLatencyUs": 752.6102981775273
+    },
+    {
+      "optionId": "vectorLanes=960|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "960",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 960,
+      "ratio": {
+        "die": 14.222222222222221,
+        "lCore": 2.1333333333333333,
+        "hCore": 38.4
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 829.0285714285715
+      },
+      "areaMm2": 360.20727120359254,
+      "area": {
+        "die": 352.4314110355253,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 291.4767360000001,
+      "packagePlacedMm2": 4481.65816962874,
+      "packageReserveMm2": 108.24263037126002,
+      "tpsPerUser": 1122.5812569526834,
+      "rawLatencyUs": 761.3710360896221
+    },
+    {
+      "optionId": "vectorLanes=896|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "896",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 896,
+      "ratio": {
+        "die": 15.238095238095237,
+        "lCore": 2.2857142857142856,
+        "hCore": 41.142857142857146
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 829.0285714285715
+      },
+      "areaMm2": 360.79585607754217,
+      "area": {
+        "die": 350.95994885065136,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 0,
+        "vectorOverhead": 2.0600470588235296
+      },
+      "diePowerW": 290.47833600000007,
+      "packagePlacedMm2": 4486.366848620337,
+      "packageReserveMm2": 103.53395137966345,
+      "tpsPerUser": 1136.7271845561268,
+      "rawLatencyUs": 751.8962036916547
+    },
+    {
+      "optionId": "vectorLanes=1024|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "1024",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "polynomial"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 1024,
+      "ratio": {
+        "die": 13.333333333333334,
+        "lCore": 2,
+        "hCore": 36
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 829.0285714285715
+      },
+      "areaMm2": 361.6787333884665,
+      "area": {
+        "die": 353.9028732203993,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 0,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 292.4751360000001,
+      "packagePlacedMm2": 4493.429867107732,
+      "packageReserveMm2": 96.47093289226814,
+      "tpsPerUser": 1124.3125023952925,
+      "rawLatencyUs": 760.198657294975
+    },
+    {
+      "optionId": "vectorLanes=960|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "960",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 960,
+      "ratio": {
+        "die": 14.222222222222221,
+        "lCore": 2.1333333333333333,
+        "hCore": 38.4
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 829.0285714285715
+      },
+      "areaMm2": 362.41446448090346,
+      "area": {
+        "die": 352.4314110355253,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 0,
+        "vectorOverhead": 2.207193277310924
+      },
+      "diePowerW": 291.4767360000001,
+      "packagePlacedMm2": 4499.315715847228,
+      "packageReserveMm2": 90.58508415277265,
+      "tpsPerUser": 1137.6635895898112,
+      "rawLatencyUs": 751.2773218039089
+    },
+    {
+      "optionId": "vectorLanes=640|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "640",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 640,
+      "ratio": {
+        "die": 21.333333333333332,
+        "lCore": 3.2,
+        "hCore": 57.6
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 363.31369137165973,
+      "area": {
+        "die": 345.07410011115553,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 286.484736,
+      "packagePlacedMm2": 4506.509530973278,
+      "packageReserveMm2": 83.39126902672251,
+      "tpsPerUser": 1085.614127302475,
+      "rawLatencyUs": 787.2971005126916
+    },
+    {
+      "optionId": "vectorLanes=1024|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "1024",
+        "lowPrecisionInput": "vectorUnpack",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 1024,
+      "ratio": {
+        "die": 13.333333333333334,
+        "lCore": 2,
+        "hCore": 36
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 44.46650124069479,
+        "minLanesPerCore": 829.0285714285715
+      },
+      "areaMm2": 364.03307288426487,
+      "area": {
+        "die": 353.9028732203993,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 0,
+        "vectorOverhead": 2.3543394957983192
+      },
+      "diePowerW": 292.4751360000001,
+      "packagePlacedMm2": 4512.2645830741185,
+      "packageReserveMm2": 77.63621692588185,
+      "tpsPerUser": 1138.4842104608174,
+      "rawLatencyUs": 750.7358001521186
+    },
+    {
+      "optionId": "vectorLanes=640|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "640",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 640,
+      "ratio": {
+        "die": 21.333333333333332,
+        "lCore": 3.2,
+        "hCore": 57.6
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 364.78515355653366,
+      "area": {
+        "die": 345.07410011115553,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 1.4714621848739495
+      },
+      "diePowerW": 286.484736,
+      "packagePlacedMm2": 4518.28122845227,
+      "packageReserveMm2": 71.61957154773063,
+      "tpsPerUser": 1131.1276864801825,
+      "rawLatencyUs": 755.6183664467568
+    },
+    {
+      "optionId": "vectorLanes=704|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "704",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 704,
+      "ratio": {
+        "die": 19.393939393939394,
+        "lCore": 2.909090909090909,
+        "hCore": 52.36363636363637
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 364.7851535565337,
+      "area": {
+        "die": 346.5455622960295,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 287.483136,
+      "packagePlacedMm2": 4518.28122845227,
+      "packageReserveMm2": 71.61957154773063,
+      "tpsPerUser": 1099.5764299436385,
+      "rawLatencyUs": 777.3000870386651
+    },
+    {
+      "optionId": "vectorLanes=768|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "768",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 768,
+      "ratio": {
+        "die": 17.77777777777778,
+        "lCore": 2.6666666666666665,
+        "hCore": 48
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 366.25661574140764,
+      "area": {
+        "die": 348.01702448090344,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 288.481536,
+      "packagePlacedMm2": 4530.052925931261,
+      "packageReserveMm2": 59.84787406873966,
+      "tpsPerUser": 1111.4847261362702,
+      "rawLatencyUs": 768.9721996198325
+    },
+    {
+      "optionId": "vectorLanes=704|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "704",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 704,
+      "ratio": {
+        "die": 19.393939393939394,
+        "lCore": 2.909090909090909,
+        "hCore": 52.36363636363637
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 366.40376195989506,
+      "area": {
+        "die": 346.5455622960295,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 1.6186084033613444
+      },
+      "diePowerW": 287.483136,
+      "packagePlacedMm2": 4531.2300956791605,
+      "packageReserveMm2": 58.67070432083983,
+      "tpsPerUser": 1132.908801525224,
+      "rawLatencyUs": 754.430412712991
+    },
+    {
+      "optionId": "vectorLanes=832|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "832",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 832,
+      "ratio": {
+        "die": 16.41025641025641,
+        "lCore": 2.4615384615384617,
+        "hCore": 44.30769230769231
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 367.7280779262816,
+      "area": {
+        "die": 349.48848666577743,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 289.47993600000007,
+      "packagePlacedMm2": 4541.8246234102535,
+      "packageReserveMm2": 48.076176589746865,
+      "tpsPerUser": 1118.3423585873913,
+      "rawLatencyUs": 764.2568915841215
+    },
+    {
+      "optionId": "vectorLanes=768|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "768",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 768,
+      "ratio": {
+        "die": 17.77777777777778,
+        "lCore": 2.6666666666666665,
+        "hCore": 48
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 368.02237036325636,
+      "area": {
+        "die": 348.01702448090344,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 1.7657546218487394
+      },
+      "diePowerW": 288.481536,
+      "packagePlacedMm2": 4544.178962906051,
+      "packageReserveMm2": 45.721837093949034,
+      "tpsPerUser": 1134.392902186717,
+      "rawLatencyUs": 753.4434084110428
+    },
+    {
+      "optionId": "vectorLanes=896|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "896",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 896,
+      "ratio": {
+        "die": 15.238095238095237,
+        "lCore": 2.2857142857142856,
+        "hCore": 41.142857142857146
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 369.19954011115556,
+      "area": {
+        "die": 350.95994885065136,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 290.47833600000007,
+      "packagePlacedMm2": 4553.596320889244,
+      "packageReserveMm2": 36.30447911075589,
+      "tpsPerUser": 1120.6092077939702,
+      "rawLatencyUs": 762.7108975692049
+    },
+    {
+      "optionId": "vectorLanes=832|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "832",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 832,
+      "ratio": {
+        "die": 16.41025641025641,
+        "lCore": 2.4615384615384617,
+        "hCore": 44.30769230769231
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 369.64097876661776,
+      "area": {
+        "die": 349.48848666577743,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 1.9129008403361345
+      },
+      "diePowerW": 289.47993600000007,
+      "packagePlacedMm2": 4557.127830132942,
+      "packageReserveMm2": 32.77296986705824,
+      "tpsPerUser": 1135.6486308658589,
+      "rawLatencyUs": 752.6102981775273
+    },
+    {
+      "optionId": "vectorLanes=960|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "960",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 960,
+      "ratio": {
+        "die": 14.222222222222221,
+        "lCore": 2.1333333333333333,
+        "hCore": 38.4
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 370.6710022960295,
+      "area": {
+        "die": 352.4314110355253,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 291.4767360000001,
+      "packagePlacedMm2": 4565.368018368235,
+      "packageReserveMm2": 24.53278163176492,
+      "tpsPerUser": 1122.5812569526834,
+      "rawLatencyUs": 761.3710360896221
+    },
+    {
+      "optionId": "vectorLanes=896|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "896",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 896,
+      "ratio": {
+        "die": 15.238095238095237,
+        "lCore": 2.2857142857142856,
+        "hCore": 41.142857142857146
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 371.2595871699791,
+      "area": {
+        "die": 350.95994885065136,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 2.0600470588235296
+      },
+      "diePowerW": 290.47833600000007,
+      "packagePlacedMm2": 4570.076697359833,
+      "packageReserveMm2": 19.82410264016744,
+      "tpsPerUser": 1136.7271845561268,
+      "rawLatencyUs": 751.8962036916547
+    },
+    {
+      "optionId": "vectorLanes=1024|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "pick": {
+        "vectorLanes": "1024",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "polynomial"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 1024,
+      "ratio": {
+        "die": 13.333333333333334,
+        "lCore": 2,
+        "hCore": 36
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 372.14246448090347,
+      "area": {
+        "die": 353.9028732203993,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 0
+      },
+      "diePowerW": 292.4751360000001,
+      "packagePlacedMm2": 4577.139715847228,
+      "packageReserveMm2": 12.761084152772128,
+      "tpsPerUser": 1124.3125023952925,
+      "rawLatencyUs": 760.198657294975
+    },
+    {
+      "optionId": "vectorLanes=960|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "pick": {
+        "vectorLanes": "960",
+        "lowPrecisionInput": "nativeTensor",
+        "expUnit": "sfu"
+      },
+      "feasible": true,
+      "violations": [],
+      "chosen": false,
+      "lostOn": "area",
+      "lanes": 960,
+      "ratio": {
+        "die": 14.222222222222221,
+        "lCore": 2.1333333333333333,
+        "hCore": 38.4
+      },
+      "binding": {
+        "model": "GLM-5.2",
+        "kernel": "DSA indexer",
+        "maxCoreRatio": 63.01538461538462,
+        "minLanesPerCore": 585
+      },
+      "areaMm2": 372.8781955733404,
+      "area": {
+        "die": 352.4314110355253,
+        "sharedPorts": 7.775860168067228,
+        "matrixOverhead": 10.463731092436971,
+        "vectorOverhead": 2.207193277310924
+      },
+      "diePowerW": 291.4767360000001,
+      "packagePlacedMm2": 4583.025564586724,
+      "packageReserveMm2": 6.875235413276641,
+      "tpsPerUser": 1137.6635895898112,
+      "rawLatencyUs": 751.2773218039089
     },
     {
       "optionId": "vectorLanes=320|lowPrecisionInput=vectorUnpack|expUnit=sfu",
@@ -200,18 +848,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 360.35441742207996,
+      "areaMm2": 346.2283804472901,
       "area": {
-        "die": 351.8428261615757,
+        "die": 337.71678918678583,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0.7357310924369748
       },
-      "diePowerW": 287.483136,
-      "packagePlacedMm2": 4482.835339376639,
-      "packageReserveMm2": 107.0654606233611,
-      "tpsPerUser": 1030.1380163142094,
-      "rawLatencyUs": 829.6954788242246
+      "diePowerW": 281.492736,
+      "packagePlacedMm2": 4369.827043578321,
+      "packageReserveMm2": 220.07375642167972,
+      "tpsPerUser": 1020.2398973995433,
+      "rawLatencyUs": 837.7449822138639
     },
     {
       "optionId": "vectorLanes=384|lowPrecisionInput=vectorUnpack|expUnit=sfu",
@@ -238,18 +886,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 361.9730258254413,
+      "areaMm2": 347.84698885065137,
       "area": {
-        "die": 353.3142883464497,
+        "die": 339.18825137165976,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0.8828773109243697
       },
-      "diePowerW": 288.481536,
-      "packagePlacedMm2": 4495.78420660353,
-      "packageReserveMm2": 94.11659339647031,
-      "tpsPerUser": 1073.5123500762402,
-      "rawLatencyUs": 796.1723538999383
+      "diePowerW": 282.491136,
+      "packagePlacedMm2": 4382.7759108052105,
+      "packageReserveMm2": 207.12488919478983,
+      "tpsPerUser": 1062.531847404895,
+      "rawLatencyUs": 804.4002227211898
     },
     {
       "optionId": "vectorLanes=448|lowPrecisionInput=vectorUnpack|expUnit=sfu",
@@ -276,18 +924,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 363.5916342288026,
+      "areaMm2": 349.4655972540127,
       "area": {
-        "die": 354.7857505313236,
+        "die": 340.6597135565337,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 1.0300235294117648
       },
-      "diePowerW": 289.47993600000007,
-      "packagePlacedMm2": 4508.733073830421,
-      "packageReserveMm2": 81.16772616957951,
-      "tpsPerUser": 1106.7996350374572,
-      "rawLatencyUs": 772.2272646683058
+      "diePowerW": 283.489536,
+      "packagePlacedMm2": 4395.724778032101,
+      "packageReserveMm2": 194.17602196789903,
+      "tpsPerUser": 1094.081010063025,
+      "rawLatencyUs": 781.2043594940191
     },
     {
       "optionId": "vectorLanes=512|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -314,18 +962,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 364.0330728842648,
+      "areaMm2": 349.9070359094749,
       "area": {
-        "die": 356.25721271619756,
+        "die": 342.1311757414077,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 290.47833600000007,
-      "packagePlacedMm2": 4512.2645830741185,
-      "packageReserveMm2": 77.63621692588185,
-      "tpsPerUser": 1029.7928361274944,
-      "rawLatencyUs": 829.9735876148956
+      "diePowerW": 284.487936,
+      "packagePlacedMm2": 4399.256287275799,
+      "packageReserveMm2": 190.64451272420138,
+      "tpsPerUser": 1018.0945190745733,
+      "rawLatencyUs": 839.5103192164909
     },
     {
       "optionId": "vectorLanes=512|lowPrecisionInput=vectorUnpack|expUnit=sfu",
@@ -352,18 +1000,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 365.21024263216395,
+      "areaMm2": 351.08420565737407,
       "area": {
-        "die": 356.25721271619756,
+        "die": 342.1311757414077,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 1.1771697478991596
       },
-      "diePowerW": 290.47833600000007,
-      "packagePlacedMm2": 4521.681941057312,
-      "packageReserveMm2": 68.21885894268871,
-      "tpsPerUser": 1124.6970453558893,
-      "rawLatencyUs": 759.9387392632482
+      "diePowerW": 284.487936,
+      "packagePlacedMm2": 4408.673645258992,
+      "packageReserveMm2": 181.22715474100823,
+      "tpsPerUser": 1110.7577655987193,
+      "rawLatencyUs": 769.4754708648425
     },
     {
       "optionId": "vectorLanes=576|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -390,18 +1038,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 365.5045350691388,
+      "areaMm2": 351.37849809434886,
       "area": {
-        "die": 357.72867490107154,
+        "die": 343.6026379262816,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 291.4767360000001,
-      "packagePlacedMm2": 4524.03628055311,
-      "packageReserveMm2": 65.86451944688997,
-      "tpsPerUser": 1058.3283082652065,
-      "rawLatencyUs": 807.5951933118614
+      "diePowerW": 285.486336,
+      "packagePlacedMm2": 4411.027984754791,
+      "packageReserveMm2": 178.8728152452095,
+      "tpsPerUser": 1045.4187121006512,
+      "rawLatencyUs": 817.5679704292165
     },
     {
       "optionId": "vectorLanes=576|lowPrecisionInput=vectorUnpack|expUnit=sfu",
@@ -428,18 +1076,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 366.82885103552536,
+      "areaMm2": 352.7028140607354,
       "area": {
-        "die": 357.72867490107154,
+        "die": 343.6026379262816,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 1.3243159663865547
       },
-      "diePowerW": 291.4767360000001,
-      "packagePlacedMm2": 4534.630808284202,
-      "packageReserveMm2": 55.269991715797914,
-      "tpsPerUser": 1135.6811257043466,
-      "rawLatencyUs": 752.5887640078296
+      "diePowerW": 285.486336,
+      "packagePlacedMm2": 4421.622512485883,
+      "packageReserveMm2": 168.27828751411744,
+      "tpsPerUser": 1120.8286919895188,
+      "rawLatencyUs": 762.5615411251867
     },
     {
       "optionId": "vectorLanes=640|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -466,18 +1114,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 366.97599725401267,
+      "areaMm2": 352.8499602792228,
       "area": {
-        "die": 359.2001370859454,
+        "die": 345.07410011115553,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 292.4751360000001,
-      "packagePlacedMm2": 4535.807978032101,
-      "packageReserveMm2": 54.092821967899,
-      "tpsPerUser": 1082.32267967331,
-      "rawLatencyUs": 789.69134690852
+      "diePowerW": 286.484736,
+      "packagePlacedMm2": 4422.799682233783,
+      "packageReserveMm2": 167.1011177662176,
+      "tpsPerUser": 1068.3572500651928,
+      "rawLatencyUs": 800.0140913993887
     },
     {
       "optionId": "vectorLanes=640|lowPrecisionInput=vectorUnpack|expUnit=sfu",
@@ -504,18 +1152,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 368.4474594388866,
+      "areaMm2": 354.3214224640967,
       "area": {
-        "die": 359.2001370859454,
+        "die": 345.07410011115553,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 1.4714621848739495
       },
-      "diePowerW": 292.4751360000001,
-      "packagePlacedMm2": 4547.579675511093,
-      "packageReserveMm2": 42.32112448890712,
-      "tpsPerUser": 1144.6258136596803,
-      "rawLatencyUs": 746.7076528425857
+      "diePowerW": 286.484736,
+      "packagePlacedMm2": 4434.571379712774,
+      "packageReserveMm2": 155.32942028722664,
+      "tpsPerUser": 1129.0178805387898,
+      "rawLatencyUs": 757.0303973334546
     },
     {
       "optionId": "vectorLanes=704|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -542,18 +1190,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 368.44745943888665,
+      "areaMm2": 354.32142246409677,
       "area": {
-        "die": 360.6715992708194,
+        "die": 346.5455622960295,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 293.4735360000001,
-      "packagePlacedMm2": 4547.579675511093,
-      "packageReserveMm2": 42.32112448890712,
-      "tpsPerUser": 1099.8122262055902,
-      "rawLatencyUs": 777.133436359057
+      "diePowerW": 287.483136,
+      "packagePlacedMm2": 4434.571379712774,
+      "packageReserveMm2": 155.32942028722664,
+      "tpsPerUser": 1085.2278618289588,
+      "rawLatencyUs": 787.5773234023022
     },
     {
       "optionId": "vectorLanes=256|lowPrecisionInput=nativeTensor|expUnit=sfu",
@@ -580,18 +1228,18 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 369.1995401111555,
+      "areaMm2": 355.0735031363656,
       "area": {
-        "die": 350.37136397670173,
+        "die": 336.24532700191185,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
         "vectorOverhead": 0.5885848739495798
       },
-      "diePowerW": 286.484736,
-      "packagePlacedMm2": 4553.596320889244,
-      "packageReserveMm2": 36.30447911075589,
-      "tpsPerUser": 1081.3648434696925,
-      "rawLatencyUs": 790.3908286480274
+      "diePowerW": 280.494336,
+      "packagePlacedMm2": 4440.588025090925,
+      "packageReserveMm2": 149.31277490907542,
+      "tpsPerUser": 1067.2545241520634,
+      "rawLatencyUs": 800.8406948472924
     },
     {
       "optionId": "vectorLanes=768|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -618,18 +1266,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 369.91892162376064,
+      "areaMm2": 355.7928846489707,
       "area": {
-        "die": 362.1430614556934,
+        "die": 348.01702448090344,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 294.471936,
-      "packagePlacedMm2": 4559.351372990085,
-      "packageReserveMm2": 30.549427009915235,
-      "tpsPerUser": 1112.9654826127642,
-      "rawLatencyUs": 767.9491125765956
+      "diePowerW": 288.481536,
+      "packagePlacedMm2": 4446.343077191766,
+      "packageReserveMm2": 143.55772280823476,
+      "tpsPerUser": 1098.0325556862535,
+      "rawLatencyUs": 778.3929996198335
     },
     {
       "optionId": "vectorLanes=704|lowPrecisionInput=vectorUnpack|expUnit=sfu",
@@ -656,18 +1304,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 370.066067842248,
+      "areaMm2": 355.9400308674581,
       "area": {
-        "die": 360.6715992708194,
+        "die": 346.5455622960295,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 1.6186084033613444
       },
-      "diePowerW": 293.4735360000001,
-      "packagePlacedMm2": 4560.528542737984,
-      "packageReserveMm2": 29.37225726201632,
-      "tpsPerUser": 1148.8122771194578,
-      "rawLatencyUs": 743.9865256697459
+      "diePowerW": 287.483136,
+      "packagePlacedMm2": 4447.5202469396645,
+      "packageReserveMm2": 142.38055306033584,
+      "tpsPerUser": 1132.908801525224,
+      "rawLatencyUs": 754.430412712991
     },
     {
       "optionId": "vectorLanes=320|lowPrecisionInput=nativeTensor|expUnit=sfu",
@@ -694,56 +1342,18 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 370.8181485145169,
+      "areaMm2": 356.692111539727,
       "area": {
-        "die": 351.8428261615757,
+        "die": 337.71678918678583,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
         "vectorOverhead": 0.7357310924369748
       },
-      "diePowerW": 287.483136,
-      "packagePlacedMm2": 4566.545188116135,
-      "packageReserveMm2": 23.355611883865095,
-      "tpsPerUser": 1116.2493870232997,
-      "rawLatencyUs": 765.6898759694587
-    },
-    {
-      "optionId": "vectorLanes=384|lowPrecisionInput=nativeTensor|expUnit=polynomial",
-      "pick": {
-        "vectorLanes": "384",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "polynomial"
-      },
-      "feasible": false,
-      "violations": [
-        "hKernelExposed"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: hKernelExposed",
-      "lanes": 384,
-      "ratio": {
-        "die": 35.55555555555556,
-        "lCore": 5.333333333333333,
-        "hCore": 96
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 371.5538796069539,
-      "area": {
-        "die": 353.3142883464497,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 0
-      },
-      "diePowerW": 288.481536,
-      "packagePlacedMm2": 4572.431036855631,
-      "packageReserveMm2": 17.469763144369608,
-      "tpsPerUser": 1005.3415112113073,
-      "rawLatencyUs": 850.1597170408791
+      "diePowerW": 281.492736,
+      "packagePlacedMm2": 4453.536892317816,
+      "packageReserveMm2": 136.36390768218462,
+      "tpsPerUser": 1101.220411351603,
+      "rawLatencyUs": 776.1396772984094
     },
     {
       "optionId": "vectorLanes=768|lowPrecisionInput=vectorUnpack|expUnit=sfu",
@@ -770,18 +1380,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 371.68467624560935,
+      "areaMm2": 357.5586392708194,
       "area": {
-        "die": 362.1430614556934,
+        "die": 348.01702448090344,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 1.7657546218487394
       },
-      "diePowerW": 294.471936,
-      "packagePlacedMm2": 4573.477409964875,
-      "packageReserveMm2": 16.42339003512552,
-      "tpsPerUser": 1150.3383651276347,
-      "rawLatencyUs": 742.999521367804
+      "diePowerW": 288.481536,
+      "packagePlacedMm2": 4460.469114166555,
+      "packageReserveMm2": 129.43168583344504,
+      "tpsPerUser": 1134.392902186717,
+      "rawLatencyUs": 753.4434084110428
     },
     {
       "optionId": "vectorLanes=384|lowPrecisionInput=nativeTensor|expUnit=sfu",
@@ -808,18 +1418,18 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 372.43675691787826,
+      "areaMm2": 358.3107199430883,
       "area": {
-        "die": 353.3142883464497,
+        "die": 339.18825137165976,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
         "vectorOverhead": 0.8828773109243697
       },
-      "diePowerW": 288.481536,
-      "packagePlacedMm2": 4579.494055343026,
-      "packageReserveMm2": 10.406744656974297,
-      "tpsPerUser": 1133.7341236395562,
-      "rawLatencyUs": 753.8812115463736
+      "diePowerW": 282.491136,
+      "packagePlacedMm2": 4466.4857595447065,
+      "packageReserveMm2": 123.41504045529382,
+      "tpsPerUser": 1118.2353490356384,
+      "rawLatencyUs": 764.3300271610491
     },
     {
       "optionId": "vectorLanes=448|lowPrecisionInput=nativeTensor|expUnit=polynomial",
@@ -846,265 +1456,37 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 373.02534179182777,
+      "areaMm2": 358.8993048170379,
       "area": {
-        "die": 354.7857505313236,
+        "die": 340.6597135565337,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
         "vectorOverhead": 0
       },
-      "diePowerW": 289.47993600000007,
-      "packagePlacedMm2": 4584.202734334622,
-      "packageReserveMm2": 5.6980656653786355,
-      "tpsPerUser": 1037.286306929031,
-      "rawLatencyUs": 823.9777667857825
+      "diePowerW": 283.489536,
+      "packagePlacedMm2": 4471.194438536303,
+      "packageReserveMm2": 118.70636146369725,
+      "tpsPerUser": 1024.2981155173334,
+      "rawLatencyUs": 834.4258783188119
     },
     {
-      "optionId": "vectorLanes=960|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
+      "optionId": "vectorLanes=448|lowPrecisionInput=nativeTensor|expUnit=sfu",
       "pick": {
-        "vectorLanes": "960",
-        "lowPrecisionInput": "vectorUnpack",
-        "expUnit": "polynomial"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 960,
-      "ratio": {
-        "die": 14.222222222222221,
-        "lCore": 2.1333333333333333,
-        "hCore": 38.4
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 44.46650124069479,
-        "minLanesPerCore": 829.0285714285715
-      },
-      "areaMm2": 374.3333081783825,
-      "area": {
-        "die": 366.5574480103152,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 0,
-        "vectorOverhead": 0
-      },
-      "diePowerW": 297.46713600000004,
-      "packagePlacedMm2": 4594.66646542706,
-      "packageReserveMm2": -4.765665427059503,
-      "tpsPerUser": 1138.1941054951353,
-      "rawLatencyUs": 750.9271490463783
-    },
-    {
-      "optionId": "vectorLanes=896|lowPrecisionInput=vectorUnpack|expUnit=sfu",
-      "pick": {
-        "vectorLanes": "896",
-        "lowPrecisionInput": "vectorUnpack",
-        "expUnit": "sfu"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 896,
-      "ratio": {
-        "die": 15.238095238095237,
-        "lCore": 2.2857142857142856,
-        "hCore": 41.142857142857146
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 44.46650124069479,
-        "minLanesPerCore": 829.0285714285715
-      },
-      "areaMm2": 374.92189305233205,
-      "area": {
-        "die": 365.08598582544124,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 0,
-        "vectorOverhead": 2.0600470588235296
-      },
-      "diePowerW": 296.46873600000004,
-      "packagePlacedMm2": 4599.375144418656,
-      "packageReserveMm2": -9.474344418656074,
-      "tpsPerUser": 1152.7388012817319,
-      "rawLatencyUs": 741.4523166484131
-    },
-    {
-      "optionId": "vectorLanes=1024|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
-      "pick": {
-        "vectorLanes": "1024",
-        "lowPrecisionInput": "vectorUnpack",
-        "expUnit": "polynomial"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 1024,
-      "ratio": {
-        "die": 13.333333333333334,
-        "lCore": 2,
-        "hCore": 36
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 44.46650124069479,
-        "minLanesPerCore": 829.0285714285715
-      },
-      "areaMm2": 375.80477036325647,
-      "area": {
-        "die": 368.0289101951892,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 0,
-        "vectorOverhead": 0
-      },
-      "diePowerW": 298.46553600000004,
-      "packagePlacedMm2": 4606.438162906052,
-      "packageReserveMm2": -16.537362906051385,
-      "tpsPerUser": 1139.973880278059,
-      "rawLatencyUs": 749.7547702517348
-    },
-    {
-      "optionId": "vectorLanes=960|lowPrecisionInput=vectorUnpack|expUnit=sfu",
-      "pick": {
-        "vectorLanes": "960",
-        "lowPrecisionInput": "vectorUnpack",
-        "expUnit": "sfu"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 960,
-      "ratio": {
-        "die": 14.222222222222221,
-        "lCore": 2.1333333333333333,
-        "hCore": 38.4
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 44.46650124069479,
-        "minLanesPerCore": 829.0285714285715
-      },
-      "areaMm2": 376.5405014556934,
-      "area": {
-        "die": 366.5574480103152,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 0,
-        "vectorOverhead": 2.207193277310924
-      },
-      "diePowerW": 297.46713600000004,
-      "packagePlacedMm2": 4612.324011645547,
-      "packageReserveMm2": -22.42321164554687,
-      "tpsPerUser": 1153.7017831504538,
-      "rawLatencyUs": 740.8334347606651
-    },
-    {
-      "optionId": "vectorLanes=640|lowPrecisionInput=nativeTensor|expUnit=polynomial",
-      "pick": {
-        "vectorLanes": "640",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "polynomial"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 640,
-      "ratio": {
-        "die": 21.333333333333332,
-        "lCore": 3.2,
-        "hCore": 57.6
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 377.4397283464496,
-      "area": {
-        "die": 359.2001370859454,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 0
-      },
-      "diePowerW": 292.4751360000001,
-      "packagePlacedMm2": 4619.517826771596,
-      "packageReserveMm2": -29.6170267715961,
-      "tpsPerUser": 1100.2089453730036,
-      "rawLatencyUs": 776.853213469452
-    },
-    {
-      "optionId": "vectorLanes=1024|lowPrecisionInput=vectorUnpack|expUnit=sfu",
-      "pick": {
-        "vectorLanes": "1024",
-        "lowPrecisionInput": "vectorUnpack",
-        "expUnit": "sfu"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 1024,
-      "ratio": {
-        "die": 13.333333333333334,
-        "lCore": 2,
-        "hCore": 36
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 44.46650124069479,
-        "minLanesPerCore": 829.0285714285715
-      },
-      "areaMm2": 378.1591098590548,
-      "area": {
-        "die": 368.0289101951892,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 0,
-        "vectorOverhead": 2.3543394957983192
-      },
-      "diePowerW": 298.46553600000004,
-      "packagePlacedMm2": 4625.272878872438,
-      "packageReserveMm2": -35.37207887243767,
-      "tpsPerUser": 1154.5457130708246,
-      "rawLatencyUs": 740.2919131088782
-    },
-    {
-      "optionId": "vectorLanes=640|lowPrecisionInput=nativeTensor|expUnit=sfu",
-      "pick": {
-        "vectorLanes": "640",
+        "vectorLanes": "448",
         "lowPrecisionInput": "nativeTensor",
         "expUnit": "sfu"
       },
       "feasible": false,
       "violations": [
-        "packageArea"
+        "hKernelExposed"
       ],
       "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 640,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 448,
       "ratio": {
-        "die": 21.333333333333332,
-        "lCore": 3.2,
-        "hCore": 57.6
+        "die": 30.476190476190474,
+        "lCore": 4.571428571428571,
+        "hCore": 82.28571428571429
       },
       "binding": {
         "model": "GLM-5.2",
@@ -1112,37 +1494,37 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 378.91119053132354,
+      "areaMm2": 359.92932834644967,
       "area": {
-        "die": 359.2001370859454,
+        "die": 340.6597135565337,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 1.4714621848739495
+        "vectorOverhead": 1.0300235294117648
       },
-      "diePowerW": 292.4751360000001,
-      "packagePlacedMm2": 4631.289524250588,
-      "packageReserveMm2": -41.388724250587984,
-      "tpsPerUser": 1146.980845861777,
-      "rawLatencyUs": 745.1744794035167
+      "diePowerW": 283.489536,
+      "packagePlacedMm2": 4479.434626771597,
+      "packageReserveMm2": 110.46617322840302,
+      "tpsPerUser": 1122.8058802427586,
+      "rawLatencyUs": 761.2187197630835
     },
     {
-      "optionId": "vectorLanes=704|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "optionId": "vectorLanes=512|lowPrecisionInput=nativeTensor|expUnit=polynomial",
       "pick": {
-        "vectorLanes": "704",
+        "vectorLanes": "512",
         "lowPrecisionInput": "nativeTensor",
         "expUnit": "polynomial"
       },
       "feasible": false,
       "violations": [
-        "packageArea"
+        "hKernelExposed"
       ],
       "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 704,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 512,
       "ratio": {
-        "die": 19.393939393939394,
-        "lCore": 2.909090909090909,
-        "hCore": 52.36363636363637
+        "die": 26.666666666666668,
+        "lCore": 4,
+        "hCore": 72
       },
       "binding": {
         "model": "GLM-5.2",
@@ -1150,75 +1532,37 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 378.9111905313236,
+      "areaMm2": 360.3707670019119,
       "area": {
-        "die": 360.6715992708194,
+        "die": 342.1311757414077,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
         "vectorOverhead": 0
       },
-      "diePowerW": 293.4735360000001,
-      "packagePlacedMm2": 4631.289524250589,
-      "packageReserveMm2": -41.38872425058889,
-      "tpsPerUser": 1114.5516652352285,
-      "rawLatencyUs": 766.85619999542
+      "diePowerW": 284.487936,
+      "packagePlacedMm2": 4482.966136015295,
+      "packageReserveMm2": 106.93466398470537,
+      "tpsPerUser": 1048.9844274310262,
+      "rawLatencyUs": 814.7888875662587
     },
     {
-      "optionId": "vectorLanes=768|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "optionId": "vectorLanes=512|lowPrecisionInput=nativeTensor|expUnit=sfu",
       "pick": {
-        "vectorLanes": "768",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "polynomial"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 768,
-      "ratio": {
-        "die": 17.77777777777778,
-        "lCore": 2.6666666666666665,
-        "hCore": 48
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 380.3826527161976,
-      "area": {
-        "die": 362.1430614556934,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 0
-      },
-      "diePowerW": 294.471936,
-      "packagePlacedMm2": 4643.06122172958,
-      "packageReserveMm2": -53.160421729579866,
-      "tpsPerUser": 1126.788335424921,
-      "rawLatencyUs": 758.5283125765942
-    },
-    {
-      "optionId": "vectorLanes=704|lowPrecisionInput=nativeTensor|expUnit=sfu",
-      "pick": {
-        "vectorLanes": "704",
+        "vectorLanes": "512",
         "lowPrecisionInput": "nativeTensor",
         "expUnit": "sfu"
       },
       "feasible": false,
       "violations": [
-        "packageArea"
+        "hKernelExposed"
       ],
       "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 704,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 512,
       "ratio": {
-        "die": 19.393939393939394,
-        "lCore": 2.909090909090909,
-        "hCore": 52.36363636363637
+        "die": 26.666666666666668,
+        "lCore": 4,
+        "hCore": 72
       },
       "binding": {
         "model": "GLM-5.2",
@@ -1226,37 +1570,37 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 380.52979893468495,
+      "areaMm2": 361.547936749811,
       "area": {
-        "die": 360.6715992708194,
+        "die": 342.1311757414077,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 1.6186084033613444
+        "vectorOverhead": 1.1771697478991596
       },
-      "diePowerW": 293.4735360000001,
-      "packagePlacedMm2": 4644.23839147748,
-      "packageReserveMm2": -54.33759147747969,
-      "tpsPerUser": 1148.8122771194578,
-      "rawLatencyUs": 743.9865256697459
+      "diePowerW": 284.487936,
+      "packagePlacedMm2": 4492.383493998488,
+      "packageReserveMm2": 97.51730600151222,
+      "tpsPerUser": 1126.2583728541165,
+      "rawLatencyUs": 758.885239214611
     },
     {
-      "optionId": "vectorLanes=832|lowPrecisionInput=nativeTensor|expUnit=polynomial",
+      "optionId": "vectorLanes=576|lowPrecisionInput=nativeTensor|expUnit=polynomial",
       "pick": {
-        "vectorLanes": "832",
+        "vectorLanes": "576",
         "lowPrecisionInput": "nativeTensor",
         "expUnit": "polynomial"
       },
       "feasible": false,
       "violations": [
-        "packageArea"
+        "hKernelExposed"
       ],
       "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 832,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 576,
       "ratio": {
-        "die": 16.41025641025641,
-        "lCore": 2.4615384615384617,
-        "hCore": 44.30769230769231
+        "die": 23.703703703703702,
+        "lCore": 3.5555555555555554,
+        "hCore": 64
       },
       "binding": {
         "model": "GLM-5.2",
@@ -1264,37 +1608,37 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 381.85411490107157,
+      "areaMm2": 361.8422291867858,
       "area": {
-        "die": 363.61452364056737,
+        "die": 343.6026379262816,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
         "vectorOverhead": 0
       },
-      "diePowerW": 295.47033600000003,
-      "packagePlacedMm2": 4654.832919208573,
-      "packageReserveMm2": -64.93211920857266,
-      "tpsPerUser": 1133.8367069183432,
-      "rawLatencyUs": 753.8130045408811
+      "diePowerW": 285.486336,
+      "packagePlacedMm2": 4494.737833494286,
+      "packageReserveMm2": 95.1629665057144,
+      "tpsPerUser": 1069.023265034032,
+      "rawLatencyUs": 799.5156725365052
     },
     {
-      "optionId": "vectorLanes=768|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "optionId": "vectorLanes=576|lowPrecisionInput=nativeTensor|expUnit=sfu",
       "pick": {
-        "vectorLanes": "768",
+        "vectorLanes": "576",
         "lowPrecisionInput": "nativeTensor",
         "expUnit": "sfu"
       },
       "feasible": false,
       "violations": [
-        "packageArea"
+        "hKernelExposed"
       ],
       "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 768,
+      "lostOn": "infeasible: hKernelExposed",
+      "lanes": 576,
       "ratio": {
-        "die": 17.77777777777778,
-        "lCore": 2.6666666666666665,
-        "hCore": 48
+        "die": 23.703703703703702,
+        "lCore": 3.5555555555555554,
+        "hCore": 64
       },
       "binding": {
         "model": "GLM-5.2",
@@ -1302,246 +1646,18 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 382.1484073380463,
+      "areaMm2": 363.16654515317236,
       "area": {
-        "die": 362.1430614556934,
+        "die": 343.6026379262816,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 1.7657546218487394
+        "vectorOverhead": 1.3243159663865547
       },
-      "diePowerW": 294.471936,
-      "packagePlacedMm2": 4657.187258704371,
-      "packageReserveMm2": -67.28645870437049,
-      "tpsPerUser": 1150.3383651276347,
-      "rawLatencyUs": 742.999521367804
-    },
-    {
-      "optionId": "vectorLanes=896|lowPrecisionInput=nativeTensor|expUnit=polynomial",
-      "pick": {
-        "vectorLanes": "896",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "polynomial"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 896,
-      "ratio": {
-        "die": 15.238095238095237,
-        "lCore": 2.2857142857142856,
-        "hCore": 41.142857142857146
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 383.32557708594544,
-      "area": {
-        "die": 365.08598582544124,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 0
-      },
-      "diePowerW": 296.46873600000004,
-      "packagePlacedMm2": 4666.604616687564,
-      "packageReserveMm2": -76.70381668756363,
-      "tpsPerUser": 1136.1668699299637,
-      "rawLatencyUs": 752.2670105259633
-    },
-    {
-      "optionId": "vectorLanes=832|lowPrecisionInput=nativeTensor|expUnit=sfu",
-      "pick": {
-        "vectorLanes": "832",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "sfu"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 832,
-      "ratio": {
-        "die": 16.41025641025641,
-        "lCore": 2.4615384615384617,
-        "hCore": 44.30769230769231
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 383.7670157414077,
-      "area": {
-        "die": 363.61452364056737,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 1.9129008403361345
-      },
-      "diePowerW": 295.47033600000003,
-      "packagePlacedMm2": 4670.136125931262,
-      "packageReserveMm2": -80.23532593126129,
-      "tpsPerUser": 1151.6296640191206,
-      "rawLatencyUs": 742.1664111342865
-    },
-    {
-      "optionId": "vectorLanes=960|lowPrecisionInput=nativeTensor|expUnit=polynomial",
-      "pick": {
-        "vectorLanes": "960",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "polynomial"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 960,
-      "ratio": {
-        "die": 14.222222222222221,
-        "lCore": 2.1333333333333333,
-        "hCore": 38.4
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 384.7970392708194,
-      "area": {
-        "die": 366.5574480103152,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 0
-      },
-      "diePowerW": 297.46713600000004,
-      "packagePlacedMm2": 4678.376314166555,
-      "packageReserveMm2": -88.4755141665546,
-      "tpsPerUser": 1138.1941054951353,
-      "rawLatencyUs": 750.9271490463783
-    },
-    {
-      "optionId": "vectorLanes=896|lowPrecisionInput=nativeTensor|expUnit=sfu",
-      "pick": {
-        "vectorLanes": "896",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "sfu"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 896,
-      "ratio": {
-        "die": 15.238095238095237,
-        "lCore": 2.2857142857142856,
-        "hCore": 41.142857142857146
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 385.385624144769,
-      "area": {
-        "die": 365.08598582544124,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 2.0600470588235296
-      },
-      "diePowerW": 296.46873600000004,
-      "packagePlacedMm2": 4683.084993158152,
-      "packageReserveMm2": -93.18419315815208,
-      "tpsPerUser": 1152.7388012817319,
-      "rawLatencyUs": 741.4523166484131
-    },
-    {
-      "optionId": "vectorLanes=1024|lowPrecisionInput=nativeTensor|expUnit=polynomial",
-      "pick": {
-        "vectorLanes": "1024",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "polynomial"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 1024,
-      "ratio": {
-        "die": 13.333333333333334,
-        "lCore": 2,
-        "hCore": 36
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 386.2685014556934,
-      "area": {
-        "die": 368.0289101951892,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 0
-      },
-      "diePowerW": 298.46553600000004,
-      "packagePlacedMm2": 4690.148011645548,
-      "packageReserveMm2": -100.2472116455474,
-      "tpsPerUser": 1139.973880278059,
-      "rawLatencyUs": 749.7547702517348
-    },
-    {
-      "optionId": "vectorLanes=960|lowPrecisionInput=nativeTensor|expUnit=sfu",
-      "pick": {
-        "vectorLanes": "960",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "sfu"
-      },
-      "feasible": false,
-      "violations": [
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: packageArea",
-      "lanes": 960,
-      "ratio": {
-        "die": 14.222222222222221,
-        "lCore": 2.1333333333333333,
-        "hCore": 38.4
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 387.00423254813035,
-      "area": {
-        "die": 366.5574480103152,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 2.207193277310924
-      },
-      "diePowerW": 297.46713600000004,
-      "packagePlacedMm2": 4696.033860385043,
-      "packageReserveMm2": -106.13306038504288,
-      "tpsPerUser": 1153.7017831504538,
-      "rawLatencyUs": 740.8334347606651
+      "diePowerW": 285.486336,
+      "packagePlacedMm2": 4505.332361225379,
+      "packageReserveMm2": 84.56843877462143,
+      "tpsPerUser": 1128.9583589861284,
+      "rawLatencyUs": 757.0703098991418
     },
     {
       "optionId": "vectorLanes=1024|lowPrecisionInput=nativeTensor|expUnit=sfu",
@@ -1568,18 +1684,18 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 388.62284095149175,
+      "areaMm2": 374.4968039767018,
       "area": {
-        "die": 368.0289101951892,
+        "die": 353.9028732203993,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
         "vectorOverhead": 2.3543394957983192
       },
-      "diePowerW": 298.46553600000004,
-      "packagePlacedMm2": 4708.982727611934,
-      "packageReserveMm2": -119.08192761193368,
-      "tpsPerUser": 1154.5457130708246,
-      "rawLatencyUs": 740.2919131088782
+      "diePowerW": 292.4751360000001,
+      "packagePlacedMm2": 4595.9744318136145,
+      "packageReserveMm2": -6.073631813614156,
+      "tpsPerUser": 1138.4842104608174,
+      "rawLatencyUs": 750.7358001521186
     },
     {
       "optionId": "vectorLanes=256|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -1607,18 +1723,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 358.147224144769,
+      "areaMm2": 344.0211871699791,
       "area": {
-        "die": 350.37136397670173,
+        "die": 336.24532700191185,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 286.484736,
-      "packagePlacedMm2": 4465.177793158152,
-      "packageReserveMm2": 124.72300684184847,
-      "tpsPerUser": 828.6820587543398,
-      "rawLatencyUs": 1031.3978028987692
+      "diePowerW": 280.494336,
+      "packagePlacedMm2": 4352.169497359833,
+      "packageReserveMm2": 237.7313026401671,
+      "tpsPerUser": 822.2741063175297,
+      "rawLatencyUs": 1039.4354487563094
     },
     {
       "optionId": "vectorLanes=256|lowPrecisionInput=vectorUnpack|expUnit=sfu",
@@ -1646,18 +1762,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 358.73580901871856,
+      "areaMm2": 344.6097720439287,
       "area": {
-        "die": 350.37136397670173,
+        "die": 336.24532700191185,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0.5885848739495798
       },
-      "diePowerW": 286.484736,
-      "packagePlacedMm2": 4469.886472149748,
-      "packageReserveMm2": 120.0143278502519,
-      "tpsPerUser": 971.2597030820344,
-      "rawLatencyUs": 879.9920886130546
+      "diePowerW": 280.494336,
+      "packagePlacedMm2": 4356.878176351429,
+      "packageReserveMm2": 233.02262364857143,
+      "tpsPerUser": 962.4687344623545,
+      "rawLatencyUs": 888.0297344705955
     },
     {
       "optionId": "vectorLanes=320|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -1685,18 +1801,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 359.61868632964297,
+      "areaMm2": 345.4926493548531,
       "area": {
-        "die": 351.8428261615757,
+        "die": 337.71678918678583,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 287.483136,
-      "packagePlacedMm2": 4476.949490637144,
-      "packageReserveMm2": 112.95130936285659,
-      "tpsPerUser": 898.9091621212795,
-      "rawLatencyUs": 950.8200502527972
+      "diePowerW": 281.492736,
+      "packagePlacedMm2": 4363.941194838824,
+      "packageReserveMm2": 225.9596051611761,
+      "tpsPerUser": 891.3630133047011,
+      "rawLatencyUs": 958.8695536424351
     },
     {
       "optionId": "vectorLanes=384|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -1724,18 +1840,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 361.09014851451695,
+      "areaMm2": 346.964111539727,
       "area": {
-        "die": 353.3142883464497,
+        "die": 339.18825137165976,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 288.481536,
-      "packagePlacedMm2": 4488.721188116136,
-      "packageReserveMm2": 101.17961188386471,
-      "tpsPerUser": 952.7274628018909,
-      "rawLatencyUs": 897.1094967570808
+      "diePowerW": 282.491136,
+      "packagePlacedMm2": 4375.712892317816,
+      "packageReserveMm2": 214.18790768218423,
+      "tpsPerUser": 944.0689042530227,
+      "rawLatencyUs": 905.3373655783328
     },
     {
       "optionId": "vectorLanes=448|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -1763,18 +1879,18 @@
         "maxCoreRatio": 44.46650124069479,
         "minLanesPerCore": 829.0285714285715
       },
-      "areaMm2": 362.5616106993908,
+      "areaMm2": 348.43557372460094,
       "area": {
-        "die": 354.7857505313236,
+        "die": 340.6597135565337,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 0,
         "vectorOverhead": 0
       },
-      "diePowerW": 289.47993600000007,
-      "packagePlacedMm2": 4500.492885595127,
-      "packageReserveMm2": 89.40791440487374,
-      "tpsPerUser": 995.2908466939431,
-      "rawLatencyUs": 858.7448156887145
+      "diePowerW": 283.489536,
+      "packagePlacedMm2": 4387.484589796808,
+      "packageReserveMm2": 202.41621020319235,
+      "tpsPerUser": 984.9939760010735,
+      "rawLatencyUs": 867.7219105144286
     },
     {
       "optionId": "vectorLanes=256|lowPrecisionInput=nativeTensor|expUnit=polynomial",
@@ -1802,18 +1918,18 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 368.6109552372059,
+      "areaMm2": 354.48491826241604,
       "area": {
-        "die": 350.37136397670173,
+        "die": 336.24532700191185,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
         "vectorOverhead": 0
       },
-      "diePowerW": 286.484736,
-      "packagePlacedMm2": 4548.887641897647,
-      "packageReserveMm2": 41.01315810235337,
-      "tpsPerUser": 907.5217584027428,
-      "rawLatencyUs": 941.7965429337431
+      "diePowerW": 280.494336,
+      "packagePlacedMm2": 4435.879346099328,
+      "packageReserveMm2": 154.021453900672,
+      "tpsPerUser": 897.5626964863405,
+      "rawLatencyUs": 952.2464091330047
     },
     {
       "optionId": "vectorLanes=320|lowPrecisionInput=nativeTensor|expUnit=polynomial",
@@ -1841,77 +1957,38 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 370.0824174220799,
+      "areaMm2": 355.95638044729003,
       "area": {
-        "die": 351.8428261615757,
+        "die": 337.71678918678583,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
         "vectorOverhead": 0
       },
-      "diePowerW": 287.483136,
-      "packagePlacedMm2": 4560.65933937664,
-      "packageReserveMm2": 29.24146062336058,
-      "tpsPerUser": 963.7876978759189,
-      "rawLatencyUs": 886.8144473980323
+      "diePowerW": 281.492736,
+      "packagePlacedMm2": 4447.65104357832,
+      "packageReserveMm2": 142.2497564216801,
+      "tpsPerUser": 952.563145041705,
+      "rawLatencyUs": 897.2642487269801
     },
     {
-      "optionId": "vectorLanes=448|lowPrecisionInput=nativeTensor|expUnit=sfu",
+      "optionId": "vectorLanes=384|lowPrecisionInput=nativeTensor|expUnit=polynomial",
       "pick": {
-        "vectorLanes": "448",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "sfu"
-      },
-      "feasible": false,
-      "violations": [
-        "hKernelExposed",
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: hKernelExposed, packageArea",
-      "lanes": 448,
-      "ratio": {
-        "die": 30.476190476190474,
-        "lCore": 4.571428571428571,
-        "hCore": 82.28571428571429
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 374.05536532123955,
-      "area": {
-        "die": 354.7857505313236,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 1.0300235294117648
-      },
-      "diePowerW": 289.47993600000007,
-      "packagePlacedMm2": 4592.442922569917,
-      "packageReserveMm2": -2.5421225699165007,
-      "tpsPerUser": 1138.4314267653856,
-      "rawLatencyUs": 750.7706082300522
-    },
-    {
-      "optionId": "vectorLanes=512|lowPrecisionInput=nativeTensor|expUnit=polynomial",
-      "pick": {
-        "vectorLanes": "512",
+        "vectorLanes": "384",
         "lowPrecisionInput": "nativeTensor",
         "expUnit": "polynomial"
       },
       "feasible": false,
       "violations": [
         "hKernelExposed",
-        "packageArea"
+        "belowContractTarget"
       ],
       "chosen": false,
-      "lostOn": "infeasible: hKernelExposed, packageArea",
-      "lanes": 512,
+      "lostOn": "infeasible: hKernelExposed, belowContractTarget",
+      "lanes": 384,
       "ratio": {
-        "die": 26.666666666666668,
-        "lCore": 4,
-        "hCore": 72
+        "die": 35.55555555555556,
+        "lCore": 5.333333333333333,
+        "hCore": 96
       },
       "binding": {
         "model": "GLM-5.2",
@@ -1919,135 +1996,18 @@
         "maxCoreRatio": 63.01538461538462,
         "minLanesPerCore": 585
       },
-      "areaMm2": 374.49680397670176,
+      "areaMm2": 357.42784263216396,
       "area": {
-        "die": 356.25721271619756,
+        "die": 339.18825137165976,
         "sharedPorts": 7.775860168067228,
         "matrixOverhead": 10.463731092436971,
         "vectorOverhead": 0
       },
-      "diePowerW": 290.47833600000007,
-      "packagePlacedMm2": 4595.9744318136145,
-      "packageReserveMm2": -6.073631813614156,
-      "tpsPerUser": 1062.6066630031971,
-      "rawLatencyUs": 804.3435868219124
-    },
-    {
-      "optionId": "vectorLanes=512|lowPrecisionInput=nativeTensor|expUnit=sfu",
-      "pick": {
-        "vectorLanes": "512",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "sfu"
-      },
-      "feasible": false,
-      "violations": [
-        "hKernelExposed",
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: hKernelExposed, packageArea",
-      "lanes": 512,
-      "ratio": {
-        "die": 26.666666666666668,
-        "lCore": 4,
-        "hCore": 72
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 375.6739737246009,
-      "area": {
-        "die": 356.25721271619756,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 1.1771697478991596
-      },
-      "diePowerW": 290.47833600000007,
-      "packagePlacedMm2": 4605.391789796808,
-      "packageReserveMm2": -15.490989796807298,
-      "tpsPerUser": 1141.9765445010564,
-      "rawLatencyUs": 748.4399384702634
-    },
-    {
-      "optionId": "vectorLanes=576|lowPrecisionInput=nativeTensor|expUnit=polynomial",
-      "pick": {
-        "vectorLanes": "576",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "polynomial"
-      },
-      "feasible": false,
-      "violations": [
-        "hKernelExposed",
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: hKernelExposed, packageArea",
-      "lanes": 576,
-      "ratio": {
-        "die": 23.703703703703702,
-        "lCore": 3.5555555555555554,
-        "hCore": 64
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 375.96826616157574,
-      "area": {
-        "die": 357.72867490107154,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 0
-      },
-      "diePowerW": 291.4767360000001,
-      "packagePlacedMm2": 4607.7461292926055,
-      "packageReserveMm2": -17.84532929260513,
-      "tpsPerUser": 1083.1724950937876,
-      "rawLatencyUs": 789.0717854932697
-    },
-    {
-      "optionId": "vectorLanes=576|lowPrecisionInput=nativeTensor|expUnit=sfu",
-      "pick": {
-        "vectorLanes": "576",
-        "lowPrecisionInput": "nativeTensor",
-        "expUnit": "sfu"
-      },
-      "feasible": false,
-      "violations": [
-        "hKernelExposed",
-        "packageArea"
-      ],
-      "chosen": false,
-      "lostOn": "infeasible: hKernelExposed, packageArea",
-      "lanes": 576,
-      "ratio": {
-        "die": 23.703703703703702,
-        "lCore": 3.5555555555555554,
-        "hCore": 64
-      },
-      "binding": {
-        "model": "GLM-5.2",
-        "kernel": "DSA indexer",
-        "maxCoreRatio": 63.01538461538462,
-        "minLanesPerCore": 585
-      },
-      "areaMm2": 377.2925821279623,
-      "area": {
-        "die": 357.72867490107154,
-        "sharedPorts": 7.775860168067228,
-        "matrixOverhead": 10.463731092436971,
-        "vectorOverhead": 1.3243159663865547
-      },
-      "diePowerW": 291.4767360000001,
-      "packagePlacedMm2": 4618.340657023698,
-      "packageReserveMm2": -28.439857023698096,
-      "tpsPerUser": 1144.7503443978808,
-      "rawLatencyUs": 746.6264228559047
+      "diePowerW": 282.491136,
+      "packagePlacedMm2": 4459.422741057311,
+      "packageReserveMm2": 130.47805894268913,
+      "tpsPerUser": 993.1354643481505,
+      "rawLatencyUs": 860.6085326555547
     }
   ],
   "regenerate": "node integration/pipelines/generate_matrix_vector_design.js (npm run aicore:search); enforced by tests/regression/test_matrix_vector_design.js"

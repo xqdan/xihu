@@ -68,12 +68,17 @@ assert.deepStrictEqual(O.checkGainRules(), [], 'all GAIN factors neutral');
   try { assert.deepStrictEqual(O.checkGainRules().map(r => r.key), ['attentionFusion']); } finally { O.GAIN.attentionFusion = saved; }
 }
 
-// 3. Published point. The two over-cap epilogues are the ones the contention report found
-//    (24_TRACE_AND_CHARON_ADOPTION_PLAN.md §2.2); the first op of the step has no kernel to fold into.
+// 3. Published point. The over-cap epilogues are the ops whose shared-SRAM bytes do not fit the read/write/fabric
+//    caps over the FUSED (kernel-only) time; the first op of the step has no kernel to fold into and is refused.
+//    The set grew from 2 to 5 when the published vector unit went to 1024 lanes: an elementwise op now finishes
+//    its vector work in half the time, so the same bytes are issued over a shorter body and the byte/time demand
+//    crosses the cap. That is a property of the point, not of the mechanism -- switching epilogueFusion off still
+//    costs TPS (1110.11 against 1138.48), so the rule stays applied and the flag records which ops pay for it.
 const report = Object.fromEntries(A.checkRules(m.plan, O.OPT).map(r => [r.key, r]));
 assert.deepStrictEqual(Object.keys(report), ['epilogueFusion', 'softmaxFusion', 'pvMerge', 'countBasis']);
 assert.deepStrictEqual(report.epilogueFusion.refused, {'Attention RMSNorm': 1});
-assert.deepStrictEqual(report.epilogueFusion.unmet.map(u => u.ops), [{'KV append source': 24, 'Dispatch local pack': 92}]);
+assert.deepStrictEqual(report.epilogueFusion.unmet.map(u => u.ops),
+  [{RoPE: 24, 'KV append source': 24, 'Shared SiLU x up': 184, 'Dispatch local pack': 92, 'SiLU x up': 92}]);
 for (const k of ['softmaxFusion', 'countBasis']) {
   assert.strictEqual(report[k].applied, report[k].matched, k);
   assert.deepStrictEqual(report[k].unmet, [], k);
@@ -87,4 +92,4 @@ assert.strictEqual(report.pvMerge.matched, m.plan.model.softmaxLayers * kvTilesP
 assert.strictEqual(report.pvMerge.applied, m.plan.model.softmaxLayers, 'published headTile 96: one head tile, one merge per layer');
 assert.deepStrictEqual(report.pvMerge.refused, {'PV + rescale accumulation': report.pvMerge.matched - report.pvMerge.applied}, 'the PVs that are not the last of their layer are the refused ones');
 
-console.log(`PASS mapping rules: ${Object.keys(A.RULES).length} mapper rules + ${O.GAIN_RULES.length} GAIN rules select as before; published report refuses 1 and flags 2 over-cap epilogue ops`);
+console.log(`PASS mapping rules: ${Object.keys(A.RULES).length} mapper rules + ${O.GAIN_RULES.length} GAIN rules select as before; published report refuses 1 and flags ${Object.values(report.epilogueFusion.unmet[0].ops).reduce((a, b) => a + b, 0) > 0 ? Object.keys(report.epilogueFusion.unmet[0].ops).length : 0} over-cap epilogue ops`);

@@ -64,13 +64,18 @@ const MECHANISMS = [
   {key: 'launchBatching', off: false, layer: 'runtime', evidence: 'ASSUMPTION', role: 'launch cost scaled once by OPT.launchScale'},
   {key: 'epilogueFusion', off: false, layer: 'kernel mapping', evidence: 'MODEL', role: 'elementwise ops folded into the adjacent kernel'},
   {key: 'pvMerge', off: 'tile', layer: 'kernel mapping', evidence: 'MODEL', role: 'PV m/l/O merged once per layer, cross-die ring reduce-scatter by heads'},
-  {key: 'kvCache', off: 'bf16', layer: 'model format', evidence: 'MODEL (precision open, B-001)', role: 'FlashMLA FP8 KV layout, BF16 compute with in-kernel dequant; coupled to softmaxFusion -- the dequant runs on the H vector lanes and is charged against the softmax hiding budget, so ablating either alone understates the joint effect'},
-  {key: 'sharedPortScaling', patch: SHARED_PORT_UNSCALED, layer: 'hardware/SRAM ports', evidence: 'MODEL (O-007)', role: 'shared-SRAM write/read port scaling and dedicated TMA port, charged in area/power'}
+  {key: 'kvCache', off: 'bf16', layer: 'model format', evidence: 'MODEL (precision open, B-001)', role: 'FlashMLA FP8 KV layout, BF16 compute with in-kernel dequant; coupled to softmaxFusion -- the dequant runs on the H vector lanes and is charged against the softmax hiding budget, so ablating either alone understates the joint effect'}
 ];
 // Switches that are on but do not move TPS at the published point; listed so
 // nobody reads them as contributors.
 const NO_EFFECT = [
-  {key: 'tilePartialReady', patch: {tilePartialReady: false}, note: 'acts on duration only through GAIN, which is 1'}
+  {key: 'tilePartialReady', patch: {tilePartialReady: false}, note: 'acts on duration only through GAIN, which is 1'},
+  // Moved out of MECHANISMS when the published point moved to 1138.48: the shared-SRAM port scaling and its
+  // dedicated TMA port now buy EXACTLY zero TPS there (the point is collective-bound and the shared->local fill
+  // is not the critical path), while still charging 7.78 mm2 and 2.74 W per die. It is listed here so nobody
+  // reads the released point as having paid for a timing win it did not get; the charge stays visible in
+  // hardware.sharedPortScalingCost, and sram_search.js still searches the option (it "wins" by being free).
+  {key: 'sharedPortScaling', patch: SHARED_PORT_UNSCALED, note: 'buys 0 TPS at the published point but still charges its area and power'}
 ];
 
 // Parameters the published TPS rests on that nothing in the repository measures.
@@ -131,9 +136,16 @@ const category = o => o.unit === 'COMM' ? 'collective'
 // (utilisation, unpack rate, bank imbalance, KV tile); `allUnmeasured` adds the memory/software side
 // (sustained MC efficiency, expert prediction, launch batching). The values are the pessimistic ends
 // of the sweeps above, not forecasts.
+//
+// kvTile is the tile size, and only LARGER is adverse on both axes: a bigger tile costs more time
+// (fewer, larger tiles at the published 1124.70 -> 1039.86 at 32768) and more H-local capacity (32768
+// already rejects hMiB 1 and 2). It is NOT the published tile and NOT a smaller one. The published
+// tile makes the entry a no-op (the replay is unchanged with or without it); a smaller tile relaxes
+// the H-local check, which is the axis this entry exists to stress, and lets the hMiB 2 point back in
+// (it does not survive the published tile). 65536 is where the published point itself stops fitting.
 const JOINT_PESSIMISTIC = {
-  compute: {matrixUtil: 0.5, vectorUtil: 0.25, unpackParamsPerLaneCycle: 1, layoutImbalance: 1.3, kvTile: 16384},
-  allUnmeasured: {matrixUtil: 0.5, vectorUtil: 0.25, unpackParamsPerLaneCycle: 1, layoutImbalance: 1.3, kvTile: 16384,
+  compute: {matrixUtil: 0.5, vectorUtil: 0.25, unpackParamsPerLaneCycle: 1, layoutImbalance: 1.3, kvTile: 32768},
+  allUnmeasured: {matrixUtil: 0.5, vectorUtil: 0.25, unpackParamsPerLaneCycle: 1, layoutImbalance: 1.3, kvTile: 32768,
     mcUtil: 0.65, prediction: 0.7, launchScale: 0.7}
 };
 function replayJoint(values, x) {

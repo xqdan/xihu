@@ -13,7 +13,7 @@
     "operatorLedger": "out/workload/model_operator_ledgers.json",
     "operatorLedgerSha256": "22bf3adb9538cae5723b0a7218c9af44cd5ee475d3e72c66282b40108bd2e8d8",
     "resourceProfile": "teams/hardware/inputs/k3_mc_baseline.json",
-    "resourceProfileSha256": "2627bf313136ddb4af65e658435879d94f236b55ba0706ad67975f8c8da36e87",
+    "resourceProfileSha256": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39",
     "replaySource": "integration/planning/model_core_replay.js",
     "replaySourceSha256": "19af2461d784e4bf95849d29b0c3bfd04f1a240daa97e0396325ed073903ba60"
   },
@@ -50,16 +50,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 448000000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -1040,7 +1040,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 15984,
-          "computeUs": 0.007651654411764706,
+          "computeUs": 0.003825827205882353,
           "memoryUs": 4.566857142857143,
           "networkUs": 20.45952,
           "nominalCycles": 20459.52,
@@ -1140,7 +1140,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 15984,
-          "computeUs": 0.007651654411764706,
+          "computeUs": 0.003825827205882353,
           "memoryUs": 4.566857142857143,
           "networkUs": 20.45952,
           "nominalCycles": 20459.52,
@@ -1167,7 +1167,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 69.03836039624183,
+        "computeUs": 69.03453456903596,
         "memoryUs": 831.0582857142857,
         "networkUs": 20.45952,
         "serviceUs": 831.0582857142857,
@@ -1204,16 +1204,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 1612800000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -2194,7 +2194,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 15984,
-          "computeUs": 0.007651654411764706,
+          "computeUs": 0.003825827205882353,
           "memoryUs": 1.2685714285714285,
           "networkUs": 20.45952,
           "nominalCycles": 20459.52,
@@ -2294,7 +2294,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 15984,
-          "computeUs": 0.007651654411764706,
+          "computeUs": 0.003825827205882353,
           "memoryUs": 1.2685714285714285,
           "networkUs": 20.45952,
           "nominalCycles": 20459.52,
@@ -2321,7 +2321,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 69.03836039624183,
+        "computeUs": 69.03453456903596,
         "memoryUs": 230.8495238095238,
         "networkUs": 20.45952,
         "serviceUs": 230.8495238095238,
@@ -2358,16 +2358,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 448000000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -3348,7 +3348,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 7992,
-          "computeUs": 0.003825827205882353,
+          "computeUs": 0.0019129136029411764,
           "memoryUs": 2.2834285714285714,
           "networkUs": 10.22976,
           "nominalCycles": 10229.76,
@@ -3448,7 +3448,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 7992,
-          "computeUs": 0.003825827205882353,
+          "computeUs": 0.0019129136029411764,
           "memoryUs": 2.2834285714285714,
           "networkUs": 10.22976,
           "nominalCycles": 10229.76,
@@ -3475,7 +3475,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 34.519180198120914,
+        "computeUs": 34.51726728451798,
         "memoryUs": 415.52914285714286,
         "networkUs": 10.22976,
         "serviceUs": 415.52914285714286,
@@ -3512,16 +3512,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 1612800000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -4502,7 +4502,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 7992,
-          "computeUs": 0.003825827205882353,
+          "computeUs": 0.0019129136029411764,
           "memoryUs": 0.6342857142857142,
           "networkUs": 10.22976,
           "nominalCycles": 10229.76,
@@ -4602,7 +4602,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 7992,
-          "computeUs": 0.003825827205882353,
+          "computeUs": 0.0019129136029411764,
           "memoryUs": 0.6342857142857142,
           "networkUs": 10.22976,
           "nominalCycles": 10229.76,
@@ -4629,7 +4629,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 34.519180198120914,
+        "computeUs": 34.51726728451798,
         "memoryUs": 115.4247619047619,
         "networkUs": 10.22976,
         "serviceUs": 115.4247619047619,
@@ -4666,16 +4666,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 448000000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -5416,7 +5416,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 17080,
-          "computeUs": 0.008176317401960783,
+          "computeUs": 0.0040881587009803915,
           "memoryUs": 4.88,
           "networkUs": 21.8624,
           "nominalCycles": 21862.4,
@@ -5516,7 +5516,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 17080,
-          "computeUs": 0.008176317401960783,
+          "computeUs": 0.0040881587009803915,
           "memoryUs": 4.88,
           "networkUs": 21.8624,
           "nominalCycles": 21862.4,
@@ -5543,7 +5543,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 154.00983721830747,
+        "computeUs": 154.00574905960647,
         "memoryUs": 924.5358825733418,
         "networkUs": 21.8624,
         "serviceUs": 924.5358825733418,
@@ -5580,16 +5580,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 1612800000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -6330,7 +6330,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 17080,
-          "computeUs": 0.008176317401960783,
+          "computeUs": 0.0040881587009803915,
           "memoryUs": 1.3555555555555556,
           "networkUs": 21.8624,
           "nominalCycles": 21862.4,
@@ -6430,7 +6430,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 17080,
-          "computeUs": 0.008176317401960783,
+          "computeUs": 0.0040881587009803915,
           "memoryUs": 1.3555555555555556,
           "networkUs": 21.8624,
           "nominalCycles": 21862.4,
@@ -6457,7 +6457,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 154.00983721830747,
+        "computeUs": 154.00574905960647,
         "memoryUs": 256.8155229370394,
         "networkUs": 21.8624,
         "serviceUs": 256.8155229370394,
@@ -6494,16 +6494,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 448000000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -7244,7 +7244,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 8540,
-          "computeUs": 0.0040881587009803915,
+          "computeUs": 0.0020440793504901958,
           "memoryUs": 2.44,
           "networkUs": 10.9312,
           "nominalCycles": 10931.2,
@@ -7344,7 +7344,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 8540,
-          "computeUs": 0.0040881587009803915,
+          "computeUs": 0.0020440793504901958,
           "memoryUs": 2.44,
           "networkUs": 10.9312,
           "nominalCycles": 10931.2,
@@ -7371,7 +7371,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 77.00491860915373,
+        "computeUs": 77.00287452980324,
         "memoryUs": 462.2679412866709,
         "networkUs": 10.9312,
         "serviceUs": 462.2679412866709,
@@ -7408,16 +7408,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 1612800000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -8158,7 +8158,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 8540,
-          "computeUs": 0.0040881587009803915,
+          "computeUs": 0.0020440793504901958,
           "memoryUs": 0.6777777777777778,
           "networkUs": 10.9312,
           "nominalCycles": 10931.2,
@@ -8258,7 +8258,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 8540,
-          "computeUs": 0.0040881587009803915,
+          "computeUs": 0.0020440793504901958,
           "memoryUs": 0.6777777777777778,
           "networkUs": 10.9312,
           "nominalCycles": 10931.2,
@@ -8285,7 +8285,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 77.00491860915373,
+        "computeUs": 77.00287452980324,
         "memoryUs": 128.4077614685197,
         "networkUs": 10.9312,
         "serviceUs": 128.4077614685197,
@@ -8322,16 +8322,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 448000000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -9072,7 +9072,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 17080,
-          "computeUs": 0.008176317401960783,
+          "computeUs": 0.0040881587009803915,
           "memoryUs": 4.88,
           "networkUs": 21.8624,
           "nominalCycles": 21862.4,
@@ -9172,7 +9172,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 17080,
-          "computeUs": 0.008176317401960783,
+          "computeUs": 0.0040881587009803915,
           "memoryUs": 4.88,
           "networkUs": 21.8624,
           "nominalCycles": 21862.4,
@@ -9199,7 +9199,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 145.17752433186027,
+        "computeUs": 145.17343617315927,
         "memoryUs": 875.2623917439704,
         "networkUs": 21.8624,
         "serviceUs": 875.2623917439704,
@@ -9236,16 +9236,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 1612800000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -9986,7 +9986,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 17080,
-          "computeUs": 0.008176317401960783,
+          "computeUs": 0.0040881587009803915,
           "memoryUs": 1.3555555555555556,
           "networkUs": 21.8624,
           "nominalCycles": 21862.4,
@@ -10086,7 +10086,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 17080,
-          "computeUs": 0.008176317401960783,
+          "computeUs": 0.0040881587009803915,
           "memoryUs": 1.3555555555555556,
           "networkUs": 21.8624,
           "nominalCycles": 21862.4,
@@ -10113,7 +10113,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 145.17752433186027,
+        "computeUs": 145.17343617315927,
         "memoryUs": 243.12844215110286,
         "networkUs": 21.8624,
         "serviceUs": 243.12844215110286,
@@ -10150,16 +10150,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 448000000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -10900,7 +10900,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 8540,
-          "computeUs": 0.0040881587009803915,
+          "computeUs": 0.0020440793504901958,
           "memoryUs": 2.44,
           "networkUs": 10.9312,
           "nominalCycles": 10931.2,
@@ -11000,7 +11000,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 8540,
-          "computeUs": 0.0040881587009803915,
+          "computeUs": 0.0020440793504901958,
           "memoryUs": 2.44,
           "networkUs": 10.9312,
           "nominalCycles": 10931.2,
@@ -11027,7 +11027,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 72.58876216593013,
+        "computeUs": 72.58671808657964,
         "memoryUs": 437.6311958719852,
         "networkUs": 10.9312,
         "serviceUs": 437.6311958719852,
@@ -11064,16 +11064,16 @@
         "corePeakPerDie": {
           "L": 32768000000000,
           "H": 294912000000000,
-          "V": 12288000000000,
+          "V": 24576000000000,
           "INDEXER": 294912000000000,
-          "REDUCE": 12288000000000
+          "REDUCE": 24576000000000
         },
         "sustainedPeakPerDie": {
           "L": 16711680000000,
           "H": 150405120000000,
-          "V": 6266880000000,
+          "V": 12533760000000,
           "INDEXER": 150405120000000,
-          "REDUCE": 6266880000000
+          "REDUCE": 12533760000000
         },
         "memoryBytesPerSecondPerDie": 1612800000000,
         "networkBytesPerSecondPerDie": 100000000000
@@ -11814,7 +11814,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 8540,
-          "computeUs": 0.0040881587009803915,
+          "computeUs": 0.0020440793504901958,
           "memoryUs": 0.6777777777777778,
           "networkUs": 10.9312,
           "nominalCycles": 10931.2,
@@ -11914,7 +11914,7 @@
           "dequantOpsPerDie": 0,
           "scaleBytesPerDie": 0,
           "accumulationOpsPerDie": 8540,
-          "computeUs": 0.0040881587009803915,
+          "computeUs": 0.0020440793504901958,
           "memoryUs": 0.6777777777777778,
           "networkUs": 10.9312,
           "nominalCycles": 10931.2,
@@ -11941,7 +11941,7 @@
         }
       ],
       "criticalPath": {
-        "computeUs": 72.58876216593013,
+        "computeUs": 72.58671808657964,
         "memoryUs": 121.56422107555143,
         "networkUs": 10.9312,
         "serviceUs": 121.56422107555143,
