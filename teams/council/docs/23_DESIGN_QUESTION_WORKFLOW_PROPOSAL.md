@@ -374,7 +374,7 @@ flowchart TB
 1. **没有单独的"预算合同 schema 文件"**。合同的形状由产它的内核（`requirement_frontier.js`）固定，由消费它的 `make_brief.js` 在读的时候校验（`layer`、`schemaVersion`、六个必需 split 条目都在），不合即拒。再写一份 JSON Schema 等于给同一个形状立第二份定义，两份会漂。L1 合同已经被 `run_workflow.js` 的 `verifyLandedBudget` 逐字段核对过它等于前沿里那一条切分——真正的"合同对不对"由那里判，schema 文件补不出新的保证。
 2. **brief 是现派生的，不落盘**。`make_brief.js` 把散文（`teams/council/inputs/brief_intents.json`：题目、形态、禁止项、退出条件、设计空间、profile 绑定）与合同里的数拼成一份 `DesignBrief`：面积/功耗/带宽预算与七条硬约束全部派生，每条的 `source` 是指回合同文件里那个 split 条目的 JSON Pointer。仓库里因此没有第二份合同数字可以陈旧。本轮覆盖合同的直接消费者：`direction`、`compute`、`memory`、`comm`、`physical`；其余各格仍需 `--brief`。（P4 起 `memory` 拆为 `sram` 与 `mc`，覆盖六个 stage。）
 3. **带宽是合同自己的数乘封装基数**，不是基线发布点：`B-MEM-BW.min`（每 cube）× `k3_mc_baseline.json` 的 `card.memoryCubesPerComputeDie`。
-4. **`profileBinding.mcProfile` 手写，不从合同的 `point.mcGBs` 推**。ADR-0021 下 MC320 是唯一可制造默认值、MC640 只能是 stretch，而当前默认切分 `S-CMP` 要求的每 cube 带宽正好高于 MC320 参照——按 point 推会让一个 stretch 档位自称可制造默认值。这条由测试钉住。
+4. **（已被 ADR-0027 取代：此条记录当时的提案，现行规则是由合同推导绑定档。）`profileBinding.mcProfile` 手写，不从合同的 `point.mcGBs` 推**。ADR-0021 下 MC320 是唯一可制造默认值、MC640 只能是 stretch，而当前默认切分 `S-CMP` 要求的每 cube 带宽正好高于 MC320 参照——按 point 推会让一个 stretch 档位自称可制造默认值。这条由测试钉住。
 5. **ledger 由主循环写，不走 `land.js`**。`out/governance/` 是 `arch.direction`（原 `dgate`）与 `backflow` 的落盘前缀，ledger 不是任何一格的产物。`--land` 且文件全部落盘后才并入，并完校验 `design_ledger.schema.json`；不合格则文件已落、ledger 不动（退出码 8）。合并只增不减：被否方案、未决阻塞、证据索引按自然键合并，同一个 ADR 给出不同结论是错误而不是合并结果。
 6. **顺带补了校验器的 `minProperties` / `maxProperties`**：`design_ledger.schema.json` 早就写了 `minProperties: 1`（没有策略版本的 ledger 不是 ledger），而 `runtime/schema.js` 一直静默忽略它。
 7. **`stage` 枚举补了 `req.budget`**（`design_brief.schema.json` 与 `design_ledger.schema.json`），P2 那一格此前不在枚举里。

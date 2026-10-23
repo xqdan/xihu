@@ -262,7 +262,7 @@ npm run -s workflow:ledger-check                        # 校验磁盘上的 led
 
 **brief 是合同的视图，不是合同的副本。** 散文（题目、想要的形态、禁止项、退出条件、设计空间、profile 绑定）写在 `teams/council/inputs/brief_intents.json`——这些是确定性脚本算不出来的判断。数字一律从预算合同派生：面积/功耗/带宽预算与七条硬约束，每条的 `source` 是指回合同文件里那个 split 条目的 JSON Pointer（`…#/splits/1/contract/split/4/max`），所以 brief 里不存在第二份合同数字，改合同下一次 brief 就跟着改，没有陈旧副本要记得更新。合同按 `--contract` → `out/budget/L1_budget.json` → `out/requirements/budget_frontier.json` 的某个切分 → （仅 `compute`）已提交的 `design_brief.m2.json` 取第一个存在的。派生出的 brief 在交出去之前先过 `design_brief.schema.json`。
 
-其中 `profileBinding.mcProfile` 刻意手写而不从合同的 `point.mcGBs` 推：ADR-0021 下 MC320 是唯一可制造默认值、MC640 只能是 stretch，而合同要求的每 cube 带宽本来就可能落在 stretch 档——按 point 推会让一个 stretch 档位自称可制造默认值。
+其中 `profileBinding.mcProfile` 由合同推导（ADR-0027）：取能满足 `B-MEM-BW.min ÷ 每 Die cube 数` 的最低档，没有任何档能满足就报错，不回落到默认档。它曾是手写的 MC320（ADR-0021），结果是 brief 一边按 2304 GB/s 记预算、一边指定只有 640 GB/s 的部件，下游每个 stage 解的都是无解的任务书。推导的是“绑定哪个档”，不是“这个档能不能造”：1152 GB/s 仍是引脚速率换算的假设，B-002 未关闭（AC-2）。
 
 **ledger 是跨格的唯一通道。** 每个 workflow 最后返回 `ledgerPatch`（`design.intake` 返回整份 `ledgerSeed`），主循环在文件全部落盘后并进 `out/governance/design_ledger.json`。合并规则：`currentStage` 覆盖；`strategyVersions`、`budgetBalance` 按键合并；`rejectedOptions`、`openBlockers`、`evidenceIndex` 按自然键合并且**只增不减**——被否过的方案不能因为下一格没提就被重跑重新发明，没人提起的阻塞也不等于阻塞已解；`frozenDecisions` 按 id 合并，同一个 ADR 给出不同结论是错误而不是合并结果（改 ADR，不改 ledger）。并完校验 `design_ledger.schema.json`，不合格就不写。
 

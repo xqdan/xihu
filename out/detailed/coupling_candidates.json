@@ -36,7 +36,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "b4aa762049c5c448fdd99d38f8e274f3df39d58df17105ebf309c489b0d499bb",
+    "sha256": "b5f412e4ff763557e250bce6fa0c11a40aa928c255c2c277d18d1c70a856690e",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -94,7 +94,7 @@
   "winners": {
     "compute": {
       "design": "out/detailed/matrix_vector_design.json",
-      "designSha256": "c1755108a0aff1c6a4cab3a3e1a5d9c9a372be998507a7a45724c1c5d007f1c6",
+      "designSha256": "020b95ba14e56a14a76bb4e58daf0090d8e3cde4dafa3a349ccc764c63965cfc",
       "candidates": "out/detailed/matrix_vector_candidates.json",
       "candidateSetSha256": "8967ca977fbec16c36b70ef4fdb03d915e282aa5697d9879f2096a4543b2a111",
       "optionId": "vectorLanes=832|lowPrecisionInput=vectorUnpack|expUnit=polynomial",
@@ -102,7 +102,7 @@
     },
     "sram": {
       "design": "out/detailed/sram_design.json",
-      "designSha256": "19aabca3424bc4297911b5f90b747524d6a392ad657acec660e194fc175e6116",
+      "designSha256": "11f1fcb4e7b27f5339063eddefcd7b0b357845285317efda8d203ac9025d1a4f",
       "candidates": "out/detailed/sram_candidates.json",
       "candidateSetSha256": "af3a3741e46a236c8e3626aaea00450c17b761b7d1d7fc0e16c5a0a246f06af1",
       "optionId": "sharedMiB=16|lBanks=16|hBanks=16|sharedSlices=8|tmaEngines=1|sharedPortScaling=off",
@@ -110,7 +110,7 @@
     },
     "mc": {
       "design": "out/detailed/memory_design.json",
-      "designSha256": "c881fda9adcbb1071c72714df6dcdf73b5150c0aaa05acdf413bf06f5dd4bc16",
+      "designSha256": "21afc22dfba60a74005e58e71ec92dd1790bc87f3929922e718ea6e6dfd606fd",
       "candidates": "out/detailed/memory_candidates.json",
       "candidateSetSha256": "5bcb70a2dead9fdfb83f6443889bc386156e7f0728207e7eb284b8cf6171eaf2",
       "optionId": "mcGBs=1152|cubesPerCard=16|capacityGBPerCube=16|route=mcX|eccOverhead=0",
@@ -118,7 +118,7 @@
     },
     "comm": {
       "design": "out/detailed/comm_core_design.json",
-      "designSha256": "9c0f7537af81f0dae5388293c74c9197e6bbcf6592c1da0962331dfa7640bdf4",
+      "designSha256": "03504780bb6eced7ac39926bed8164f88b51db8d9191fe0b07034b8ae183fb9b",
       "candidates": "out/detailed/comm_candidates.json",
       "candidateSetSha256": "b16a61d75d5c0015cd97c5bf46bd81ba2fe466104577ce545b81e9a9f9459f24",
       "optionId": "placement=spare23|trigger=counterCompare|wqeGeneration=templatePatch|txLanes=2|doorbell=directPush|commitCounting=hwCounters|signal=putWithSignal|graphStore=localSram|localSramKiB=64|managementCores=1",
@@ -126,7 +126,7 @@
     },
     "physical": {
       "design": "out/detailed/physical_design.json",
-      "designSha256": "394e6ab876a916249ac2747da134984797481291f8aaf303b7b9a7e0525dc984",
+      "designSha256": "59b39f0996fe4dc5c6855d503512d7c26e409b4276bb3a8548b6c2521967bf7d",
       "candidates": "out/detailed/physical_candidates.json",
       "candidateSetSha256": "b161caf2d2fbe6aa57de520d4808a6501e44b3498369ae1e5706d82dbb82c906",
       "optionId": "process=SF4|matrixTFPerMm2=3.2|cooling=liquid|reserveFraction=0.1254",

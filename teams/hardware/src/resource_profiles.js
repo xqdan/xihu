@@ -70,12 +70,16 @@ if (Math.abs(p1DiePeak - c.bf16DenseTflops) > 1e-6) {
 }
 
 // MC profiles: raw package payload x sustained efficiency (never raw payload).
-// MC320 is the REFERENCE tier, MC640 the STRETCH_AGGRESSIVE tier of ADR-0019.
+// Two profiles over a five-tier grid. ADR-0027 renamed the classifications: MC320 is the reference
+// tier and MC640 is the tier a brief binds to, but binding is NOT a manufacturability claim -- the
+// 1152 GB/s figure is a pin-rate ASSUMPTION and B-002 stays open (PRODUCT_REQUIREMENTS AC-2).
+// The brief derives which one it binds from the contract's B-MEM-BW.min (make_brief.js); neither
+// name is a default any more.
 const MC_SUSTAINED = spec.bandwidthTiers.sustainedEfficiency;
 const tierGBs = classification => spec.bandwidthTiers.tiersGBsPerCube.find(t => t.classification === classification).gbs;
 const mcProfiles = {
-  MC320: {id: 'MC320', payloadGBsPerCube: tierGBs('REFERENCE'), classification: 'baseline_reference'},
-  MC640: {id: 'MC640', payloadGBsPerCube: tierGBs('STRETCH_AGGRESSIVE'), classification: 'stretch_not_manufacturing_default'}
+  MC320: {id: 'MC320', payloadGBsPerCube: tierGBs('REFERENCE'), classification: 'reference_tier'},
+  MC640: {id: 'MC640', payloadGBsPerCube: tierGBs('STRETCH_AGGRESSIVE'), classification: 'binding_tier_assumption'}
 };
 for (const mc of Object.values(mcProfiles)) {
   mc.rawPayloadTBs = spec.card.memoryCubes * mc.payloadGBsPerCube / 1000;

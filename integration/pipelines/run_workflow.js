@@ -157,6 +157,13 @@ function prepareArgs(workflow, flags, {designPoint = () => DESIGN_POINT.resolve(
     args.briefOrigin = built.origin;
     if (built.provenance) args.briefProvenance = built.provenance;
   }
+  // ADR-0027: design.intake reads no files, so the memory tier is resolved here from the budget
+  // contract (the same make_brief.bindingProfile the derived briefs use) and injected. It runs
+  // before a contract is landed, so `null` is possible -- intake then refuses instead of guessing.
+  if (workflow === 'intake' && !args.mcProfile) {
+    const binding = MAKE_BRIEF.bindingProfile({splitId: flags.split});
+    if (binding) args.mcProfile = binding.mcProfile;
+  }
   // The ledger is what the earlier stages decided. It is injected whole; the workflow reads
   // what it needs (design.intake already looks for args.rejectedOptions) and returns a patch.
   const ledger = LEDGER.loadLedger();

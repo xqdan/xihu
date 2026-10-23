@@ -144,6 +144,31 @@ function cardBandwidthGBs(contract, baseline) {
   return {value: perDie * perCube, perDie, perCube};
 }
 
+// Which memory profile this stage designs against (ADR-0027). It is DERIVED, not typed: take the
+// contract's per-cube minimum and the lowest profile on the grid that can meet it. A typed default
+// is what produced the ADR-0026 INVARIANT_VIOLATED -- the brief priced a 2304 GB/s memory system
+// and then named a 640 GB/s part, so every stage downstream was solving an unsatisfiable brief.
+//
+// When nothing on the grid reaches the contract, this THROWS. Silently falling back to a default
+// is the failure mode being removed: it turns a contract the silicon cannot meet into a brief that
+// looks buildable.
+//
+// Binding is not a manufacturability claim: MC640's 1152 GB/s is a pin-rate ASSUMPTION and B-002
+// stays open (PRODUCT_REQUIREMENTS AC-2). The name says which tier the design targets, not what a
+// supplier will sell.
+function boundMcProfile(contract, baseline, profiles) {
+  const perDie = baseline.card.memoryCubesPerComputeDie;
+  const needPerCube = byId(contract, ENTRY.bandwidthGBs).min / perDie;
+  const grid = Object.values(profiles).sort((a, b) => a.payloadGBsPerCube - b.payloadGBsPerCube);
+  const fit = grid.find((p) => p.payloadGBsPerCube >= needPerCube - 1e-9);
+  if (!fit) {
+    throw new Error(`no MC profile reaches the contract: B-MEM-BW.min needs ${needPerCube} GB/s per cube `
+      + `(${perDie} cubes per die), and the highest profile is ${grid[grid.length - 1].payloadGBsPerCube} GB/s. `
+      + 'Widen the profile grid or change the split; do not bind a default (ADR-0027).');
+  }
+  return fit.id;
+}
+
 // Every derived constraint carries the split entry it came from as a JSON pointer into the
 // contract file, so the number points at its origin rather than restating it.
 function derivedConstraints(contract, file, baseline, base = '#') {
@@ -189,6 +214,7 @@ function buildBrief(stage, {contract, file, base, runId, commit, intents, baseli
   const intent = proseBrief(stage, I);
   const card = cardBandwidthGBs(C, B);
   const binding = intent.profileBinding || {};
+  const mcProfile = binding.mcProfile || boundMcProfile(contract, B, require('../../teams/hardware/src/resource_profiles.js').mcProfiles);
   return {
     schemaVersion: '1.0',
     stage,
@@ -207,11 +233,13 @@ function buildBrief(stage, {contract, file, base, runId, commit, intents, baseli
     forbidden: intent.forbidden,
     exitCriteria: intent.exitCriteria,
     evidenceLevelFloor: intent.evidenceLevelFloor || 'E1',
-    // The manufacturable profile this stage designs against -- NOT the contract's point. The
-    // contract's B-MEM-BW.min is what the target requires and may be a stretch tier (ADR-0019
-    // MC640), while ADR-0021 makes MC320 the sole manufacturable default and MC640 stretch only.
-    // Deriving the binding from the contract would let a stretch tier present itself as default.
-    profileBinding: {physicalProfile: binding.physicalProfile || (C.scope && C.scope.physicalProfile) || 'P1', mcProfile: binding.mcProfile || 'MC320'}
+    // The profile this stage designs against. ADR-0027: derived from the contract by boundMcProfile()
+    // rather than typed as MC320. The old rule existed so a stretch tier could not present itself as
+    // the manufacturing default -- but it made the brief price B-MEM-BW.min and then bind a part that
+    // cannot deliver it, which is unsatisfiable by construction. Keeping the two consistent is the
+    // requirement; which tier that lands on is now a consequence, and manufacturability is denied in
+    // the text and in AC-2, not by binding a tier the contract rules out.
+    profileBinding: {physicalProfile: binding.physicalProfile || (C.scope && C.scope.physicalProfile) || 'P1', mcProfile}
   };
 }
 
@@ -294,8 +322,23 @@ function main(argv) {
   }
 }
 
+// The binding on its own, for callers that need the tier but not a whole brief (design.intake, which
+// runs before a contract exists and cannot read files itself). Uses the same contract-resolution
+// chain as briefFor, so the intake brief and the derived briefs cannot disagree.
+function bindingProfile(options = {}) {
+  const from = options.contract
+    ? {contract: checkContract(readJson(options.contract), options.contract), file: options.contract, origin: 'explicit'}
+    : resolveContract(null);
+  if (!from) return null;
+  // resolveContract returns either a landed contract or a frontier to split; both are valid sources.
+  const contract = from.contract || frontierSplit(from.frontier, options.splitId, from.file).contract;
+  const baseline = options.baseline || readJson('teams/hardware/inputs/k3_mc_baseline.json');
+  const profiles = require('../../teams/hardware/src/resource_profiles.js').mcProfiles;
+  return {mcProfile: boundMcProfile(contract, baseline, profiles), contract: from.file, origin: from.origin};
+}
+
 module.exports = {
-  briefFor, buildBrief, briefProvenance, validateBrief, coveredStages,
+  briefFor, buildBrief, briefProvenance, validateBrief, coveredStages, boundMcProfile, bindingProfile,
   derivedConstraints, cardBandwidthGBs, resolveContract, frontierSplit, checkContract, resolvePointer,
   LANDS_TO, FRONTIER_FILE, INTENTS_FILE, BRIEF_SCHEMA, COMMITTED_BRIEFS, ENTRY, DEFAULT_SPLIT, sha256
 };
