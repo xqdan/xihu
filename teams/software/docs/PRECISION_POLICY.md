@@ -66,7 +66,7 @@ xychart-beta
 ```
 
 - 每 rank 每层 32768 token × 656 B = 21.5 MB，正好是一个 KV tile（[`KERNEL_SPEC.md`](KERNEL_SPEC.md) 第 3.1 节）。
-- BF16 布局在 KV tile 32768 下放不进 H local SRAM；KV tile 16384 时 BF16 可行，1027.08 TPS/usr（21 号文档第 6 节）。
+- BF16 布局在 KV tile 32768 下放不进 H local SRAM；KV tile 16384（发布值）时 BF16 可行，976.33 TPS/usr（21 号文档第 6 节）。
 - RoPE 部分保持 BF16：位置编码对量化误差敏感，FlashMLA 的做法。
 
 ### 2.2 MXFP4 routed expert

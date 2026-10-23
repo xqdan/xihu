@@ -33,6 +33,7 @@ const {main, halfWinnerResult} = require('../../integration/pipelines/run_workfl
 const {createMockBackend, fromSchema} = require('../../integration/orchestration/runtime/backends/mock.js');
 const {buildSearchBrief} = require('../../integration/pipelines/search_brief.js');
 const {briefFor} = require('../../integration/pipelines/make_brief.js');
+const RES = require('../../teams/hardware/src/resource_profiles.js');
 const DP = require('../../integration/pipelines/design_point.js');
 
 const root = path.resolve(__dirname, '../..');
@@ -76,7 +77,17 @@ async function run(argv, deps) {
   assert.notStrictEqual(derived.code, 1, `mc must derive its brief from the budget contract: ${derived.text}`);
   const builtBrief = briefFor('mc').brief;
   assert.strictEqual(builtBrief.stage, 'mc');
-  assert.strictEqual(builtBrief.profileBinding.mcProfile, 'MC320', 'the manufacturable binding is hand-authored, never read off the contract point (ADR-0021)');
+  // ADR-0027 replaced the hand-authored MC320 default with a derivation: the tier is the lowest
+  // profile that meets the contract's B-MEM-BW.min. Assert the property, not the old constant --
+  // and assert that the brief's own budget is in fact reachable by the tier it binds.
+  const bound = RES.mcProfiles[builtBrief.profileBinding.mcProfile];
+  assert(bound, `the binding names a known profile, got ${builtBrief.profileBinding.mcProfile}`);
+  const perDieCubes = JSON.parse(fs.readFileSync(path.join(root, 'teams/hardware/inputs/k3_mc_baseline.json'), 'utf8')).card.memoryCubesPerComputeDie;
+  assert(bound.payloadGBsPerCube * perDieCubes >= builtBrief.budget.bandwidthGBs - 1e-9,
+    `the bound tier ${builtBrief.profileBinding.mcProfile} must be able to deliver the brief's own budget ${builtBrief.budget.bandwidthGBs} GB/s`);
+  const lower = Object.values(RES.mcProfiles).filter((p) => p.payloadGBsPerCube < bound.payloadGBsPerCube);
+  assert(lower.every((p) => p.payloadGBsPerCube * perDieCubes < builtBrief.budget.bandwidthGBs),
+    'the binding must be the LOWEST tier that meets the contract, not a higher one chosen by hand');
   assert(builtBrief.hardConstraints.every((c) => c.source && c.source !== 'TBD'), 'every derived constraint names where its number came from');
   const listed = await run(['--list']);
   assert.strictEqual(listed.code, 0);

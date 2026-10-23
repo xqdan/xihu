@@ -10,9 +10,11 @@
 //     so there is no second copy of a contract number anywhere;
 //   * the card bandwidth is the contract's own per-cube minimum times the package's cubes
 //     per die -- not a published baseline point;
-//   * profileBinding.mcProfile is hand-authored, never derived from the contract's point:
-//     ADR-0021 makes MC640 a stretch tier, and a contract that asks for 640 GB/s per cube
-//     must not thereby present MC640 as the manufacturable default;
+//   * profileBinding.mcProfile is DERIVED from the contract (ADR-0027, replacing ADR-0021's
+//     hand-authored MC320): the lowest profile whose per-cube payload meets B-MEM-BW.min / cubes.
+//     A typed MC320 made the brief price a 2304 GB/s system and bind a 640 GB/s part, which no
+//     search can satisfy. A contract no profile can meet is an error, never a silent default.
+//     Binding a tier is not a manufacturability claim (PRODUCT_REQUIREMENTS AC-2);
 //   * a contract that is not an L1 budget contract is refused rather than half-read;
 //   * the ledger merge keeps what earlier stages established: rejected options and open
 //     blockers accumulate, strategy versions merge per agent, re-applying a patch changes
@@ -28,6 +30,7 @@ const path = require('path');
 const MB = require('../../integration/pipelines/make_brief.js');
 const LEDGER = require('../../integration/pipelines/design_ledger.js');
 const DRIVER = require('../../integration/pipelines/run_workflow.js');
+const RES = require('../../teams/hardware/src/resource_profiles.js');
 
 const root = path.resolve(__dirname, '../..');
 const readJson = (file) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
@@ -74,10 +77,69 @@ for (const stage of stages) {
   assert.strictEqual(bw.value, baseline.card.memoryCubesPerComputeDie * entry(MB.ENTRY.bandwidthGBs).min,
     `${stage}: the card bandwidth is the contract's per-cube minimum times the package's cubes per die`);
 
-  // ADR-0021: one hardware spec, and MC640 only ever as a stretch tier.
+  // ADR-0021: one hardware spec. ADR-0027: the memory tier is derived, so the brief is satisfiable.
   assert.strictEqual(brief.profileBinding.physicalProfile, 'P1', `${stage}: P1 is the only physical profile`);
-  assert.strictEqual(brief.profileBinding.mcProfile, 'MC320',
-    `${stage}: the manufacturable binding is hand-authored; deriving it from the contract's point would let a stretch tier present itself as the default (ADR-0021)`);
+  const profiles = RES.mcProfiles, cubes = baseline.card.memoryCubesPerComputeDie;
+  const bound = profiles[brief.profileBinding.mcProfile];
+  assert(bound, `${stage}: the binding names a known profile`);
+  assert(bound.payloadGBsPerCube * cubes >= brief.budget.bandwidthGBs - 1e-9,
+    `${stage}: the bound tier ${bound.id} (${bound.payloadGBsPerCube * cubes} GB/s per die) must be able to deliver the brief's own budget ${brief.budget.bandwidthGBs}`);
+  assert(Object.values(profiles).filter(p => p.payloadGBsPerCube < bound.payloadGBsPerCube).every(p => p.payloadGBsPerCube * cubes < brief.budget.bandwidthGBs),
+    `${stage}: the binding is the LOWEST tier that meets the contract`);
+}
+
+// design.intake reads no files and runs before a contract is landed, so the launcher injects its tier.
+// It must be the very tier the derived briefs bind -- two derivations of the same number is how the
+// ADR-0026 contradiction arose -- and an explicit --mcProfile in args must win over the derivation.
+{
+  const injected = DRIVER.prepareArgs('intake', {});
+  assert.strictEqual(injected.mcProfile, MB.briefFor('compute').brief.profileBinding.mcProfile,
+    'intake is injected the same tier the derived briefs bind');
+  assert.strictEqual(MB.bindingProfile().mcProfile, injected.mcProfile, 'bindingProfile is the one derivation');
+  const argsFile = path.join(os.tmpdir(), `intake-args-${process.pid}.json`);
+  fs.writeFileSync(argsFile, JSON.stringify({mcProfile: 'MC320'}));
+  try { assert.strictEqual(DRIVER.prepareArgs('intake', {args: argsFile}).mcProfile, 'MC320', 'an explicit mcProfile in args wins'); }
+  finally { fs.rmSync(argsFile, {force: true}); }
+  const src = fs.readFileSync(path.join(root, 'integration/orchestration/design.intake.workflow.js'), 'utf8');
+  assert(!/args\.mcProfile\s*\|\|\s*['"]MC/.test(src), 'design.intake must not carry a typed MC default (ADR-0027)');
+  assert(/throw new Error\([^)]*args\.mcProfile/.test(src), 'design.intake must refuse to run without a tier rather than guess one');
+}
+
+// The committed hand-written compute brief (design_brief.m2.json) is the one brief that is NOT derived: it
+// is the fallback for a clone with no contract. Its own budget priced 1280 GB/s while it bound MC320
+// (640 GB/s per die), the same contradiction as the derived briefs had. Nothing derives it, so this is the
+// only thing that stops it drifting again: its binding must be able to deliver its own number.
+{
+  const m2 = readJson('teams/council/inputs/design_brief.m2.json');
+  const tier = RES.mcProfiles[m2.profileBinding.mcProfile];
+  assert(tier, 'the m2 snapshot binds a known profile');
+  const cubes = baseline.card.memoryCubesPerComputeDie;
+  assert(tier.payloadGBsPerCube * cubes >= m2.budget.bandwidthGBs - 1e-9,
+    `design_brief.m2.json binds ${tier.id} (${tier.payloadGBsPerCube * cubes} GB/s per die) but budgets ${m2.budget.bandwidthGBs} GB/s: the committed brief contradicts itself`);
+  assert(Object.values(RES.mcProfiles).filter(p => p.payloadGBsPerCube < tier.payloadGBsPerCube).every(p => p.payloadGBsPerCube * cubes < m2.budget.bandwidthGBs),
+    'design_brief.m2.json binds the lowest tier that meets its own budget');
+}
+
+// The derivation itself, on contracts built to exercise it. The committed frontier only ever lands
+// on one tier, so without these the assertions above could pass for a hard-coded answer.
+{
+  const cubes = baseline.card.memoryCubesPerComputeDie;
+  const base = JSON.parse(JSON.stringify(contract));
+  const withMin = (min) => {
+    const c = JSON.parse(JSON.stringify(base));
+    c.split.find(e => e.id === MB.ENTRY.bandwidthGBs).min = min;
+    return c;
+  };
+  const tiers = Object.values(RES.mcProfiles).map(p => p.payloadGBsPerCube).sort((a, b) => a - b);
+  // Exactly at a tier boundary: that tier, not the next one up.
+  for (const t of tiers) assert.strictEqual(MB.boundMcProfile(withMin(t * cubes), baseline, RES.mcProfiles),
+    Object.values(RES.mcProfiles).find(p => p.payloadGBsPerCube === t).id, `${t} GB/s per cube binds the tier that supplies exactly ${t}`);
+  // A hair over the lowest tier needs the next profile; far below any tier still binds the lowest.
+  assert.strictEqual(MB.boundMcProfile(withMin(1), baseline, RES.mcProfiles), 'MC320', 'a tiny requirement binds the lowest profile');
+  assert.strictEqual(MB.boundMcProfile(withMin(tiers[0] * cubes + 1), baseline, RES.mcProfiles), 'MC640', 'just above the lowest tier needs the next one');
+  // Nothing reaches it: refuse, do not fall back to a default.
+  assert.throws(() => MB.boundMcProfile(withMin(tiers[tiers.length - 1] * cubes + 1), baseline, RES.mcProfiles), /no MC profile reaches the contract/,
+    'an unreachable requirement must be an error, not a silent default');
 }
 
 // The contract this brief is actually built from asks for a per-cube bandwidth above the
@@ -188,4 +250,4 @@ assert.strictEqual(writes.write, true, 'a landed run writes its patch');
 assert.deepStrictEqual(writes.patch, patch);
 assert.strictEqual(DRIVER.ledgerUpdate({land: true, landing: landed, result: {ledgerSeed: patch}}).patch, patch, 'intake seeds through the same path');
 
-console.log(`PASS brief and ledger: ${stages.length} stages derive a schema-valid brief whose every number points at the split entry it came from, the manufacturable binding is never read off the contract point, and the ledger merge accumulates rejected options, blockers and evidence without re-opening a frozen decision`);
+console.log(`PASS brief and ledger: ${stages.length} stages derive a schema-valid brief whose every number points at the split entry it came from, the memory tier binding is derived from the contract (lowest tier that meets it, an error when none does), and the ledger merge accumulates rejected options, blockers and evidence without re-opening a frozen decision`);

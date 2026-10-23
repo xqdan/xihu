@@ -14,7 +14,7 @@
       "sharedPortScaling"
     ],
     "candidates": 486,
-    "feasible": 425,
+    "feasible": 304,
     "constraints": [
       "the shared SRAM window per die is at least the contract's B-SRAM-CAP floor (requirements.contractEntry); a candidate below it is not replayed",
       "the K3 detailed replay at the published point with only these dimensions changed is feasible (local tiles fit, the shared window holds the plan) and reaches the contract target",
@@ -32,7 +32,7 @@
       "Kimi K3"
     ],
     "contractEntry": "B-SRAM-CAP",
-    "sharedMiBMin": 12,
+    "sharedMiBMin": 16,
     "targetTpsPerUser": 1000,
     "limits": {
       "dieAreaMm2": 400,
@@ -44,7 +44,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "803e687cdb1663ab025e567266661f14d15c6745ba54312368ee9d706106f5fd",
+    "sha256": "b5f412e4ff763557e250bce6fa0c11a40aa928c255c2c277d18d1c70a856690e",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -53,7 +53,7 @@
     },
     "point": {
       "tauUs": 1.15,
-      "computeScale": 0.7054374305145951,
+      "computeScale": 0.6608414806234413,
       "mcGBs": 1152
     }
   },
@@ -62,7 +62,7 @@
     "quantity": "sharedMiBPerDie",
     "owner": "sram",
     "ownerAgent": "memory-expert",
-    "min": 12,
+    "min": 16,
     "source": "out/requirements/budget_frontier.json#B-SRAM-CAP"
   },
   "caliber": {
@@ -83,7 +83,7 @@
       "hCols": 128,
       "hEngines": 6,
       "ghz": 1,
-      "vectorLanes": 512,
+      "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 64,
@@ -94,7 +94,7 @@
       "tmaEngines": 4,
       "tmaBytes": 512,
       "nocBytes": 256,
-      "nocLanes": 4,
+      "nocLanes": 2,
       "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
@@ -104,7 +104,7 @@
       "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
-      "windowFraction": 1
+      "windowFraction": 0.75
     },
     "x": {
       "nL": 8,
@@ -116,18 +116,18 @@
       "hCols": 128,
       "hEngines": 6,
       "ghz": 1,
-      "vectorLanes": 512,
+      "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
-      "lBanks": 32,
+      "lBanks": 16,
       "hBanks": 16,
       "bankBytes": 64,
-      "sharedMiB": 12,
+      "sharedMiB": 16,
       "sharedSlices": 8,
       "tmaEngines": 1,
       "tmaBytes": 512,
       "nocBytes": 256,
-      "nocLanes": 4,
+      "nocLanes": 2,
       "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
@@ -137,7 +137,7 @@
       "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
-      "windowFraction": 1
+      "windowFraction": 0.75
     },
     "opt": {
       "localWriteRatio": 1,
@@ -148,13 +148,13 @@
   },
   "design": {
     "sharedMiB": {
-      "option": "12",
-      "sharedMiB": 12,
-      "evidence": "below the contract floor on purpose: requirement_frontier.js finds 12 MiB does not hold the S-CMP split point (holdsBySharedMiB), so this option shows the clause binding"
+      "option": "16",
+      "sharedMiB": 16,
+      "evidence": "A.SPACE.sharedMiB; the published point (16 slices x 1 MiB) and the contract floor"
     },
     "lBanks": {
-      "option": "32",
-      "lBanks": 32,
+      "option": "16",
+      "lBanks": 16,
       "evidence": "A.SPACE.lBanks"
     },
     "hBanks": {
@@ -203,16 +203,16 @@
   },
   "evaluation": {
     "k3System": {
-      "publishedTpsPerUser": 1124.6970453558893,
-      "tpsPerUser": 1002.3474393601256,
-      "rawLatencyUs": 852.6991950480516,
+      "publishedTpsPerUser": 1138.4842104608174,
+      "tpsPerUser": 1023.0957348448769,
+      "rawLatencyUs": 835.4065270641028,
       "contractTargetTpsPerUser": 1000,
       "architectureGate": 1050
     },
-    "sharedMiB": 12,
-    "dieAreaMm2": 309.5852837134854,
-    "diePowerW": 268.37088,
-    "cardPowerW": 2855.06304,
+    "sharedMiB": 16,
+    "dieAreaMm2": 312.2380127161976,
+    "diePowerW": 268.34688,
+    "cardPowerW": 2854.87104,
     "portAreaMm2": 0,
     "portPowerW": 0,
     "note": "the winner is the cheapest die that satisfies the contract at the published compute; whether it holds next to the other domains' winners is design.coupling's question"

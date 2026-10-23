@@ -11,5 +11,5 @@
   5. reticle 张数留在封装签核：7-reticle 是仓库的工程 placement window，规格页图注的约 6 reticle 是另一份材料的估计，两者共同锁定的只是 8 颗 Compute Die 加 UCIe 直连 MC（Die 面积见 ADR-0021）。
 - 机器可读：`teams/hardware/inputs/k3_mc_baseline.json#bandwidthTiers`。
 - 规格来源：`references/k3_1000tps_chip_designs.html`（已入库副本，原件来自工作区 `docs/1000tps/`）。
-- 状态：`BASELINE`
+- 状态：`BASELINE`；第 3 条"560 与 640 只能标 STRETCH、不得作为制造默认值"的**制造口径保持有效**，但"绑定哪个档位"由 ADR-0027 改为由预算合同推导（`MC640` 槽位现为 1152 GB/s，见 ADR-0026）
 - 影响：B-002 的表述改为"MC 档位未选定"，关闭证据是选定颗数与每颗带宽的供应商规格。

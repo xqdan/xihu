@@ -189,7 +189,7 @@ Partial-ready 只有在以下条件同时成立时才可启动：
 - 1、2、4、8 个 active NIC；
 - 8/16/32 ranks；
 - 无拥塞、预取并发、故障重放；
-- P50/P95/P99 和最大时延——P99 必须低于 τ 盈亏点约 1.35 µs；
+- P50/P95/P99 和最大时延——P99 必须低于 τ 盈亏点约 1.39 µs；
 - SRAM bank conflict；
 - request/phase fusion 实际收益；
 - card-local 与 scale-out 的重叠程度。

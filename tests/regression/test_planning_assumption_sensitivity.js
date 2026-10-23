@@ -70,7 +70,16 @@ for (const slot of slots) {
   assert(at('collectivesPerLayerPlus1') <= nominal + 1e-9 && at('collectivesPerLayerMinus1') >= nominal - 1e-9, `${slot.candidateId} ${slot.modelId} collectives direction`);
   assert(at('attentionReplicated100pct') <= at('attentionReplicated10pct') && at('attentionReplicated10pct') <= nominal + 1e-9, `${slot.candidateId} ${slot.modelId} replication direction`);
   assert(at('expertPrediction0.3') <= at('expertPrediction0.5') + 1e-9 && at('expertPrediction0.5') <= nominal + 1e-9, `${slot.candidateId} ${slot.modelId} prediction direction`);
-  assert(at('kMemory1.3') <= nominal + 1e-9 && at('kMemory1.0') >= nominal - 1e-9, `${slot.candidateId} ${slot.modelId} kMemory direction`);
+  // kMemory direction is relative to the FITTED value, not an absolute ordering: the fitted kMemory moved to 1.4537
+  // when the published point became collective-bound, so both cases (1.0, 1.3) now sit BELOW it and both must RAISE
+  // the TPS. Asserting "1.3 <= nominal" instead would pin an absolute threshold that the fit has already passed.
+  for (const [id, v] of [['kMemory1.0', 1.0], ['kMemory1.3', 1.3]]) {
+    const dir = Math.sign(workload.calibration.kMemory - v);
+    assert(dir !== 0, `${id}: the case must not equal the fitted kMemory`);
+    assert(dir * (at(id) - nominal) >= -1e-9, `${slot.candidateId} ${slot.modelId} ${id}: a kMemory ${dir > 0 ? 'below' : 'above'} the fitted ${workload.calibration.kMemory.toFixed(4)} must ${dir > 0 ? 'raise' : 'lower'} TPS`);
+  }
+  // No case exercises kMemory ABOVE the fitted value, so the costlier direction is not covered by this artifact.
+  assert(Math.max(...[1.0, 1.3]) < workload.calibration.kMemory, 'the kMemory cases still bracket only the optimistic side');
 }
 
 // Review conclusions for GLM-5.2 and DeepSeek-V4-Pro at TP32 (change them only with the review text).
@@ -89,9 +98,16 @@ for (const id of ['GLM-5.2', 'DeepSeek-V4-Pro']) {
   // 1.1178 (1.3 / 1.1178 = +16%). ADR-0026 moved the calibrated value to 1.2316, so the same case is now a +5.5%
   // change. Where the memory lane binds, TPS/usr is inversely proportional to kMemory, so the expected effect is
   // exactly kMemoryCalibrated / 1.3 - 1: asserted as that, not as a threshold the calibration can walk under.
+  // The calibrated value moved again, to 1.4537 at the 1138.48 point, so BOTH cases (1.0 and 1.3) now sit below it
+  // and both gain. The inverse-proportionality identity still holds exactly; only the sign test has to be stated
+  // against kCal rather than as a fixed threshold the calibration can walk under.
   const kCal = workload.calibration.kMemory;
   assert(Math.abs(caseOf(mc320, 'kMemory1.3').deltaPct - 100 * (kCal / 1.3 - 1)) < 1e-6, `${id} MC320 kMemory = 1.3 moves TPS/usr by kMemory_cal / 1.3 - 1 = ${(100 * (kCal / 1.3 - 1)).toFixed(2)}%`);
-  assert(caseOf(mc320, 'kMemory1.3').deltaPct < 0 && caseOf(mc320, 'kMemory1.0').deltaPct > 0, `${id} MC320: a larger kMemory costs, a smaller one gains`);
+  for (const [idc, v] of [['kMemory1.3', 1.3], ['kMemory1.0', 1.0]]) {
+    const d = caseOf(mc320, idc).deltaPct, expectGain = kCal > v;
+    assert(expectGain ? d > 0 : d < 0, `${id} MC320 ${idc}: evaluating kMemory ${v} against the fitted ${kCal.toFixed(4)} must ${expectGain ? 'gain' : 'cost'}, got ${d.toFixed(2)}%`);
+  }
+  assert(caseOf(mc320, 'kMemory1.3').deltaPct < caseOf(mc320, 'kMemory1.0').deltaPct, `${id} MC320: among values below the fit, the larger one gains less`);
   // Full replication of the attention weights fails the target everywhere: the sharding decision matters.
   assert(!caseOf(mc640, 'attentionReplicated100pct').meetsTarget && !caseOf(mc320, 'attentionReplicated100pct').meetsTarget, `${id} full replication`);
 }

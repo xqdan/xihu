@@ -31,7 +31,15 @@ const SOURCE_COMMIT = args.sourceCommit
 const OBJECTIVE = args.objective
 const REQUIREMENTS = args.requirements || args.objective
 const SHAPE_SEED = args.shapeIntent || '(架构师未给出初始形态意图，请由你提出一版待验证的形态假设)'
-const MC_PROFILE = args.mcProfile || 'MC320'
+// ADR-0027: no typed default. The tier is injected by the launcher (run_workflow prepares
+// args.mcProfile from the contract via make_brief.bindingProfile) or passed with --mcProfile.
+// This script reads no files, so it cannot derive the tier itself and must not invent one: a bare
+// 'MC320' here was the other half of the ADR-0026 contradiction -- intake priced a 2304 GB/s
+// system and bound a 640 GB/s part, so every downstream stage solved an unsatisfiable brief.
+const MC_PROFILE = args.mcProfile
+if (!MC_PROFILE) {
+  throw new Error('design-intake 需要 args.mcProfile：它由 launcher 从预算合同推导（make_brief.bindingProfile），或在 args 里显式给出；ADR-0027 取消了默认档位')
+}
 const BUDGET = args.budget || {}
 const EXPERTS = ['compute-expert', 'memory-expert', 'comm-expert', 'physical-expert', 'software-expert', 'model-expert']
 const MAX_ROUNDS = 3

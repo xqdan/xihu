@@ -223,6 +223,8 @@ for (const model of manifest.models) {
   if (planning) morphologyModels[model.modelId] = planning;
 }
 const morphology = MORPH.enumerate().map(item => MORPH.evaluate(item, {models: morphologyModels, calibration, contract: l1Contract}));
+// The table header names the limits the rows were judged against: read them from the contract, never type them (ADR-0026 raised the card limit and the header kept saying 2800).
+const areaCap = l1Contract.split.find(e => e.id === 'B-AREA').limits;
 const morphologyBySatisfied = morphology.slice().sort((a, b) =>
   a.misses.length - b.misses.length || b.minTpsPerUser - a.minTpsPerUser || a.morphologyId.localeCompare(b.morphologyId));
 const morphologyPareto = morphology.filter(m => !morphology.some(n => n !== m &&
@@ -596,7 +598,7 @@ const report = [
   '',
   `Area and power from \`A.physical(x, dies)\` rescaled by \`k3_physical_basis.resize\`; TPS/usr from token time with the shape's peaks and MC bandwidth carried on the slot. Both are the SAME authorities the published grid uses, so a row here is comparable with a row above.`,
   '',
-  '| Morphology | L/H | local/shared MiB per die | MC | dies | TP | die mm2 (max 400) | die W (max 300) | card W (max 2800) | package mm2 (max 5248) | worst min TPS | worst model | contract |',
+  `| Morphology | L/H | local/shared MiB per die | MC | dies | TP | die mm2 (max ${areaCap.dieAreaMm2}) | die W (max ${areaCap.diePowerW}) | card W (max ${areaCap.cardPowerW}) | package mm2 (max ${morphology[0].physical.limits.packageAreaMm2.max}) | worst min TPS | worst model | contract |`,
   '|---|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|',
   ...morphologyBySatisfied.map(m => {
     const a = m.axes, p = m.physical;

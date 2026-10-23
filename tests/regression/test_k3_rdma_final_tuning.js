@@ -84,9 +84,15 @@ assert.equal(mm0.plan.c.depth,b.x.depth);assert.deepStrictEqual(d.search.space.d
   assert(r1.feasible && r2.feasible && r1.rawUs !== r2.rawUs, 'x.depth must reach the simulator: it changes raw where the shared window is tight');
   assert.equal(O.mapped({...tight, depth: 1}).plan.c.depth, 1);
   assert.equal(O.mapped({...tight, depth: 3}).plan.c.depth, 3);
-  // and the published point is insensitive to it, which is a property of this point, not of the knob
+  // At the published point depth saturates at 2, not at 1: depth 1 leaves one more layer of lookahead
+  // un-prefetched and costs 2.89 us (753.63 vs 750.74), depth 2..4 are identical. Before the point moved
+  // every depth 1..4 gave the same raw, so the old form of this check ("inert") no longer holds; what
+  // still holds, and is what the check is for, is that the knob reaches the simulator and that the
+  // published x is not leaving lookahead on the table.
   const flat = [1, 2, 3, 4].map(depth => O.evaluate({...b.x, depth}).rawUs);
-  assert(flat.every(v => Math.abs(v - flat[0]) < 1e-9), 'depth is inert at the collective-bound published point');
+  assert(flat[1] === flat[3] && flat[2] === flat[3], `depth 2..4 are equivalent at the published point: ${flat.join(', ')}`);
+  assert(flat[0] > flat[1] + 1e-9, `depth 1 must cost more than depth 2: ${flat.join(', ')}`);
+  assert(b.x.depth >= 2, `the published depth ${b.x.depth} must be at or past saturation`);
 }
 // Attention and small-op mapping (2026-09-25).
 assert.equal(O.OPT.pvMerge,'layer');assert.equal(O.OPT.softmaxFusion,true);assert.equal(O.OPT.epilogueFusion,true);

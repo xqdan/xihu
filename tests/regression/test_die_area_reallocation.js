@@ -39,14 +39,16 @@ replayed.forEach((r, i) => {
     if (r[k] === null) assert.strictEqual(a[k], null, `${r.field} ${k}`); else near(a[k], r[k], `${r.field}->${r.to} ${k}`);
   }
 });
-// The statement the proposals rest on: the vector unit pays under stress. Before ADR-0026 it was also free
-// nominally (512->640 moved nominal TPS by -0.02): the point was memory-bound, so vector lanes sat idle.
-// With HBM3E the nominal point is bound by collectives AND the vector unit, and 512->640 adds +19.93 nominal
-// (+39.03 at the compute-pessimistic point). So the claim kept here is the one that still holds: lanes are worth
-// more at the pessimistic point than nominally, and they cost area and power.
-const vec = art.marginals.find(m => m.field === 'vectorLanes' && m.to === 640);
-assert(vec.dComputeTps > 10 && vec.dComputeTps > vec.dNominalTps, 'vectorLanes must be worth more at the pessimistic point than nominally');
-assert(vec.dDieAreaMm2 > 0 && vec.dDiePowerW > 0, 'vectorLanes cost die area and die power');
+// The statement the proposals rest on: the vector unit pays under stress, and the direction of the marginal
+// follows the published value. The point moved to 1024 lanes, so the marginal available here is 1024 -> 768
+// (a REDUCTION); the sign flips with it. What does not flip is the claim the proposals rest on: losing lanes
+// costs more at the compute-pessimistic point than nominally (-20.73 vs -4.09), and the move frees area and
+// power. Both directions of this marginal have now been observed; the identity to keep is |compute| > |nominal|.
+const vec = art.marginals.find(m => m.field === 'vectorLanes' && m.to === 768);
+assert(vec && vec.from === 1024, 'the vectorLanes marginal must move away from the published 1024');
+assert(Math.abs(vec.dComputeTps) > 10 && Math.abs(vec.dComputeTps) > Math.abs(vec.dNominalTps), 'vectorLanes must be worth more at the pessimistic point than nominally');
+assert(vec.dComputeTps < 0 && vec.dNominalTps < 0, 'reducing lanes must lose TPS at both points');
+assert(vec.dDieAreaMm2 < 0 && vec.dDiePowerW < 0, 'reducing lanes must free die area and die power');
 // rdmaLanes 16->12 was ~free nominally (-0.4); it now costs -0.60 nominal because the point is collective-bound
 // and the narrower link lengthens the collectives it is bound by. It still frees area and power.
 const rdma = art.marginals.find(m => m.field === 'rdmaLanes' && m.to === 12);

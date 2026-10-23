@@ -52,8 +52,10 @@ function build({runId}) {
       areaConservation: die.estimatedAreaMm2 <= pkg.computeDieAreaLimitMm2 && packageAreaMm2 <= pkg.placementWindowMm2
     },
     bandwidthEnvelope: {
-      mc320: { sustainedAssumption: RES.mcProfiles.MC320.sustainedAssumption, payloadTBs: RES.mcProfiles.MC320.rawPayloadTBs, classification: 'baseline_reference' },
-      mc640: { sustainedAssumption: RES.mcProfiles.MC640.sustainedAssumption, payloadTBs: RES.mcProfiles.MC640.rawPayloadTBs, classification: 'stretch_not_manufacturing_default' }
+      // The classification is read from the profile, not restated: a second copy here is exactly how
+      // the two strings drifted apart from resource_profiles.js before ADR-0027.
+      mc320: { sustainedAssumption: RES.mcProfiles.MC320.sustainedAssumption, payloadTBs: RES.mcProfiles.MC320.rawPayloadTBs, classification: RES.mcProfiles.MC320.classification },
+      mc640: { sustainedAssumption: RES.mcProfiles.MC640.sustainedAssumption, payloadTBs: RES.mcProfiles.MC640.rawPayloadTBs, classification: RES.mcProfiles.MC640.classification }
     },
     assumptions: [
       'Stage A uses coarse classes, not operator-level measurements.',

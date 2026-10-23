@@ -71,10 +71,10 @@ assert(ev.packageAreaMm2 <= req.placementWindowMm2, 'package within the placemen
 assert(ev.cardPowerW <= req.cardPowerLimitW, 'card power within its limit');
 // This domain's card power is 8 x die + MC + the fixed 80 W; it does not charge
 // the shared-port term the physical domain adds (21.915648 W), which is why the
-// two domains publish 3010.0070400 and 3031.9226880 W for the same point.
+// two domains publish 3025.9814400 and 3047.8970880 W for the same point.
 const replayed = result.ctx.replays[ev.mcGBs];
 close(ev.cardPowerW, result.ctx.dies * replayed.diePowerW + ev.mcPowerW + 80, 'card power is the compute dies plus the MC term plus the fixed overhead');
-assert.strictEqual(Math.round((ev.cardPowerW + 21.915648) * 1e6) / 1e6, 3031.922688, 'the two domains differ by exactly the shared-port charge');
+assert.strictEqual(Math.round((ev.cardPowerW + 21.915648) * 1e6) / 1e6, 3047.897088, 'the two domains differ by exactly the shared-port charge');
 assert.strictEqual(ev.areaReserveMm2, req.placementWindowMm2 - ev.packageAreaMm2, 'the reserve is what the window has left');
 
 // 4. Capacity is a floor the winner clears without being bound by it. This is
@@ -105,14 +105,15 @@ for (const r of heldOut) {
   assert.strictEqual(win.cubes, spec, 'the winner carries the spec cube count');
   close(half.dieGBs, win.dieGBs / 2, 'half the cubes is half the die-side bandwidth');
   close(half.mcPowerW, win.mcPowerW / 2, 'half the cubes is half the MC power');
-  // Under HBM3E (ADR-0026) the published point is bound by collectives, not memory: half the stacks
-  // costs about 11% TPS/usr (1003.40 vs 1124.70), not the 20%+ it cost when the point was memory-bound,
-  // and the half-cube card still clears the contract target. It is excluded only by the 16-stack lock
-  // (cubesNotSpec), which is a decision (ADR-0026 item 6), not a performance result.
+  // Half the stacks costs 16.8% TPS/usr (947.18 vs 1138.48). It is NOT a pure memory effect: at the
+  // published point the DMA wait is 12.5 us, so the memory lane is not what binds; the loss comes through
+  // the K3 replay's own dependency on the store it has to back. The half-cube card now also falls below
+  // the contract target (947.18 < 1000), which it did not at the 1124.70 point, and it is still excluded
+  // by the 16-stack lock (cubesNotSpec) -- a decision (ADR-0026 item 6), not a performance result.
   assert(half.tpsPerUser < win.tpsPerUser, 'the replay sees the lower bandwidth');
-  assert(half.tpsPerUser > win.tpsPerUser * 0.85, 'with the point collective-bound, half the stacks costs well under 15%');
+  assert(half.tpsPerUser > win.tpsPerUser * 0.80 && half.tpsPerUser < win.tpsPerUser * 0.90, 'half the stacks costs between 10% and 20% TPS/usr at the published point');
   assert(!half.feasible && half.violations.includes('cubesNotSpec'), 'a half-cube card is excluded by the spec cube-count lock');
-  assert(!half.violations.includes('belowContractTarget'), 'a half-cube card reaches the contract target: the lock, not the target, is what keeps 16 stacks');
+  assert(half.violations.includes('belowContractTarget'), 'at 1138.48 the half-cube card also misses the contract target (947.18)');
   for (const c of ['24', '32']) {
     assert(alt.cubesPerCard[c].violations.includes('cubesAboveReplayModel'), `${c} cubes exceed what the replay models`);
     assert.strictEqual(alt.cubesPerCard[c].tpsPerUser, null, `${c} cubes: no TPS/usr is claimed beyond the replay model`);

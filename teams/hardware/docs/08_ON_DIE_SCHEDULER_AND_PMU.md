@@ -130,7 +130,7 @@ sequenceDiagram
 - 故障绕行和降频。
 
 当前 launch 时间模型为每个非 COMM、未融合的算子 0.015 µs × `launchScale` 0.45，合计 **11.17 µs/token**
-（`launchScale` 是未回标的假设，B-003；关掉 `launchBatching` 时 TPS 从 1101.77 降到 1088.47）。
+（`launchScale` 是未回标的假设，B-003；关掉 `launchBatching` 时 TPS 从 1124.70 降到 1108.48）。
 0.45 要成立，硬件侧必须满足：
 
 - 常规 tile command 无 host doorbell；
@@ -150,15 +150,15 @@ sequenceDiagram
 | Vector | active cycles、unpack 参数数、SFU 占用 | 每 Core | `kernel`（unpack、FP8 KV 反量化） |
 | TMA | bytes、busy cycles、setup 次数、stall（Shared 读 / Local 写） | 每 Core、每通道 | `tmaFill`、`localTma`、`tmaHidden` |
 | Local SRAM | bank conflict、各仲裁类读写 | 每 Core | `localTma` |
-| Shared SRAM | slice queue、读写 bytes、占用峰值 | 每 slice | 窗口 100.24 MiB/卡 |
+| Shared SRAM | slice queue、读写 bytes、占用峰值 | 每 slice | 窗口 108.65 MiB/卡 |
 | NoC | flit、credit stall、VC occupancy | 每 router | — |
-| DMA / MC | bytes、busy、latency、replay、抢占次数 | 每 MC | DMA busy 775.30 µs、wait 22.35 µs |
+| DMA / MC | bytes、busy、latency、replay、抢占次数 | 每 MC | DMA busy 474.57 µs、wait 11.92 µs |
 | Collective | 次数、phase、request、协议时长、τ 补足、timeout | 每类 | `memoryTransport`、`cardLocal`、`tpReduce`、`tauFloor` |
 | Mailbox | occupancy、partial-ready 提前量、generation 丢弃 | 每 slot | — |
 | Comm Core | 触发到 doorbell 时延、WQE 数、commit 计数、ACK 合并、slot 冻结 | 每 Die | 控制路径（`comm_core_design.json`） |
 | Launch | descriptor 数、doorbell、launch stall | 每 Die | `launch` |
 | 重叠 | shared 专家与集合通信重叠时长 | 每层 | `commOverlap` |
-| 物理 | Core/Die 温度、频率、功率 | 每 Die | 功耗 283.27 W |
+| 物理 | Core/Die 温度、频率、功率 | 每 Die | 功耗 290.48 W |
 | 时间戳 | 每 operator / tile 起止 | 每 tile | 全部 |
 
 ### 5.2 时间账重建

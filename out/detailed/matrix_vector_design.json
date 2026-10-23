@@ -11,7 +11,7 @@
       "expUnit"
     ],
     "candidates": 52,
-    "feasible": 3,
+    "feasible": 21,
     "constraints": [
       "every H-core kernel of the required models hides its vector work (kernel bound >= core MACs:lanes)",
       "K3 detailed replay at the published point with only vectorLanes (and, for native input, the unpack) changed reaches the contract target of requirements.contractEntry",
@@ -45,7 +45,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "803e687cdb1663ab025e567266661f14d15c6745ba54312368ee9d706106f5fd",
+    "sha256": "b5f412e4ff763557e250bce6fa0c11a40aa928c255c2c277d18d1c70a856690e",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -54,7 +54,7 @@
     },
     "point": {
       "tauUs": 1.15,
-      "computeScale": 0.7054374305145951,
+      "computeScale": 0.6608414806234413,
       "mcGBs": 1152
     }
   },
@@ -63,7 +63,7 @@
     "quantity": "computeScale",
     "owner": "compute",
     "ownerAgent": "compute-expert",
-    "min": 0.7054374305145951,
+    "min": 0.6608414806234413,
     "source": "out/requirements/budget_frontier.json#B-SERIAL-CMP"
   },
   "assumptions": {
@@ -92,7 +92,7 @@
       "hCols": 128,
       "hEngines": 6,
       "ghz": 1,
-      "vectorLanes": 512,
+      "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 64,
@@ -103,7 +103,7 @@
       "tmaEngines": 4,
       "tmaBytes": 512,
       "nocBytes": 256,
-      "nocLanes": 4,
+      "nocLanes": 2,
       "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
@@ -113,15 +113,15 @@
       "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
-      "windowFraction": 1
+      "windowFraction": 0.75
     },
     "lMacsPerCore": 2048,
     "hMacsPerCore": 36864,
-    "publishedLanesPerCore": 512,
+    "publishedLanesPerCore": 1024,
     "publishedRatio": {
-      "die": 26.666666666666668,
-      "lCore": 4,
-      "hCore": 72
+      "die": 13.333333333333334,
+      "lCore": 2,
+      "hCore": 36
     }
   },
   "design": {
@@ -292,22 +292,22 @@
   },
   "evaluation": {
     "k3System": {
-      "publishedTpsPerUser": 1124.6970453558893,
-      "tpsPerUser": 1124.3403792802756,
-      "rawLatencyUs": 760.1798089364847,
+      "publishedTpsPerUser": 1138.4842104608174,
+      "tpsPerUser": 1109.1027425704046,
+      "rawLatencyUs": 770.6236959797251,
       "contractTargetTpsPerUser": 1000
     },
-    "areaMm2": 371.3903838086346,
+    "areaMm2": 357.2643468338447,
     "area": {
-      "die": 363.61452364056737,
+      "die": 349.48848666577743,
       "sharedPorts": 7.775860168067228,
       "matrixOverhead": 0,
       "vectorOverhead": 0
     },
-    "diePowerW": 295.47033600000003,
+    "diePowerW": 289.47993600000007,
     "dieAreaLimitMm2": 400,
-    "packagePlacedMm2": 4571.123070469077,
-    "packageReserveMm2": 18.777729530923352
+    "packagePlacedMm2": 4458.1147746707575,
+    "packageReserveMm2": 131.78602532924288
   },
   "regenerate": "node integration/pipelines/generate_matrix_vector_design.js (npm run aicore:search); enforced by tests/regression/test_matrix_vector_design.js"
 }

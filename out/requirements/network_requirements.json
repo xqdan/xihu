@@ -4,7 +4,7 @@
   "workItem": "HW-NETWORK-DEMAND-01",
   "status": "PARTIAL_MODEL_WITH_ASSUMPTIONS; no Gate or topology selection",
   "provenance": {
-    "sourceCommit": "2c1c57722e1e27cb8223a865348520d59de37b79",
+    "sourceCommit": "ddf8599e978b6fac5aaeb79659a51e749aa9ac0c",
     "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
     "runId": "network-demand-5c0c784559d0",
     "seed": 20261002,
@@ -37,7 +37,7 @@
     "sourceArtifacts": [
       {
         "path": "teams/hardware/inputs/k3_mc_baseline.json",
-        "sha256": "2627bf313136ddb4af65e658435879d94f236b55ba0706ad67975f8c8da36e87"
+        "sha256": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39"
       },
       {
         "path": "teams/hardware/inputs/scaleout_topology_candidates.json",
@@ -45,15 +45,15 @@
       },
       {
         "path": "out/detailed/comm_core_design.json",
-        "sha256": "983819d2f8a987bd81eaec80ec4f71e499727cac37af4fdfcd3aef63bc63b2d6"
+        "sha256": "03504780bb6eced7ac39926bed8164f88b51db8d9191fe0b07034b8ae183fb9b"
       },
       {
         "path": "out/workload/planning_operator_workload.json",
-        "sha256": "4f47d5630e9bff187089807200751d4f730a0aa5021ea62fd30b87464befceb7"
+        "sha256": "b9a43ca1db9d85d240c54aa7825724b6d3f3f575ca01ff702c28475b9395ca20"
       },
       {
         "path": "teams/council/inputs/brief_intents.json",
-        "sha256": "bb686ef789cd40e768c91d8470af0e6fab2b4f3f7b12ea85bba1c58c90e6345b"
+        "sha256": "0f14254a7037f9fbb31f70f197599ad27945a3292f8bbb1ddf8732384f660eb3"
       },
       {
         "path": "teams/council/inputs/design_brief.schema.json",
@@ -97,7 +97,7 @@
       },
       {
         "path": "teams/hardware/src/resource_profiles.js",
-        "sha256": "4082c03570d863b6a4f5e76d5a161a1de2fbbb911b80b385fab0f1be860b9cae"
+        "sha256": "cf525cccd39609925ddf0afa20e6308598e1b56ac91d249569bd6c6f6f9067e6"
       },
       {
         "path": "integration/detailed/collective_topology.js",
@@ -194,7 +194,7 @@
           "bytesPerTokenPerRank": 64726240,
           "requiredGBsPerRank": 64.72624,
           "requiredGBsPerDieBalanced": 8.09078,
-          "availableGBsPerDie": 7987.200000000001,
+          "availableGBsPerDie": 3993.6000000000004,
           "evidence": "MODEL_BALANCED_PLACEMENT_ASSUMPTION"
         },
         "dieToDie": {
@@ -246,9 +246,9 @@
                 "max": 0.21500000000000002
               },
               "collectiveLatencyCornersUs": {
-                "low": 1.0501090888278388,
-                "nominal": 1.3662519459706959,
-                "high": 2.138251945970696
+                "low": 1.0441269459706959,
+                "nominal": 1.3602698031135532,
+                "high": 2.132269803113553
               }
             },
             {
@@ -9325,9 +9325,9 @@
                 "max": 0.4
               },
               "collectiveLatencyCornersUs": {
-                "low": 1.1951090888278388,
-                "nominal": 1.775109088827839,
-                "high": 3.197109088827839
+                "low": 1.189126945970696,
+                "nominal": 1.7691269459706962,
+                "high": 3.1911269459706957
               }
             },
             {
@@ -11204,9 +11204,9 @@
                 "max": 0.9900000000000001
               },
               "collectiveLatencyCornersUs": {
-                "low": 1.6751090888278388,
-                "nominal": 2.9551090888278386,
-                "high": 6.277109088827838
+                "low": 1.669126945970696,
+                "nominal": 2.9491269459706957,
+                "high": 6.271126945970695
               }
             },
             {
@@ -13947,9 +13947,9 @@
                 "max": 0.9050000000000001
               },
               "collectiveLatencyCornersUs": {
-                "low": 1.660106016631218,
-                "nominal": 2.834829518935366,
-                "high": 6.286829518935364
+                "low": 1.6541238737740753,
+                "nominal": 2.828847376078223,
+                "high": 6.2808473760782215
               }
             },
             {
@@ -15250,9 +15250,9 @@
                 "max": 2.4050000000000007
               },
               "collectiveLatencyCornersUs": {
-                "low": 2.965465463635826,
-                "nominal": 6.065465463635827,
-                "high": 15.117465463635824
+                "low": 2.9594833207786833,
+                "nominal": 6.059483320778685,
+                "high": 15.111483320778682
               }
             },
             {
@@ -16001,7 +16001,7 @@
           "bytesPerTokenPerRank": 64094240,
           "requiredGBsPerRank": 64.09424,
           "requiredGBsPerDieBalanced": 8.01178,
-          "availableGBsPerDie": 7987.200000000001,
+          "availableGBsPerDie": 3993.6000000000004,
           "evidence": "MODEL_BALANCED_PLACEMENT_ASSUMPTION"
         },
         "dieToDie": {
@@ -16053,9 +16053,9 @@
                 "max": 0.21500000000000002
               },
               "collectiveLatencyCornersUs": {
-                "low": 0.9429305173992675,
-                "nominal": 1.2479305173992674,
-                "high": 1.9699305173992674
+                "low": 0.9398501602564102,
+                "nominal": 1.2448501602564104,
+                "high": 1.9668501602564104
               }
             },
             {
@@ -18364,9 +18364,9 @@
                 "max": 0.4
               },
               "collectiveLatencyCornersUs": {
-                "low": 1.0218733745421245,
-                "nominal": 1.6018733745421245,
-                "high": 3.023873374542125
+                "low": 1.0187930173992674,
+                "nominal": 1.5987930173992675,
+                "high": 3.0207930173992676
               }
             },
             {
@@ -20243,9 +20243,9 @@
                 "max": 0.9900000000000001
               },
               "collectiveLatencyCornersUs": {
-                "low": 1.5018733745421247,
-                "nominal": 2.7818733745421245,
-                "high": 6.1038733745421245
+                "low": 1.4987930173992676,
+                "nominal": 2.778793017399267,
+                "high": 6.100793017399267
               }
             },
             {
@@ -23850,9 +23850,9 @@
                 "max": 0.65
               },
               "collectiveLatencyCornersUs": {
-                "low": 1.3572733745421244,
-                "nominal": 2.167930517399267,
-                "high": 4.589930517399267
+                "low": 1.3541930173992673,
+                "nominal": 2.1648501602564103,
+                "high": 4.58685016025641
               }
             },
             {
@@ -24577,9 +24577,9 @@
                 "max": 1.2350000000000003
               },
               "collectiveLatencyCornersUs": {
-                "low": 1.780101945970696,
-                "nominal": 3.4001019459706963,
-                "high": 8.032101945970698
+                "low": 1.777021588827839,
+                "nominal": 3.397021588827839,
+                "high": 8.02902158882784
               }
             },
             {
@@ -25043,7 +25043,7 @@
           "bytesPerTokenPerRank": 25513920,
           "requiredGBsPerRank": 25.51392,
           "requiredGBsPerDieBalanced": 3.18924,
-          "availableGBsPerDie": 7987.200000000001,
+          "availableGBsPerDie": 3993.6000000000004,
           "evidence": "MODEL_BALANCED_PLACEMENT_ASSUMPTION"
         },
         "dieToDie": {
@@ -39430,7 +39430,7 @@
           "bytesPerTokenPerRank": 25312320,
           "requiredGBsPerRank": 25.31232,
           "requiredGBsPerDieBalanced": 3.16404,
-          "availableGBsPerDie": 7987.200000000001,
+          "availableGBsPerDie": 3993.6000000000004,
           "evidence": "MODEL_BALANCED_PLACEMENT_ASSUMPTION"
         },
         "dieToDie": {
@@ -45029,7 +45029,7 @@
           "bytesPerTokenPerRank": 28467968,
           "requiredGBsPerRank": 28.467968,
           "requiredGBsPerDieBalanced": 3.558496,
-          "availableGBsPerDie": 7987.200000000001,
+          "availableGBsPerDie": 3993.6000000000004,
           "evidence": "MODEL_BALANCED_PLACEMENT_ASSUMPTION"
         },
         "dieToDie": {
@@ -59429,7 +59429,7 @@
           "bytesPerTokenPerRank": 28305952,
           "requiredGBsPerRank": 28.305952,
           "requiredGBsPerDieBalanced": 3.538244,
-          "availableGBsPerDie": 7987.200000000001,
+          "availableGBsPerDie": 3993.6000000000004,
           "evidence": "MODEL_BALANCED_PLACEMENT_ASSUMPTION"
         },
         "dieToDie": {

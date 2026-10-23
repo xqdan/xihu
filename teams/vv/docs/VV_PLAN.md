@@ -10,7 +10,7 @@
 
 1. D-Gate（方向比较）已通过：8 项检查全部成立。它只说明规划比较可信，**不等于架构冻结**，范围标记为 `PLANNING_COMPARISON_ONLY_NOT_ARCHITECTURE_FREEZE`。
 2. Q-Gate（定量）未通过：18 个观测槽位全是 `PLANNING_ESTIMATE`，没有一个 `MODEL_OBSERVED` / `SILICON_OBSERVED`；Q3–Q6 共享 manifest 和 Q8 细粒度 TPS 未完成。
-3. 架构闸门（1050 TPS/usr，可制造 MC 路线，详细 tile 模型）也未通过（doc 21 第 7 节）。发布点的 1101.77 是 `MODEL` 等级，计算过程见 `docs/architecture/00_CURRENT_STATE.md` 第 3 节。
+3. 架构闸门（1050 TPS/usr，可制造 MC 路线，详细 tile 模型）也未通过（doc 21 第 7 节）。发布点的 1124.70 是 `MODEL` 等级，计算过程见 `docs/architecture/00_CURRENT_STATE.md` 第 3 节。
 4. V&V 只能阻止 Gate，不能改被测团队的输入。修复只能从上游改：source → 流水线 → `out/` 产物。
 
 ## 1. 证据等级
@@ -149,7 +149,7 @@ pie showData
 | 1 | router 切分与集合通信计数一致 | GLM/DS 的 router 字节按切分计入，但计数里没有 router gather（O-017） | 每个 MoE 层：router 切分 ⇒ 计数含一次 gather；router 复制 ⇒ 字节按复制计 | Model / SW-05 |
 | 2 | 稀疏注意力负载不均 | top-2048 按 context 切分，最坏一个 rank 拿全部 2048 个（O-017） | 规划链路报告最坏 rank 的时间，而不只是平均 | SW-03 |
 | 3 | 精度验收 | FP8 KV、MXFP4 expert、BF16 集合通信都没有评估（`PRECISION_POLICY.md`） | 逐层误差与端到端质量指标，有阈值 | MODEL-06 |
-| 4 | τ 物理推导 | 1.15 µs 没有推导（B-008）；τ 到 1.35 µs 时发布点刚好 1000 | τ 由拓扑 / PHY 方案给出后回标，重算发布点 | B-004 / B-005 |
+| 4 | τ 物理推导 | 1.15 µs 没有推导（B-008）；τ 到 1.39 µs 时发布点刚好 1000 | τ 由拓扑 / PHY 方案给出后回标，重算发布点 | B-004 / B-005 |
 | 5 | launchScale 与预测命中率 | 0.45 与 0.8 都是假设（B-003） | runtime trace 回标 | SW-01 / SW-06 |
 | 6 | P50/P95/P99 | 当前只有均值 token 时间 | 事件模型给出分布 | SW-06 |
 | 7 | 标定外推 | token-time 系数只在 K3 上拟合，MC320 样本外 0.94（O-016） | GLM/DS 各取一个详细点做样本外核对 | Model |

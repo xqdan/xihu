@@ -24,11 +24,11 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 1. 工作负载暂定为 K3 工程 preset：93 层、B=1、Context=1M、
    TP=32、PP=1，目标为 1000 TPS/usr。K3 的形状唯一来源是
    `teams/model/src/design_engine.js#MODEL_PRESETS.kimiK3`。
-2. 当前发布点 1101.77 TPS/usr（`MODEL`）及其计算过程见 `00_CURRENT_STATE.md` 第 3 节和
+2. 当前发布点 1124.70 TPS/usr（`MODEL`）及其计算过程见 `00_CURRENT_STATE.md` 第 3 节和
    `teams/hardware/inputs/k3_mc_baseline.json#modelResults`；是否达标以 `acceptance.currentStatus` 为准。
    支撑该结果的全部软硬件设计、逐项回退和变更控制见
    [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md)（`teams/hardware/inputs/k3_mc_baseline.json#tpsDesign`）。
-3. 该结果使用的是每颗 MC **640 GB/s** 的 Stretch 搜索假设（ADR-0019）。
+3. 该结果使用的是每颗 MC **1152 GB/s**（MC640 槽位，HBM3E，ADR-0026）的 Stretch 搜索假设（ADR-0019）。
    本地 Memory Cube 参考规格给出的 KGD 最大单向带宽是
    **320 GB/s/颗**。在相同 Compute Die 和优化参数下，320 GB/s 点明显不达标。
 4. 因此目前不能把 MC640 结果视为已经证明可实现的芯片指标。首先需要
@@ -99,7 +99,7 @@ NoC、MC 接口、Die 间互联、Scale-out/RDMA、调度和封装等单元的�
 | [15 RTL 验证](../../teams/hardware/docs/HARDWARE_15_RTL_VERIFICATION.md) | RTL 出现后必须满足什么：验证层次、必覆盖类别、RTL↔模型逐 kernel 比对 |
 | [工艺与库](../../teams/hardware/docs/HARDWARE_PROCESS_AND_LIBRARY.md) | 当前缩放口径及其影响面、工艺选择判据、换工艺的连锁反应 |
 | [封装与基板](../../teams/hardware/docs/HARDWARE_PACKAGE_SUBSTRATE.md) | 封装形态、互连岸线、基板电气待定项（层数、PDN、通道、散热、翘曲） |
-| [卡功耗预算](../../teams/hardware/docs/HARDWARE_POWER_BUDGET.md) | 55.125 W 余量的逐项分配、超预算的处置顺序、再分配方案的功耗代价 |
+| [卡功耗预算](../../teams/hardware/docs/HARDWARE_POWER_BUDGET.md) | 168.08 W 余量的逐项分配（及其对 3200 W 上限的依赖）、余量不够时的处置顺序、再分配方案的功耗代价 |
 
 #### 软件设计（`teams/software/docs/`，Software）
 

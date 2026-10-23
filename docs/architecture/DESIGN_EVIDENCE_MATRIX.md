@@ -23,7 +23,7 @@
 | 1 | 目标 1000 TPS/usr、B=1、Context 1M、TP32 | — | ADR-0009 | `FROZEN` | 不适用 |
 | 2 | 卡组织 8 Die + 16 MC，2 MC/Die | — | ADR-0011 | `BASELINE` | 封装签核 |
 | 3 | 发布点硬件向量 `x` | 见 `tpsDesign.hardware.x` | `out/rdma/k3_rdma_final_tuning_results.json#search.best.x` | `MODEL` | **B-006 综合/floorplan 回标** |
-| 4 | MC 640 GB/s | 640 | ADR-0019 | `BLOCKER` | **B-002 供应商规格** |
+| 4 | MC 1152 GB/s（MC640 槽位） | 1152 | ADR-0019 | `BLOCKER` | **B-002 供应商规格** |
 | 5 | τ = 1.15 µs | 1.15 | ADR-0004 | `BLOCKER` | **B-008 物理推导（O-018）** |
 | 6 | 计数口径 reference-393 | 393 | ADR-0004、ADR-0024 | `BASELINE` | 供应商 shared expert 结构说明（确认性） |
 | 7 | FP8 KV cache | `OPT.kvCache='fp8'` | `PRECISION_POLICY.md` §2.1 | `MODEL`（B-001） | **精度验收（`VV_MEASUREMENT_PLAN.md` #8）** |
@@ -34,7 +34,7 @@
 | 12 | 专家预测命中率 0.8 | 0.8 | `plan.c.prediction` | `ASSUMPTION` | **实测（#4）** |
 | 13 | 利用率类参数（4 项） | 见 `DESIGN_TARGETS_AND_MARGINS.md` §2.1 | `A.TECH` | `ASSUMPTION` | **#1 #3 #5 #6** |
 | 14 | GAIN 全部为 1 | 25 项 | `O.GAIN` | `BASELINE` | 任何因子离开 1 需 B-003 证据 |
-| 15 | 液态冷却 Die 300 W / 卡 2800 W | — | `k3_physical_basis.js` | `ASSUMPTION`（O-015） | **#7 冷板/VRM 建模** |
+| 15 | 液态冷却 Die 300 W / 卡 3200 W | — | `k3_physical_basis.js` | `ASSUMPTION`（O-015） | **#7 冷板/VRM 建模** |
 | 16 | SF4 面积折算 ×1.277 / ×1.248 / ×1 | — | `k3_physical_basis.js#BASIS` | `ASSUMPTION`（B-006） | **#10 PDK** |
 | 17 | 矩阵密度 3.2 TF/mm² | 3.2 | 同上 | `ASSUMPTION`（B-006） | **#10 MAC 阵列宏** |
 | 18 | 规划 token-time 5 系数 | — | ADR-0008 | `PLANNING_ESTIMATE` | **#11 样本外核对（O-016）** |
@@ -49,7 +49,7 @@
 | ---: | --- | --- | --- | --- |
 | 1 | `A.TECH.mcUtil` 0.70（盈亏点 0.63） | `ASSUMPTION` | #5 | HW-04 |
 | 2 | τ = 1.15 µs（盈亏点 1.35） | `BLOCKER` | #13 | Comm Core / PHY |
-| 3 | MC 640 GB/s | `BLOCKER` | #14 | Memory MC |
+| 3 | MC 1152 GB/s（MC640 槽位） | `BLOCKER` | #14 | Memory MC |
 | 4 | 软件机制 10 项 | `MODEL`（无 trace） | #2 | SW-01/02/03 |
 | 5 | `unpackParamsPerLaneCycle` 2（盈亏点 0.82） | `ASSUMPTION` | #3 | HW-02 |
 | 6 | `layoutImbalance` 1.15（上界 1.42，超了不可行） | `ASSUMPTION` | #6 | HW-03 |

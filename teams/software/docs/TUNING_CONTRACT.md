@@ -51,7 +51,7 @@
 
 | 参数 | 发布值 | 语义 | 悲观端 | 归属 |
 | --- | ---: | --- | ---: | --- |
-| `OPT.launchScale` | 0.45 | 批量摊薄后保留的发射开销比例，**越小越好** | 1.0（TPS → 1088.47） | SW-01 Runtime |
+| `OPT.launchScale` | 0.45 | 批量摊薄后保留的发射开销比例，**越小越好** | 1.0（TPS → 1108.48） | SW-01 Runtime |
 | `plan.c.prediction` | 0.8 | 专家预测命中率 | 0.7 | SW-06 / HW-02 |
 | `A.TECH.mcUtil` | 0.70 | MC 持续效率（盈亏点 **0.63**） | 0.65 | HW-04 |
 
@@ -61,7 +61,7 @@
 
 1. **`layoutImbalance` 上界 1.42**：超过则 H local tile **放不下**，是 `infeasible` 而非变慢
    （`DESIGN_TARGETS_AND_MARGINS.md` §2.1）。
-2. **Die 面积 ≤ 400 mm²、Die 功耗 ≤ 300 W、卡功耗 ≤ 2800 W**：搜索已按此过滤。
+2. **Die 面积 ≤ 400 mm²、Die 功耗 ≤ 300 W、卡功耗 ≤ 3200 W**：搜索已按此过滤。
 3. **主域频率固定 1.0 GHz，不参与搜索**（NFR-05）。任何"降频换面积"的方案直接不合法。
 4. **KV tile 与 `kvCache` dtype 耦合**：在已发布点（headTile 96、hMiB 4）上，32768 在 BF16 下 **不可行**，
    因为 BF16 KV 让每 token 的 KV slab 字节翻倍，H local tile 放不下（`A.mappedPlan` 的 H local tile 检查，
@@ -92,7 +92,7 @@
 `fewerBytesPerToken` 走 FP8 稠密时，模型在 `RETUNE` 网格上**重新调优**了旋钮
 （`depth`、`weightTileMiB`、`windowFraction`、`kvTile`）。
 
-**这是一个必须显式记录的调优选择**：条件路线得到的 1080.78（MC400）是在
+**这是一个必须显式记录的调优选择**：条件路线得到的 1080.89（MC400）是在
 **为 FP8 重新调过的旋钮**下取得的，而已发布基线用的是另一组旋钮。
 两者不是同一个硬件配置的两个 dtype 变体。
 

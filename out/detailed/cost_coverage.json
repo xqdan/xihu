@@ -7,7 +7,7 @@
   "method": "Kernel line of every compute op from cost_provider.js (measured -> fitted -> analytical); all other service lines, DMA wait and the hidden lines are MODEL. Shares are gross (hidden kernels count in full).",
   "provenance": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "2627bf313136ddb4af65e658435879d94f236b55ba0706ad67975f8c8da36e87",
+    "baselineSha256": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39",
     "observations": "teams/vv/inputs/operator_cost_observations.json",
     "observationsSha256": "aa535b0adf152419b1452c2bc73e1ba356ec3dfc35f7f16754140af1423ee5b2",
     "observationCount": 0,
@@ -33,7 +33,7 @@
       "hCols": 128,
       "hEngines": 6,
       "ghz": 1,
-      "vectorLanes": 512,
+      "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 64,
@@ -46,70 +46,70 @@
     }
   },
   "ledger": {
-    "rawUs": 759.9387392632482,
-    "tpsPerUser": 1124.6970453558893,
-    "waitUs": 11.915448039844115,
+    "rawUs": 750.7358001521186,
+    "tpsPerUser": 1138.4842104608174,
+    "waitUs": 12.456727538698805,
     "services": {
-      "kernel": 205.95345808217252,
-      "localTma": 42.874092680469154,
-      "tmaFill": 135.4453612583327,
+      "kernel": 184.61426947106307,
+      "localTma": 43.6530389945717,
+      "tmaFill": 187.99444293902036,
       "reduce": 28.46769230769231,
       "dieLink": 6.729843750000002,
       "launch": 11.657250000000241,
-      "assumedGain": 1.0658141036401503e-14,
+      "assumedGain": 1.4432899320127035e-14,
       "memoryTransport": 192.3679999999996,
-      "tpReduce": 2.0061188186813204,
+      "tpReduce": 1.8625473901098928,
       "cardLocal": 94.56383653846176,
       "portTail": 0,
-      "tauFloor": 163.0120446428572,
-      "commOverlap": -26.983333037886034,
-      "tmaHidden": -108.07107381736537
+      "tauFloor": 163.15561607142854,
+      "commOverlap": -34.412998259455144,
+      "tmaHidden": -142.37446658947522
     },
-    "kernelUs": 205.95345808217252,
-    "nonKernelUs": 553.9852811810756,
+    "kernelUs": 184.61426947106307,
+    "nonKernelUs": 566.1215306810556,
     "bySource": {
       "measured": 0,
       "fitted": 0,
-      "analytical": 205.95345808217252,
-      "nonKernel": 553.9852811810756
+      "analytical": 184.61426947106307,
+      "nonKernel": 566.1215306810556
     },
     "byEvidence": {
       "SILICON_OBSERVED": 0,
       "EMULATION_OBSERVED": 0,
-      "MODEL": 759.9387392632482
+      "MODEL": 750.7358001521186
     }
   },
   "shares": {
     "measured": 0,
     "fitted": 0,
     "observed": 0,
-    "analyticalKernel": 0.27101323756944146,
-    "nonKernel": 0.7289867624305585
+    "analyticalKernel": 0.24591110405771965,
+    "nonKernel": 0.7540888959422803
   },
   "classes": [
     {
       "class": "attention",
       "ops": 4,
       "shapes": 4,
-      "kernelUs": 147.4578021978022
+      "kernelUs": 139.8875164835165
     },
     {
       "class": "linear",
       "ops": 9,
       "shapes": 13,
-      "kernelUs": 30.477796667480458
+      "kernelUs": 23.444458974985004
     },
     {
       "class": "expert",
       "ops": 2,
       "shapes": 2,
-      "kernelUs": 26.661599999999964
+      "kernelUs": 20.508923076923047
     },
     {
       "class": "other",
       "ops": 15,
       "shapes": 15,
-      "kernelUs": 1.3562592168898804
+      "kernelUs": 0.7733709356398806
     }
   ],
   "calibrationQueue": [
@@ -135,7 +135,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.08582392199159904
+      "shareOfRaw": 0.08687599960426513
     },
     {
       "rank": 2,
@@ -159,34 +159,10 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.07629724315073456
+      "shareOfRaw": 0.07723253740860929
     },
     {
       "rank": 3,
-      "op": "Online softmax",
-      "unit": "V",
-      "class": "attention",
-      "count": 48,
-      "kernelUs": 15.140571428571423,
-      "costSource": {
-        "analytical": 48
-      },
-      "shapes": [
-        {
-          "shape": {
-            "flops": 12582912,
-            "readBytes": 6291456,
-            "writeBytes": 6291456
-          },
-          "count": 48,
-          "kernelUsEach": 0.31542857142857145,
-          "costSource": "analytical"
-        }
-      ],
-      "shareOfRaw": 0.019923410462335468
-    },
-    {
-      "rank": 4,
       "op": "Linear recurrent state update",
       "unit": "H",
       "class": "attention",
@@ -207,7 +183,31 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.011994489097784231
+      "shareOfRaw": 0.012141524250248852
+    },
+    {
+      "rank": 4,
+      "op": "Online softmax",
+      "unit": "V",
+      "class": "attention",
+      "count": 48,
+      "kernelUs": 7.570285714285712,
+      "costSource": {
+        "analytical": 48
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 12582912,
+            "readBytes": 6291456,
+            "writeBytes": 6291456
+          },
+          "count": 48,
+          "kernelUsEach": 0.15771428571428572,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.010083821382637907
     },
     {
       "rank": 5,
@@ -215,7 +215,7 @@
       "unit": "L",
       "class": "linear",
       "count": 138,
-      "kernelUs": 9.01553295197518,
+      "kernelUs": 6.935025347673209,
       "costSource": {
         "analytical": 138
       },
@@ -227,7 +227,7 @@
             "writeBytes": 28672
           },
           "count": 69,
-          "kernelUsEach": 0.0736,
+          "kernelUsEach": 0.0566153846153846,
           "costSource": "analytical"
         },
         {
@@ -237,11 +237,11 @@
             "writeBytes": 28672
           },
           "count": 69,
-          "kernelUsEach": 0.0570598978547127,
+          "kernelUsEach": 0.043892229119009765,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.011863499629872317
+      "shareOfRaw": 0.009237637723241642
     },
     {
       "rank": 6,
@@ -249,7 +249,7 @@
       "unit": "L",
       "class": "linear",
       "count": 186,
-      "kernelUs": 8.100913666992176,
+      "kernelUs": 6.231472051532472,
       "costSource": {
         "analytical": 186
       },
@@ -261,7 +261,7 @@
             "writeBytes": 28672
           },
           "count": 93,
-          "kernelUsEach": 0.0736,
+          "kernelUsEach": 0.0566153846153846,
           "costSource": "analytical"
         },
         {
@@ -271,11 +271,11 @@
             "writeBytes": 28672
           },
           "count": 93,
-          "kernelUsEach": 0.013506598569808468,
+          "kernelUsEach": 0.010389691207544976,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.010659956189160612
+      "shareOfRaw": 0.008300486070159187
     },
     {
       "rank": 7,
@@ -283,7 +283,7 @@
       "unit": "L",
       "class": "linear",
       "count": 184,
-      "kernelUs": 4.443599999999999,
+      "kernelUs": 3.418153846153858,
       "costSource": {
         "analytical": 184
       },
@@ -295,11 +295,11 @@
             "writeBytes": 28672
           },
           "count": 184,
-          "kernelUsEach": 0.02415,
+          "kernelUsEach": 0.01857692307692307,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0058473134351698115
+      "shareOfRaw": 0.004553071593843334
     },
     {
       "rank": 8,
@@ -307,7 +307,7 @@
       "unit": "L",
       "class": "linear",
       "count": 48,
-      "kernelUs": 3.135837548513104,
+      "kernelUs": 2.4121827296254645,
       "costSource": {
         "analytical": 48
       },
@@ -319,7 +319,7 @@
             "writeBytes": 28672
           },
           "count": 24,
-          "kernelUsEach": 0.0736,
+          "kernelUsEach": 0.0566153846153846,
           "costSource": "analytical"
         },
         {
@@ -329,11 +329,11 @@
             "writeBytes": 28672
           },
           "count": 24,
-          "kernelUsEach": 0.0570598978547127,
+          "kernelUsEach": 0.043892229119009765,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.004126434653868629
+      "shareOfRaw": 0.0032130913819970936
     },
     {
       "rank": 9,
@@ -341,7 +341,7 @@
       "unit": "L",
       "class": "linear",
       "count": 184,
-      "kernelUs": 2.2217999999999996,
+      "kernelUs": 1.709076923076929,
       "costSource": {
         "analytical": 184
       },
@@ -353,11 +353,11 @@
             "writeBytes": 28672
           },
           "count": 184,
-          "kernelUsEach": 0.012075,
+          "kernelUsEach": 0.009288461538461535,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0029236567175849057
+      "shareOfRaw": 0.002276535796921667
     },
     {
       "rank": 10,
@@ -365,7 +365,7 @@
       "unit": "L",
       "class": "linear",
       "count": 92,
-      "kernelUs": 1.2960500000000013,
+      "kernelUs": 0.9969615384615371,
       "costSource": {
         "analytical": 92
       },
@@ -377,11 +377,11 @@
             "writeBytes": 28672
           },
           "count": 92,
-          "kernelUsEach": 0.0140875,
+          "kernelUsEach": 0.010836538461538458,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.001705466418591197
+      "shareOfRaw": 0.0013279792148709663
     },
     {
       "rank": 11,
@@ -389,7 +389,7 @@
       "unit": "L",
       "class": "linear",
       "count": 92,
-      "kernelUs": 1.2960500000000013,
+      "kernelUs": 0.9969615384615371,
       "costSource": {
         "analytical": 92
       },
@@ -401,11 +401,11 @@
             "writeBytes": 28672
           },
           "count": 92,
-          "kernelUsEach": 0.0140875,
+          "kernelUsEach": 0.010836538461538458,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.001705466418591197
+      "shareOfRaw": 0.0013279792148709663
     },
     {
       "rank": 12,
@@ -413,7 +413,7 @@
       "unit": "L",
       "class": "linear",
       "count": 9,
-      "kernelUs": 0.644,
+      "kernelUs": 0.4953846153846153,
       "costSource": {
         "analytical": 9
       },
@@ -425,7 +425,7 @@
             "writeBytes": 28672
           },
           "count": 8,
-          "kernelUsEach": 0.0736,
+          "kernelUsEach": 0.0566153846153846,
           "costSource": "analytical"
         },
         {
@@ -435,11 +435,11 @@
             "writeBytes": 28672
           },
           "count": 1,
-          "kernelUsEach": 0.0552,
+          "kernelUsEach": 0.04246153846153845,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0008474367297347554
+      "shareOfRaw": 0.0006598654483830896
     },
     {
       "rank": 13,
@@ -447,7 +447,7 @@
       "unit": "L",
       "class": "linear",
       "count": 92,
-      "kernelUs": 0.3240125000000003,
+      "kernelUs": 0.24924038461538428,
       "costSource": {
         "analytical": 92
       },
@@ -459,11 +459,11 @@
             "writeBytes": 28672
           },
           "count": 92,
-          "kernelUsEach": 0.003521875,
+          "kernelUsEach": 0.0027091346153846146,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.00042636660464779924
+      "shareOfRaw": 0.00033199480371774156
     },
     {
       "rank": 14,
@@ -471,7 +471,7 @@
       "unit": "L",
       "class": "expert",
       "count": 92,
-      "kernelUs": 17.774399999999975,
+      "kernelUs": 13.672615384615366,
       "costSource": {
         "analytical": 92
       },
@@ -483,11 +483,11 @@
             "writeBytes": 123904
           },
           "count": 92,
-          "kernelUsEach": 0.1932,
+          "kernelUsEach": 0.14861538461538457,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.023389253740679215
+      "shareOfRaw": 0.01821228637537325
     },
     {
       "rank": 15,
@@ -495,7 +495,7 @@
       "unit": "L",
       "class": "expert",
       "count": 92,
-      "kernelUs": 8.887199999999988,
+      "kernelUs": 6.836307692307683,
       "costSource": {
         "analytical": 92
       },
@@ -507,11 +507,11 @@
             "writeBytes": 238592
           },
           "count": 92,
-          "kernelUsEach": 0.0966,
+          "kernelUsEach": 0.07430769230769228,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.011694626870339607
+      "shareOfRaw": 0.009106143187686625
     },
     {
       "rank": 16,
@@ -519,7 +519,7 @@
       "unit": "V",
       "class": "other",
       "count": 92,
-      "kernelUs": 0.5289999999999994,
+      "kernelUs": 0.2644999999999997,
       "costSource": {
         "analytical": 92
       },
@@ -531,62 +531,14 @@
             "writeBytes": 14336
           },
           "count": 92,
-          "kernelUsEach": 0.00575,
+          "kernelUsEach": 0.002875,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0006961087422821196
+      "shareOfRaw": 0.0003523210161902564
     },
     {
       "rank": 17,
-      "op": "Attention RMSNorm",
-      "unit": "V",
-      "class": "other",
-      "count": 93,
-      "kernelUs": 0.20053124999999988,
-      "costSource": {
-        "analytical": 93
-      },
-      "shapes": [
-        {
-          "shape": {
-            "flops": 43008,
-            "readBytes": 14336,
-            "writeBytes": 14336
-          },
-          "count": 93,
-          "kernelUsEach": 0.0021562499999999997,
-          "costSource": "analytical"
-        }
-      ],
-      "shareOfRaw": 0.00026387817812053194
-    },
-    {
-      "rank": 18,
-      "op": "MoE RMSNorm",
-      "unit": "V",
-      "class": "other",
-      "count": 92,
-      "kernelUs": 0.19837499999999988,
-      "costSource": {
-        "analytical": 92
-      },
-      "shapes": [
-        {
-          "shape": {
-            "flops": 43008,
-            "readBytes": 14336,
-            "writeBytes": 14336
-          },
-          "count": 92,
-          "kernelUsEach": 0.0021562499999999997,
-          "costSource": "analytical"
-        }
-      ],
-      "shareOfRaw": 0.00026104077835579505
-    },
-    {
-      "rank": 19,
       "op": "Dispatch local pack",
       "unit": "V",
       "class": "other",
@@ -607,7 +559,55 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0001624253731991617
+      "shareOfRaw": 0.00016441647422212012
+    },
+    {
+      "rank": 18,
+      "op": "Attention RMSNorm",
+      "unit": "V",
+      "class": "other",
+      "count": 93,
+      "kernelUs": 0.10026562499999994,
+      "costSource": {
+        "analytical": 93
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 43008,
+            "readBytes": 14336,
+            "writeBytes": 14336
+          },
+          "count": 93,
+          "kernelUsEach": 0.0010781249999999999,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.00013355647216994781
+    },
+    {
+      "rank": 19,
+      "op": "MoE RMSNorm",
+      "unit": "V",
+      "class": "other",
+      "count": 92,
+      "kernelUs": 0.09918749999999994,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 43008,
+            "readBytes": 14336,
+            "writeBytes": 14336
+          },
+          "count": 92,
+          "kernelUsEach": 0.0010781249999999999,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.00013212038107134625
     },
     {
       "rank": 20,
@@ -615,7 +615,7 @@
       "unit": "V",
       "class": "other",
       "count": 24,
-      "kernelUs": 0.08871428571428573,
+      "kernelUs": 0.06209999999999999,
       "costSource": {
         "analytical": 24
       },
@@ -627,11 +627,11 @@
             "writeBytes": 110592
           },
           "count": 24,
-          "kernelUsEach": 0.003696428571428571,
+          "kernelUsEach": 0.0025874999999999995,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.00011673873317774694
+      "shareOfRaw": 0.00008271884727945159
     },
     {
       "rank": 21,
@@ -639,7 +639,7 @@
       "unit": "V",
       "class": "other",
       "count": 92,
-      "kernelUs": 0.06612499999999992,
+      "kernelUs": 0.03306249999999996,
       "costSource": {
         "analytical": 92
       },
@@ -651,86 +651,14 @@
             "writeBytes": 14336
           },
           "count": 92,
-          "kernelUsEach": 0.00071875,
+          "kernelUsEach": 0.000359375,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.00008701359278526495
+      "shareOfRaw": 0.00004404012702378205
     },
     {
       "rank": 22,
-      "op": "SiLU x up",
-      "unit": "V",
-      "class": "other",
-      "count": 92,
-      "kernelUs": 0.042508928571428496,
-      "costSource": {
-        "analytical": 92
-      },
-      "shapes": [
-        {
-          "shape": {
-            "flops": 9216,
-            "readBytes": 6144,
-            "writeBytes": 3072
-          },
-          "count": 92,
-          "kernelUsEach": 0.0004620535714285714,
-          "costSource": "analytical"
-        }
-      ],
-      "shareOfRaw": 0.0000559373096476703
-    },
-    {
-      "rank": 23,
-      "op": "Attention residual add",
-      "unit": "V",
-      "class": "other",
-      "count": 93,
-      "kernelUs": 0.03342187499999996,
-      "costSource": {
-        "analytical": 93
-      },
-      "shapes": [
-        {
-          "shape": {
-            "flops": 7168,
-            "readBytes": 28672,
-            "writeBytes": 14336
-          },
-          "count": 93,
-          "kernelUsEach": 0.000359375,
-          "costSource": "analytical"
-        }
-      ],
-      "shareOfRaw": 0.00004397969635342197
-    },
-    {
-      "rank": 24,
-      "op": "Top-k / route resolve",
-      "unit": "V",
-      "class": "other",
-      "count": 92,
-      "kernelUs": 0.03306249999999996,
-      "costSource": {
-        "analytical": 92
-      },
-      "shapes": [
-        {
-          "shape": {
-            "flops": 7168,
-            "readBytes": 3584,
-            "writeBytes": 256
-          },
-          "count": 92,
-          "kernelUsEach": 0.000359375,
-          "costSource": "analytical"
-        }
-      ],
-      "shareOfRaw": 0.00004350679639263248
-    },
-    {
-      "rank": 25,
       "op": "Q / new-KV all-gather",
       "unit": "V",
       "class": "other",
@@ -751,7 +679,79 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.000041284166576921954
+      "shareOfRaw": 0.000041790250969306275
+    },
+    {
+      "rank": 23,
+      "op": "SiLU x up",
+      "unit": "V",
+      "class": "other",
+      "count": 92,
+      "kernelUs": 0.021254464285714248,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 9216,
+            "readBytes": 6144,
+            "writeBytes": 3072
+          },
+          "count": 92,
+          "kernelUsEach": 0.0002310267857142857,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.00002831151022957416
+    },
+    {
+      "rank": 24,
+      "op": "Attention residual add",
+      "unit": "V",
+      "class": "other",
+      "count": 93,
+      "kernelUs": 0.01671093749999998,
+      "costSource": {
+        "analytical": 93
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 7168,
+            "readBytes": 28672,
+            "writeBytes": 14336
+          },
+          "count": 93,
+          "kernelUsEach": 0.0001796875,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.000022259412028324624
+    },
+    {
+      "rank": 25,
+      "op": "Top-k / route resolve",
+      "unit": "V",
+      "class": "other",
+      "count": 92,
+      "kernelUs": 0.01653124999999998,
+      "costSource": {
+        "analytical": 92
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 7168,
+            "readBytes": 3584,
+            "writeBytes": 256
+          },
+          "count": 92,
+          "kernelUsEach": 0.0001796875,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.000022020063511891024
     },
     {
       "rank": 26,
@@ -759,7 +759,7 @@
       "unit": "V",
       "class": "other",
       "count": 184,
-      "kernelUs": 0.005313616071428569,
+      "kernelUs": 0.0026568080357142845,
       "costSource": {
         "analytical": 184
       },
@@ -771,11 +771,11 @@
             "writeBytes": 192
           },
           "count": 184,
-          "kernelUsEach": 0.00002887834821428571,
+          "kernelUsEach": 0.000014439174107142855,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.000006992163705958796
+      "shareOfRaw": 0.0000035389387786967748
     },
     {
       "rank": 27,
@@ -783,7 +783,7 @@
       "unit": "V",
       "class": "other",
       "count": 1,
-      "kernelUs": 0.0021562499999999997,
+      "kernelUs": 0.0010781249999999999,
       "costSource": {
         "analytical": 1
       },
@@ -795,11 +795,11 @@
             "writeBytes": 14336
           },
           "count": 1,
-          "kernelUsEach": 0.0021562499999999997,
+          "kernelUsEach": 0.0010781249999999999,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.000002837399764736904
+      "shareOfRaw": 0.0000014360910986015901
     },
     {
       "rank": 28,
@@ -807,7 +807,7 @@
       "unit": "V",
       "class": "other",
       "count": 1,
-      "kernelUs": 0.0020535714285714285,
+      "kernelUs": 0.0010267857142857142,
       "costSource": {
         "analytical": 1
       },
@@ -819,11 +819,11 @@
             "writeBytes": 4
           },
           "count": 1,
-          "kernelUsEach": 0.0020535714285714285,
+          "kernelUsEach": 0.0010267857142857142,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.000002702285490225623
+      "shareOfRaw": 0.0000013677058081919908
     },
     {
       "rank": 29,
@@ -847,7 +847,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 2.423612299046105e-7
+      "shareOfRaw": 2.4533222934443824e-7
     },
     {
       "rank": 30,
@@ -871,7 +871,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 7.881666013158066e-9
+      "shareOfRaw": 7.978283881119945e-9
     }
   ]
 }

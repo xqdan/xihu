@@ -3,6 +3,10 @@
 版本：2026-10-08
 状态：`PROPOSAL`，未实现；不改动 22 号文档已落地的任何机制
 
+> **数字的时点。** 本文写于 2026-10-08。正文里引用的"当前值"（例如联合悲观点、盈亏点）会随基线变化；
+> ADR-0026（HBM3E）之后，联合悲观点是 947.09 / 935.44，τ 盈亏点约 1.39 µs，卡功耗上限 3200 W。
+> 需要当前值时以 `21_TPS_DESIGN_BASELINE.md` 和 `out/governance/gate_status.json` 为准；本文的机制判断不受这些数字影响。
+
 前置文档：[`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md)、
 [`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md)、
 [`integration/orchestration/WORKFLOWS.md`](../../../integration/orchestration/WORKFLOWS.md)
@@ -31,7 +35,7 @@
 | 粗架构 | `direction` 只比 P1 × MC320/640 × TP8/16/32 共 6 点 | 比的是档位，不是形态 |
 | 细架构 | C 组四域，可行条件是"保持已发布 TPS 不变" | 只回答"同 TPS 下谁最省"；**片上 SRAM 不在任何一个 C 组设计空间里** |
 | 维度 → TPS/usr | 内核已有（`k3_tps_design_baseline.js`、`die_area_reallocation.js`），无 workflow 消费 | 需要一格把它变成每个维度的"灵敏度卡" |
-| 收敛 | `converge` 不看联合悲观点 | 21 号 §6.1.1：设计指标应是联合悲观点 ≥ 1000（当前 906.51） |
+| 收敛 | `converge` 不看联合悲观点 | 21 号 §6.1.1：设计指标应是联合悲观点 ≥ 1000（当前 935.44） |
 | 层间串联 | 各 stage brief 无生成者；ledger 未经 `args` 传递；C 组 winner 无人消费 | 链是断的 |
 
 ## 1. 原则
@@ -152,7 +156,7 @@ flowchart TB
 2. **切法是内核枚举的，不由 `architect` 先提**：内核固定给 4 份候选切分——`S-TAU`（只放宽 τ）、`S-CMP`（只放宽算力）、`S-BW`（只放宽带宽）、`S-BAL`（三轴各让出单轴余量的同一比例）。单轴余量取规划（TP32 上每个未阻断模型）与详细（K3 TP32）中更紧的一个。当前前沿：τ 最多 1.355 µs（详细 K3 卡住，规划 1.408），算力最低 0.744（详细 K3），MC 载荷最低 580.5 GB/s/cube（规划 K3 卡住，介于 MC320 与 MC640 之间）。`S-BAL` 的比例约 0.533。
 3. **先审可达性，再选**：四个 owner 专家并行审**所有**切分里本域的条目（`reachable` / `unreachable` / `unknown`，附可信区间与出处）；有条目被判不可达的切分被否，记入 `ledgerPatch.rejectedOptions`（`rejectedBy` 为该专家）；`architect` 只在剩下的切分里选 id（schema 的 `enum` 就是剩下的那几份），不填数。这样 `architect` 不会选中一份专家已否的切分，被否切分也不靠 `architect` 转述。选中切分里判 `unknown` 的条目记为开放 blocker（`REACH-REQ-BUDGET-*`，owner 为该专家），`framing-critic` 的缺口记为 `FRAMING-REQ-BUDGET-*`。
 4. **落盘核对**：`out/budget/L1_budget.json` 是所选切分的合同原样加 `selection`（`chosenBy`、`reachable`、`ruledOut`、`openBlockers`、`frontierSha256`）；`run_workflow.js` 落盘前逐字段比对前沿里那份切分，并核对 `frontierSha256` 是读入的那份前沿（`verifyLandedBudget`，不符退出码 5）。专家 `plausibleRange` 里的前沿外数字要出现在其 `rangeEvidence` 所引的行上（与 `attribution` 共用 `check_citations.js`，退出码 7）；理由里的前沿外数字由 workflow 比对，修正一次仍不合规即 `INVARIANT_VIOLATED`。
-5. **`B-AREA` 的限值**：用详细模型实际执行的 `k3_physical_basis.BASIS.limits`（SF4、液冷：die 400 mm²、die 300 W、卡 2800 W），不是 `A.LIMITS` 的风冷功耗口径；合同同时给发布点与 SRAM 下限处的面积 / 功耗。
+5. **`B-AREA` 的限值**：用详细模型实际执行的 `k3_physical_basis.BASIS.limits`（SF4、液冷：die 400 mm²、die 300 W、卡 3200 W），不是 `A.LIMITS` 的风冷功耗口径；合同同时给发布点与 SRAM 下限处的面积 / 功耗。
 6. **覆盖范围**：规划部分覆盖三个模型 × TP8/16/32，合同只在 TP32 上切（`scope.tp`）；`B-SRAM-CAP` 与所有详细界只有 K3（规划模型没有 SRAM 项），其他模型 `UNCORROBORATED`。软件开关全程保持发布点的 `OPT`，不重调。带宽搜索止于 MC640，需要超过 MC640 的切分不提供。
 7. **回流**：所有切分都被否（或内核一份都给不出）→ `DIRECTION_BACKFLOW`，`routeTo: design.intake`（L0，交人决定目标或场景），落结果记录 `out/budget/req_budget_outcome.json`；`physical-expert` 的 `PPA_DIRECTION_BACKFLOW` 或 `architect` 判方向回退 → `routeTo: design.arch.direction`。
 8. **合同的下游消费者在 P3 接上**：`direction` / `compute` / `memory` / `comm` / `physical` 的 brief 由 `make_brief.js` 从合同派生（见 §8 的 P3 实现状态）。L2 / L3 的搜索脚本本身仍按"保持已发布 TPS"判可行——合同进的是题面（预算与硬约束），不是搜索的可行判据。任何 Gate 都不读前沿或合同。
@@ -241,7 +245,7 @@ flowchart TB
 
 - **策略实例**：本维度域专家（解释哪些参数是承重的、哪些是富余的、先拿哪个实测）∥ `software-expert`（判断哪些收益依赖软件机制成立）→ `integrator` → `invariant-checker`。`joint` 维度由 `architect` 代替域专家。
 - **产出**：`out/attribution/<dimension>_card.json`（灵敏度卡），字段：`parameters[]{name, value, evidence, dTps, dRawUs, dTpsPerMm2, dTpsPerW, breakEven, criticalShare, measurementNeeded}`、`jointPessimistic`、`loadBearing[]`、`slack[]`。
-- **回流**：某参数的盈亏点落在其物理可信区间内（由专家依策略判断，比如 τ 盈亏点 1.35 µs 而通路估计 ≥ 1.3 µs）→ 标成 `loadBearing`，交给 L5。
+- **回流**：某参数的盈亏点落在其物理可信区间内（由专家依策略判断，比如 τ 盈亏点约 1.39 µs 而通路估计 ≥ 1.3 µs）→ 标成 `loadBearing`，交给 L5。
 
 #### P1 实现状态（`sram` / `comm` / `joint` 已实现，与上文的出入）
 
@@ -300,7 +304,7 @@ flowchart TB
 2. **进 Q-Gate，不另起一个门**。原来的大合取改写成 `checks` 对象，三条与旧判据并列；`failedChecks` 列出不成立的键，`pass` 等价于它为空。决策字面量不变。卡缺失时前两条失败而不是跳过（fail closed）。
 3. **D-Gate 仍不读卡**。原 L4 第 8 条"任何 Gate 都不读卡"相应收窄成"只有 Q-Gate 读卡"：`tests/regression/test_tps_attribution.js` 断言 `out/governance/` 下只有 `gate_status.json` 引用 `out/attribution`，且其 `directionGate` 不引用。
 4. **收敛格不重判**。`run_workflow.js converge` 从 `out/governance/gate_status.json#quantificationGate` 原样取这三条注入 `args.convergeCriteria`（缺文件即报错，要先 `npm run model:planning`）；收敛格缺这一项不启动。`gate-keeper` 只把它们照抄成 complete / blocked，`architect` 必须引用，任一条为 false 时判 `ARCH_FREEZE` 被脚本记为路线矛盾 → `BLOCKED_CONFIG`、不落盘；判 `D_GATE_PROPOSAL` 并把不成立的判据列进 `openItems` 是允许的。run record 与提案都带上 `convergeCriteria`。
-5. **当前值**：联合悲观 906.51 TPS/usr < 1000（不成立）；承重参数 6 行全部有 owner / 证据 / 回标计划（成立）；观测矩阵不完整（不成立）。所以当前即便 agent 想冻结，收敛格也只能给提案或回流。
+5. **当前值**：联合悲观 935.44 TPS/usr < 1000（不成立）；承重参数 5 行全部有 owner / 证据 / 回标计划（成立）；观测矩阵不完整（不成立）。所以当前即便 agent 想冻结，收敛格也只能给提案或回流。
 6. **再生成链**：`stage_b.js` 的 `inputHashes` 含 `evaluate_gates.js`，改了判据就要重跑 `npm run model:planning`；判据读卡，所以 `attribution:cards` 要先于它。
 
 ### 横切（不进主链）
@@ -370,7 +374,7 @@ flowchart TB
 1. **没有单独的"预算合同 schema 文件"**。合同的形状由产它的内核（`requirement_frontier.js`）固定，由消费它的 `make_brief.js` 在读的时候校验（`layer`、`schemaVersion`、六个必需 split 条目都在），不合即拒。再写一份 JSON Schema 等于给同一个形状立第二份定义，两份会漂。L1 合同已经被 `run_workflow.js` 的 `verifyLandedBudget` 逐字段核对过它等于前沿里那一条切分——真正的"合同对不对"由那里判，schema 文件补不出新的保证。
 2. **brief 是现派生的，不落盘**。`make_brief.js` 把散文（`teams/council/inputs/brief_intents.json`：题目、形态、禁止项、退出条件、设计空间、profile 绑定）与合同里的数拼成一份 `DesignBrief`：面积/功耗/带宽预算与七条硬约束全部派生，每条的 `source` 是指回合同文件里那个 split 条目的 JSON Pointer。仓库里因此没有第二份合同数字可以陈旧。本轮覆盖合同的直接消费者：`direction`、`compute`、`memory`、`comm`、`physical`；其余各格仍需 `--brief`。（P4 起 `memory` 拆为 `sram` 与 `mc`，覆盖六个 stage。）
 3. **带宽是合同自己的数乘封装基数**，不是基线发布点：`B-MEM-BW.min`（每 cube）× `k3_mc_baseline.json` 的 `card.memoryCubesPerComputeDie`。
-4. **`profileBinding.mcProfile` 手写，不从合同的 `point.mcGBs` 推**。ADR-0021 下 MC320 是唯一可制造默认值、MC640 只能是 stretch，而当前默认切分 `S-CMP` 要求的每 cube 带宽正好高于 MC320 参照——按 point 推会让一个 stretch 档位自称可制造默认值。这条由测试钉住。
+4. **（已被 ADR-0027 取代：此条记录当时的提案，现行规则是由合同推导绑定档。）`profileBinding.mcProfile` 手写，不从合同的 `point.mcGBs` 推**。ADR-0021 下 MC320 是唯一可制造默认值、MC640 只能是 stretch，而当前默认切分 `S-CMP` 要求的每 cube 带宽正好高于 MC320 参照——按 point 推会让一个 stretch 档位自称可制造默认值。这条由测试钉住。
 5. **ledger 由主循环写，不走 `land.js`**。`out/governance/` 是 `arch.direction`（原 `dgate`）与 `backflow` 的落盘前缀，ledger 不是任何一格的产物。`--land` 且文件全部落盘后才并入，并完校验 `design_ledger.schema.json`；不合格则文件已落、ledger 不动（退出码 8）。合并只增不减：被否方案、未决阻塞、证据索引按自然键合并，同一个 ADR 给出不同结论是错误而不是合并结果。
 6. **顺带补了校验器的 `minProperties` / `maxProperties`**：`design_ledger.schema.json` 早就写了 `minProperties: 1`（没有策略版本的 ledger 不是 ledger），而 `runtime/schema.js` 一直静默忽略它。
 7. **`stage` 枚举补了 `req.budget`**（`design_brief.schema.json` 与 `design_ledger.schema.json`），P2 那一格此前不在枚举里。
