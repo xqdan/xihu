@@ -321,6 +321,17 @@ function evaluate(item, {models, calibration, contract}) {
       reasons: r.reasons,
       limits: areaLimits
     },
+    // ADR-0021 declares ONE hardware spec: 8 compute dies + 16 MC in a 7-reticle window. The die
+    // count is still an L2 exploration axis (a package with a different die count is a legitimate
+    // question), but such a row is a SECOND spec, so it must not be able to win "satisfies every
+    // contract entry" and present itself as the one spec. It is kept in the table -- "how far off"
+    // needs the number -- and flagged here; the selection in stage_a filters on this flag.
+    specConformance: {
+      singleHardwareSpec: item.dies === A.LIMITS.dies,
+      dies: item.dies,
+      specDies: A.LIMITS.dies,
+      note: item.dies === A.LIMITS.dies ? 'the declared package' : `a ${item.dies}-die package; the spec is ${A.LIMITS.dies} dies + ${A.LIMITS.dies * A.LIMITS.mcCountPerDie} MC, and no topology for ${item.dies} dies is modelled (B-004 records the 8-die ring only)`
+    },
     tpsPerModel: perModel,
     minTpsPerUser,
     worstModel,

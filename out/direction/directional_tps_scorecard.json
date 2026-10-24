@@ -31,18 +31,18 @@
   "inputHashes": {
     "manifest": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
     "operatorWorkload": "b9a43ca1db9d85d240c54aa7825724b6d3f3f575ca01ff702c28475b9395ca20",
-    "runner": "7d6d73a3dc70d4f37e09f8a18104de97b1b1ce62fda0edfa6d4f79c30e87e846",
+    "runner": "c1fef9cc747b556171d67a66c5a69ffde450be8e3745a41137f4fed4996aa1c1",
     "resourceProfiles": "cf525cccd39609925ddf0afa20e6308598e1b56ac91d249569bd6c6f6f9067e6",
     "tokenTime": "3b8045142e624e325e0fbb19708280ae6e5020144cc9016a20beb5625c44b327",
-    "envelope": "a392c3608bf7cdfc19a1c3ca199903832c4a9f41638c1f2009c94514d93f5201",
+    "envelope": "378eab2e61b11b512ae348b7f12973991e3bf0000eb9db529ccdaab155cc402e",
     "gateValidator": "e566297c29e2d1f388030d1f0a80d8190467c2d3030dd37858699d164def131f",
     "modelProfiles": "2fcd288d537fad43c417db08d239b74519c01a05da50e9a04ea6bb626f673a73",
     "mcSpec": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39",
     "l1Contract": "b5f412e4ff763557e250bce6fa0c11a40aa928c255c2c277d18d1c70a856690e",
-    "morphologyModel": "eee9afe536ac5bbcf9140fed51830858af86620fcf539b73adaeb1c475355990"
+    "morphologyModel": "ec977e9b7e10fe34aca19b84c7b379fe6b59cc2e9b7c3dd9e5815b945ee07617"
   },
   "provenance": {
-    "sourceCommit": "ddf8599e978b6fac5aaeb79659a51e749aa9ac0c",
+    "sourceCommit": "8a348fdfd8df65275aef9b954d9b450566b78ea4",
     "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
     "seed": 20261002,
     "runId": "stage-a-20261002-token-time",
@@ -3018,6 +3018,7 @@
       }
     },
     "candidateCount": 25,
+    "conformingCount": 23,
     "satisfiesEveryEntry": [
       "P1-compact-MC640-TP8",
       "P1-compact-MC640-TP16",
@@ -3029,8 +3030,7 @@
       "P1-compact-L2H4S16-MC640-TP32",
       "P1-compact-L4H4S16-MC640-TP32",
       "P1-compact-L1H2S16-MC640-TP32",
-      "P1-compact-L1H8S16-MC640-TP32",
-      "P1-compact-D6-MC640-TP32"
+      "P1-compact-L1H8S16-MC640-TP32"
     ],
     "meetsTarget": [
       "P1-compact-MC640-TP32",
@@ -3048,8 +3048,7 @@
       "P1-compact-L2H4S16-MC640-TP32",
       "P1-compact-L4H4S16-MC640-TP32",
       "P1-compact-L1H2S16-MC640-TP32",
-      "P1-compact-L1H8S16-MC640-TP32",
-      "P1-compact-D6-MC640-TP32"
+      "P1-compact-L1H8S16-MC640-TP32"
     ],
     "meetsArchitectureGate": [
       "P1-compact-MC640-TP32",
@@ -3067,8 +3066,17 @@
       "P1-compact-L2H4S16-MC640-TP32",
       "P1-compact-L4H4S16-MC640-TP32",
       "P1-compact-L1H2S16-MC640-TP32",
-      "P1-compact-L1H8S16-MC640-TP32",
-      "P1-compact-D6-MC640-TP32"
+      "P1-compact-L1H8S16-MC640-TP32"
+    ],
+    "outsideSpec": [
+      {
+        "morphologyId": "P1-compact-D4-MC640-TP32",
+        "note": "a 4-die package; the spec is 8 dies + 16 MC, and no topology for 4 dies is modelled (B-004 records the 8-die ring only)"
+      },
+      {
+        "morphologyId": "P1-compact-D6-MC640-TP32",
+        "note": "a 6-die package; the spec is 8 dies + 16 MC, and no topology for 6 dies is modelled (B-004 records the 8-die ring only)"
+      }
     ],
     "bestByContract": "P1-compact-N12x4-MC640-TP32",
     "paretoCandidates": [
@@ -3080,8 +3088,6 @@
       "P1-compact-N8x16-MC640-TP32",
       "P1-compact-L1H4S8-MC640-TP32",
       "P1-compact-L1H2S16-MC640-TP32",
-      "P1-compact-D4-MC640-TP32",
-      "P1-compact-D6-MC640-TP32",
       "P1-compact-L1H4S8-MC320-TP32"
     ],
     "rows": [
@@ -3150,6 +3156,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -3314,6 +3326,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 211.92012198334973,
@@ -3476,6 +3494,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -3640,6 +3664,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 381.45621957002953,
@@ -3797,6 +3827,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -3956,6 +3992,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 1157.6934609230066,
@@ -4113,6 +4155,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -4280,6 +4328,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 1188.8193092396773,
@@ -4441,6 +4495,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -4610,6 +4670,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 1300.2818976124345,
@@ -4777,6 +4843,12 @@
               "satisfied": false
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -4946,6 +5018,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 1385.7201055045912,
@@ -5108,6 +5186,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -5272,6 +5356,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 1157.6934609230066,
@@ -5435,6 +5525,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 1157.6934609230066,
@@ -5592,6 +5688,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -5751,6 +5853,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 1157.6934609230066,
@@ -5908,6 +6016,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -6067,6 +6181,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 1157.6934609230066,
@@ -6224,6 +6344,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -6383,6 +6509,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 1157.6934609230066,
@@ -6540,6 +6672,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": false,
+          "dies": 4,
+          "specDies": 8,
+          "note": "a 4-die package; the spec is 8 dies + 16 MC, and no topology for 4 dies is modelled (B-004 records the 8-die ring only)"
         },
         "tpsPerModel": {
           "K3": {
@@ -6704,6 +6842,12 @@
             }
           }
         },
+        "specConformance": {
+          "singleHardwareSpec": false,
+          "dies": 6,
+          "specDies": 8,
+          "note": "a 6-die package; the spec is 8 dies + 16 MC, and no topology for 6 dies is modelled (B-004 records the 8-die ring only)"
+        },
         "tpsPerModel": {
           "K3": {
             "tpsPerUser": 1053.1713357822812,
@@ -6861,6 +7005,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {
@@ -7028,6 +7178,12 @@
               "satisfied": true
             }
           }
+        },
+        "specConformance": {
+          "singleHardwareSpec": true,
+          "dies": 8,
+          "specDies": 8,
+          "note": "the declared package"
         },
         "tpsPerModel": {
           "K3": {

@@ -2,7 +2,7 @@
 
 Run ID: `stage-a-20261002-token-time`
 Manifest hash: `a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083`
-Source commit: `ddf8599e978b6fac5aaeb79659a51e749aa9ac0c`
+Source commit: `8a348fdfd8df65275aef9b954d9b450566b78ea4`
 
 ## Planning token time (integration/planning/token_time.js)
 
@@ -118,7 +118,6 @@ Area and power from `A.physical(x, dies)` rescaled by `k3_physical_basis.resize`
 | `P1-compact-L2H4S16-MC640-TP32` | 8+4 | 32/16 | MC640 | 8 | 32 | 369.6 | 293.2 | 3054 | 4557 | 1157.7 | K3 | all entries satisfied |
 | `P1-compact-L4H4S16-MC640-TP32` | 8+4 | 48/16 | MC640 | 8 | 32 | 385.4 | 294.6 | 3065 | 4684 | 1157.7 | K3 | all entries satisfied |
 | `P1-compact-MC640-TP32` | 8+4 | 24/16 | MC640 | 8 | 32 | 361.7 | 292.5 | 3048 | 4493 | 1157.7 | K3 | all entries satisfied |
-| `P1-compact-D6-MC640-TP32` | 8+4 | 24/16 | MC640 | 6 | 32 | 361.7 | 292.5 | 2306 | 3370 | 1053.2 | K3 | all entries satisfied |
 | `P1-compact-MC640-TP16` | 8+4 | 24/16 | MC640 | 8 | 16 | 361.7 | 292.5 | 3048 | 4493 | 762.9 | K3 | all entries satisfied |
 | `P1-compact-MC640-TP8` | 8+4 | 24/16 | MC640 | 8 | 8 | 361.7 | 292.5 | 3048 | 4493 | 381.5 | K3 | all entries satisfied |
 | `P1-compact-N8x16-MC640-TP32` | 8+16 | 72/16 | MC640 | 8 | 32 | 844.3 **OVER** | 766.2 **OVER** | 6837 **OVER** | 8355 **OVER** | 1385.7 | K3 | misses B-AREA by 444.3 |
@@ -128,14 +127,13 @@ Area and power from `A.physical(x, dies)` rescaled by `k3_physical_basis.resize`
 | `P1-compact-L1H4S12-MC640-TP32` | 8+4 | 24/12 | MC640 | 8 | 32 | 357.7 | 292.1 | 3045 | 4462 | 1157.7 | K3 | misses B-SRAM-CAP by 4.000 |
 | `P1-compact-L1H4S8-MC640-TP32` | 8+4 | 24/8 | MC640 | 8 | 32 | 353.8 | 291.8 | 3042 | 4430 | 1157.7 | K3 | misses B-SRAM-CAP by 8.000 |
 | `P1-compact-N4x4-MC640-TP32` | 4+4 | 20/16 | MC640 | 8 | 32 | 325.6 | 269.7 | 2866 | 4204 | 1073.5 | K3 | misses B-SERIAL-CMP by 0.099 |
-| `P1-compact-D4-MC640-TP32` | 8+4 | 24/16 | MC640 | 4 | 32 | 361.7 | 292.5 | 1564 | 2247 | 762.9 | K3 | misses B-SERIAL-CMP by 0.161 |
 | `P1-compact-L1H4S24-MC320-TP32` | 8+4 | 24/24 | MC320 | 8 | 32 | 369.6 | 293.2 | 2681 | 4557 | 423.8 | K3 | misses B-MEM-BW by 832.000 |
 | `P1-compact-MC320-TP32` | 8+4 | 24/16 | MC320 | 8 | 32 | 361.7 | 292.5 | 2675 | 4493 | 423.8 | K3 | misses B-MEM-BW by 832.000 |
 | `P1-compact-MC320-TP16` | 8+4 | 24/16 | MC320 | 8 | 16 | 361.7 | 292.5 | 2675 | 4493 | 211.9 | K3 | misses B-MEM-BW by 832.000 |
 | `P1-compact-MC320-TP8` | 8+4 | 24/16 | MC320 | 8 | 8 | 361.7 | 292.5 | 2675 | 4493 | 106.0 | K3 | misses B-MEM-BW by 832.000 |
 | `P1-compact-L1H4S8-MC320-TP32` | 8+4 | 24/8 | MC320 | 8 | 32 | 353.8 | 291.8 | 2669 | 4430 | 423.8 | K3 | misses B-MEM-BW by 832.000, B-SRAM-CAP by 8.000 |
 
-- 12 of 25 shapes satisfy every L1 contract entry; 17 reach 1000 TPS/usr for every model. Best by contract: `P1-compact-N12x4-MC640-TP32`.
+- 11 of 25 shapes satisfy every L1 contract entry; 16 reach 1000 TPS/usr for every model. Best by contract: `P1-compact-N12x4-MC640-TP32`.
 - A row that misses B-AREA is NOT dropped: the package area it would need is the number "差多少" is asking for, and a silently absent shape reads as an option nobody considered.
 - The D-Gate above is computed over the published grid only. This table informs the L2 decision (out/direction/direction_selected.json) and refines the contract into out/budget/L2_budget.json; it does not select candidates.
 

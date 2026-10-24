@@ -225,9 +225,14 @@ for (const model of manifest.models) {
 const morphology = MORPH.enumerate().map(item => MORPH.evaluate(item, {models: morphologyModels, calibration, contract: l1Contract}));
 // The table header names the limits the rows were judged against: read them from the contract, never type them (ADR-0026 raised the card limit and the header kept saying 2800).
 const areaCap = l1Contract.split.find(e => e.id === 'B-AREA').limits;
-const morphologyBySatisfied = morphology.slice().sort((a, b) =>
+// O-021: only a conforming row may be read as "the one hardware spec". A shape with a different
+// die count stays in the table (the shortfall is information) but is not a candidate for
+// "satisfies every entry" / best-by-contract, and it is excluded from the Pareto set: a Pareto
+// point that the spec forbids would make the frontier describe packages nobody can build.
+const morphologyConforming = morphology.filter(m => m.specConformance.singleHardwareSpec);
+const morphologyBySatisfied = morphologyConforming.slice().sort((a, b) =>
   a.misses.length - b.misses.length || b.minTpsPerUser - a.minTpsPerUser || a.morphologyId.localeCompare(b.morphologyId));
-const morphologyPareto = morphology.filter(m => !morphology.some(n => n !== m &&
+const morphologyPareto = morphologyConforming.filter(m => !morphologyConforming.some(n => n !== m &&
   n.minTpsPerUser >= m.minTpsPerUser && n.physical.dieAreaMm2 <= m.physical.dieAreaMm2 && n.physical.cardPowerW <= m.physical.cardPowerW &&
   (n.minTpsPerUser > m.minTpsPerUser || n.physical.dieAreaMm2 < m.physical.dieAreaMm2 || n.physical.cardPowerW < m.physical.cardPowerW)));
 const morphologySummary = {
@@ -249,9 +254,12 @@ const morphologySummary = {
   },
   baseline: {source: `${MORPH.PUBLISHED_POINT_FILE}${MORPH.PUBLISHED_POINT}`, x: MORPH.BASELINE_X},
   candidateCount: morphology.length,
-  satisfiesEveryEntry: morphology.filter(m => !m.misses.length).map(m => m.morphologyId),
-  meetsTarget: morphology.filter(m => m.meetsTarget).map(m => m.morphologyId),
-  meetsArchitectureGate: morphology.filter(m => m.meetsArchitectureGate).map(m => m.morphologyId),
+  conformingCount: morphologyConforming.length,
+  satisfiesEveryEntry: morphologyConforming.filter(m => !m.misses.length).map(m => m.morphologyId),
+  meetsTarget: morphologyConforming.filter(m => m.meetsTarget).map(m => m.morphologyId),
+  meetsArchitectureGate: morphologyConforming.filter(m => m.meetsArchitectureGate).map(m => m.morphologyId),
+  // Named, not silently dropped: these rows are scored and printable, but they are a second spec.
+  outsideSpec: morphology.filter(m => !m.specConformance.singleHardwareSpec).map(m => ({morphologyId: m.morphologyId, note: m.specConformance.note})),
   bestByContract: morphologyBySatisfied.length ? morphologyBySatisfied[0].morphologyId : null,
   paretoCandidates: morphologyPareto.map(m => m.morphologyId),
   rows: morphology
@@ -391,6 +399,10 @@ const sweepSummary = {
 
 const env = {
   ...ENVELOPE.build({runId}),
+  // O-022: this artifact carried E0/E1 labels and every package/bandwidth number without any
+  // provenance, so none of them could be attributed to a commit or a seed. Same block the other
+  // two Stage A artifacts already carry.
+  provenance,
   confidence: 'E1',
   status: 'DIRECTIONAL_ESTIMATE_WITH_FORMAL_PLANNING_MANIFEST',
   assumptions: [

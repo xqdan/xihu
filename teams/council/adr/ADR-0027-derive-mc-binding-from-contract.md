@@ -118,6 +118,27 @@ ADR-0026 落地后 `design.arch.direction` 仍判 `INVARIANT_VIOLATED`。ADR-002
 - `test_workflow_driver.js`：同上。
 - 新增：任一 split 下推导出的绑定档都必须满足 `payloadGBsPerCube × cubesPerDie ≥ B-MEM-BW.min`。
 
+## 端到端验证（2026-10-23）
+
+用仓库自己的 driver 跑了一次真实的 `design.arch.direction`（`node integration/pipelines/run_workflow.js arch.direction --backend claude`，16 个 agent 调用，约 3 小时，dry-run 未落盘），这是本 ADR 写完后唯一能回答"`INVARIANT_VIOLATED` 还在不在"的证据。
+
+**结果：仍然是 `INVARIANT_VIOLATED`，但 10 条违规里没有一条是本 ADR 要解决的那个矛盾。**
+
+- 简报现在绑定 `MC640`、预算 2304 GB/s，两者一致；"绑定 320 GB/s 部件、要求 2304 GB/s 系统"的自相矛盾不再出现。
+- 新暴露的 10 条属于另一批问题。逐条人工复核后分成三类：
+
+| 类别 | 条目 | 核实结论 |
+|---|---|---|
+| 真缺陷，已登记 | 6-Die 形态行与"8 Die/package"冲突 | O-021（改动前即存在） |
+| 真缺陷，已登记 | `directional_resource_envelope.json` 缺 provenance 块 | O-022（改动前即存在） |
+| 真缺陷，已登记 | `payloadTBs` 实为 raw 值、`mcStretchGBsPerCube` 命名过时 | O-023 |
+| **误判** | memory lane 未乘 sustained 0.7 | 错。实测 `laneTimes` 用 12.9024 TB/s 有效带宽，4.810 GB ÷ 12.9024 TB/s = 372.83 µs，与产物一致 |
+| **误判** | `L4H4S16` 的 id 与 axes 互斥 | 错。该 id 编码的是 L/H local MiB 与 shared MiB，不是 core 数；全表 10 行都守此约定 |
+| 模型简化，非矛盾 | 两行面积相同而 SRAM 划分不同 | 两者 `totalSramMiBPerDie` 都是 56，面积模型只吃总量 |
+| 本 ADR 引入，已修 | 产物 `sourceCommit` 记为 `ddf8599` 而内容只在 `3c322ac` 成立 | 重算前先提交造成的；已在 `3c322ac` 上重算，pin 随产物自动跟到 `3c322ac` |
+
+**这次验证本身也有一个教训**：invariant-checker 是 LLM，它给出的违规必须逐条复核再采信——10 条里至少 2 条是误判，而且误判的方式（把 raw 字段名当成计算口径）正是 O-023 登记的那个命名缺陷诱导出来的。引用它的结论而不复核，会把"命名歧义"升级成"模型算错"。
+
 ## 未解决
 
 1. **profile 枚举粒度。** 只有 2 个 profile 而网格有 5 档，导致 S-BW / S-BAL 粗化到 1152（超配 3.05× / 2.40×）。补齐需要把 `MC400` / `MC480` 加进枚举，连带 18 行观测矩阵、`stage_a`/`stage_b` 的档位循环、schema 和若干测试。这是独立的变更，本 ADR 不做。
