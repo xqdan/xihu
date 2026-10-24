@@ -9,6 +9,17 @@ const path = require('path');
 const root = path.resolve(__dirname, '../..');
 const read = p => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8').replace(/^\uFEFF/, ''));
 
+// Raw and sustained side by side, so a reader never has to know which one a lone number was.
+function bandwidthOf(profile) {
+  return {
+    sustainedAssumption: profile.sustainedAssumption,
+    rawPayloadTBs: profile.rawPayloadTBs,
+    sustainedTBs: profile.rawPayloadTBs * profile.sustainedAssumption,
+    effectiveBytesPerSecond: profile.effectiveBytesPerSecond,
+    classification: profile.classification
+  };
+}
+
 function build({runId}) {
   const models = read('teams/model/inputs/model_profiles.json');
   const mc = read('teams/hardware/inputs/k3_mc_baseline.json');
@@ -42,10 +53,12 @@ function build({runId}) {
       memoryCubes: mc.card.memoryCubes, memoryCubeAreaMm2: pkg.memoryCubeAreaMm2Planning,
       memoryCapacityGB: mc.card.memoryCubes * pkg.capacityGBPerCubePrimary,
       packageAreaMm2,
-      mcBaselineGBsPerCube: RES.mcProfiles.MC320.payloadGBsPerCube,
-      mcStretchGBsPerCube: RES.mcProfiles.MC640.payloadGBsPerCube,
-      packageBaselineTBs: RES.mcProfiles.MC320.rawPayloadTBs,
-      packageStretchTBs: RES.mcProfiles.MC640.rawPayloadTBs,
+      // ADR-0027 renamed the roles: MC320 is the reference tier, the MC640 slot is the tier a brief
+      // binds to. "Stretch"/"Baseline" here described the old rule and would now mislead.
+      mcReferenceGBsPerCube: RES.mcProfiles.MC320.payloadGBsPerCube,
+      mcBindingGBsPerCube: RES.mcProfiles.MC640.payloadGBsPerCube,
+      packageReferenceTBs: RES.mcProfiles.MC320.rawPayloadTBs,
+      packageBindingTBs: RES.mcProfiles.MC640.rawPayloadTBs,
       cardPowerW: die.estimatedCardPowerW,
       cardPowerLimitW: mc.card.powerLimitW,
       // Area conservation: the searched die and the 16 MC fit the 7-reticle placement window.
@@ -54,8 +67,12 @@ function build({runId}) {
     bandwidthEnvelope: {
       // The classification is read from the profile, not restated: a second copy here is exactly how
       // the two strings drifted apart from resource_profiles.js before ADR-0027.
-      mc320: { sustainedAssumption: RES.mcProfiles.MC320.sustainedAssumption, payloadTBs: RES.mcProfiles.MC320.rawPayloadTBs, classification: RES.mcProfiles.MC320.classification },
-      mc640: { sustainedAssumption: RES.mcProfiles.MC640.sustainedAssumption, payloadTBs: RES.mcProfiles.MC640.rawPayloadTBs, classification: RES.mcProfiles.MC640.classification }
+      // `rawPayloadTBs` is the PIN RATE times the stack count, NOT what the running op gets. The memory
+      // lane divides by the sustained figure below (O-023: the field used to be called `payloadTBs`
+      // next to sustainedAssumption, and a reader -- including an invariant-checker -- concluded the
+      // 0.7 was never applied). Both numbers are emitted so the two cannot be confused again.
+      mc320: bandwidthOf(RES.mcProfiles.MC320),
+      mc640: bandwidthOf(RES.mcProfiles.MC640)
     },
     assumptions: [
       'Stage A uses coarse classes, not operator-level measurements.',

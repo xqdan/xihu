@@ -113,10 +113,10 @@
     "memoryCubeAreaMm2": 100,
     "memoryCapacityGB": 256,
     "packageAreaMm2": 4493.429867107732,
-    "mcBaselineGBsPerCube": 320,
-    "mcStretchGBsPerCube": 1152,
-    "packageBaselineTBs": 5.12,
-    "packageStretchTBs": 18.432,
+    "mcReferenceGBsPerCube": 320,
+    "mcBindingGBsPerCube": 1152,
+    "packageReferenceTBs": 5.12,
+    "packageBindingTBs": 18.432,
     "cardPowerW": 3047.8970880000006,
     "cardPowerLimitW": 3200,
     "areaConservation": true
@@ -124,12 +124,16 @@
   "bandwidthEnvelope": {
     "mc320": {
       "sustainedAssumption": 0.7,
-      "payloadTBs": 5.12,
+      "rawPayloadTBs": 5.12,
+      "sustainedTBs": 3.5839999999999996,
+      "effectiveBytesPerSecond": 3584000000000,
       "classification": "reference_tier"
     },
     "mc640": {
       "sustainedAssumption": 0.7,
-      "payloadTBs": 18.432,
+      "rawPayloadTBs": 18.432,
+      "sustainedTBs": 12.902399999999998,
+      "effectiveBytesPerSecond": 12902400000000,
       "classification": "binding_tier_assumption"
     }
   },
@@ -158,5 +162,13 @@
     "D7 candidate sweep",
     "Q1 formal manifest for selected candidates",
     "Q2 arithmetic intensity ledger"
-  ]
+  ],
+  "provenance": {
+    "sourceCommit": "8a348fdfd8df65275aef9b954d9b450566b78ea4",
+    "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
+    "seed": 20261002,
+    "runId": "stage-a-20261002-token-time",
+    "toolVersion": "node-formal-stage-a-v0.5",
+    "units": "tokens/s/user (planning token time)"
+  }
 }

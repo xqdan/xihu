@@ -158,8 +158,7 @@
       "P1-compact-L2H4S16-MC640-TP32",
       "P1-compact-L4H4S16-MC640-TP32",
       "P1-compact-L1H2S16-MC640-TP32",
-      "P1-compact-L1H8S16-MC640-TP32",
-      "P1-compact-D6-MC640-TP32"
+      "P1-compact-L1H8S16-MC640-TP32"
     ],
     "bestByContract": "P1-compact-N12x4-MC640-TP32",
     "paretoCandidates": [
@@ -171,8 +170,6 @@
       "P1-compact-N8x16-MC640-TP32",
       "P1-compact-L1H4S8-MC640-TP32",
       "P1-compact-L1H2S16-MC640-TP32",
-      "P1-compact-D4-MC640-TP32",
-      "P1-compact-D6-MC640-TP32",
       "P1-compact-L1H4S8-MC320-TP32"
     ],
     "rows": [
@@ -778,149 +775,6 @@
           }
         },
         "minTpsPerUser": 1157.6934609230066,
-        "misses": []
-      },
-      {
-        "morphologyId": "P1-compact-D4-MC640-TP32",
-        "axes": {
-          "lhRatio": [
-            8,
-            4
-          ],
-          "lCoresPerDie": 8,
-          "hCoresPerDie": 4,
-          "localMiBPerDie": [
-            1,
-            4
-          ],
-          "localMiBPerDieTotal": 24,
-          "sharedMiBPerDie": 16,
-          "totalSramMiBPerDie": 40,
-          "mcTier": "MC640",
-          "mcGBsPerCube": 1152,
-          "dies": 4,
-          "tp": 32
-        },
-        "hardware": {
-          "peakByCore": {
-            "L": 131072000000000,
-            "H": 1179648000000000,
-            "V": 98304000000000,
-            "INDEXER": 1179648000000000,
-            "REDUCE": 98304000000000
-          },
-          "tfPerDie": 327.67999999999995,
-          "vectorTopPerDie": 24.576,
-          "cubes": 8,
-          "memoryBytesPerSecond": 6451200000000
-        },
-        "physical": {
-          "dieAreaMm2": 361.6787333884665,
-          "diePowerW": 292.4751360000001,
-          "cardPowerW": 1563.9485440000003,
-          "packageAreaMm2": 2246.714933553866,
-          "basis": "SF4",
-          "cooling": "liquid",
-          "feasible": true,
-          "reasons": [],
-          "limits": {
-            "dieAreaMm2": {
-              "value": 361.6787333884665,
-              "max": 400,
-              "satisfied": true
-            },
-            "diePowerW": {
-              "value": 292.4751360000001,
-              "max": 300,
-              "satisfied": true
-            },
-            "cardPowerW": {
-              "value": 1563.9485440000003,
-              "max": 3200,
-              "satisfied": true
-            },
-            "packageAreaMm2": {
-              "value": 2246.714933553866,
-              "max": 5248,
-              "satisfied": true
-            }
-          }
-        },
-        "minTpsPerUser": 762.9124391400591,
-        "misses": [
-          {
-            "id": "B-SERIAL-CMP",
-            "shortfall": 0.16084148062344128
-          }
-        ]
-      },
-      {
-        "morphologyId": "P1-compact-D6-MC640-TP32",
-        "axes": {
-          "lhRatio": [
-            8,
-            4
-          ],
-          "lCoresPerDie": 8,
-          "hCoresPerDie": 4,
-          "localMiBPerDie": [
-            1,
-            4
-          ],
-          "localMiBPerDieTotal": 24,
-          "sharedMiBPerDie": 16,
-          "totalSramMiBPerDie": 40,
-          "mcTier": "MC640",
-          "mcGBsPerCube": 1152,
-          "dies": 6,
-          "tp": 32
-        },
-        "hardware": {
-          "peakByCore": {
-            "L": 196608000000000,
-            "H": 1769471999999999.8,
-            "V": 147456000000000.03,
-            "INDEXER": 1769471999999999.8,
-            "REDUCE": 147456000000000.03
-          },
-          "tfPerDie": 327.67999999999995,
-          "vectorTopPerDie": 24.576,
-          "cubes": 12,
-          "memoryBytesPerSecond": 9676800000000
-        },
-        "physical": {
-          "dieAreaMm2": 361.6787333884665,
-          "diePowerW": 292.4751360000001,
-          "cardPowerW": 2305.9228160000007,
-          "packageAreaMm2": 3370.0724003307987,
-          "basis": "SF4",
-          "cooling": "liquid",
-          "feasible": true,
-          "reasons": [],
-          "limits": {
-            "dieAreaMm2": {
-              "value": 361.6787333884665,
-              "max": 400,
-              "satisfied": true
-            },
-            "diePowerW": {
-              "value": 292.4751360000001,
-              "max": 300,
-              "satisfied": true
-            },
-            "cardPowerW": {
-              "value": 2305.9228160000007,
-              "max": 3200,
-              "satisfied": true
-            },
-            "packageAreaMm2": {
-              "value": 3370.0724003307987,
-              "max": 5248,
-              "satisfied": true
-            }
-          }
-        },
-        "minTpsPerUser": 1053.1713357822812,
         "misses": []
       },
       {
