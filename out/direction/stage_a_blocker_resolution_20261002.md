@@ -2,7 +2,7 @@
 
 Run ID: `stage-a-20261002-token-time`
 Manifest hash: `a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083`
-Source commit: `ddf8599e978b6fac5aaeb79659a51e749aa9ac0c`
+Source commit: `3c322ac9d4ed7216a096cc37421151053ac5f837`
 
 ## Planning token time (integration/planning/token_time.js)
 
