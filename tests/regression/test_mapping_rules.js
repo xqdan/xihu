@@ -70,15 +70,18 @@ assert.deepStrictEqual(O.checkGainRules(), [], 'all GAIN factors neutral');
 
 // 3. Published point. The over-cap epilogues are the ops whose shared-SRAM bytes do not fit the read/write/fabric
 //    caps over the FUSED (kernel-only) time; the first op of the step has no kernel to fold into and is refused.
-//    The set grew from 2 to 5 when the published vector unit went to 1024 lanes: an elementwise op now finishes
-//    its vector work in half the time, so the same bytes are issued over a shorter body and the byte/time demand
-//    crosses the cap. That is a property of the point, not of the mechanism -- switching epilogueFusion off still
-//    costs TPS (1110.11 against 1138.48), so the rule stays applied and the flag records which ops pay for it.
+//    The set is a property of the point, not of the mechanism -- switching epilogueFusion off still costs TPS
+//    (1020.35 against 1043.96), so the rule stays applied and the flag records which ops pay for it.
+//    It was 5 ops at the 1138.48 point (RoPE, KV append source, Shared SiLU x up, Dispatch local pack, SiLU x up);
+//    under ADR-0028's core definition (L 1x512x8, H 128x256x1) only two still cross the cap: the L core is wider
+//    per core but the H-core rows fill 0.75 of the tile, so the fused bodies are long enough again for the
+//    elementwise epilogues of the earlier list to fit. If the point moves, this set moves with it -- do not read
+//    the shorter list as a weaker rule.
 const report = Object.fromEntries(A.checkRules(m.plan, O.OPT).map(r => [r.key, r]));
 assert.deepStrictEqual(Object.keys(report), ['epilogueFusion', 'softmaxFusion', 'pvMerge', 'countBasis']);
 assert.deepStrictEqual(report.epilogueFusion.refused, {'Attention RMSNorm': 1});
 assert.deepStrictEqual(report.epilogueFusion.unmet.map(u => u.ops),
-  [{RoPE: 24, 'KV append source': 24, 'Shared SiLU x up': 184, 'Dispatch local pack': 92, 'SiLU x up': 92}]);
+  [{'KV append source': 24, 'Dispatch local pack': 92}]);
 for (const k of ['softmaxFusion', 'countBasis']) {
   assert.strictEqual(report[k].applied, report[k].matched, k);
   assert.deepStrictEqual(report[k].unmet, [], k);

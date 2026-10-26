@@ -7,7 +7,7 @@
   "method": "Kernel line of every compute op from cost_provider.js (measured -> fitted -> analytical); all other service lines, DMA wait and the hidden lines are MODEL. Shares are gross (hidden kernels count in full).",
   "provenance": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39",
+    "baselineSha256": "94d2ffeae018248feb518a293f5bd363b0a17e87d0f0df6138aa0cdac79e91d4",
     "observations": "teams/vv/inputs/operator_cost_observations.json",
     "observationsSha256": "aa535b0adf152419b1452c2bc73e1ba356ec3dfc35f7f16754140af1423ee5b2",
     "observationCount": 0,
@@ -27,17 +27,17 @@
       "nL": 8,
       "nH": 4,
       "lRows": 1,
-      "lCols": 256,
+      "lCols": 512,
       "lEngines": 8,
-      "hRows": 48,
-      "hCols": 128,
-      "hEngines": 6,
+      "hRows": 128,
+      "hCols": 256,
+      "hEngines": 1,
       "ghz": 1,
       "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 64,
-      "hBanks": 64,
+      "hBanks": 32,
       "bankBytes": 64,
       "tmaEngines": 4,
       "tmaBytes": 512,
@@ -46,70 +46,70 @@
     }
   },
   "ledger": {
-    "rawUs": 750.7358001521186,
-    "tpsPerUser": 1138.4842104608174,
-    "waitUs": 12.456727538698805,
+    "rawUs": 818.707518128854,
+    "tpsPerUser": 1043.9636082178201,
+    "waitUs": 11.95598274857506,
     "services": {
-      "kernel": 184.61426947106307,
-      "localTma": 43.6530389945717,
-      "tmaFill": 187.99444293902036,
+      "kernel": 261.94573605599027,
+      "localTma": 43.0580926804692,
+      "tmaFill": 147.41336125833223,
       "reduce": 28.46769230769231,
       "dieLink": 6.729843750000002,
       "launch": 11.657250000000241,
-      "assumedGain": 1.4432899320127035e-14,
+      "assumedGain": 4.007905118896815e-14,
       "memoryTransport": 192.3679999999996,
       "tpReduce": 1.8625473901098928,
       "cardLocal": 94.56383653846176,
       "portTail": 0,
       "tauFloor": 163.15561607142854,
-      "commOverlap": -34.412998259455144,
-      "tmaHidden": -142.37446658947522
+      "commOverlap": -26.00726492028563,
+      "tmaHidden": -118.46317575193045
     },
-    "kernelUs": 184.61426947106307,
-    "nonKernelUs": 566.1215306810556,
+    "kernelUs": 261.94573605599027,
+    "nonKernelUs": 556.7617820728638,
     "bySource": {
       "measured": 0,
       "fitted": 0,
-      "analytical": 184.61426947106307,
-      "nonKernel": 566.1215306810556
+      "analytical": 261.94573605599027,
+      "nonKernel": 556.7617820728638
     },
     "byEvidence": {
       "SILICON_OBSERVED": 0,
       "EMULATION_OBSERVED": 0,
-      "MODEL": 750.7358001521186
+      "MODEL": 818.707518128854
     }
   },
   "shares": {
     "measured": 0,
     "fitted": 0,
     "observed": 0,
-    "analyticalKernel": 0.24591110405771965,
-    "nonKernel": 0.7540888959422803
+    "analyticalKernel": 0.31995032445123267,
+    "nonKernel": 0.6800496755487674
   },
   "classes": [
     {
       "class": "attention",
       "ops": 4,
       "shapes": 4,
-      "kernelUs": 139.8875164835165
+      "kernelUs": 227.28903296703294
     },
     {
       "class": "linear",
       "ops": 9,
       "shapes": 13,
-      "kernelUs": 23.444458974985004
+      "kernelUs": 20.490432153320345
     },
     {
       "class": "expert",
       "ops": 2,
       "shapes": 2,
-      "kernelUs": 20.508923076923047
+      "kernelUs": 13.330799999999982
     },
     {
       "class": "other",
       "ops": 15,
       "shapes": 15,
-      "kernelUs": 0.7733709356398806
+      "kernelUs": 0.8354709356398806
     }
   ],
   "calibrationQueue": [
@@ -119,7 +119,7 @@
       "unit": "H",
       "class": "attention",
       "count": 48,
-      "kernelUs": 65.22092307692313,
+      "kernelUs": 97.83138461538464,
       "costSource": {
         "analytical": 48
       },
@@ -131,11 +131,11 @@
             "writeBytes": 6291456
           },
           "count": 48,
-          "kernelUsEach": 1.3587692307692307,
+          "kernelUsEach": 2.0381538461538455,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.08687599960426513
+      "shareOfRaw": 0.11949491417762606
     },
     {
       "rank": 2,
@@ -143,7 +143,7 @@
       "unit": "H",
       "class": "attention",
       "count": 48,
-      "kernelUs": 57.98123076923073,
+      "kernelUs": 86.97184615384616,
       "costSource": {
         "analytical": 48
       },
@@ -155,11 +155,11 @@
             "writeBytes": 196608
           },
           "count": 48,
-          "kernelUsEach": 1.2079423076923077,
+          "kernelUsEach": 1.8119134615384611,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.07723253740860929
+      "shareOfRaw": 0.10623066751923721
     },
     {
       "rank": 3,
@@ -167,7 +167,7 @@
       "unit": "H",
       "class": "attention",
       "count": 69,
-      "kernelUs": 9.115076923076924,
+      "kernelUs": 27.345230769230714,
       "costSource": {
         "analytical": 69
       },
@@ -179,11 +179,11 @@
             "writeBytes": 196608
           },
           "count": 69,
-          "kernelUsEach": 0.1321025641025641,
+          "kernelUsEach": 0.3963076923076922,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.012141524250248852
+      "shareOfRaw": 0.03340048816423221
     },
     {
       "rank": 4,
@@ -191,7 +191,7 @@
       "unit": "V",
       "class": "attention",
       "count": 48,
-      "kernelUs": 7.570285714285712,
+      "kernelUs": 15.140571428571423,
       "costSource": {
         "analytical": 48
       },
@@ -203,11 +203,11 @@
             "writeBytes": 6291456
           },
           "count": 48,
-          "kernelUsEach": 0.15771428571428572,
+          "kernelUsEach": 0.31542857142857145,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.010083821382637907
+      "shareOfRaw": 0.018493260527489737
     },
     {
       "rank": 5,
@@ -215,7 +215,7 @@
       "unit": "L",
       "class": "linear",
       "count": 138,
-      "kernelUs": 6.935025347673209,
+      "kernelUs": 6.033499051316797,
       "costSource": {
         "analytical": 138
       },
@@ -227,7 +227,7 @@
             "writeBytes": 28672
           },
           "count": 69,
-          "kernelUsEach": 0.0566153846153846,
+          "kernelUsEach": 0.049234375,
           "costSource": "analytical"
         },
         {
@@ -237,11 +237,11 @@
             "writeBytes": 28672
           },
           "count": 69,
-          "kernelUsEach": 0.043892229119009765,
+          "kernelUsEach": 0.03820764023647514,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.009237637723241642
+      "shareOfRaw": 0.007369541524556029
     },
     {
       "rank": 6,
@@ -249,7 +249,7 @@
       "unit": "L",
       "class": "linear",
       "count": 186,
-      "kernelUs": 6.231472051532472,
+      "kernelUs": 5.431802861328144,
       "costSource": {
         "analytical": 186
       },
@@ -261,7 +261,7 @@
             "writeBytes": 28672
           },
           "count": 93,
-          "kernelUsEach": 0.0566153846153846,
+          "kernelUsEach": 0.049234375,
           "costSource": "analytical"
         },
         {
@@ -271,11 +271,11 @@
             "writeBytes": 28672
           },
           "count": 93,
-          "kernelUsEach": 0.010389691207544976,
+          "kernelUsEach": 0.009172107379872313,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.008300486070159187
+      "shareOfRaw": 0.00663460728166081
     },
     {
       "rank": 7,
@@ -283,7 +283,7 @@
       "unit": "L",
       "class": "linear",
       "count": 184,
-      "kernelUs": 3.418153846153858,
+      "kernelUs": 2.9932583333333365,
       "costSource": {
         "analytical": 184
       },
@@ -295,11 +295,11 @@
             "writeBytes": 28672
           },
           "count": 184,
-          "kernelUsEach": 0.01857692307692307,
+          "kernelUsEach": 0.016267708333333332,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.004553071593843334
+      "shareOfRaw": 0.003656077740893832
     },
     {
       "rank": 8,
@@ -307,7 +307,7 @@
       "unit": "L",
       "class": "linear",
       "count": 48,
-      "kernelUs": 2.4121827296254645,
+      "kernelUs": 2.0986083656754024,
       "costSource": {
         "analytical": 48
       },
@@ -319,7 +319,7 @@
             "writeBytes": 28672
           },
           "count": 24,
-          "kernelUsEach": 0.0566153846153846,
+          "kernelUsEach": 0.049234375,
           "costSource": "analytical"
         },
         {
@@ -329,11 +329,11 @@
             "writeBytes": 28672
           },
           "count": 24,
-          "kernelUsEach": 0.043892229119009765,
+          "kernelUsEach": 0.03820764023647514,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0032130913819970936
+      "shareOfRaw": 0.0025633187911499166
     },
     {
       "rank": 9,
@@ -341,7 +341,7 @@
       "unit": "L",
       "class": "linear",
       "count": 184,
-      "kernelUs": 1.709076923076929,
+      "kernelUs": 1.512058333333329,
       "costSource": {
         "analytical": 184
       },
@@ -353,11 +353,11 @@
             "writeBytes": 28672
           },
           "count": 184,
-          "kernelUsEach": 0.009288461538461535,
+          "kernelUsEach": 0.008217708333333332,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.002276535796921667
+      "shareOfRaw": 0.001846884631997908
     },
     {
       "rank": 10,
@@ -365,7 +365,7 @@
       "unit": "L",
       "class": "linear",
       "count": 92,
-      "kernelUs": 0.9969615384615371,
+      "kernelUs": 0.879462500000001,
       "costSource": {
         "analytical": 92
       },
@@ -377,11 +377,11 @@
             "writeBytes": 28672
           },
           "count": 92,
-          "kernelUsEach": 0.010836538461538458,
+          "kernelUsEach": 0.009559375,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0013279792148709663
+      "shareOfRaw": 0.0010742084084069507
     },
     {
       "rank": 11,
@@ -389,7 +389,7 @@
       "unit": "L",
       "class": "linear",
       "count": 92,
-      "kernelUs": 0.9969615384615371,
+      "kernelUs": 0.879462500000001,
       "costSource": {
         "analytical": 92
       },
@@ -401,11 +401,11 @@
             "writeBytes": 28672
           },
           "count": 92,
-          "kernelUsEach": 0.010836538461538458,
+          "kernelUsEach": 0.009559375,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0013279792148709663
+      "shareOfRaw": 0.0010742084084069507
     },
     {
       "rank": 12,
@@ -413,7 +413,7 @@
       "unit": "L",
       "class": "linear",
       "count": 9,
-      "kernelUs": 0.4953846153846153,
+      "kernelUs": 0.4308427083333333,
       "costSource": {
         "analytical": 9
       },
@@ -425,7 +425,7 @@
             "writeBytes": 28672
           },
           "count": 8,
-          "kernelUsEach": 0.0566153846153846,
+          "kernelUsEach": 0.049234375,
           "costSource": "analytical"
         },
         {
@@ -435,11 +435,11 @@
             "writeBytes": 28672
           },
           "count": 1,
-          "kernelUsEach": 0.04246153846153845,
+          "kernelUsEach": 0.03696770833333333,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0006598654483830896
+      "shareOfRaw": 0.0005262474067882253
     },
     {
       "rank": 13,
@@ -447,7 +447,7 @@
       "unit": "L",
       "class": "linear",
       "count": 92,
-      "kernelUs": 0.24924038461538428,
+      "kernelUs": 0.23143749999999957,
       "costSource": {
         "analytical": 92
       },
@@ -459,11 +459,11 @@
             "writeBytes": 28672
           },
           "count": 92,
-          "kernelUsEach": 0.0027091346153846146,
+          "kernelUsEach": 0.002515625,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.00033199480371774156
+      "shareOfRaw": 0.0002826864232649862
     },
     {
       "rank": 14,
@@ -471,7 +471,7 @@
       "unit": "L",
       "class": "expert",
       "count": 92,
-      "kernelUs": 13.672615384615366,
+      "kernelUs": 8.887199999999988,
       "costSource": {
         "analytical": 92
       },
@@ -483,11 +483,11 @@
             "writeBytes": 123904
           },
           "count": 92,
-          "kernelUsEach": 0.14861538461538457,
+          "kernelUsEach": 0.0966,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.01821228637537325
+      "shareOfRaw": 0.010855158653375475
     },
     {
       "rank": 15,
@@ -495,7 +495,7 @@
       "unit": "L",
       "class": "expert",
       "count": 92,
-      "kernelUs": 6.836307692307683,
+      "kernelUs": 4.443599999999994,
       "costSource": {
         "analytical": 92
       },
@@ -507,11 +507,11 @@
             "writeBytes": 238592
           },
           "count": 92,
-          "kernelUsEach": 0.07430769230769228,
+          "kernelUsEach": 0.0483,
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.009106143187686625
+      "shareOfRaw": 0.005427579326687738
     },
     {
       "rank": 16,
@@ -535,10 +535,34 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0003523210161902564
+      "shareOfRaw": 0.0003230701980171273
     },
     {
       "rank": 17,
+      "op": "RoPE",
+      "unit": "V",
+      "class": "other",
+      "count": 24,
+      "kernelUs": 0.12419999999999998,
+      "costSource": {
+        "analytical": 24
+      },
+      "shapes": [
+        {
+          "shape": {
+            "flops": 36864,
+            "readBytes": 110592,
+            "writeBytes": 110592
+          },
+          "count": 24,
+          "kernelUsEach": 0.005174999999999999,
+          "costSource": "analytical"
+        }
+      ],
+      "shareOfRaw": 0.00015170252776456426
+    },
+    {
+      "rank": 18,
       "op": "Dispatch local pack",
       "unit": "V",
       "class": "other",
@@ -559,10 +583,10 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.00016441647422212012
+      "shareOfRaw": 0.00015076609240799314
     },
     {
-      "rank": 18,
+      "rank": 19,
       "op": "Attention RMSNorm",
       "unit": "V",
       "class": "other",
@@ -583,10 +607,10 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.00013355647216994781
+      "shareOfRaw": 0.0001224681864766013
     },
     {
-      "rank": 19,
+      "rank": 20,
       "op": "MoE RMSNorm",
       "unit": "V",
       "class": "other",
@@ -607,31 +631,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.00013212038107134625
-    },
-    {
-      "rank": 20,
-      "op": "RoPE",
-      "unit": "V",
-      "class": "other",
-      "count": 24,
-      "kernelUs": 0.06209999999999999,
-      "costSource": {
-        "analytical": 24
-      },
-      "shapes": [
-        {
-          "shape": {
-            "flops": 36864,
-            "readBytes": 110592,
-            "writeBytes": 110592
-          },
-          "count": 24,
-          "kernelUsEach": 0.0025874999999999995,
-          "costSource": "analytical"
-        }
-      ],
-      "shareOfRaw": 0.00008271884727945159
+      "shareOfRaw": 0.00012115132425642281
     },
     {
       "rank": 21,
@@ -655,7 +655,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.00004404012702378205
+      "shareOfRaw": 0.00004038377475214091
     },
     {
       "rank": 22,
@@ -679,7 +679,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.000041790250969306275
+      "shareOfRaw": 0.000038320690607194626
     },
     {
       "rank": 23,
@@ -703,7 +703,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.00002831151022957416
+      "shareOfRaw": 0.000025960998054947714
     },
     {
       "rank": 24,
@@ -727,7 +727,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.000022259412028324624
+      "shareOfRaw": 0.000020411364412766874
     },
     {
       "rank": 25,
@@ -751,7 +751,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.000022020063511891024
+      "shareOfRaw": 0.000020191887376070455
     },
     {
       "rank": 26,
@@ -775,7 +775,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0000035389387786967748
+      "shareOfRaw": 0.0000032451247568684685
     },
     {
       "rank": 27,
@@ -799,7 +799,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0000014360910986015901
+      "shareOfRaw": 0.0000013168622201785094
     },
     {
       "rank": 28,
@@ -823,7 +823,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 0.0000013677058081919908
+      "shareOfRaw": 0.0000012541544954081043
     },
     {
       "rank": 29,
@@ -847,7 +847,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 2.4533222934443824e-7
+      "shareOfRaw": 2.2496396261382863e-7
     },
     {
       "rank": 30,
@@ -871,7 +871,7 @@
           "costSource": "analytical"
         }
       ],
-      "shareOfRaw": 7.978283881119945e-9
+      "shareOfRaw": 7.315901223213941e-9
     }
   ]
 }

@@ -14,7 +14,7 @@
       "sharedPortScaling"
     ],
     "candidates": 486,
-    "feasible": 304,
+    "feasible": 109,
     "constraints": [
       "the shared SRAM window per die is at least the contract's B-SRAM-CAP floor (requirements.contractEntry); a candidate below it is not replayed",
       "the K3 detailed replay at the published point with only these dimensions changed is feasible (local tiles fit, the shared window holds the plan) and reaches the contract target",
@@ -32,7 +32,7 @@
       "Kimi K3"
     ],
     "contractEntry": "B-SRAM-CAP",
-    "sharedMiBMin": 16,
+    "sharedMiBMin": 14,
     "targetTpsPerUser": 1000,
     "limits": {
       "dieAreaMm2": 400,
@@ -44,7 +44,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "b5f412e4ff763557e250bce6fa0c11a40aa928c255c2c277d18d1c70a856690e",
+    "sha256": "165c1e55275da0030c653d365f4575355e7f06bf9e0268c387656ee8959cb9e3",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -53,7 +53,7 @@
     },
     "point": {
       "tauUs": 1.15,
-      "computeScale": 0.6608414806234413,
+      "computeScale": 0.8822369885861744,
       "mcGBs": 1152
     }
   },
@@ -62,7 +62,7 @@
     "quantity": "sharedMiBPerDie",
     "owner": "sram",
     "ownerAgent": "memory-expert",
-    "min": 16,
+    "min": 14,
     "source": "out/requirements/budget_frontier.json#B-SRAM-CAP"
   },
   "caliber": {
@@ -77,24 +77,24 @@
       "nL": 8,
       "nH": 4,
       "lRows": 1,
-      "lCols": 256,
+      "lCols": 512,
       "lEngines": 8,
-      "hRows": 48,
-      "hCols": 128,
-      "hEngines": 6,
+      "hRows": 128,
+      "hCols": 256,
+      "hEngines": 1,
       "ghz": 1,
       "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 64,
-      "hBanks": 64,
+      "hBanks": 32,
       "bankBytes": 64,
       "sharedMiB": 16,
       "sharedSlices": 16,
       "tmaEngines": 4,
       "tmaBytes": 512,
       "nocBytes": 256,
-      "nocLanes": 2,
+      "nocLanes": 4,
       "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
@@ -104,30 +104,30 @@
       "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
-      "windowFraction": 0.75
+      "windowFraction": 1
     },
     "x": {
       "nL": 8,
       "nH": 4,
       "lRows": 1,
-      "lCols": 256,
+      "lCols": 512,
       "lEngines": 8,
-      "hRows": 48,
-      "hCols": 128,
-      "hEngines": 6,
+      "hRows": 128,
+      "hCols": 256,
+      "hEngines": 1,
       "ghz": 1,
       "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
-      "lBanks": 16,
+      "lBanks": 64,
       "hBanks": 16,
       "bankBytes": 64,
       "sharedMiB": 16,
       "sharedSlices": 8,
-      "tmaEngines": 1,
+      "tmaEngines": 2,
       "tmaBytes": 512,
       "nocBytes": 256,
-      "nocLanes": 2,
+      "nocLanes": 4,
       "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
@@ -137,7 +137,7 @@
       "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
-      "windowFraction": 0.75
+      "windowFraction": 1
     },
     "opt": {
       "localWriteRatio": 1,
@@ -153,9 +153,9 @@
       "evidence": "A.SPACE.sharedMiB; the published point (16 slices x 1 MiB) and the contract floor"
     },
     "lBanks": {
-      "option": "16",
-      "lBanks": 16,
-      "evidence": "A.SPACE.lBanks"
+      "option": "64",
+      "lBanks": 64,
+      "evidence": "A.SPACE.lBanks; the published point"
     },
     "hBanks": {
       "option": "16",
@@ -168,8 +168,8 @@
       "evidence": "A.SPACE.sharedSlices"
     },
     "tmaEngines": {
-      "option": "1",
-      "tmaEngines": 1,
+      "option": "2",
+      "tmaEngines": 2,
       "evidence": "A.SPACE.tmaEngines"
     },
     "sharedPortScaling": {
@@ -203,16 +203,16 @@
   },
   "evaluation": {
     "k3System": {
-      "publishedTpsPerUser": 1138.4842104608174,
-      "tpsPerUser": 1023.0957348448769,
-      "rawLatencyUs": 835.4065270641028,
+      "publishedTpsPerUser": 1043.9636082178201,
+      "tpsPerUser": 1000.9042086282698,
+      "rawLatencyUs": 853.9287249798007,
       "contractTargetTpsPerUser": 1000,
       "architectureGate": 1050
     },
     "sharedMiB": 16,
-    "dieAreaMm2": 312.2380127161976,
-    "diePowerW": 268.34688,
-    "cardPowerW": 2854.87104,
+    "dieAreaMm2": 337.2222143968699,
+    "diePowerW": 284.43648,
+    "cardPowerW": 2983.58784,
     "portAreaMm2": 0,
     "portPowerW": 0,
     "note": "the winner is the cheapest die that satisfies the contract at the published compute; whether it holds next to the other domains' winners is design.coupling's question"

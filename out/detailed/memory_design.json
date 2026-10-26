@@ -45,7 +45,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "b5f412e4ff763557e250bce6fa0c11a40aa928c255c2c277d18d1c70a856690e",
+    "sha256": "165c1e55275da0030c653d365f4575355e7f06bf9e0268c387656ee8959cb9e3",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -54,7 +54,7 @@
     },
     "point": {
       "tauUs": 1.15,
-      "computeScale": 0.6608414806234413,
+      "computeScale": 0.8822369885861744,
       "mcGBs": 1152
     }
   },
@@ -83,24 +83,24 @@
       "nL": 8,
       "nH": 4,
       "lRows": 1,
-      "lCols": 256,
+      "lCols": 512,
       "lEngines": 8,
-      "hRows": 48,
-      "hCols": 128,
-      "hEngines": 6,
+      "hRows": 128,
+      "hCols": 256,
+      "hEngines": 1,
       "ghz": 1,
       "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 64,
-      "hBanks": 64,
+      "hBanks": 32,
       "bankBytes": 64,
       "sharedMiB": 16,
       "sharedSlices": 16,
       "tmaEngines": 4,
       "tmaBytes": 512,
       "nocBytes": 256,
-      "nocLanes": 2,
+      "nocLanes": 4,
       "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
@@ -110,7 +110,7 @@
       "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
-      "windowFraction": 0.75
+      "windowFraction": 1
     },
     "cubesPerComputeDie": 2,
     "publishedDieGBs": 1612.8,
@@ -164,9 +164,9 @@
   },
   "evaluation": {
     "k3System": {
-      "publishedTpsPerUser": 1138.4842104608174,
-      "tpsPerUser": 1138.4842104608174,
-      "rawLatencyUs": 750.7358001521186,
+      "publishedTpsPerUser": 1043.9636082178201,
+      "tpsPerUser": 1043.9636082178201,
+      "rawLatencyUs": 818.707518128854,
       "contractTargetTpsPerUser": 1000
     },
     "classification": "STRETCH_AGGRESSIVE",
@@ -176,10 +176,10 @@
     "capacityGBPerCard": 256,
     "capacityMarginGB": 206.801838816,
     "mcPowerW": 628.096,
-    "cardPowerW": 3025.9814400000005,
-    "packageAreaMm2": 4431.222985763194,
-    "areaReserveMm2": 816.7770142368063,
-    "dieAreaMm2": 353.9028732203993
+    "cardPowerW": 3046.8710400000004,
+    "packageAreaMm2": 4518.071953830422,
+    "areaReserveMm2": 729.928046169578,
+    "dieAreaMm2": 364.7589942288027
   },
   "conditionalAlternative": {
     "route": "fewerBytesPerToken",
@@ -194,24 +194,24 @@
     "meaning": "K3 dense projections stored as FP8 (the GLM-5.2 / DeepSeek-V4-Pro dense policy); routed experts, KV and activations unchanged",
     "limitation": "the detailed replay applies FP8 to every dense matrix including the router and LM head (about 1% of the rank bytes); the planning comparison model keeps those two in BF16",
     "tunedSoftwareKnobs": {
-      "depth": 1,
+      "depth": 2,
       "weightTileMiB": 8,
-      "windowFraction": 0.5,
-      "kvTile": 16384
+      "windowFraction": 1,
+      "kvTile": 32768
     },
     "mcGBs": 400,
     "classification": "GRID",
     "cubes": 16,
-    "tpsPerUser": 1062.9702181226776,
+    "tpsPerUser": 1032.0365033050853,
     "dieGBs": 560,
     "mcPowerW": 291.20000000000005,
-    "cardPowerW": 2689.0854400000007,
+    "cardPowerW": 2709.9750400000003,
     "versusWinner": {
       "winnerMcGBs": 1152,
-      "winnerTpsPerUser": 1138.4842104608174,
+      "winnerTpsPerUser": 1043.9636082178201,
       "mcGBsRatio": 0.3472222222222222,
       "mcPowerSavedW": 336.89599999999996,
-      "tpsDeltaPct": -6.632853722896559,
+      "tpsDeltaPct": -1.1424828240034102,
       "riskClassWinner": "STRETCH_AGGRESSIVE",
       "riskClassAlternative": "GRID"
     },

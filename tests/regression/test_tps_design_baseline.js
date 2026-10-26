@@ -105,7 +105,12 @@ const rel = Object.entries(A_).filter(([, v]) => v.breakEven && v.published).map
   return [k, Math.abs(v.published - edge) / v.published];
 }).sort((p, q) => p[1] - q[1]);
 assert(rel.length >= 5 && rel[0][1] > 0 && rel[0][1] < 0.5, `the thinnest single-parameter margin is ${rel[0][0]} at ${(rel[0][1] * 100).toFixed(0)}% of its published value`);
-assert.strictEqual(rel[0][0], 'matrixUtil', 'the document names matrixUtil as the thinnest single-parameter margin (21_TPS_DESIGN_BASELINE.md 6.1); if this changes, change the text');
+// The thinnest margin moved from matrixUtil (14.5%) to layoutImbalance (14.0%) under the ADR-0028 core
+// definition: the shorter L-core body and the 0.75 H-core row fill put the bank imbalance back on the critical
+// path while leaving the matrix-utilisation margin essentially where it was. The two are within one point of
+// each other, so this assertion pins which one the document names -- if it moves again, change the text.
+assert.strictEqual(rel[0][0], 'layoutImbalance', 'the document names layoutImbalance as the thinnest single-parameter margin (21_TPS_DESIGN_BASELINE.md 6.1); if this changes, change the text');
+assert(rel.slice(0, 2).every(([k]) => k === 'layoutImbalance' || k === 'matrixUtil'), 'the two thinnest margins are the die-side bank imbalance and matrix utilisation');
 
 // 4. The document quotes the spec, not hand-copied numbers.
 const doc = fs.readFileSync('docs/architecture/21_TPS_DESIGN_BASELINE.md', 'utf8');

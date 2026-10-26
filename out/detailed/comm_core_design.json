@@ -38,24 +38,24 @@
       "nL": 8,
       "nH": 4,
       "lRows": 1,
-      "lCols": 256,
+      "lCols": 512,
       "lEngines": 8,
-      "hRows": 48,
-      "hCols": 128,
-      "hEngines": 6,
+      "hRows": 128,
+      "hCols": 256,
+      "hEngines": 1,
       "ghz": 1,
       "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 64,
-      "hBanks": 64,
+      "hBanks": 32,
       "bankBytes": 64,
       "sharedMiB": 16,
       "sharedSlices": 16,
       "tmaEngines": 4,
       "tmaBytes": 512,
       "nocBytes": 256,
-      "nocLanes": 2,
+      "nocLanes": 4,
       "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
@@ -65,15 +65,15 @@
       "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
-      "windowFraction": 0.75
+      "windowFraction": 1
     },
     "ghz": 1,
     "meshSide": 6,
     "routerCyclesPerHop": 2
   },
   "published": {
-    "tpsPerUser": 1138.4842104608174,
-    "rawLatencyUs": 750.7358001521186,
+    "tpsPerUser": 1043.9636082178201,
+    "rawLatencyUs": 818.707518128854,
     "rawBudgetUs": 854.7008547008547,
     "specTauUs": 1.15,
     "collectivesPerToken": 393
@@ -82,7 +82,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "b5f412e4ff763557e250bce6fa0c11a40aa928c255c2c277d18d1c70a856690e",
+    "sha256": "165c1e55275da0030c653d365f4575355e7f06bf9e0268c387656ee8959cb9e3",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -91,7 +91,7 @@
     },
     "point": {
       "tauUs": 1.15,
-      "computeScale": 0.6608414806234413,
+      "computeScale": 0.8822369885861744,
       "mcGBs": 1152
     }
   },
@@ -304,58 +304,58 @@
     },
     "withSpecFloor": {
       "feasible": true,
-      "tpsPerUser": 1138.4842104608174,
-      "rawLatencyUs": 750.7358001521186,
+      "tpsPerUser": 1043.9636082178201,
+      "rawLatencyUs": 818.707518128854,
       "commUs": 451.94999999999703
     },
     "bottomUp": {
       "feasible": true,
-      "tpsPerUser": 1415.2968431500933,
-      "rawLatencyUs": 603.9021840806954,
+      "tpsPerUser": 1272.11497884286,
+      "rawLatencyUs": 671.873902057428,
       "commUs": 305.11638392857134
     },
-    "controlUsWithinRawBudget": 0.6796963629003585,
+    "controlUsWithinRawBudget": 0.5067403375142021,
     "tauSweep": [
       {
         "tauUs": 1,
         "feasible": true,
-        "tpsPerUser": 1234.3376274418779,
-        "rawLatencyUs": 692.4368468554205,
+        "tpsPerUser": 1124.0021407301128,
+        "rawLatencyUs": 760.4085648321549,
         "commUs": 393.65104670329663
       },
       {
         "tauUs": 1.15,
         "feasible": true,
-        "tpsPerUser": 1138.4842104608174,
-        "rawLatencyUs": 750.7358001521186,
+        "tpsPerUser": 1043.9636082178201,
+        "rawLatencyUs": 818.707518128854,
         "commUs": 451.94999999999703
       },
       {
         "tauUs": 1.35,
         "feasible": true,
-        "tpsPerUser": 1030.5847818749317,
-        "rawLatencyUs": 829.33580015213,
+        "tpsPerUser": 952.3974381084452,
+        "rawLatencyUs": 897.4203630769678,
         "commUs": 530.5500000000038
       },
       {
         "tauUs": 1.5,
         "feasible": true,
-        "tpsPerUser": 962.1912841052754,
-        "rawLatencyUs": 888.2858001521245,
+        "tpsPerUser": 864.411109744478,
+        "rawLatencyUs": 988.7666239661199,
         "commUs": 589.5
       },
       {
         "tauUs": 2,
         "feasible": true,
-        "tpsPerUser": 766.4965698314185,
-        "rawLatencyUs": 1115.074598297075,
+        "tpsPerUser": 721.1042962138494,
+        "rawLatencyUs": 1185.2666239661207,
         "commUs": 786
       },
       {
         "tauUs": 3,
         "feasible": true,
-        "tpsPerUser": 566.7497189237092,
-        "rawLatencyUs": 1508.0745982970782,
+        "tpsPerUser": 541.5440216007519,
+        "rawLatencyUs": 1578.266623966121,
         "commUs": 1179
       }
     ]
@@ -365,7 +365,7 @@
     "wqesPerToken": 10901,
     "wireBytesPerToken": 17683392,
     "busyUsPerToken": 12.473,
-    "utilization": 0.016614366861780996,
+    "utilization": 0.015234988959802019,
     "graphBytes": 30224,
     "graphStoredLocally": true,
     "localSramKiB": 64,

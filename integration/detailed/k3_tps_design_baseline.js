@@ -64,18 +64,21 @@ const MECHANISMS = [
   {key: 'launchBatching', off: false, layer: 'runtime', evidence: 'ASSUMPTION', role: 'launch cost scaled once by OPT.launchScale'},
   {key: 'epilogueFusion', off: false, layer: 'kernel mapping', evidence: 'MODEL', role: 'elementwise ops folded into the adjacent kernel'},
   {key: 'pvMerge', off: 'tile', layer: 'kernel mapping', evidence: 'MODEL', role: 'PV m/l/O merged once per layer, cross-die ring reduce-scatter by heads'},
-  {key: 'kvCache', off: 'bf16', layer: 'model format', evidence: 'MODEL (precision open, B-001)', role: 'FlashMLA FP8 KV layout, BF16 compute with in-kernel dequant; coupled to softmaxFusion -- the dequant runs on the H vector lanes and is charged against the softmax hiding budget, so ablating either alone understates the joint effect'}
+  {key: 'kvCache', off: 'bf16', layer: 'model format', evidence: 'MODEL (precision open, B-001)', role: 'FlashMLA FP8 KV layout, BF16 compute with in-kernel dequant; coupled to softmaxFusion -- the dequant runs on the H vector lanes and is charged against the softmax hiding budget, so ablating either alone understates the joint effect'},
+  // Moved back from NO_EFFECT when the core definition moved to ADR-0028 (L 1x512x8, H 128x256x1, 8/4 cores).
+  // At 1138.48 it bought EXACTLY zero (collective-bound, the shared->local fill was not on the critical path);
+  // at 1043.96 the shorter L core body puts the fill back on it and switching the port scaling off costs
+  // 0.0046 TPS/usr -- still tiny, still far below what the 7.78 mm2 and 2.74 W per die cost, but not zero.
+  // The charge stays visible in hardware.sharedPortScalingCost either way.
+  {key: 'sharedPortScaling', patch: SHARED_PORT_UNSCALED, layer: 'SRAM/TMA', evidence: 'MODEL',
+    role: 'shared-SRAM port scaling and dedicated TMA port: 0.0046 TPS/usr at the published point for 7.78 mm2 + 2.74 W per die'}
 ];
 // Switches that are on but do not move TPS at the published point; listed so
 // nobody reads them as contributors.
 const NO_EFFECT = [
-  {key: 'tilePartialReady', patch: {tilePartialReady: false}, note: 'acts on duration only through GAIN, which is 1'},
-  // Moved out of MECHANISMS when the published point moved to 1138.48: the shared-SRAM port scaling and its
-  // dedicated TMA port now buy EXACTLY zero TPS there (the point is collective-bound and the shared->local fill
-  // is not the critical path), while still charging 7.78 mm2 and 2.74 W per die. It is listed here so nobody
-  // reads the released point as having paid for a timing win it did not get; the charge stays visible in
-  // hardware.sharedPortScalingCost, and sram_search.js still searches the option (it "wins" by being free).
-  {key: 'sharedPortScaling', patch: SHARED_PORT_UNSCALED, note: 'buys 0 TPS at the published point but still charges its area and power'}
+  {key: 'tilePartialReady', patch: {tilePartialReady: false}, note: 'acts on duration only through GAIN, which is 1'}
+  // sharedPortScaling lived here from the 1138.48 point to ADR-0028; see the note in MECHANISMS for why it
+  // is a (small) mechanism again at the 1043.96 point.
 ];
 
 // Parameters the published TPS rests on that nothing in the repository measures.

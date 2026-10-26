@@ -1,7 +1,7 @@
 {
   "schemaVersion": "directional-sensitivity-sweep-v0.1",
   "provenance": {
-    "sourceCommit": "8a348fdfd8df65275aef9b954d9b450566b78ea4",
+    "sourceCommit": "5dcb47f0e319f8be17e7321d1e3dd4b5d2407b16",
     "manifestHash": "a140afe4612d0bc8fc226c89d80f7ee4735da3784a75256d14f0da8b2e696083",
     "seed": 20261002,
     "runId": "stage-a-20261002-token-time",
@@ -53,7 +53,7 @@
     }
   ],
   "sampleCount": 243,
-  "feasibleCount": 207,
+  "feasibleCount": 147,
   "selectedCandidates": [
     "P1-compact-MC640-TP32"
   ],
@@ -68,9 +68,9 @@
       "network"
     ],
     "sampleCount": 243,
-    "feasibleCount": 207,
-    "minTpsPerUser": 937.0579474741709,
-    "maxTpsPerUser": 1388.398578660746,
+    "feasibleCount": 147,
+    "minTpsPerUser": 858.6117138498176,
+    "maxTpsPerUser": 1268.1785360055526,
     "selectedSensitivity": [
       {
         "axes": {
@@ -80,10 +80,10 @@
           "bytes": 1,
           "network": 1
         },
-        "tpsPerUser": 1157.6934609230066,
+        "tpsPerUser": 1059.4350518316464,
         "bound": "collective",
-        "memoryLaneUs": 560.1565860325059,
-        "serialLaneUs": 738.2790726134174,
+        "memoryLaneUs": 469.43108152516123,
+        "serialLaneUs": 806.7515353802681,
         "feasible": true
       }
     ]
@@ -97,10 +97,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 984.6752392794732,
+      "tpsPerUser": 900.7213851472025,
       "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 868.0027897586559,
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 948.9070302923622,
       "feasible": false
     },
     {
@@ -111,10 +111,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1132.0311870426672,
+      "tpsPerUser": 1022.4678617114303,
       "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 755.0152897586561,
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 835.9195302923622,
       "feasible": true
     },
     {
@@ -125,10 +125,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1257.485751347634,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 679.690289758656,
+      "tpsPerUser": 1123.727322062544,
+      "bound": "compute",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 760.5945302923622,
       "feasible": true
     },
     {
@@ -139,10 +139,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 974.4325099740514,
+      "tpsPerUser": 895.2586992167253,
       "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 877.1267850285649,
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 954.6970673936426,
       "feasible": false
     },
     {
@@ -153,10 +153,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1118.5144795544759,
+      "tpsPerUser": 1015.4344061306559,
       "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 764.139285028565,
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 841.7095673936426,
       "feasible": true
     },
     {
@@ -167,1046 +167,1046 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1220.6599026240947,
+      "tpsPerUser": 1115.2375596595878,
+      "bound": "compute",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 766.3845673936426,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 0.95,
+        "bytes": 1.2,
+        "network": 0.8
+      },
+      "tpsPerUser": 889.8618739397897,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 960.4871044949228,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 0.95,
+        "bytes": 1.2,
+        "network": 1
+      },
+      "tpsPerUser": 1008.4970543558229,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 847.499604494923,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 0.95,
+        "bytes": 1.2,
+        "network": 1.2
+      },
+      "tpsPerUser": 1106.8751157128665,
+      "bound": "compute",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 772.174604494923,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1,
+        "bytes": 0.8,
+        "network": 0.8
+      },
+      "tpsPerUser": 884.430045295135,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 966.3860462990494,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1,
+        "bytes": 0.8,
+        "network": 1
+      },
+      "tpsPerUser": 1001.5260260372519,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 853.3985462990495,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1,
+        "bytes": 0.8,
+        "network": 1.2
+      },
+      "tpsPerUser": 1098.4833744397138,
+      "bound": "compute",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 778.0735462990494,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1,
+        "bytes": 1,
+        "network": 0.8
+      },
+      "tpsPerUser": 879.1626016054747,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 972.1760834003297,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1,
+        "bytes": 1,
+        "network": 1
+      },
+      "tpsPerUser": 994.7767826689287,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 859.1885834003299,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1,
+        "bytes": 1,
+        "network": 1.2
+      },
+      "tpsPerUser": 1090.3693867155291,
+      "bound": "compute",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 783.8635834003298,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1,
+        "bytes": 1.2,
+        "network": 0.8
+      },
+      "tpsPerUser": 873.9575295946539,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 977.96612050161,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1,
+        "bytes": 1.2,
+        "network": 1
+      },
+      "tpsPerUser": 988.1178961454617,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 864.9786205016102,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1,
+        "bytes": 1.2,
+        "network": 1.2
+      },
+      "tpsPerUser": 1082.3743886058862,
+      "bound": "compute",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 789.6536205016101,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1.05,
+        "bytes": 0.8,
+        "network": 0.8
+      },
+      "tpsPerUser": 868.717558379216,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 983.8650623057365,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1.05,
+        "bytes": 0.8,
+        "network": 1
+      },
+      "tpsPerUser": 981.4248198540648,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 870.8775623057367,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1.05,
+        "bytes": 0.8,
+        "network": 1.2
+      },
+      "tpsPerUser": 1074.348691962841,
+      "bound": "compute",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 795.5525623057366,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1.05,
+        "bytes": 1,
+        "network": 0.8
+      },
+      "tpsPerUser": 863.6350736867579,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 989.6550994070169,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1.05,
+        "bytes": 1,
+        "network": 1
+      },
+      "tpsPerUser": 974.9429034208398,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 876.667599407017,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1.05,
+        "bytes": 1,
+        "network": 1.2
+      },
+      "tpsPerUser": 1066.5860710928414,
+      "bound": "compute",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 801.3425994070169,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1.05,
+        "bytes": 1.2,
+        "network": 0.8
+      },
+      "tpsPerUser": 858.6117138498176,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 995.4451365082973,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1.05,
+        "bytes": 1.2,
+        "network": 1
+      },
+      "tpsPerUser": 968.5460461113232,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 882.4576365082974,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 0.85,
+        "compute": 1.05,
+        "bytes": 1.2,
+        "network": 1.2
+      },
+      "tpsPerUser": 1058.934821912716,
+      "bound": "compute",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 807.1326365082973,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 0.95,
+        "bytes": 0.8,
+        "network": 0.8
+      },
+      "tpsPerUser": 950.6268678453977,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 899.0918346733035,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 0.95,
+        "bytes": 0.8,
+        "network": 1
+      },
+      "tpsPerUser": 1087.2613430583094,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 786.1043346733036,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 0.95,
+        "bytes": 0.8,
+        "network": 1.2
+      },
+      "tpsPerUser": 1202.484108649138,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 710.7793346733035,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 0.95,
+        "bytes": 1,
+        "network": 0.8
+      },
+      "tpsPerUser": 944.5441237812422,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 904.8818717745839,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 0.95,
+        "bytes": 1,
+        "network": 1
+      },
+      "tpsPerUser": 1079.3116925247562,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 791.894371774584,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 0.95,
+        "bytes": 1,
+        "network": 1.2
+      },
+      "tpsPerUser": 1192.767774296839,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 716.5693717745839,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 0.95,
+        "bytes": 1.2,
+        "network": 0.8
+      },
+      "tpsPerUser": 938.5387276916224,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 910.6719088758642,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 0.95,
+        "bytes": 1.2,
+        "network": 1
+      },
+      "tpsPerUser": 1071.4774479613318,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 797.6844088758644,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 0.95,
+        "bytes": 1.2,
+        "network": 1.2
+      },
+      "tpsPerUser": 1183.207201565963,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 722.3594088758643,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1,
+        "bytes": 0.8,
+        "network": 0.8
+      },
+      "tpsPerUser": 935.1734684433155,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 913.9489982789877,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1,
+        "bytes": 0.8,
+        "network": 1
+      },
+      "tpsPerUser": 1067.0935576021266,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 800.9614982789878,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1,
+        "bytes": 0.8,
+        "network": 1.2
+      },
+      "tpsPerUser": 1177.8636503648486,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 725.6364982789878,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1,
+        "bytes": 1,
+        "network": 0.8
+      },
+      "tpsPerUser": 929.2862668892561,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 919.739035380268,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1,
+        "bytes": 1,
+        "network": 1
+      },
+      "tpsPerUser": 1059.4350518316464,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 806.7515353802681,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1,
+        "bytes": 1,
+        "network": 1.2
+      },
+      "tpsPerUser": 1168.5395776029598,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 731.4265353802681,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1,
+        "bytes": 1.2,
+        "network": 0.8
+      },
+      "tpsPerUser": 923.4727250751966,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 925.5290724815484,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1,
+        "bytes": 1.2,
+        "network": 1
+      },
+      "tpsPerUser": 1051.885692556689,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 812.5415724815484,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1,
+        "bytes": 1.2,
+        "network": 1.2
+      },
+      "tpsPerUser": 1159.3619658112702,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 737.2165724815484,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1.05,
+        "bytes": 0.8,
+        "network": 0.8
+      },
+      "tpsPerUser": 920.2144535373801,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 928.8061618846718,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1.05,
+        "bytes": 0.8,
+        "network": 1
+      },
+      "tpsPerUser": 1047.6603375636919,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 815.8186618846719,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1.05,
+        "bytes": 0.8,
+        "network": 1.2
+      },
+      "tpsPerUser": 1154.2311550992993,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 740.4936618846718,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1.05,
+        "bytes": 1,
+        "network": 0.8
+      },
+      "tpsPerUser": 914.5135146368187,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 934.5961989859522,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1.05,
+        "bytes": 1,
+        "network": 1
+      },
+      "tpsPerUser": 1040.27727037913,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 821.6086989859523,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1.05,
+        "bytes": 1,
+        "network": 1.2
+      },
+      "tpsPerUser": 1145.2760603805489,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 746.2836989859522,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1.05,
+        "bytes": 1.2,
+        "network": 0.8
+      },
+      "tpsPerUser": 908.8827780562822,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 940.3862360872325,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1.05,
+        "bytes": 1.2,
+        "network": 1
+      },
+      "tpsPerUser": 1032.9975348315538,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 827.3987360872327,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1,
+        "compute": 1.05,
+        "bytes": 1.2,
+        "network": 1.2
+      },
+      "tpsPerUser": 1136.4588519571948,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 752.0737360872326,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 0.95,
+        "bytes": 0.8,
+        "network": 0.8
+      },
+      "tpsPerUser": 991.21964578678,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 862.2719074766082,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 0.95,
+        "bytes": 0.8,
+        "network": 1
+      },
+      "tpsPerUser": 1140.689498102945,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 749.2844074766083,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 0.95,
+        "bytes": 0.8,
+        "network": 1.2
+      },
+      "tpsPerUser": 1268.1785360055526,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 673.9594074766082,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 0.95,
+        "bytes": 1,
+        "network": 0.8
+      },
+      "tpsPerUser": 984.6081377481294,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 868.0619445778885,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 0.95,
+        "bytes": 1,
+        "network": 1
+      },
+      "tpsPerUser": 1131.942500290366,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 755.0744445778887,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 0.95,
+        "bytes": 1,
+        "network": 1.2
+      },
+      "tpsPerUser": 1257.3763193460313,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 679.7494445778887,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 0.95,
+        "bytes": 1.2,
+        "network": 0.8
+      },
+      "tpsPerUser": 978.0842438080717,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 873.8519816791688,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 0.95,
+        "bytes": 1.2,
+        "network": 1
+      },
+      "tpsPerUser": 1123.3286285286918,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 760.864481679169,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 0.95,
+        "bytes": 1.2,
+        "network": 1.2
+      },
+      "tpsPerUser": 1213.8109133066189,
       "bound": "memory",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 688.814285028565,
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 685.539481679169,
       "feasible": true
     },
     {
       "axes": {
         "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 0.95,
-        "bytes": 1.2,
+        "computeCapacity": 1.15,
+        "compute": 1,
+        "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 964.4006794702129,
+      "tpsPerUser": 976.587600583224,
       "bound": "collective",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 886.250780298474,
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 875.191180177203,
       "feasible": false
     },
     {
       "axes": {
         "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 0.95,
+        "computeCapacity": 1.15,
+        "compute": 1,
+        "bytes": 0.8,
+        "network": 1
+      },
+      "tpsPerUser": 1121.3549303542422,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 762.2036801772031,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 1,
+        "bytes": 0.8,
+        "network": 1.2
+      },
+      "tpsPerUser": 1244.3257876053983,
+      "bound": "collective",
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 686.878680177203,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 1,
+        "bytes": 1,
+        "network": 0.8
+      },
+      "tpsPerUser": 970.169213528963,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 880.9812172784834,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 1,
+        "bytes": 1,
+        "network": 1
+      },
+      "tpsPerUser": 1112.9008421183871,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 767.9937172784835,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 1,
+        "bytes": 1,
+        "network": 1.2
+      },
+      "tpsPerUser": 1233.924433687435,
+      "bound": "collective",
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 692.6687172784834,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 1,
+        "bytes": 1.2,
+        "network": 0.8
+      },
+      "tpsPerUser": 963.8346422253616,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 886.7712543797637,
+      "feasible": false
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 1,
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1017.2165855200789,
+      "tpsPerUser": 1104.5732736867176,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 773.7837543797639,
+      "feasible": true
+    },
+    {
+      "axes": {
+        "bandwidth": 0.8,
+        "computeCapacity": 1.15,
+        "compute": 1,
+        "bytes": 1.2,
+        "network": 1.2
+      },
+      "tpsPerUser": 1213.8109133066189,
       "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 773.263280298474,
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 698.4587543797638,
       "feasible": true
     },
     {
       "axes": {
         "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 0.95,
-        "bytes": 1.2,
-        "network": 1.2
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 697.938280298474,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1,
+        "computeCapacity": 1.15,
+        "compute": 1.05,
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 970.2224296703064,
+      "tpsPerUser": 962.3812577943607,
       "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 880.9328959662298,
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 888.110452877798,
       "feasible": false
     },
     {
       "axes": {
         "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1,
+        "computeCapacity": 1.15,
+        "compute": 1.05,
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1112.970869010119,
+      "tpsPerUser": 1102.6648759756215,
       "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 767.9453959662299,
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 775.1229528777981,
       "feasible": true
     },
     {
       "axes": {
         "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1,
+        "computeCapacity": 1.15,
+        "compute": 1.05,
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1234.0105195841325,
+      "tpsPerUser": 1221.3537510163403,
       "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 692.6203959662298,
+      "memoryLaneUs": 469.4310815251613,
+      "serialLaneUs": 699.797952877798,
       "feasible": true
     },
     {
       "axes": {
         "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1,
+        "computeCapacity": 1.15,
+        "compute": 1.05,
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 960.2766554774038,
+      "tpsPerUser": 956.1476520958827,
       "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 890.0568912361388,
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 893.9004899790783,
       "feasible": false
     },
     {
       "axes": {
         "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1,
+        "computeCapacity": 1.15,
+        "compute": 1.05,
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1099.9028714040865,
+      "tpsPerUser": 1094.489226928794,
       "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 777.0693912361389,
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 780.9129899790785,
       "feasible": true
     },
     {
       "axes": {
         "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1,
+        "computeCapacity": 1.15,
+        "compute": 1.05,
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1217.9660648163922,
+      "tpsPerUser": 1211.331353196924,
       "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 701.7443912361389,
+      "memoryLaneUs": 586.7888519064516,
+      "serialLaneUs": 705.5879899790784,
       "feasible": true
     },
     {
       "axes": {
         "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1,
+        "computeCapacity": 1.15,
+        "compute": 1.05,
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 950.5327209767222,
+      "tpsPerUser": 949.9942802271103,
       "bound": "collective",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 899.1808865060477,
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 899.6905270803586,
       "feasible": false
     },
     {
       "axes": {
         "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1,
-        "bytes": 1.2,
-        "network": 1
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 786.1933865060479,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1,
-        "bytes": 1.2,
-        "network": 1.2
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 710.8683865060478,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1.05,
-        "bytes": 0.8,
-        "network": 0.8
-      },
-      "tpsPerUser": 956.1877520630012,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 893.8630021738036,
-      "feasible": false
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1.05,
-        "bytes": 0.8,
-        "network": 1
-      },
-      "tpsPerUser": 1094.5417705146797,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 780.8755021738037,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1.05,
-        "bytes": 0.8,
-        "network": 1.2
-      },
-      "tpsPerUser": 1211.395714505933,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 705.5505021738037,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1.05,
-        "bytes": 1,
-        "network": 0.8
-      },
-      "tpsPerUser": 946.5262037221441,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 902.9869974437127,
-      "feasible": false
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1.05,
-        "bytes": 1,
-        "network": 1
-      },
-      "tpsPerUser": 1081.900504325007,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 789.9994974437127,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1.05,
-        "bytes": 1,
-        "network": 1.2
-      },
-      "tpsPerUser": 1195.9302560228414,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 714.6744974437127,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1.05,
-        "bytes": 1.2,
-        "network": 0.8
-      },
-      "tpsPerUser": 937.0579474741709,
-      "bound": "collective",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 912.1109927136217,
-      "feasible": false
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1.05,
-        "bytes": 1.2,
-        "network": 1
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 799.1234927136218,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 0.85,
-        "compute": 1.05,
-        "bytes": 1.2,
-        "network": 1.2
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 723.7984927136217,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 0.95,
-        "bytes": 0.8,
-        "network": 0.8
-      },
-      "tpsPerUser": 1028.3328055520656,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 831.1519870670704,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 0.95,
-        "bytes": 0.8,
-        "network": 1
-      },
-      "tpsPerUser": 1190.1185175437852,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 718.1644870670705,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 0.95,
-        "bytes": 0.8,
-        "network": 1.2
-      },
-      "tpsPerUser": 1329.5711789585196,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 642.8394870670704,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 0.95,
-        "bytes": 1,
-        "network": 0.8
-      },
-      "tpsPerUser": 1017.1668269319762,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 840.2759823369795,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 0.95,
-        "bytes": 1,
-        "network": 1
-      },
-      "tpsPerUser": 1175.1882168606107,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 727.2884823369795,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 0.95,
-        "bytes": 1,
-        "network": 1.2
-      },
-      "tpsPerUser": 1220.6599026240947,
-      "bound": "memory",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 651.9634823369795,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 0.95,
-        "bytes": 1.2,
-        "network": 0.8
-      },
-      "tpsPerUser": 1006.2407313794628,
-      "bound": "collective",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 849.3999776068885,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 0.95,
-        "bytes": 1.2,
-        "network": 1
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 736.4124776068886,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 0.95,
-        "bytes": 1.2,
-        "network": 1.2
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 661.0874776068886,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1,
-        "bytes": 0.8,
-        "network": 0.8
-      },
-      "tpsPerUser": 1014.912293589241,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 842.1425773435083,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1,
-        "bytes": 0.8,
-        "network": 1
-      },
-      "tpsPerUser": 1172.1798027036177,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 729.1550773435083,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1,
-        "bytes": 0.8,
-        "network": 1.2
-      },
-      "tpsPerUser": 1307.221683917446,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 653.8300773435083,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1,
-        "bytes": 1,
-        "network": 0.8
-      },
-      "tpsPerUser": 1004.0343203855571,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 851.2665726134172,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1,
-        "bytes": 1,
-        "network": 1
-      },
-      "tpsPerUser": 1157.6934609230066,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 738.2790726134174,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1,
-        "bytes": 1,
-        "network": 1.2
-      },
-      "tpsPerUser": 1220.6599026240947,
-      "bound": "memory",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 662.9540726134173,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1,
-        "bytes": 1.2,
-        "network": 0.8
-      },
-      "tpsPerUser": 993.3870576981464,
-      "bound": "collective",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 860.3905678833263,
-      "feasible": false
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1,
-        "bytes": 1.2,
-        "network": 1
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 747.4030678833265,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1,
-        "bytes": 1.2,
-        "network": 1.2
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 672.0780678833264,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1.05,
-        "bytes": 0.8,
-        "network": 0.8
-      },
-      "tpsPerUser": 1001.8375643339272,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 853.133167619946,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1.05,
-        "bytes": 0.8,
-        "network": 1
-      },
-      "tpsPerUser": 1154.7738399243472,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 740.1456676199462,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1.05,
-        "bytes": 0.8,
-        "network": 1.2
-      },
-      "tpsPerUser": 1285.6111374525683,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 664.8206676199461,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1.05,
-        "bytes": 1,
-        "network": 0.8
-      },
-      "tpsPerUser": 991.2365956303856,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 862.257162889855,
-      "feasible": false
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1.05,
-        "bytes": 1,
-        "network": 1
-      },
-      "tpsPerUser": 1140.7119452886461,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 749.2696628898551,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1.05,
-        "bytes": 1,
-        "network": 1.2
-      },
-      "tpsPerUser": 1220.6599026240947,
-      "bound": "memory",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 673.9446628898551,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1.05,
-        "bytes": 1.2,
-        "network": 0.8
-      },
-      "tpsPerUser": 980.8576266508496,
-      "bound": "collective",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 871.381158159764,
-      "feasible": false
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1.05,
-        "bytes": 1.2,
-        "network": 1
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 758.3936581597641,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1,
-        "compute": 1.05,
-        "bytes": 1.2,
-        "network": 1.2
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 683.068658159764,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 0.95,
-        "bytes": 0.8,
-        "network": 0.8
-      },
-      "tpsPerUser": 1063.1739089335606,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 803.9144372515507,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 0.95,
-        "bytes": 0.8,
-        "network": 1
-      },
-      "tpsPerUser": 1237.0350736371386,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 690.9269372515508,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 0.95,
-        "bytes": 0.8,
-        "network": 1.2
-      },
-      "tpsPerUser": 1388.398578660746,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 615.6019372515508,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 0.95,
-        "bytes": 1,
-        "network": 0.8
-      },
-      "tpsPerUser": 1051.2428693563577,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 813.0384325214598,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 0.95,
-        "bytes": 1,
-        "network": 1
-      },
-      "tpsPerUser": 1220.6599026240947,
-      "bound": "memory",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 700.0509325214598,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 0.95,
-        "bytes": 1,
-        "network": 1.2
-      },
-      "tpsPerUser": 1220.6599026240947,
-      "bound": "memory",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 624.7259325214598,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 0.95,
-        "bytes": 1.2,
-        "network": 0.8
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 822.1624277913688,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 0.95,
-        "bytes": 1.2,
-        "network": 1
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 709.1749277913689,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 0.95,
-        "bytes": 1.2,
-        "network": 1.2
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 633.8499277913688,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1,
-        "bytes": 0.8,
-        "network": 0.8
-      },
-      "tpsPerUser": 1050.683255444759,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 813.4714722745401,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1,
-        "bytes": 0.8,
-        "network": 1
-      },
-      "tpsPerUser": 1220.1576174906002,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 700.4839722745403,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1,
-        "bytes": 0.8,
-        "network": 1.2
-      },
-      "tpsPerUser": 1367.1736192014703,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 625.1589722745402,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1,
-        "bytes": 1,
-        "network": 0.8
-      },
-      "tpsPerUser": 1039.0293752192001,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 822.5954675444491,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1,
-        "bytes": 1,
-        "network": 1
-      },
-      "tpsPerUser": 1204.4690784102802,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 709.6079675444493,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1,
-        "bytes": 1,
-        "network": 1.2
-      },
-      "tpsPerUser": 1220.6599026240947,
-      "bound": "memory",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 634.2829675444492,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1,
-        "bytes": 1.2,
-        "network": 0.8
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 831.7194628143582,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1,
-        "bytes": 1.2,
-        "network": 1
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 718.7319628143582,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1,
-        "bytes": 1.2,
-        "network": 1.2
-      },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 643.4069628143582,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1.05,
-        "bytes": 0.8,
-        "network": 0.8
-      },
-      "tpsPerUser": 1038.4826857423488,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 823.0285072975295,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1.05,
-        "bytes": 0.8,
-        "network": 1
-      },
-      "tpsPerUser": 1203.734496904498,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 710.0410072975296,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1.05,
-        "bytes": 0.8,
-        "network": 1.2
-      },
-      "tpsPerUser": 1346.5878359362143,
-      "bound": "collective",
-      "memoryLaneUs": 560.156586032506,
-      "serialLaneUs": 634.7160072975296,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1.05,
-        "bytes": 1,
-        "network": 0.8
-      },
-      "tpsPerUser": 1027.0964181010665,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 832.1525025674385,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1.05,
-        "bytes": 1,
-        "network": 1
-      },
-      "tpsPerUser": 1188.4628029027406,
-      "bound": "collective",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 719.1650025674387,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1.05,
-        "bytes": 1,
-        "network": 1.2
-      },
-      "tpsPerUser": 1220.6599026240947,
-      "bound": "memory",
-      "memoryLaneUs": 700.1957325406322,
-      "serialLaneUs": 643.8400025674387,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
-        "computeCapacity": 1.15,
-        "compute": 1.05,
-        "bytes": 1.2,
-        "network": 0.8
-      },
-      "tpsPerUser": 1015.9571281237703,
-      "bound": "collective",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 841.2764978373475,
-      "feasible": true
-    },
-    {
-      "axes": {
-        "bandwidth": 0.8,
         "computeCapacity": 1.15,
         "compute": 1.05,
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 728.2889978373477,
+      "tpsPerUser": 1086.4339214161307,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 786.7030270803588,
       "feasible": true
     },
     {
@@ -1217,10 +1217,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1017.2165855200789,
-      "bound": "memory",
-      "memoryLaneUs": 840.2348790487587,
-      "serialLaneUs": 652.9639978373476,
+      "tpsPerUser": 1201.4721036700028,
+      "bound": "collective",
+      "memoryLaneUs": 704.1466222877418,
+      "serialLaneUs": 711.3780270803587,
       "feasible": true
     },
     {
@@ -1231,10 +1231,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 984.6752392794732,
+      "tpsPerUser": 900.7213851472025,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 868.0027897586559,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 948.9070302923622,
       "feasible": false
     },
     {
@@ -1245,10 +1245,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1132.0311870426672,
+      "tpsPerUser": 1022.4678617114303,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 755.0152897586561,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 835.9195302923622,
       "feasible": true
     },
     {
@@ -1259,10 +1259,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1257.485751347634,
-      "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 679.690289758656,
+      "tpsPerUser": 1123.727322062544,
+      "bound": "compute",
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 760.5945302923622,
       "feasible": true
     },
     {
@@ -1273,10 +1273,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 974.4325099740514,
+      "tpsPerUser": 895.2586992167253,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 877.1267850285649,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 954.6970673936426,
       "feasible": false
     },
     {
@@ -1287,10 +1287,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1118.5144795544759,
+      "tpsPerUser": 1015.4344061306559,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 764.139285028565,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 841.7095673936426,
       "feasible": true
     },
     {
@@ -1301,10 +1301,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1240.82916582575,
-      "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 688.814285028565,
+      "tpsPerUser": 1115.2375596595878,
+      "bound": "compute",
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 766.3845673936426,
       "feasible": true
     },
     {
@@ -1315,10 +1315,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 964.4006794702129,
+      "tpsPerUser": 889.8618739397897,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 886.250780298474,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 960.4871044949228,
       "feasible": false
     },
     {
@@ -1329,10 +1329,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1105.3167484830606,
+      "tpsPerUser": 1008.4970543558229,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 773.263280298474,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 847.499604494923,
       "feasible": true
     },
     {
@@ -1343,10 +1343,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1224.6080761401154,
-      "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 697.938280298474,
+      "tpsPerUser": 1106.8751157128665,
+      "bound": "compute",
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 772.174604494923,
       "feasible": true
     },
     {
@@ -1357,10 +1357,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 970.2224296703064,
+      "tpsPerUser": 884.430045295135,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 880.9328959662298,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 966.3860462990494,
       "feasible": false
     },
     {
@@ -1371,10 +1371,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1112.970869010119,
+      "tpsPerUser": 1001.5260260372519,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 767.9453959662299,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 853.3985462990495,
       "feasible": true
     },
     {
@@ -1385,10 +1385,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1234.0105195841325,
-      "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 692.6203959662298,
+      "tpsPerUser": 1098.4833744397138,
+      "bound": "compute",
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 778.0735462990494,
       "feasible": true
     },
     {
@@ -1399,10 +1399,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 960.2766554774038,
+      "tpsPerUser": 879.1626016054747,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 890.0568912361388,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 972.1760834003297,
       "feasible": false
     },
     {
@@ -1413,11 +1413,11 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1099.9028714040865,
+      "tpsPerUser": 994.7767826689287,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 777.0693912361389,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 859.1885834003299,
+      "feasible": false
     },
     {
       "axes": {
@@ -1427,10 +1427,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1217.9660648163922,
-      "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 701.7443912361389,
+      "tpsPerUser": 1090.3693867155291,
+      "bound": "compute",
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 783.8635834003298,
       "feasible": true
     },
     {
@@ -1441,10 +1441,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 950.5327209767222,
+      "tpsPerUser": 873.9575295946539,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 899.1808865060477,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 977.96612050161,
       "feasible": false
     },
     {
@@ -1455,11 +1455,11 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1087.1381893700016,
+      "tpsPerUser": 988.1178961454617,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 786.1933865060479,
-      "feasible": true
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 864.9786205016102,
+      "feasible": false
     },
     {
       "axes": {
@@ -1469,10 +1469,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1202.3334711812834,
-      "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 710.8683865060478,
+      "tpsPerUser": 1082.3743886058862,
+      "bound": "compute",
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 789.6536205016101,
       "feasible": true
     },
     {
@@ -1483,10 +1483,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 956.1877520630012,
+      "tpsPerUser": 868.717558379216,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 893.8630021738036,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 983.8650623057365,
       "feasible": false
     },
     {
@@ -1497,11 +1497,11 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1094.5417705146797,
+      "tpsPerUser": 981.4248198540648,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 780.8755021738037,
-      "feasible": true
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 870.8775623057367,
+      "feasible": false
     },
     {
       "axes": {
@@ -1511,10 +1511,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1211.395714505933,
-      "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 705.5505021738037,
+      "tpsPerUser": 1074.348691962841,
+      "bound": "compute",
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 795.5525623057366,
       "feasible": true
     },
     {
@@ -1525,10 +1525,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 946.5262037221441,
+      "tpsPerUser": 863.6350736867579,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 902.9869974437127,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 989.6550994070169,
       "feasible": false
     },
     {
@@ -1539,11 +1539,11 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1081.900504325007,
+      "tpsPerUser": 974.9429034208398,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 789.9994974437127,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 876.667599407017,
+      "feasible": false
     },
     {
       "axes": {
@@ -1553,10 +1553,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1195.9302560228414,
-      "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 714.6744974437127,
+      "tpsPerUser": 1066.5860710928414,
+      "bound": "compute",
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 801.3425994070169,
       "feasible": true
     },
     {
@@ -1567,10 +1567,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 937.0579474741709,
+      "tpsPerUser": 858.6117138498176,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 912.1109927136217,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 995.4451365082973,
       "feasible": false
     },
     {
@@ -1581,11 +1581,11 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1069.5479015371031,
+      "tpsPerUser": 968.5460461113232,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 799.1234927136218,
-      "feasible": true
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 882.4576365082974,
+      "feasible": false
     },
     {
       "axes": {
@@ -1595,10 +1595,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1180.8547037677045,
-      "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 723.7984927136217,
+      "tpsPerUser": 1058.934821912716,
+      "bound": "compute",
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 807.1326365082973,
       "feasible": true
     },
     {
@@ -1609,11 +1609,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1028.3328055520656,
+      "tpsPerUser": 950.6268678453977,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 831.1519870670704,
-      "feasible": true
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 899.0918346733035,
+      "feasible": false
     },
     {
       "axes": {
@@ -1623,10 +1623,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1190.1185175437852,
+      "tpsPerUser": 1087.2613430583094,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 718.1644870670705,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 786.1043346733036,
       "feasible": true
     },
     {
@@ -1637,10 +1637,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1329.5711789585196,
+      "tpsPerUser": 1202.484108649138,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 642.8394870670704,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 710.7793346733035,
       "feasible": true
     },
     {
@@ -1651,11 +1651,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 1017.1668269319762,
+      "tpsPerUser": 944.5441237812422,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 840.2759823369795,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 904.8818717745839,
+      "feasible": false
     },
     {
       "axes": {
@@ -1665,10 +1665,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1175.1882168606107,
+      "tpsPerUser": 1079.3116925247562,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 727.2884823369795,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 791.894371774584,
       "feasible": true
     },
     {
@@ -1679,10 +1679,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1310.9643068307416,
+      "tpsPerUser": 1192.767774296839,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 651.9634823369795,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 716.5693717745839,
       "feasible": true
     },
     {
@@ -1693,11 +1693,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 1006.2407313794628,
+      "tpsPerUser": 938.5387276916224,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 849.3999776068885,
-      "feasible": true
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 910.6719088758642,
+      "feasible": false
     },
     {
       "axes": {
@@ -1707,10 +1707,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1160.6278827300246,
+      "tpsPerUser": 1071.4774479613318,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 736.4124776068886,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 797.6844088758644,
       "feasible": true
     },
     {
@@ -1721,10 +1721,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1271.5207319000983,
-      "bound": "memory",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 661.0874776068886,
+      "tpsPerUser": 1183.207201565963,
+      "bound": "collective",
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 722.3594088758643,
       "feasible": true
     },
     {
@@ -1735,11 +1735,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1014.912293589241,
+      "tpsPerUser": 935.1734684433155,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 842.1425773435083,
-      "feasible": true
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 913.9489982789877,
+      "feasible": false
     },
     {
       "axes": {
@@ -1749,10 +1749,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1172.1798027036177,
+      "tpsPerUser": 1067.0935576021266,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 729.1550773435083,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 800.9614982789878,
       "feasible": true
     },
     {
@@ -1763,10 +1763,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1307.221683917446,
+      "tpsPerUser": 1177.8636503648486,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 653.8300773435083,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 725.6364982789878,
       "feasible": true
     },
     {
@@ -1777,11 +1777,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 1004.0343203855571,
+      "tpsPerUser": 929.2862668892561,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 851.2665726134172,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 919.739035380268,
+      "feasible": false
     },
     {
       "axes": {
@@ -1791,10 +1791,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1157.6934609230066,
+      "tpsPerUser": 1059.4350518316464,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 738.2790726134174,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 806.7515353802681,
       "feasible": true
     },
     {
@@ -1805,10 +1805,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1289.2308683338447,
+      "tpsPerUser": 1168.5395776029598,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 662.9540726134173,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 731.4265353802681,
       "feasible": true
     },
     {
@@ -1819,10 +1819,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 993.3870576981464,
+      "tpsPerUser": 923.4727250751966,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 860.3905678833263,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 925.5290724815484,
       "feasible": false
     },
     {
@@ -1833,10 +1833,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1143.5608059803658,
+      "tpsPerUser": 1051.885692556689,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 747.4030678833265,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 812.5415724815484,
       "feasible": true
     },
     {
@@ -1847,10 +1847,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1271.5207319000983,
-      "bound": "memory",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 672.0780678833264,
+      "tpsPerUser": 1159.3619658112702,
+      "bound": "collective",
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 737.2165724815484,
       "feasible": true
     },
     {
@@ -1861,11 +1861,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1001.8375643339272,
+      "tpsPerUser": 920.2144535373801,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 853.133167619946,
-      "feasible": true
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 928.8061618846718,
+      "feasible": false
     },
     {
       "axes": {
@@ -1875,10 +1875,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1154.7738399243472,
+      "tpsPerUser": 1047.6603375636919,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 740.1456676199462,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 815.8186618846719,
       "feasible": true
     },
     {
@@ -1889,10 +1889,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1285.6111374525683,
+      "tpsPerUser": 1154.2311550992993,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 664.8206676199461,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 740.4936618846718,
       "feasible": true
     },
     {
@@ -1903,10 +1903,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 991.2365956303856,
+      "tpsPerUser": 914.5135146368187,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 862.257162889855,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 934.5961989859522,
       "feasible": false
     },
     {
@@ -1917,10 +1917,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1140.7119452886461,
+      "tpsPerUser": 1040.27727037913,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 749.2696628898551,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 821.6086989859523,
       "feasible": true
     },
     {
@@ -1931,10 +1931,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1268.206281263394,
+      "tpsPerUser": 1145.2760603805489,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 673.9446628898551,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 746.2836989859522,
       "feasible": true
     },
     {
@@ -1945,10 +1945,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 980.8576266508496,
+      "tpsPerUser": 908.8827780562822,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 871.381158159764,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 940.3862360872325,
       "feasible": false
     },
     {
@@ -1959,10 +1959,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1126.9883991049967,
+      "tpsPerUser": 1032.9975348315538,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 758.3936581597641,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 827.3987360872327,
       "feasible": true
     },
     {
@@ -1973,10 +1973,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1251.2663910001083,
+      "tpsPerUser": 1136.4588519571948,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 683.068658159764,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 752.0737360872326,
       "feasible": true
     },
     {
@@ -1987,11 +1987,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1063.1739089335606,
+      "tpsPerUser": 991.21964578678,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 803.9144372515507,
-      "feasible": true
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 862.2719074766082,
+      "feasible": false
     },
     {
       "axes": {
@@ -2001,10 +2001,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1237.0350736371386,
+      "tpsPerUser": 1140.689498102945,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 690.9269372515508,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 749.2844074766083,
       "feasible": true
     },
     {
@@ -2015,10 +2015,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1388.398578660746,
+      "tpsPerUser": 1268.1785360055526,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 615.6019372515508,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 673.9594074766082,
       "feasible": true
     },
     {
@@ -2029,11 +2029,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 1051.2428693563577,
+      "tpsPerUser": 984.6081377481294,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 813.0384325214598,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 868.0619445778885,
+      "feasible": false
     },
     {
       "axes": {
@@ -2043,10 +2043,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1220.9123865064694,
+      "tpsPerUser": 1131.942500290366,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 700.0509325214598,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 755.0744445778887,
       "feasible": true
     },
     {
@@ -2057,10 +2057,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1368.1212996092415,
+      "tpsPerUser": 1257.3763193460313,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 624.7259325214598,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 679.7494445778887,
       "feasible": true
     },
     {
@@ -2071,11 +2071,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 1039.5766405877926,
+      "tpsPerUser": 978.0842438080717,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 822.1624277913688,
-      "feasible": true
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 873.8519816791688,
+      "feasible": false
     },
     {
       "axes": {
@@ -2085,10 +2085,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1205.2045570233386,
+      "tpsPerUser": 1123.3286285286918,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 709.1749277913689,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 760.864481679169,
       "feasible": true
     },
     {
@@ -2099,10 +2099,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1271.5207319000983,
-      "bound": "memory",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 633.8499277913688,
+      "tpsPerUser": 1246.7565728050263,
+      "bound": "collective",
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 685.539481679169,
       "feasible": true
     },
     {
@@ -2113,11 +2113,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1050.683255444759,
+      "tpsPerUser": 976.587600583224,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 813.4714722745401,
-      "feasible": true
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 875.191180177203,
+      "feasible": false
     },
     {
       "axes": {
@@ -2127,10 +2127,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1220.1576174906002,
+      "tpsPerUser": 1121.3549303542422,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 700.4839722745403,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 762.2036801772031,
       "feasible": true
     },
     {
@@ -2141,10 +2141,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1367.1736192014703,
+      "tpsPerUser": 1244.3257876053983,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 625.1589722745402,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 686.878680177203,
       "feasible": true
     },
     {
@@ -2155,11 +2155,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 1039.0293752192001,
+      "tpsPerUser": 970.169213528963,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 822.5954675444491,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 880.9812172784834,
+      "feasible": false
     },
     {
       "axes": {
@@ -2169,10 +2169,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1204.4690784102802,
+      "tpsPerUser": 1112.9008421183871,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 709.6079675444493,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 767.9937172784835,
       "feasible": true
     },
     {
@@ -2183,10 +2183,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1347.5071828110522,
+      "tpsPerUser": 1233.924433687435,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 634.2829675444492,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 692.6687172784834,
       "feasible": true
     },
     {
@@ -2197,11 +2197,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 1027.631182043922,
+      "tpsPerUser": 963.8346422253616,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 831.7194628143582,
-      "feasible": true
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 886.7712543797637,
+      "feasible": false
     },
     {
       "axes": {
@@ -2211,10 +2211,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1189.1788579348545,
+      "tpsPerUser": 1104.5732736867176,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 718.7319628143582,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 773.7837543797639,
       "feasible": true
     },
     {
@@ -2225,10 +2225,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1271.5207319000983,
-      "bound": "memory",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 643.4069628143582,
+      "tpsPerUser": 1223.6955286784757,
+      "bound": "collective",
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 698.4587543797638,
       "feasible": true
     },
     {
@@ -2239,11 +2239,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1038.4826857423488,
+      "tpsPerUser": 962.3812577943607,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 823.0285072975295,
-      "feasible": true
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 888.110452877798,
+      "feasible": false
     },
     {
       "axes": {
@@ -2253,10 +2253,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1203.734496904498,
+      "tpsPerUser": 1102.6648759756215,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 710.0410072975296,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 775.1229528777981,
       "feasible": true
     },
     {
@@ -2267,10 +2267,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1346.5878359362143,
+      "tpsPerUser": 1221.3537510163403,
       "bound": "collective",
-      "memoryLaneUs": 448.1252688260048,
-      "serialLaneUs": 634.7160072975296,
+      "memoryLaneUs": 375.54486522012917,
+      "serialLaneUs": 699.797952877798,
       "feasible": true
     },
     {
@@ -2281,11 +2281,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 1027.0964181010665,
+      "tpsPerUser": 956.1476520958827,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 832.1525025674385,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 893.9004899790783,
+      "feasible": false
     },
     {
       "axes": {
@@ -2295,10 +2295,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1188.4628029027406,
+      "tpsPerUser": 1094.489226928794,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 719.1650025674387,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 780.9129899790785,
       "feasible": true
     },
     {
@@ -2309,10 +2309,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1327.5050498455626,
+      "tpsPerUser": 1211.331353196924,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 643.8400025674387,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 705.5879899790784,
       "feasible": true
     },
     {
@@ -2323,11 +2323,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 1015.9571281237703,
+      "tpsPerUser": 949.9942802271103,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 841.2764978373475,
-      "feasible": true
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 899.6905270803586,
+      "feasible": false
     },
     {
       "axes": {
@@ -2337,10 +2337,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1173.5737560760726,
+      "tpsPerUser": 1086.4339214161307,
       "bound": "collective",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 728.2889978373477,
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 786.7030270803588,
       "feasible": true
     },
     {
@@ -2351,10 +2351,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1271.5207319000983,
-      "bound": "memory",
-      "memoryLaneUs": 672.1879032390071,
-      "serialLaneUs": 652.9639978373476,
+      "tpsPerUser": 1201.4721036700028,
+      "bound": "collective",
+      "memoryLaneUs": 563.3172978301935,
+      "serialLaneUs": 711.3780270803587,
       "feasible": true
     },
     {
@@ -2365,10 +2365,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 984.6752392794732,
+      "tpsPerUser": 900.7213851472025,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 868.0027897586559,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 948.9070302923622,
       "feasible": false
     },
     {
@@ -2379,10 +2379,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1132.0311870426672,
+      "tpsPerUser": 1022.4678617114303,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 755.0152897586561,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 835.9195302923622,
       "feasible": true
     },
     {
@@ -2393,10 +2393,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1257.485751347634,
-      "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 679.690289758656,
+      "tpsPerUser": 1123.727322062544,
+      "bound": "compute",
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 760.5945302923622,
       "feasible": true
     },
     {
@@ -2407,10 +2407,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 974.4325099740514,
+      "tpsPerUser": 895.2586992167253,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 877.1267850285649,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 954.6970673936426,
       "feasible": false
     },
     {
@@ -2421,10 +2421,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1118.5144795544759,
+      "tpsPerUser": 1015.4344061306559,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 764.139285028565,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 841.7095673936426,
       "feasible": true
     },
     {
@@ -2435,10 +2435,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1240.82916582575,
-      "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 688.814285028565,
+      "tpsPerUser": 1115.2375596595878,
+      "bound": "compute",
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 766.3845673936426,
       "feasible": true
     },
     {
@@ -2449,10 +2449,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 964.4006794702129,
+      "tpsPerUser": 889.8618739397897,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 886.250780298474,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 960.4871044949228,
       "feasible": false
     },
     {
@@ -2463,10 +2463,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1105.3167484830606,
+      "tpsPerUser": 1008.4970543558229,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 773.263280298474,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 847.499604494923,
       "feasible": true
     },
     {
@@ -2477,10 +2477,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1224.6080761401154,
-      "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 697.938280298474,
+      "tpsPerUser": 1106.8751157128665,
+      "bound": "compute",
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 772.174604494923,
       "feasible": true
     },
     {
@@ -2491,10 +2491,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 970.2224296703064,
+      "tpsPerUser": 884.430045295135,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 880.9328959662298,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 966.3860462990494,
       "feasible": false
     },
     {
@@ -2505,10 +2505,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1112.970869010119,
+      "tpsPerUser": 1001.5260260372519,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 767.9453959662299,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 853.3985462990495,
       "feasible": true
     },
     {
@@ -2519,10 +2519,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1234.0105195841325,
-      "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 692.6203959662298,
+      "tpsPerUser": 1098.4833744397138,
+      "bound": "compute",
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 778.0735462990494,
       "feasible": true
     },
     {
@@ -2533,10 +2533,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 960.2766554774038,
+      "tpsPerUser": 879.1626016054747,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 890.0568912361388,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 972.1760834003297,
       "feasible": false
     },
     {
@@ -2547,11 +2547,11 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1099.9028714040865,
+      "tpsPerUser": 994.7767826689287,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 777.0693912361389,
-      "feasible": true
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 859.1885834003299,
+      "feasible": false
     },
     {
       "axes": {
@@ -2561,10 +2561,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1217.9660648163922,
-      "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 701.7443912361389,
+      "tpsPerUser": 1090.3693867155291,
+      "bound": "compute",
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 783.8635834003298,
       "feasible": true
     },
     {
@@ -2575,10 +2575,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 950.5327209767222,
+      "tpsPerUser": 873.9575295946539,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 899.1808865060477,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 977.96612050161,
       "feasible": false
     },
     {
@@ -2589,11 +2589,11 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1087.1381893700016,
+      "tpsPerUser": 988.1178961454617,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 786.1933865060479,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 864.9786205016102,
+      "feasible": false
     },
     {
       "axes": {
@@ -2603,10 +2603,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1202.3334711812834,
-      "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 710.8683865060478,
+      "tpsPerUser": 1082.3743886058862,
+      "bound": "compute",
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 789.6536205016101,
       "feasible": true
     },
     {
@@ -2617,10 +2617,10 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 956.1877520630012,
+      "tpsPerUser": 868.717558379216,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 893.8630021738036,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 983.8650623057365,
       "feasible": false
     },
     {
@@ -2631,11 +2631,11 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1094.5417705146797,
+      "tpsPerUser": 981.4248198540648,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 780.8755021738037,
-      "feasible": true
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 870.8775623057367,
+      "feasible": false
     },
     {
       "axes": {
@@ -2645,10 +2645,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1211.395714505933,
-      "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 705.5505021738037,
+      "tpsPerUser": 1074.348691962841,
+      "bound": "compute",
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 795.5525623057366,
       "feasible": true
     },
     {
@@ -2659,10 +2659,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 946.5262037221441,
+      "tpsPerUser": 863.6350736867579,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 902.9869974437127,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 989.6550994070169,
       "feasible": false
     },
     {
@@ -2673,11 +2673,11 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1081.900504325007,
+      "tpsPerUser": 974.9429034208398,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 789.9994974437127,
-      "feasible": true
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 876.667599407017,
+      "feasible": false
     },
     {
       "axes": {
@@ -2687,10 +2687,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1195.9302560228414,
-      "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 714.6744974437127,
+      "tpsPerUser": 1066.5860710928414,
+      "bound": "compute",
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 801.3425994070169,
       "feasible": true
     },
     {
@@ -2701,10 +2701,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 937.0579474741709,
+      "tpsPerUser": 858.6117138498176,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 912.1109927136217,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 995.4451365082973,
       "feasible": false
     },
     {
@@ -2715,11 +2715,11 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1069.5479015371031,
+      "tpsPerUser": 968.5460461113232,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 799.1234927136218,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 882.4576365082974,
+      "feasible": false
     },
     {
       "axes": {
@@ -2729,10 +2729,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1180.8547037677045,
-      "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 723.7984927136217,
+      "tpsPerUser": 1058.934821912716,
+      "bound": "compute",
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 807.1326365082973,
       "feasible": true
     },
     {
@@ -2743,11 +2743,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1028.3328055520656,
+      "tpsPerUser": 950.6268678453977,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 831.1519870670704,
-      "feasible": true
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 899.0918346733035,
+      "feasible": false
     },
     {
       "axes": {
@@ -2757,10 +2757,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1190.1185175437852,
+      "tpsPerUser": 1087.2613430583094,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 718.1644870670705,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 786.1043346733036,
       "feasible": true
     },
     {
@@ -2771,10 +2771,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1329.5711789585196,
+      "tpsPerUser": 1202.484108649138,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 642.8394870670704,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 710.7793346733035,
       "feasible": true
     },
     {
@@ -2785,11 +2785,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 1017.1668269319762,
+      "tpsPerUser": 944.5441237812422,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 840.2759823369795,
-      "feasible": true
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 904.8818717745839,
+      "feasible": false
     },
     {
       "axes": {
@@ -2799,10 +2799,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1175.1882168606107,
+      "tpsPerUser": 1079.3116925247562,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 727.2884823369795,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 791.894371774584,
       "feasible": true
     },
     {
@@ -2813,10 +2813,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1310.9643068307416,
+      "tpsPerUser": 1192.767774296839,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 651.9634823369795,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 716.5693717745839,
       "feasible": true
     },
     {
@@ -2827,11 +2827,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 1006.2407313794628,
+      "tpsPerUser": 938.5387276916224,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 849.3999776068885,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 910.6719088758642,
+      "feasible": false
     },
     {
       "axes": {
@@ -2841,10 +2841,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1160.6278827300246,
+      "tpsPerUser": 1071.4774479613318,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 736.4124776068886,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 797.6844088758644,
       "feasible": true
     },
     {
@@ -2855,10 +2855,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1292.8710399943427,
+      "tpsPerUser": 1183.207201565963,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 661.0874776068886,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 722.3594088758643,
       "feasible": true
     },
     {
@@ -2869,11 +2869,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1014.912293589241,
+      "tpsPerUser": 935.1734684433155,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 842.1425773435083,
-      "feasible": true
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 913.9489982789877,
+      "feasible": false
     },
     {
       "axes": {
@@ -2883,10 +2883,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1172.1798027036177,
+      "tpsPerUser": 1067.0935576021266,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 729.1550773435083,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 800.9614982789878,
       "feasible": true
     },
     {
@@ -2897,10 +2897,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1307.221683917446,
+      "tpsPerUser": 1177.8636503648486,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 653.8300773435083,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 725.6364982789878,
       "feasible": true
     },
     {
@@ -2911,11 +2911,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 1004.0343203855571,
+      "tpsPerUser": 929.2862668892561,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 851.2665726134172,
-      "feasible": true
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 919.739035380268,
+      "feasible": false
     },
     {
       "axes": {
@@ -2925,10 +2925,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1157.6934609230066,
+      "tpsPerUser": 1059.4350518316464,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 738.2790726134174,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 806.7515353802681,
       "feasible": true
     },
     {
@@ -2939,10 +2939,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1289.2308683338447,
+      "tpsPerUser": 1168.5395776029598,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 662.9540726134173,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 731.4265353802681,
       "feasible": true
     },
     {
@@ -2953,10 +2953,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 993.3870576981464,
+      "tpsPerUser": 923.4727250751966,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 860.3905678833263,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 925.5290724815484,
       "feasible": false
     },
     {
@@ -2967,10 +2967,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1143.5608059803658,
+      "tpsPerUser": 1051.885692556689,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 747.4030678833265,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 812.5415724815484,
       "feasible": true
     },
     {
@@ -2981,10 +2981,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1271.7285320627839,
+      "tpsPerUser": 1159.3619658112702,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 672.0780678833264,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 737.2165724815484,
       "feasible": true
     },
     {
@@ -2995,11 +2995,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1001.8375643339272,
+      "tpsPerUser": 920.2144535373801,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 853.133167619946,
-      "feasible": true
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 928.8061618846718,
+      "feasible": false
     },
     {
       "axes": {
@@ -3009,10 +3009,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1154.7738399243472,
+      "tpsPerUser": 1047.6603375636919,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 740.1456676199462,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 815.8186618846719,
       "feasible": true
     },
     {
@@ -3023,10 +3023,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1285.6111374525683,
+      "tpsPerUser": 1154.2311550992993,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 664.8206676199461,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 740.4936618846718,
       "feasible": true
     },
     {
@@ -3037,10 +3037,10 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 991.2365956303856,
+      "tpsPerUser": 914.5135146368187,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 862.257162889855,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 934.5961989859522,
       "feasible": false
     },
     {
@@ -3051,10 +3051,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1140.7119452886461,
+      "tpsPerUser": 1040.27727037913,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 749.2696628898551,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 821.6086989859523,
       "feasible": true
     },
     {
@@ -3065,10 +3065,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1268.206281263394,
+      "tpsPerUser": 1145.2760603805489,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 673.9446628898551,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 746.2836989859522,
       "feasible": true
     },
     {
@@ -3079,10 +3079,10 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 980.8576266508496,
+      "tpsPerUser": 908.8827780562822,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 871.381158159764,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 940.3862360872325,
       "feasible": false
     },
     {
@@ -3093,10 +3093,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1126.9883991049967,
+      "tpsPerUser": 1032.9975348315538,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 758.3936581597641,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 827.3987360872327,
       "feasible": true
     },
     {
@@ -3107,10 +3107,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1251.2663910001083,
+      "tpsPerUser": 1136.4588519571948,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 683.068658159764,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 752.0737360872326,
       "feasible": true
     },
     {
@@ -3121,11 +3121,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1063.1739089335606,
+      "tpsPerUser": 991.21964578678,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 803.9144372515507,
-      "feasible": true
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 862.2719074766082,
+      "feasible": false
     },
     {
       "axes": {
@@ -3135,10 +3135,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1237.0350736371386,
+      "tpsPerUser": 1140.689498102945,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 690.9269372515508,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 749.2844074766083,
       "feasible": true
     },
     {
@@ -3149,10 +3149,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1388.398578660746,
+      "tpsPerUser": 1268.1785360055526,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 615.6019372515508,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 673.9594074766082,
       "feasible": true
     },
     {
@@ -3163,11 +3163,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 1051.2428693563577,
+      "tpsPerUser": 984.6081377481294,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 813.0384325214598,
-      "feasible": true
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 868.0619445778885,
+      "feasible": false
     },
     {
       "axes": {
@@ -3177,10 +3177,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1220.9123865064694,
+      "tpsPerUser": 1131.942500290366,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 700.0509325214598,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 755.0744445778887,
       "feasible": true
     },
     {
@@ -3191,10 +3191,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1368.1212996092415,
+      "tpsPerUser": 1257.3763193460313,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 624.7259325214598,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 679.7494445778887,
       "feasible": true
     },
     {
@@ -3205,11 +3205,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 1039.5766405877926,
+      "tpsPerUser": 978.0842438080717,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 822.1624277913688,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 873.8519816791688,
+      "feasible": false
     },
     {
       "axes": {
@@ -3219,10 +3219,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1205.2045570233386,
+      "tpsPerUser": 1123.3286285286918,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 709.1749277913689,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 760.864481679169,
       "feasible": true
     },
     {
@@ -3233,10 +3233,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1348.4277858625533,
+      "tpsPerUser": 1246.7565728050263,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 633.8499277913688,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 685.539481679169,
       "feasible": true
     },
     {
@@ -3247,11 +3247,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1050.683255444759,
+      "tpsPerUser": 976.587600583224,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 813.4714722745401,
-      "feasible": true
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 875.191180177203,
+      "feasible": false
     },
     {
       "axes": {
@@ -3261,10 +3261,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1220.1576174906002,
+      "tpsPerUser": 1121.3549303542422,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 700.4839722745403,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 762.2036801772031,
       "feasible": true
     },
     {
@@ -3275,10 +3275,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1367.1736192014703,
+      "tpsPerUser": 1244.3257876053983,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 625.1589722745402,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 686.878680177203,
       "feasible": true
     },
     {
@@ -3289,11 +3289,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 1039.0293752192001,
+      "tpsPerUser": 970.169213528963,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 822.5954675444491,
-      "feasible": true
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 880.9812172784834,
+      "feasible": false
     },
     {
       "axes": {
@@ -3303,10 +3303,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1204.4690784102802,
+      "tpsPerUser": 1112.9008421183871,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 709.6079675444493,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 767.9937172784835,
       "feasible": true
     },
     {
@@ -3317,10 +3317,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1347.5071828110522,
+      "tpsPerUser": 1233.924433687435,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 634.2829675444492,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 692.6687172784834,
       "feasible": true
     },
     {
@@ -3331,11 +3331,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 1027.631182043922,
+      "tpsPerUser": 963.8346422253616,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 831.7194628143582,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 886.7712543797637,
+      "feasible": false
     },
     {
       "axes": {
@@ -3345,10 +3345,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1189.1788579348545,
+      "tpsPerUser": 1104.5732736867176,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 718.7319628143582,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 773.7837543797639,
       "feasible": true
     },
     {
@@ -3359,10 +3359,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1328.3985161774835,
+      "tpsPerUser": 1223.6955286784757,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 643.4069628143582,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 698.4587543797638,
       "feasible": true
     },
     {
@@ -3373,11 +3373,11 @@
         "bytes": 0.8,
         "network": 0.8
       },
-      "tpsPerUser": 1038.4826857423488,
+      "tpsPerUser": 962.3812577943607,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 823.0285072975295,
-      "feasible": true
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 888.110452877798,
+      "feasible": false
     },
     {
       "axes": {
@@ -3387,10 +3387,10 @@
         "bytes": 0.8,
         "network": 1
       },
-      "tpsPerUser": 1203.734496904498,
+      "tpsPerUser": 1102.6648759756215,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 710.0410072975296,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 775.1229528777981,
       "feasible": true
     },
     {
@@ -3401,10 +3401,10 @@
         "bytes": 0.8,
         "network": 1.2
       },
-      "tpsPerUser": 1346.5878359362143,
+      "tpsPerUser": 1221.3537510163403,
       "bound": "collective",
-      "memoryLaneUs": 373.43772402167065,
-      "serialLaneUs": 634.7160072975296,
+      "memoryLaneUs": 312.9540543501076,
+      "serialLaneUs": 699.797952877798,
       "feasible": true
     },
     {
@@ -3415,11 +3415,11 @@
         "bytes": 1,
         "network": 0.8
       },
-      "tpsPerUser": 1027.0964181010665,
+      "tpsPerUser": 956.1476520958827,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 832.1525025674385,
-      "feasible": true
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 893.9004899790783,
+      "feasible": false
     },
     {
       "axes": {
@@ -3429,10 +3429,10 @@
         "bytes": 1,
         "network": 1
       },
-      "tpsPerUser": 1188.4628029027406,
+      "tpsPerUser": 1094.489226928794,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 719.1650025674387,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 780.9129899790785,
       "feasible": true
     },
     {
@@ -3443,10 +3443,10 @@
         "bytes": 1,
         "network": 1.2
       },
-      "tpsPerUser": 1327.5050498455626,
+      "tpsPerUser": 1211.331353196924,
       "bound": "collective",
-      "memoryLaneUs": 466.7971550270882,
-      "serialLaneUs": 643.8400025674387,
+      "memoryLaneUs": 391.1925679376344,
+      "serialLaneUs": 705.5879899790784,
       "feasible": true
     },
     {
@@ -3457,11 +3457,11 @@
         "bytes": 1.2,
         "network": 0.8
       },
-      "tpsPerUser": 1015.9571281237703,
+      "tpsPerUser": 949.9942802271103,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 841.2764978373475,
-      "feasible": true
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 899.6905270803586,
+      "feasible": false
     },
     {
       "axes": {
@@ -3471,10 +3471,10 @@
         "bytes": 1.2,
         "network": 1
       },
-      "tpsPerUser": 1173.5737560760726,
+      "tpsPerUser": 1086.4339214161307,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 728.2889978373477,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 786.7030270803588,
       "feasible": true
     },
     {
@@ -3485,10 +3485,10 @@
         "bytes": 1.2,
         "network": 1.2
       },
-      "tpsPerUser": 1308.955558854195,
+      "tpsPerUser": 1201.4721036700028,
       "bound": "collective",
-      "memoryLaneUs": 560.1565860325059,
-      "serialLaneUs": 652.9639978373476,
+      "memoryLaneUs": 469.43108152516123,
+      "serialLaneUs": 711.3780270803587,
       "feasible": true
     }
   ]

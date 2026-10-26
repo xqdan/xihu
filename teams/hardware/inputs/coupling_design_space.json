@@ -35,12 +35,12 @@
       "question": "can collective time be hidden under compute (doc 23 section 4: tau x commOverlap x compute)?",
       "seats": ["comm-expert", "compute-expert"],
       "fields": {
-        "vectorLanes": [640, 704, 768, 832],
+        "vectorLanes": {"derive": "laneSpan"},
         "commOverlap": [true, false]
       },
       "optFields": ["commOverlap"],
       "tauSweepUs": [1.0, 1.15, 1.3, 1.5],
-      "evidence": "vectorLanes: matrix_vector_design_space.json options around the compute winner (640 is below its binding kernel and stays as the rejected neighbour); commOverlap: the tuned model's O.OPT switch; tau: see requirements.tauPolicy"
+      "evidence": "vectorLanes: derived rule laneSpan (ADR-0028) -- every legal matrix_vector_design_space.json option from the compute winner's lanes to the published lanes, inclusive. It was a hand-written list [640, 704, 768, 832] written when both were 512: by 2026-10 the winner was 576 and the published value 1024, so the grid carried neither endpoint and could not answer whether the winners compose with the published point; commOverlap: the tuned model's O.OPT switch; tau: see requirements.tauPolicy"
     },
     "areaReallocation": {
       "question": "is there a better use of the die area the domain winners left, moving it between SRAM, the matrix and Reduce/TMA/RDMA (doc 23 section 4, reusing die_area_reallocation.js)?",

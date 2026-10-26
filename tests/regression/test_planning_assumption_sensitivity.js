@@ -78,8 +78,24 @@ for (const slot of slots) {
     assert(dir !== 0, `${id}: the case must not equal the fitted kMemory`);
     assert(dir * (at(id) - nominal) >= -1e-9, `${slot.candidateId} ${slot.modelId} ${id}: a kMemory ${dir > 0 ? 'below' : 'above'} the fitted ${workload.calibration.kMemory.toFixed(4)} must ${dir > 0 ? 'raise' : 'lower'} TPS`);
   }
-  // No case exercises kMemory ABOVE the fitted value, so the costlier direction is not covered by this artifact.
-  assert(Math.max(...[1.0, 1.3]) < workload.calibration.kMemory, 'the kMemory cases still bracket only the optimistic side');
+  // The fit and the two cases used to leave one side uncovered: at 1.4537 both cases (1.0, 1.3) sat BELOW the fit, so
+  // the costlier direction (kMemory above the fit) was not exercised at all. Under ADR-0028 the fit is 1.2182, which
+  // lies BETWEEN the cases: 1.0 is below it and 1.3 is above it, so both directions are now covered. On the
+  // memory-bound slots (MC320) the above-fit case does what it must -- K3 505.8 -> 473.9, GLM-5.2 1645.1 -> 1541.6,
+  // DeepSeek-V4-Pro 1702.4 -> 1595.3 -- and the collective-bound slots (MC640) do not move at all, which is the
+  // statement that kMemory does not bind there. Note the fit moved INTO the cases because the planning model now
+  // fits a point with a longer memory lane; it is a property of the fit, not a statement that kMemory is known.
+  const fitted = workload.calibration.kMemory;
+  assert(1.0 < fitted && fitted < 1.3, `the fitted kMemory ${fitted.toFixed(4)} must lie between the two cases, or one direction is uncovered again`);
+  // Whether a slot moves with kMemory is decided by what binds it, not by its MC tier: every MC320 slot and the
+  // MC640 slots at TP8 are memory-bound and move; the MC640 slots at TP16/TP32 are collective- or compute-bound and
+  // do not move at all. (An earlier draft of this check keyed on the tier and was wrong for K3/GLM-5.2 TP8 MC640.)
+  if (slot.bound === 'memory') {
+    assert(at('kMemory1.3') < nominal - 1e-9, `${slot.candidateId} ${slot.modelId}: kMemory 1.3, above the fit, must lower a memory-bound slot`);
+    assert(at('kMemory1.0') > nominal + 1e-9, `${slot.candidateId} ${slot.modelId}: kMemory 1.0, below the fit, must raise a memory-bound slot`);
+  } else {
+    assert(Math.abs(at('kMemory1.3') - nominal) < 1e-9 && Math.abs(at('kMemory1.0') - nominal) < 1e-9, `${slot.candidateId} ${slot.modelId}: a ${slot.bound}-bound slot does not move with kMemory`);
+  }
 }
 
 // Review conclusions for GLM-5.2 and DeepSeek-V4-Pro at TP32 (change them only with the review text).

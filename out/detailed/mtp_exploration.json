@@ -12,10 +12,10 @@
   },
   "inputs": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39",
+    "baselineSha256": "94d2ffeae018248feb518a293f5bd363b0a17e87d0f0df6138aa0cdac79e91d4",
     "goalTpsPerUser": 1000,
     "margin": 1.17,
-    "publishedTpsPerUser": 1138.4842104608174
+    "publishedTpsPerUser": 1043.9636082178201
   },
   "assumptions": {
     "acceptance": "per-token acceptance of a drafted chain, swept; unmeasured (model_profiles.json: mtpAcceptanceRateMustBeMeasured)",
@@ -81,7 +81,7 @@
   },
   "checkRow": {
     "description": "k = 1, BF16 dense, MC640 must reproduce the published Batch=1 step",
-    "verifyRawUs": 749.7337483373253
+    "verifyRawUs": 816.7790121419735
   },
   "rows": [
     {
@@ -90,12 +90,12 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 1474.8209994774356,
+      "verifyRawUs": 1457.5548756030921,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
-        "windowFraction": 0.5,
-        "kvTile": 16384
+        "windowFraction": 1,
+        "kvTile": 32768
       }
     },
     {
@@ -104,11 +104,11 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1725.6952846205822,
+      "verifyRawUs": 1720.1289798884502,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
-        "windowFraction": 0.75,
+        "windowFraction": 1,
         "kvTile": 16384
       }
     },
@@ -118,66 +118,66 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1995.0425980711934,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 320,
-      "union": "worst",
-      "verifyTokens": 4,
-      "feasible": true,
-      "verifyRawUs": 2404.6141849612322,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "verifyTokens": 2,
-      "feasible": true,
-      "verifyRawUs": 1721.7805515760754,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
-        "windowFraction": 0.75,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1986.4070901991497,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "verifyTokens": 4,
-      "feasible": true,
-      "verifyRawUs": 2380.792644850435,
+      "verifyRawUs": 2126.454146367615,
       "tunedKnobs": {
         "depth": 4,
-        "weightTileMiB": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 320,
+      "union": "worst",
+      "verifyTokens": 4,
+      "feasible": true,
+      "verifyRawUs": 2651.0044162379936,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "verifyTokens": 2,
+      "feasible": true,
+      "verifyRawUs": 1715.8147086790782,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 2113.7794133407006,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "verifyTokens": 4,
+      "feasible": true,
+      "verifyRawUs": 2626.53274117234,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -188,52 +188,52 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 1212.1362359649804,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 4,
-        "windowFraction": 0.5,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "verifyTokens": 2,
-      "feasible": true,
-      "verifyRawUs": 1422.6957207265932,
-      "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 4,
-        "windowFraction": 0.75,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1687.5826764420185,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 4,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "verifyTokens": 4,
-      "feasible": true,
-      "verifyRawUs": 2090.0198960215034,
+      "verifyRawUs": 1185.4668114441636,
       "tunedKnobs": {
         "depth": 2,
-        "weightTileMiB": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 32768
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "verifyTokens": 2,
+      "feasible": true,
+      "verifyRawUs": 1394.2078224298045,
+      "tunedKnobs": {
+        "depth": 2,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1856.9705208091175,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "verifyTokens": 4,
+      "feasible": true,
+      "verifyRawUs": 2329.1935115213187,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -244,11 +244,11 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1419.1908981066515,
+      "verifyRawUs": 1390.7709834247842,
       "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 4,
-        "windowFraction": 0.75,
+        "depth": 2,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
         "kvTile": 16384
       }
     },
@@ -258,10 +258,10 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1678.4800743097596,
+      "verifyRawUs": 1846.730755526764,
       "tunedKnobs": {
         "depth": 4,
-        "weightTileMiB": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -272,10 +272,10 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 2069.970324186771,
+      "verifyRawUs": 2299.6726046106965,
       "tunedKnobs": {
         "depth": 1,
-        "weightTileMiB": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -286,11 +286,11 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 1032.6215634492107,
+      "verifyRawUs": 1002.8857104509888,
       "tunedKnobs": {
         "depth": 1,
-        "weightTileMiB": 4,
-        "windowFraction": 0.5,
+        "weightTileMiB": 8,
+        "windowFraction": 0.75,
         "kvTile": 16384
       }
     },
@@ -300,10 +300,10 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1222.8583188794585,
+      "verifyRawUs": 1231.940864879137,
       "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
+        "depth": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -314,10 +314,10 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1518.8483849018517,
+      "verifyRawUs": 1676.7825995329451,
       "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
+        "depth": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -328,10 +328,10 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1895.5430355832284,
+      "verifyRawUs": 2108.369821933833,
       "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 4,
+        "depth": 1,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -342,10 +342,10 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1219.8108976913659,
+      "verifyRawUs": 1229.5931497090926,
       "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
+        "depth": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -356,10 +356,10 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1512.9124638620856,
+      "verifyRawUs": 1669.0513151629032,
       "tunedKnobs": {
         "depth": 4,
-        "weightTileMiB": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -370,10 +370,10 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1881.7837502646016,
+      "verifyRawUs": 2091.075460018285,
       "tunedKnobs": {
         "depth": 1,
-        "weightTileMiB": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -384,12 +384,12 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 909.2116952794338,
+      "verifyRawUs": 875.0389948861945,
       "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 4,
-        "windowFraction": 0.5,
-        "kvTile": 16384
+        "depth": 2,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 32768
       }
     },
     {
@@ -398,66 +398,66 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1095.5215570376351,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1421.0250098520553,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "verifyTokens": 4,
-      "feasible": true,
-      "verifyRawUs": 1770.9459628599209,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "verifyTokens": 2,
-      "feasible": true,
-      "verifyRawUs": 1092.3832912184216,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1415.827816329482,
+      "verifyRawUs": 1137.790577124043,
       "tunedKnobs": {
         "depth": 4,
-        "weightTileMiB": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1556.1921664219988,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "verifyTokens": 4,
+      "feasible": true,
+      "verifyRawUs": 1960.7470577666204,
+      "tunedKnobs": {
+        "depth": 1,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "verifyTokens": 2,
+      "feasible": true,
+      "verifyRawUs": 1135.7403118405,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1549.580604041441,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -468,10 +468,10 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1753.5819182461832,
+      "verifyRawUs": 1944.9887424339076,
       "tunedKnobs": {
-        "depth": 1,
-        "weightTileMiB": 4,
+        "depth": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -482,7 +482,7 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 749.7337483373253,
+      "verifyRawUs": 816.7790121419735,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -496,9 +496,9 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 957.0916646080408,
+      "verifyRawUs": 1067.2025328940615,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -510,11 +510,11 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1217.3749488393346,
+      "verifyRawUs": 1368.672503081346,
       "tunedKnobs": {
         "depth": 1,
-        "weightTileMiB": 4,
-        "windowFraction": 1,
+        "weightTileMiB": 8,
+        "windowFraction": 0.75,
         "kvTile": 16384
       }
     },
@@ -524,7 +524,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1464.1192838304416,
+      "verifyRawUs": 1651.3923059291433,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -538,9 +538,9 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 957.1411293291043,
+      "verifyRawUs": 1067.035876507146,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -552,11 +552,11 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1218.199511764585,
+      "verifyRawUs": 1369.3701162931482,
       "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
-        "windowFraction": 1,
+        "depth": 1,
+        "weightTileMiB": 8,
+        "windowFraction": 0.75,
         "kvTile": 16384
       }
     },
@@ -566,7 +566,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1462.0260670444711,
+      "verifyRawUs": 1651.008697141191,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -580,9 +580,9 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 970.8650070768821,
+      "verifyRawUs": 967.2971867923189,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 8,
         "windowFraction": 0.5,
         "kvTile": 16384
@@ -594,21 +594,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1235.493014168394,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 8,
-        "windowFraction": 0.75,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "worst",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1519.680134889246,
+      "verifyRawUs": 1237.730348102887,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -620,9 +606,23 @@
       "dtype": "fp8Dense",
       "mcGBs": 320,
       "union": "worst",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1663.427959195219,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1940.4789821233865,
+      "verifyRawUs": 2188.2869393831857,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -636,21 +636,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 1231.9989135182936,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 8,
-        "windowFraction": 0.75,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1507.6875968844768,
+      "verifyRawUs": 1233.224147255612,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 8,
@@ -662,9 +648,23 @@
       "dtype": "fp8Dense",
       "mcGBs": 320,
       "union": "expected",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1649.918339656892,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 320,
+      "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1922.0520069125487,
+      "verifyRawUs": 2166.6137279886216,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -678,94 +678,94 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 804.0684867073234,
+      "verifyRawUs": 828.1692090964659,
+      "tunedKnobs": {
+        "depth": 2,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 32768
+      }
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "verifyTokens": 2,
+      "feasible": true,
+      "verifyRawUs": 1093.862548557733,
+      "tunedKnobs": {
+        "depth": 2,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1488.9611556094007,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "verifyTokens": 4,
+      "feasible": true,
+      "verifyRawUs": 1974.4170154620745,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "verifyTokens": 2,
+      "feasible": true,
+      "verifyRawUs": 1093.0232972450444,
+      "tunedKnobs": {
+        "depth": 2,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "verifyTokens": 3,
+      "feasible": true,
+      "verifyRawUs": 1486.5441038670933,
+      "tunedKnobs": {
+        "depth": 4,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
+        "kvTile": 16384
+      }
+    },
+    {
+      "dtype": "fp8Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "verifyTokens": 4,
+      "feasible": true,
+      "verifyRawUs": 1957.7877674143485,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
-        "windowFraction": 0.5,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "verifyTokens": 2,
-      "feasible": true,
-      "verifyRawUs": 1043.281269459181,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 8,
-        "windowFraction": 0.75,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1323.7816949030191,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "verifyTokens": 4,
-      "feasible": true,
-      "verifyRawUs": 1748.3562645110717,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 8,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "verifyTokens": 2,
-      "feasible": true,
-      "verifyRawUs": 1039.3072206882907,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 8,
-        "windowFraction": 0.75,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "verifyTokens": 3,
-      "feasible": true,
-      "verifyRawUs": 1320.5918995526504,
-      "tunedKnobs": {
-        "depth": 4,
-        "weightTileMiB": 4,
-        "windowFraction": 1,
-        "kvTile": 16384
-      }
-    },
-    {
-      "dtype": "fp8Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "verifyTokens": 4,
-      "feasible": true,
-      "verifyRawUs": 1729.1762436985505,
-      "tunedKnobs": {
-        "depth": 2,
-        "weightTileMiB": 4,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -776,12 +776,12 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 756.3093075802574,
+      "verifyRawUs": 823.0886640542252,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 8,
-        "windowFraction": 0.5,
-        "kvTile": 16384
+        "windowFraction": 1,
+        "kvTile": 32768
       }
     },
     {
@@ -790,11 +790,11 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 965.2115555730692,
+      "verifyRawUs": 1081.174171134535,
       "tunedKnobs": {
         "depth": 2,
-        "weightTileMiB": 4,
-        "windowFraction": 0.75,
+        "weightTileMiB": 8,
+        "windowFraction": 1,
         "kvTile": 16384
       }
     },
@@ -804,7 +804,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1240.9746469261308,
+      "verifyRawUs": 1393.6913687013082,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -818,7 +818,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1625.675277957303,
+      "verifyRawUs": 1830.4753737345504,
       "tunedKnobs": {
         "depth": 4,
         "weightTileMiB": 8,
@@ -832,10 +832,10 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 964.7126503616777,
+      "verifyRawUs": 1080.9423173556397,
       "tunedKnobs": {
         "depth": 2,
-        "weightTileMiB": 4,
+        "weightTileMiB": 8,
         "windowFraction": 0.75,
         "kvTile": 16384
       }
@@ -846,10 +846,10 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1237.9940801647708,
+      "verifyRawUs": 1394.032845203815,
       "tunedKnobs": {
         "depth": 4,
-        "weightTileMiB": 4,
+        "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
       }
@@ -860,7 +860,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1605.4184780431829,
+      "verifyRawUs": 1812.5900235655558,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -874,12 +874,12 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 752.9896325223102,
+      "verifyRawUs": 819.4597033097654,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 8,
-        "windowFraction": 0.5,
-        "kvTile": 16384
+        "windowFraction": 1,
+        "kvTile": 32768
       }
     },
     {
@@ -888,7 +888,7 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 959.614791569846,
+      "verifyRawUs": 1075.121331326002,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -902,7 +902,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1221.263431158063,
+      "verifyRawUs": 1376.0726253130254,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 4,
@@ -916,9 +916,9 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1544.9279270385175,
+      "verifyRawUs": 1733.7218011932487,
       "tunedKnobs": {
-        "depth": 2,
+        "depth": 4,
         "weightTileMiB": 8,
         "windowFraction": 1,
         "kvTile": 16384
@@ -930,7 +930,7 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 959.2192201385524,
+      "verifyRawUs": 1074.7432451376596,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -944,7 +944,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1220.476386323516,
+      "verifyRawUs": 1376.4400433845692,
       "tunedKnobs": {
         "depth": 2,
         "weightTileMiB": 4,
@@ -958,7 +958,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1528.7401534040498,
+      "verifyRawUs": 1719.7205681911475,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -972,12 +972,12 @@
       "union": "n/a",
       "verifyTokens": 1,
       "feasible": true,
-      "verifyRawUs": 742.7539677603085,
+      "verifyRawUs": 808.668373849662,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
-        "windowFraction": 0.5,
-        "kvTile": 16384
+        "windowFraction": 0.75,
+        "kvTile": 32768
       }
     },
     {
@@ -986,11 +986,11 @@
       "union": "worst",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 947.4051971770351,
+      "verifyRawUs": 1058.1737841436307,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 4,
-        "windowFraction": 0.75,
+        "windowFraction": 1,
         "kvTile": 16384
       }
     },
@@ -1000,7 +1000,7 @@
       "union": "worst",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1205.1336851280935,
+      "verifyRawUs": 1357.2460844840227,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -1014,7 +1014,7 @@
       "union": "worst",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1456.9524087252728,
+      "verifyRawUs": 1644.8747563071593,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -1028,11 +1028,11 @@
       "union": "expected",
       "verifyTokens": 2,
       "feasible": true,
-      "verifyRawUs": 947.0283820735052,
+      "verifyRawUs": 1058.120642774006,
       "tunedKnobs": {
-        "depth": 1,
+        "depth": 2,
         "weightTileMiB": 4,
-        "windowFraction": 0.75,
+        "windowFraction": 1,
         "kvTile": 16384
       }
     },
@@ -1042,7 +1042,7 @@
       "union": "expected",
       "verifyTokens": 3,
       "feasible": true,
-      "verifyRawUs": 1205.9721570911408,
+      "verifyRawUs": 1357.5487750279535,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 4,
@@ -1056,7 +1056,7 @@
       "union": "expected",
       "verifyTokens": 4,
       "feasible": true,
-      "verifyRawUs": 1454.8784731722549,
+      "verifyRawUs": 1644.495391924486,
       "tunedKnobs": {
         "depth": 1,
         "weightTileMiB": 8,
@@ -1073,7 +1073,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 588.9230399804425,
+      "tpsPerUser": 590.8745665308844,
       "meetsGoal": false
     },
     {
@@ -1083,7 +1083,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 687.0768799771829,
+      "tpsPerUser": 689.3536609526985,
       "meetsGoal": false
     },
     {
@@ -1092,8 +1092,8 @@
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 826.547965251579,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 787.8327553745124,
       "meetsGoal": false
     },
     {
@@ -1103,8 +1103,8 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1028.9678751091085,
-      "meetsGoal": true
+      "tpsPerUser": 966.4800506385303,
+      "meetsGoal": false
     },
     {
       "dtype": "bf16Dense",
@@ -1112,8 +1112,8 @@
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 583.6087976408957,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 586.393602743228,
       "meetsGoal": false
     },
     {
@@ -1123,7 +1123,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 680.8769305810449,
+      "tpsPerUser": 683.1851506199037,
       "meetsGoal": false
     },
     {
@@ -1132,8 +1132,8 @@
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 813.8126803842338,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 780.7830292798898,
       "meetsGoal": false
     },
     {
@@ -1143,8 +1143,8 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1013.1137449681278,
-      "meetsGoal": true
+      "tpsPerUser": 952.6415068896266,
+      "meetsGoal": false
     },
     {
       "dtype": "bf16Dense",
@@ -1153,7 +1153,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 590.2498268993924,
+      "tpsPerUser": 592.3468228213392,
       "meetsGoal": false
     },
     {
@@ -1163,7 +1163,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 688.624798049291,
+      "tpsPerUser": 691.0712932915624,
       "meetsGoal": false
     },
     {
@@ -1172,658 +1172,658 @@
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 830.084746254502,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 789.7957637617855,
       "meetsGoal": false
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 972.1906168983136,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 587.0332656550569,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 684.872143264233,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 782.7110208734091,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 320,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 958.189241097699,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 728.9793830776265,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 850.4759469238976,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 971.9725107701685,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1107.840366820864,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 722.4341580121171,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 842.8398510141367,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 963.245544016156,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1093.0375370527524,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 730.7644580731744,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 852.5585344187034,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 974.3526107642324,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1113.899482233615,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 724.1872833663333,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 844.8851639273888,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 965.5830444884442,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 400,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1098.9353809003405,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 852.2415324040297,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 962.8691777118585,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1100.421917384981,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1237.9746570581037,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 852.2415324040297,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 954.5857790064615,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1090.9551760073844,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1227.3245730083074,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 852.2415324040297,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 964.6916420252271,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1102.5047337431165,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1240.3178254610061,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 852.2415324040297,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 956.3769923347329,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1093.0022769539803,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 480,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1229.627561573228,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 976.7574470347064,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1043.0453410793803,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1192.0518183764343,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1341.0582956734886,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 976.7574470347064,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1034.560157917133,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1182.3544661910091,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1330.1487744648853,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 976.7574470347064,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1044.9128002742702,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1194.1860574563086,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1343.4593146383472,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 976.7574470347064,
+      "meetsGoal": false
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1036.3973303448442,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1184.454091822679,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 560,
+      "union": "expected",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1332.5108533005139,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1046.4285222748717,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1112.0797056921665,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1270.9482350767614,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1504.4102256270996,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1046.4285222748717,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1103.0760101266796,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1260.6582972876338,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "worst",
+      "draftLayerEquiv": 2,
+      "acceptance": 0.8,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1485.586230820555,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.2,
+      "bestVerifyTokens": 1,
+      "tpsPerUser": 1046.4285222748717,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.4,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1112.2519793562876,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
+      "union": "expected",
+      "draftLayerEquiv": 1,
+      "acceptance": 0.6,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1271.1451192643283,
+      "meetsGoal": true
+    },
+    {
+      "dtype": "bf16Dense",
+      "mcGBs": 1152,
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 4,
-      "tpsPerUser": 1039.0012659366148,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 584.9117211548397,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 682.3970080139796,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 817.2410869650869,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 320,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 4,
-      "tpsPerUser": 1019.0370085252858,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 714.3692916140071,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 833.4308402163416,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 977.5704231212819,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1216.975424702004,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 707.9425051953912,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 825.9329227279563,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 962.922778804602,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1198.7406021853208,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 716.1174375510342,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 835.4703438095398,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 982.7908317706463,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1223.4743007757024,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 709.6593006154327,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 827.9358507180048,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 967.9875119259724,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 400,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1205.0456781119249,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 831.1773064055462,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 969.7068574731372,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1108.2364085407282,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1353.2740097897477,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 827.6999870561903,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 961.0590382667506,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1098.353186590572,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1334.0500810901253,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 833.2350834747359,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 972.1075973871918,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1110.9801112996477,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1358.5067804628918,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 827.6999870561903,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 963.4170975840054,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1101.0481115245775,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 480,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1339.1349602013088,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 940.0460411347592,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1082.586929029062,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1237.2422046046422,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1447.6620901649562,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 940.0460411347592,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1073.0952955159566,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1226.3946234468074,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1428.276122961616,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 940.0460411347592,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1085.6694635905048,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1240.765101246291,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1452.903751658858,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 940.0460411347592,
-      "meetsGoal": false
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1076.123938879745,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1229.8559301482799,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 560,
-      "union": "expected",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1433.3780925129843,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1140.0058442031102,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1239.7835395612815,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1416.8954737843217,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 4,
-      "tpsPerUser": 1695.269588979387,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1140.0058442031102,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1229.5137582216814,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1405.1585808247785,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "worst",
-      "draftLayerEquiv": 2,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1668.8813233034373,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.2,
-      "bestVerifyTokens": 1,
-      "tpsPerUser": 1140.0058442031102,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.4,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1239.7200031230605,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.6,
-      "bestVerifyTokens": 2,
-      "tpsPerUser": 1416.8228607120689,
-      "meetsGoal": true
-    },
-    {
-      "dtype": "bf16Dense",
-      "mcGBs": 1152,
-      "union": "expected",
-      "draftLayerEquiv": 1,
-      "acceptance": 0.8,
-      "bestVerifyTokens": 4,
-      "tpsPerUser": 1697.6572490738974,
+      "tpsPerUser": 1504.198459093858,
       "meetsGoal": true
     },
     {
@@ -1833,7 +1833,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1140.0058442031102,
+      "tpsPerUser": 1046.4285222748717,
       "meetsGoal": true
     },
     {
@@ -1843,7 +1843,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1229.4512700089608,
+      "tpsPerUser": 1103.2455053231024,
       "meetsGoal": true
     },
     {
@@ -1853,7 +1853,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1405.0871657245266,
+      "tpsPerUser": 1260.8520060835453,
       "meetsGoal": true
     },
     {
@@ -1862,8 +1862,8 @@
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 4,
-      "tpsPerUser": 1670.4738002323302,
+      "bestVerifyTokens": 3,
+      "tpsPerUser": 1484.848342398053,
       "meetsGoal": true
     },
     {
@@ -1873,7 +1873,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 880.3498410909064,
+      "tpsPerUser": 883.596961069588,
       "meetsGoal": false
     },
     {
@@ -1883,7 +1883,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 960.3901260128632,
+      "tpsPerUser": 958.6981011574337,
       "meetsGoal": false
     },
     {
@@ -1893,7 +1893,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1097.5887154432721,
+      "tpsPerUser": 1095.6549727513527,
       "meetsGoal": true
     },
     {
@@ -1903,7 +1903,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1353.7100170233716,
+      "tpsPerUser": 1238.2335099761847,
       "meetsGoal": true
     },
     {
@@ -1913,7 +1913,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 880.3498410909064,
+      "tpsPerUser": 883.596961069588,
       "meetsGoal": false
     },
     {
@@ -1923,7 +1923,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 952.4100800070308,
+      "tpsPerUser": 950.7750140697821,
       "meetsGoal": false
     },
     {
@@ -1933,7 +1933,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1088.468662865178,
+      "tpsPerUser": 1086.6000160797507,
       "meetsGoal": true
     },
     {
@@ -1943,7 +1943,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1335.6088382576725,
+      "tpsPerUser": 1223.1265542948329,
       "meetsGoal": true
     },
     {
@@ -1953,7 +1953,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 880.3498410909064,
+      "tpsPerUser": 883.596961069588,
       "meetsGoal": false
     },
     {
@@ -1963,7 +1963,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 963.0910244829932,
+      "tpsPerUser": 962.1718858817638,
       "meetsGoal": false
     },
     {
@@ -1973,7 +1973,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1100.675456551992,
+      "tpsPerUser": 1099.6250124363014,
       "meetsGoal": true
     },
     {
@@ -1983,7 +1983,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1364.3306996939712,
+      "tpsPerUser": 1248.2459952023546,
       "meetsGoal": true
     },
     {
@@ -1993,7 +1993,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 880.3498410909064,
+      "tpsPerUser": 883.596961069588,
       "meetsGoal": false
     },
     {
@@ -2003,7 +2003,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 955.0662184295655,
+      "tpsPerUser": 954.1915160906757,
       "meetsGoal": false
     },
     {
@@ -2013,7 +2013,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1091.504249633789,
+      "tpsPerUser": 1090.5045898179148,
       "meetsGoal": true
     },
     {
@@ -2023,7 +2023,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1345.9463057755122,
+      "tpsPerUser": 1232.8952533236502,
       "meetsGoal": true
     },
     {
@@ -2033,7 +2033,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1062.9702181226776,
+      "tpsPerUser": 1032.0365033050853,
       "meetsGoal": true
     },
     {
@@ -2043,7 +2043,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1137.5133506678392,
+      "tpsPerUser": 1085.0710551256404,
       "meetsGoal": true
     },
     {
@@ -2053,7 +2053,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1300.0152579061019,
+      "tpsPerUser": 1240.0812058578747,
       "meetsGoal": true
     },
     {
@@ -2062,8 +2062,8 @@
       "union": "worst",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1555.0751696527516,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1395.091356590109,
       "meetsGoal": true
     },
     {
@@ -2073,7 +2073,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1062.9702181226776,
+      "tpsPerUser": 1032.0365033050853,
       "meetsGoal": true
     },
     {
@@ -2083,7 +2083,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1128.2402280557058,
+      "tpsPerUser": 1076.3791016533783,
       "meetsGoal": true
     },
     {
@@ -2093,7 +2093,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1289.4174034922348,
+      "tpsPerUser": 1230.1475447467178,
       "meetsGoal": true
     },
     {
@@ -2102,8 +2102,8 @@
       "union": "worst",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1535.279285608842,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1383.9159878400576,
       "meetsGoal": true
     },
     {
@@ -2113,7 +2113,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1062.9702181226776,
+      "tpsPerUser": 1032.0365033050853,
       "meetsGoal": true
     },
     {
@@ -2123,7 +2123,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1141.8270298331984,
+      "tpsPerUser": 1085.8974675811955,
       "meetsGoal": true
     },
     {
@@ -2133,7 +2133,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1304.9451769522263,
+      "tpsPerUser": 1241.025677235652,
       "meetsGoal": true
     },
     {
@@ -2142,8 +2142,8 @@
       "union": "expected",
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1558.7827950347616,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1396.1538868901084,
       "meetsGoal": true
     },
     {
@@ -2153,7 +2153,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1062.9702181226776,
+      "tpsPerUser": 1032.0365033050853,
       "meetsGoal": true
     },
     {
@@ -2163,7 +2163,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1132.4837316206792,
+      "tpsPerUser": 1077.1923222352982,
       "meetsGoal": true
     },
     {
@@ -2173,7 +2173,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1294.2671218522046,
+      "tpsPerUser": 1231.0769396974833,
       "meetsGoal": true
     },
     {
@@ -2182,8 +2182,8 @@
       "union": "expected",
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
-      "bestVerifyTokens": 3,
-      "tpsPerUser": 1538.8930070504716,
+      "bestVerifyTokens": 2,
+      "tpsPerUser": 1384.961557159669,
       "meetsGoal": true
     },
     {
@@ -2193,7 +2193,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1130.0943226989923,
+      "tpsPerUser": 1038.4067865677068,
       "meetsGoal": true
     },
     {
@@ -2203,7 +2203,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1229.350879699988,
+      "tpsPerUser": 1097.7561524638909,
       "meetsGoal": true
     },
     {
@@ -2213,7 +2213,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1404.972433942843,
+      "tpsPerUser": 1254.578459958732,
       "meetsGoal": true
     },
     {
@@ -2223,7 +2223,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1658.7693214853443,
+      "tpsPerUser": 1477.597853519909,
       "meetsGoal": true
     },
     {
@@ -2233,7 +2233,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1130.0943226989923,
+      "tpsPerUser": 1038.4067865677068,
       "meetsGoal": true
     },
     {
@@ -2243,7 +2243,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1219.1646715078614,
+      "tpsPerUser": 1088.9147480183879,
       "meetsGoal": true
     },
     {
@@ -2253,7 +2253,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1393.3310531518414,
+      "tpsPerUser": 1244.4739977353001,
       "meetsGoal": true
     },
     {
@@ -2263,7 +2263,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1637.5841420721076,
+      "tpsPerUser": 1459.2962384198622,
       "meetsGoal": true
     },
     {
@@ -2273,7 +2273,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1130.0943226989923,
+      "tpsPerUser": 1038.4067865677068,
       "meetsGoal": true
     },
     {
@@ -2283,7 +2283,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1229.9813291088326,
+      "tpsPerUser": 1097.9897004629959,
       "meetsGoal": true
     },
     {
@@ -2293,7 +2293,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1405.6929475529512,
+      "tpsPerUser": 1254.8453719577094,
       "meetsGoal": true
     },
     {
@@ -2303,7 +2303,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1662.7111496936452,
+      "tpsPerUser": 1477.240445493549,
       "meetsGoal": true
     },
     {
@@ -2313,7 +2313,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1130.0943226989923,
+      "tpsPerUser": 1038.4067865677068,
       "meetsGoal": true
     },
     {
@@ -2323,7 +2323,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1219.7847139561745,
+      "tpsPerUser": 1089.1445487498531,
       "meetsGoal": true
     },
     {
@@ -2333,7 +2333,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1394.0396730927707,
+      "tpsPerUser": 1244.7366271426893,
       "meetsGoal": true
     },
     {
@@ -2343,7 +2343,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1641.425809553121,
+      "tpsPerUser": 1458.947628271746,
       "meetsGoal": true
     },
     {
@@ -2353,7 +2353,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1135.076524012475,
+      "tpsPerUser": 1043.0053500480276,
       "meetsGoal": true
     },
     {
@@ -2363,7 +2363,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1236.506182997623,
+      "tpsPerUser": 1103.9257030398796,
       "meetsGoal": true
     },
     {
@@ -2373,7 +2373,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1413.1499234258547,
+      "tpsPerUser": 1261.6293749027193,
       "meetsGoal": true
     },
     {
@@ -2383,7 +2383,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1685.2872428602595,
+      "tpsPerUser": 1496.360010642262,
       "meetsGoal": true
     },
     {
@@ -2393,7 +2393,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1135.076524012475,
+      "tpsPerUser": 1043.0053500480276,
       "meetsGoal": true
     },
     {
@@ -2403,7 +2403,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1226.2464061678484,
+      "tpsPerUser": 1095.0241451543686,
       "meetsGoal": true
     },
     {
@@ -2413,7 +2413,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1401.4244641918265,
+      "tpsPerUser": 1251.4561658907069,
       "meetsGoal": true
     },
     {
@@ -2423,7 +2423,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1663.518485246734,
+      "tpsPerUser": 1477.675324836923,
       "meetsGoal": true
     },
     {
@@ -2433,7 +2433,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1135.076524012475,
+      "tpsPerUser": 1043.0053500480276,
       "meetsGoal": true
     },
     {
@@ -2443,7 +2443,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1237.0118363516945,
+      "tpsPerUser": 1104.3108973309156,
       "meetsGoal": true
     },
     {
@@ -2453,7 +2453,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1413.727812973365,
+      "tpsPerUser": 1262.0695969496178,
       "meetsGoal": true
     },
     {
@@ -2463,7 +2463,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1686.359798132386,
+      "tpsPerUser": 1495.965631209321,
       "meetsGoal": true
     },
     {
@@ -2473,7 +2473,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1135.076524012475,
+      "tpsPerUser": 1043.0053500480276,
       "meetsGoal": true
     },
     {
@@ -2483,7 +2483,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1226.7437014386649,
+      "tpsPerUser": 1095.4031513593632,
       "meetsGoal": true
     },
     {
@@ -2493,7 +2493,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1401.9928016441881,
+      "tpsPerUser": 1251.889315839272,
       "meetsGoal": true
     },
     {
@@ -2503,7 +2503,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1664.5635026126615,
+      "tpsPerUser": 1477.2907316883138,
       "meetsGoal": true
     },
     {
@@ -2513,7 +2513,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1150.7186656681345,
+      "tpsPerUser": 1056.9238050352524,
       "meetsGoal": true
     },
     {
@@ -2523,7 +2523,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1252.450772403068,
+      "tpsPerUser": 1121.5819713502547,
       "meetsGoal": true
     },
     {
@@ -2533,7 +2533,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1431.3723113177919,
+      "tpsPerUser": 1281.8079672574336,
       "meetsGoal": true
     },
     {
@@ -2543,7 +2543,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1707.8521992690423,
+      "tpsPerUser": 1517.1062509970643,
       "meetsGoal": true
     },
     {
@@ -2553,7 +2553,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1150.7186656681345,
+      "tpsPerUser": 1056.9238050352524,
       "meetsGoal": true
     },
     {
@@ -2563,7 +2563,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1242.0677021681638,
+      "tpsPerUser": 1112.5145860717778,
       "meetsGoal": true
     },
     {
@@ -2573,7 +2573,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1419.5059453350443,
+      "tpsPerUser": 1271.4452412248888,
       "meetsGoal": true
     },
     {
@@ -2583,7 +2583,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1685.8003765295905,
+      "tpsPerUser": 1498.1529140977827,
       "meetsGoal": true
     },
     {
@@ -2593,7 +2593,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1150.7186656681345,
+      "tpsPerUser": 1056.9238050352524,
       "meetsGoal": true
     },
     {
@@ -2603,7 +2603,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1252.944945139032,
+      "tpsPerUser": 1121.6378407804211,
       "meetsGoal": true
     },
     {
@@ -2613,7 +2613,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1431.9370801588934,
+      "tpsPerUser": 1281.8718180347669,
       "meetsGoal": true
     },
     {
@@ -2623,7 +2623,7 @@
       "draftLayerEquiv": 1,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1706.6803087474427,
+      "tpsPerUser": 1516.7722626879508,
       "meetsGoal": true
     },
     {
@@ -2633,7 +2633,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.2,
       "bestVerifyTokens": 1,
-      "tpsPerUser": 1150.7186656681345,
+      "tpsPerUser": 1056.9238050352524,
       "meetsGoal": true
     },
     {
@@ -2643,7 +2643,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.4,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1242.5537136937342,
+      "tpsPerUser": 1112.5695557829338,
       "meetsGoal": true
     },
     {
@@ -2653,7 +2653,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.6,
       "bestVerifyTokens": 2,
-      "tpsPerUser": 1420.061387078553,
+      "tpsPerUser": 1271.508063751924,
       "meetsGoal": true
     },
     {
@@ -2663,7 +2663,7 @@
       "draftLayerEquiv": 2,
       "acceptance": 0.8,
       "bestVerifyTokens": 3,
-      "tpsPerUser": 1684.658543462561,
+      "tpsPerUser": 1497.8272178534205,
       "meetsGoal": true
     }
   ],
@@ -2673,28 +2673,28 @@
       "mcGBs": 320,
       "union": "worst",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.8
+      "minAcceptance": 0.85
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 320,
       "union": "worst",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.8
+      "minAcceptance": 0.85
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 320,
       "union": "expected",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.8
+      "minAcceptance": 0.85
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 320,
       "union": "expected",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.8
+      "minAcceptance": 0.85
     },
     {
       "dtype": "bf16Dense",
@@ -2708,7 +2708,7 @@
       "mcGBs": 400,
       "union": "worst",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.65
+      "minAcceptance": 0.7
     },
     {
       "dtype": "bf16Dense",
@@ -2722,14 +2722,14 @@
       "mcGBs": 400,
       "union": "expected",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.65
+      "minAcceptance": 0.7
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 480,
       "union": "worst",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.45
+      "minAcceptance": 0.5
     },
     {
       "dtype": "bf16Dense",
@@ -2743,7 +2743,7 @@
       "mcGBs": 480,
       "union": "expected",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.45
+      "minAcceptance": 0.5
     },
     {
       "dtype": "bf16Dense",
@@ -2757,28 +2757,28 @@
       "mcGBs": 560,
       "union": "worst",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.3
+      "minAcceptance": 0.35
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 560,
       "union": "worst",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.35
+      "minAcceptance": 0.4
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 560,
       "union": "expected",
       "draftLayerEquiv": 1,
-      "minAcceptance": 0.3
+      "minAcceptance": 0.35
     },
     {
       "dtype": "bf16Dense",
       "mcGBs": 560,
       "union": "expected",
       "draftLayerEquiv": 2,
-      "minAcceptance": 0.35
+      "minAcceptance": 0.4
     },
     {
       "dtype": "bf16Dense",

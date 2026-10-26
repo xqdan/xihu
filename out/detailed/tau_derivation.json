@@ -14,11 +14,11 @@
   "method": "tau = memoryTransport (phase chain per step with per-path one-way latency and the busiest-link floor) + tpReduce (model) + cardLocal (model, 8 die hops on the in-card ring at ucieHopUs) + portTail (model floor) + controlPath (Comm Core). bottomUp replays with OPT.tauUs = 0, specFloor with 1.15 us; optimistic / pessimistic put every parameter at the low / high end of its range.",
   "provenance": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39",
+    "baselineSha256": "94d2ffeae018248feb518a293f5bd363b0a17e87d0f0df6138aa0cdac79e91d4",
     "candidates": "teams/hardware/inputs/scaleout_topology_candidates.json",
     "candidatesSha256": "e3a6de8a9d8362c02f5ae6188ca1d26b672fc2351c88f38e79cf4ab225a19c35",
     "commCore": "out/detailed/comm_core_design.json",
-    "commCoreSha256": "03504780bb6eced7ac39926bed8164f88b51db8d9191fe0b07034b8ae183fb9b",
+    "commCoreSha256": "a82ff87b3ccd5bc721f72076ce1b6a938c4342322cdd2280ab6f71af9b8fae35",
     "sources": {
       "integration/detailed/collective_topology.js": "06351fc0d15f53681a6135739578402505e184051d347ea308555ec329f007c9",
       "integration/detailed/k3_sram_memory_rdma_model.js": "b8636ec93b54d6bf7f88a049efbb12e378572a52bcae9a655f61a4d6a7d017a1",
@@ -33,65 +33,65 @@
   },
   "targetTpsPerUser": 1000,
   "published": {
-    "rawUs": 750.7358001521186,
-    "tpsPerUser": 1138.4842104608174,
+    "rawUs": 818.707518128854,
+    "tpsPerUser": 1043.9636082178201,
     "specTauUs": 1.15,
     "modelOneWayUs": 0.05,
-    "tauBreakEvenUs": 1.4145405292510986,
+    "tauBreakEvenUs": 1.2412988662719728,
     "uniformTauSweep": [
       {
         "tauUs": 0,
-        "rawUs": 587.5801840806946,
-        "tpsPerUser": 1454.6114349279612,
+        "rawUs": 655.6698111030046,
+        "tpsPerUser": 1303.5537708576653,
         "commUs": 288.7943839285713,
-        "dmaWaitUs": 12.456727538697839
+        "dmaWaitUs": 11.955982748574264
       },
       {
         "tauUs": 0.5,
-        "rawUs": 589.2689464433319,
-        "tpsPerUser": 1450.4427220534837,
+        "rawUs": 657.3585734656415,
+        "tpsPerUser": 1300.2049249845645,
         "commUs": 290.48314629120824,
-        "dmaWaitUs": 12.456727538697839
+        "dmaWaitUs": 11.955982748574264
       },
       {
         "tauUs": 0.9,
-        "rawUs": 655.5368468554155,
-        "tpsPerUser": 1303.8181740672871,
+        "rawUs": 723.6250390741222,
+        "tpsPerUser": 1181.1377558112747,
         "commUs": 356.75104670329534,
-        "dmaWaitUs": 12.456727538698294
+        "dmaWaitUs": 11.955982748574606
       },
       {
         "tauUs": 1.15,
-        "rawUs": 750.7358001521186,
-        "tpsPerUser": 1138.4842104608174,
+        "rawUs": 818.707518128854,
+        "tpsPerUser": 1043.9636082178201,
         "commUs": 451.94999999999703,
-        "dmaWaitUs": 12.456727538698805
+        "dmaWaitUs": 11.95598274857506
       },
       {
         "tauUs": 1.35,
-        "rawUs": 829.33580015213,
-        "tpsPerUser": 1030.5847818749317,
+        "rawUs": 897.4203630769678,
+        "tpsPerUser": 952.3974381084452,
         "commUs": 530.5500000000038,
-        "dmaWaitUs": 12.456727538699147
+        "dmaWaitUs": 11.955982748575344
       },
       {
         "tauUs": 1.5,
-        "rawUs": 888.2858001521245,
-        "tpsPerUser": 962.1912841052754,
+        "rawUs": 988.7666239661199,
+        "tpsPerUser": 864.411109744478,
         "commUs": 589.5,
-        "dmaWaitUs": 12.456727538699374
+        "dmaWaitUs": 34.22775525249933
       },
       {
         "tauUs": 2,
-        "rawUs": 1115.074598297075,
-        "tpsPerUser": 766.4965698314185,
+        "rawUs": 1185.2666239661207,
+        "tpsPerUser": 721.1042962138494,
         "commUs": 786,
-        "dmaWaitUs": 34.72850004262367
+        "dmaWaitUs": 34.22775525249987
       }
     ],
     "abstractWire": {
-      "bottomUpTpsAtModelOneWay": 1415.2968431500933,
-      "oneWayBudgetUs": 0.23716225624084475
+      "bottomUpTpsAtModelOneWay": 1272.11497884286,
+      "oneWayBudgetUs": 0.1784991264343262
     }
   },
   "anchor": {
@@ -127,8 +127,8 @@
         "derivedMemoryTransportUs": 0.5843809523809524
       }
     ],
-    "tpsPerUser": 1138.4842104608174,
-    "publishedTpsPerUser": 1138.4842104608174
+    "tpsPerUser": 1043.9636082178201,
+    "publishedTpsPerUser": 1043.9636082178201
   },
   "parameters": [
     {
@@ -332,7 +332,7 @@
           "controlPathUs": 0.042,
           "tauUs": 1.3602698031135532,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         },
         {
           "name": "Attention output all-reduce",
@@ -348,7 +348,7 @@
           "controlPathUs": 0.042,
           "tauUs": 1.4107227564102567,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         },
         {
           "name": "Wdown + Router all-gather",
@@ -380,7 +380,7 @@
           "controlPathUs": 0.042,
           "tauUs": 1.3550280448717955,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         },
         {
           "name": "Wup + Shared output all-reduce",
@@ -396,21 +396,21 @@
           "controlPathUs": 0.042,
           "tauUs": 1.4107227564102567,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         }
       ],
       "maxTauUs": 1.4107227564102567,
       "meanTauUs": 1.2534249439597727,
       "collectiveUs": 492.5960029761907,
       "tpsPerUser": {
-        "bottomUp": 1080.0107499594296,
-        "specFloor": 1038.6719141127694,
-        "optimistic": 1434.0513110097643,
-        "pessimistic": 672.0970569814529
+        "bottomUp": 958.3324033109701,
+        "specFloor": 925.6426745649153,
+        "optimistic": 1287.020661668805,
+        "pessimistic": 636.9406411998445
       },
       "meetsTarget": {
-        "bottomUp": true,
-        "specFloor": true,
+        "bottomUp": false,
+        "specFloor": false,
         "optimistic": true,
         "pessimistic": false
       }
@@ -505,10 +505,10 @@
       "meanTauUs": 0.8809124030655521,
       "collectiveUs": 346.198574404762,
       "tpsPerUser": {
-        "bottomUp": 1324.6963799109371,
-        "specFloor": 1138.2976418008896,
-        "optimistic": 1491.0349048759288,
-        "pessimistic": 931.9361811191276
+        "bottomUp": 1198.8127510959634,
+        "specFloor": 1043.806730487713,
+        "optimistic": 1413.4718631279495,
+        "pessimistic": 839.9144737274341
       },
       "meetsTarget": {
         "bottomUp": true,
@@ -607,10 +607,10 @@
       "meanTauUs": 4.364433789228159,
       "collectiveUs": 1715.2224791666665,
       "tpsPerUser": {
-        "bottomUp": 418.09033732085487,
-        "specFloor": 418.09033732085487,
-        "optimistic": 646.1559199508292,
-        "pessimistic": 238.2030351414665
+        "bottomUp": 404.21152014193365,
+        "specFloor": 404.21152014193365,
+        "optimistic": 613.5952769066448,
+        "pessimistic": 233.632632820361
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -709,10 +709,10 @@
       "meanTauUs": 2.9131615245971165,
       "collectiveUs": 1144.8724791666668,
       "tpsPerUser": {
-        "bottomUp": 579.8721458653467,
-        "specFloor": 579.8721458653467,
-        "optimistic": 778.8047170825935,
-        "pessimistic": 372.6916429117657
+        "bottomUp": 553.5128622588597,
+        "specFloor": 553.5128622588597,
+        "optimistic": 731.9874715315159,
+        "pessimistic": 361.6233719266116
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -811,10 +811,10 @@
       "meanTauUs": 15.605601849327526,
       "collectiveUs": 6133.001526785718,
       "tpsPerUser": {
-        "bottomUp": 132.2641265990818,
-        "specFloor": 132.2641265990818,
-        "optimistic": 287.40781025893466,
-        "pessimistic": 63.379257241608315
+        "bottomUp": 130.8428917760344,
+        "specFloor": 130.8428917760344,
+        "optimistic": 280.780472511232,
+        "pessimistic": 63.051076352128455
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -913,10 +913,10 @@
       "meanTauUs": 9.221810500727011,
       "collectiveUs": 3624.1715267857153,
       "tpsPerUser": {
-        "bottomUp": 216.2022873501098,
-        "specFloor": 216.2022873501098,
-        "optimistic": 389.6691968135065,
-        "pessimistic": 113.77173640630296
+        "bottomUp": 212.43046933408303,
+        "specFloor": 212.43046933408303,
+        "optimistic": 377.5858989575828,
+        "pessimistic": 112.7185543906817
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1015,10 +1015,10 @@
       "meanTauUs": 1.9697617911668484,
       "collectiveUs": 774.1163839285714,
       "tpsPerUser": {
-        "bottomUp": 774.753300626628,
-        "specFloor": 774.753300626628,
-        "optimistic": 1209.832421268322,
-        "pessimistic": 429.7758712996037
+        "bottomUp": 728.4073903834454,
+        "specFloor": 728.4073903834454,
+        "optimistic": 1103.638752766339,
+        "pessimistic": 415.12398649941935
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1046,7 +1046,7 @@
           "controlPathUs": 0.042,
           "tauUs": 1.365126945970696,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         },
         {
           "name": "Attention output all-reduce",
@@ -1094,7 +1094,7 @@
           "controlPathUs": 0.042,
           "tauUs": 1.3750280448717955,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         },
         {
           "name": "Wup + Shared output all-reduce",
@@ -1117,14 +1117,14 @@
       "meanTauUs": 1.2810086105052712,
       "collectiveUs": 503.43638392857156,
       "tpsPerUser": {
-        "bottomUp": 1065.416628537012,
-        "specFloor": 1026.299154617162,
-        "optimistic": 1416.751359901806,
-        "pessimistic": 646.1628054837804
+        "bottomUp": 946.823980008896,
+        "specFloor": 915.8034728055812,
+        "optimistic": 1273.2899608943142,
+        "pessimistic": 613.6014859785398
       },
       "meetsTarget": {
-        "bottomUp": true,
-        "specFloor": true,
+        "bottomUp": false,
+        "specFloor": false,
         "optimistic": true,
         "pessimistic": false
       }
@@ -1219,10 +1219,10 @@
       "meanTauUs": 7.600419249060948,
       "collectiveUs": 2986.9647648809528,
       "tpsPerUser": {
-        "bottomUp": 257.74749968038225,
-        "specFloor": 257.74749968038225,
-        "optimistic": 531.0022321413682,
-        "pessimistic": 116.06536381011075
+        "bottomUp": 252.40474041907632,
+        "specFloor": 252.40474041907632,
+        "optimistic": 508.8136898281663,
+        "pessimistic": 114.96949417039296
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1321,10 +1321,10 @@
       "meanTauUs": 4.1566533457530594,
       "collectiveUs": 1633.5647648809522,
       "tpsPerUser": {
-        "bottomUp": 435.485433919385,
-        "specFloor": 435.485433919385,
-        "optimistic": 781.4769611068396,
-        "pessimistic": 211.87105939993043
+        "bottomUp": 420.4484736855608,
+        "specFloor": 420.4484736855608,
+        "optimistic": 734.3476057052887,
+        "pessimistic": 208.2475845724916
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1423,10 +1423,10 @@
       "meanTauUs": 44.688176912940726,
       "collectiveUs": 17562.453526785706,
       "tpsPerUser": {
-        "bottomUp": 47.77126071766982,
-        "specFloor": 47.77126071766982,
-        "optimistic": 114.3399034765749,
-        "pessimistic": 20.112950853924694
+        "bottomUp": 47.584576951839225,
+        "specFloor": 47.584576951839225,
+        "optimistic": 113.27622535204293,
+        "pessimistic": 20.07978368063273
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1525,10 +1525,10 @@
       "meanTauUs": 23.33682831243184,
       "collectiveUs": 9171.373526785714,
       "tpsPerUser": {
-        "bottomUp": 89.96426731117016,
-        "specFloor": 89.96426731117016,
-        "optimistic": 199.85951849075772,
-        "pessimistic": 39.11733448642254
+        "bottomUp": 89.30446043713322,
+        "specFloor": 89.30446043713322,
+        "optimistic": 196.63211748181743,
+        "pessimistic": 38.992072524121205
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1627,10 +1627,10 @@
       "meanTauUs": 3.981466625772446,
       "collectiveUs": 1564.7163839285713,
       "tpsPerUser": {
-        "bottomUp": 451.3174171398707,
-        "specFloor": 451.3174171398707,
-        "optimistic": 807.5778915076654,
-        "pessimistic": 210.91679207646848
+        "bottomUp": 435.18749972132565,
+        "specFloor": 435.18749972132565,
+        "optimistic": 757.3489434800606,
+        "pessimistic": 207.32560738291372
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1690,7 +1690,7 @@
           "controlPathUs": 0.04,
           "tauUs": 1.4076438873626376,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         },
         {
           "name": "Routed latent merge",
@@ -1729,10 +1729,10 @@
       "meanTauUs": 2.2868610278080697,
       "collectiveUs": 898.7363839285714,
       "tpsPerUser": {
-        "bottomUp": 696.1176166966206,
-        "specFloor": 696.1176166966206,
-        "optimistic": 1118.5980677316604,
-        "pessimistic": 363.00228586857145
+        "bottomUp": 658.4737088453624,
+        "specFloor": 658.4737088453624,
+        "optimistic": 1027.2181316467866,
+        "pessimistic": 352.493933092631
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1831,10 +1831,10 @@
       "meanTauUs": 11.623828918272142,
       "collectiveUs": 4568.164764880952,
       "tpsPerUser": {
-        "bottomUp": 174.52707358502573,
-        "specFloor": 174.52707358502573,
-        "optimistic": 379.3950178923736,
-        "pessimistic": 74.37897943367403
+        "bottomUp": 172.06092803211064,
+        "specFloor": 172.06092803211064,
+        "optimistic": 367.9311334533443,
+        "pessimistic": 73.9274050324728
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -1933,10 +1933,10 @@
       "meanTauUs": 6.1683581803586565,
       "collectiveUs": 2424.164764880952,
       "tpsPerUser": {
-        "bottomUp": 310.43463424636127,
-        "specFloor": 310.43463424636127,
-        "optimistic": 603.9011087955556,
-        "pessimistic": 140.168632496081
+        "bottomUp": 302.7170619683006,
+        "specFloor": 302.7170619683006,
+        "optimistic": 575.3657416783888,
+        "pessimistic": 138.573471322512
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2035,10 +2035,10 @@
       "meanTauUs": 107.05102678571437,
       "collectiveUs": 42071.05352678575,
       "tpsPerUser": {
-        "bottomUp": 20.15797811222277,
-        "specFloor": 20.15797811222277,
-        "optimistic": 48.99490598928625,
-        "pessimistic": 8.027874021552323
+        "bottomUp": 20.12466239168955,
+        "specFloor": 20.12466239168955,
+        "optimistic": 48.79855570488511,
+        "pessimistic": 8.022584839631664
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2137,10 +2137,10 @@
       "meanTauUs": 54.518253248818596,
       "collectiveUs": 21425.673526785708,
       "tpsPerUser": {
-        "bottomUp": 39.28801426643065,
-        "specFloor": 39.28801426643065,
-        "optimistic": 92.28727121021156,
-        "pessimistic": 15.876165894251889
+        "bottomUp": 39.161658579458376,
+        "specFloor": 39.161658579458376,
+        "optimistic": 91.59308159385182,
+        "pessimistic": 15.855493107766673
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2239,10 +2239,10 @@
       "meanTauUs": 3.5141949787076454,
       "collectiveUs": 1381.0786266321047,
       "tpsPerUser": {
-        "bottomUp": 499.7802783059098,
-        "specFloor": 499.7802783059098,
-        "optimistic": 944.5954726378088,
-        "pessimistic": 217.84280661955347
+        "bottomUp": 480.07590348763125,
+        "specFloor": 480.07590348763125,
+        "optimistic": 850.1834004495781,
+        "pessimistic": 214.01403799298444
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2302,7 +2302,7 @@
           "controlPathUs": 0.04,
           "tauUs": 1.2456438873626376,
           "withinSpecTau": false,
-          "withinBreakEvenTau": true
+          "withinBreakEvenTau": false
         },
         {
           "name": "Routed latent merge",
@@ -2341,10 +2341,10 @@
       "meanTauUs": 2.0055944698017925,
       "collectiveUs": 788.1986266321045,
       "tpsPerUser": {
-        "bottomUp": 764.9882192021823,
-        "specFloor": 764.9882192021823,
-        "optimistic": 1241.4118880573578,
-        "pessimistic": 376.28891939204567
+        "bottomUp": 719.769150524841,
+        "specFloor": 719.769150524841,
+        "optimistic": 1129.6911706770334,
+        "pessimistic": 365.0091853218379
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2443,10 +2443,10 @@
       "meanTauUs": 6.3577045998424815,
       "collectiveUs": 2498.5779077380953,
       "tpsPerUser": {
-        "bottomUp": 302.2651662029316,
-        "specFloor": 302.2651662029316,
-        "optimistic": 592.5823976957557,
-        "pessimistic": 135.51033079074497
+        "bottomUp": 294.9436539296392,
+        "specFloor": 294.9436539296392,
+        "optimistic": 565.082308938043,
+        "pessimistic": 134.01886947613136
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2545,10 +2545,10 @@
       "meanTauUs": 3.5517249560765785,
       "collectiveUs": 1395.8279077380953,
       "tpsPerUser": {
-        "bottomUp": 495.5067615186285,
-        "specFloor": 495.5067615186285,
-        "optimistic": 840.8085897030614,
-        "pessimistic": 243.35375512582726
+        "bottomUp": 476.1313900775047,
+        "specFloor": 476.1313900775047,
+        "optimistic": 786.4998854487445,
+        "pessimistic": 238.58554035068687
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2647,10 +2647,10 @@
       "meanTauUs": 22.767739980916012,
       "collectiveUs": 8947.721812499993,
       "tpsPerUser": {
-        "bottomUp": 92.13319090479156,
-        "specFloor": 92.13319090479156,
-        "optimistic": 191.28285758972206,
-        "pessimistic": 43.95440742113981
+        "bottomUp": 91.44130866433348,
+        "specFloor": 91.44130866433348,
+        "optimistic": 188.32446080766408,
+        "pessimistic": 43.79631406160298
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2749,10 +2749,10 @@
       "meanTauUs": 12.382739980916021,
       "collectiveUs": 4866.416812499996,
       "tpsPerUser": {
-        "bottomUp": 164.50818356174216,
-        "specFloor": 164.50818356174216,
-        "optimistic": 307.94466591728457,
-        "pessimistic": 82.76260283364239
+        "bottomUp": 162.31527493313754,
+        "specFloor": 162.31527493313754,
+        "optimistic": 300.34888640789893,
+        "pessimistic": 82.20387530468363
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2851,10 +2851,10 @@
       "meanTauUs": 8.714620505300127,
       "collectiveUs": 3424.84585858295,
       "tpsPerUser": {
-        "bottomUp": 227.6821963913497,
-        "specFloor": 227.6821963913497,
-        "optimistic": 503.037305408317,
-        "pessimistic": 87.64776018565483
+        "bottomUp": 223.50306341699135,
+        "specFloor": 223.50306341699135,
+        "optimistic": 483.0803978081748,
+        "pessimistic": 87.0213765419395
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -2953,10 +2953,10 @@
       "meanTauUs": 4.60767394041463,
       "collectiveUs": 1810.8158585829497,
       "tpsPerUser": {
-        "bottomUp": 399.4133680782017,
-        "specFloor": 399.4133680782017,
-        "optimistic": 779.0452203040064,
-        "pessimistic": 164.8041035750815
+        "bottomUp": 386.7280345641493,
+        "specFloor": 386.7280345641493,
+        "optimistic": 732.1999245886843,
+        "pessimistic": 162.60335134139854
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3055,10 +3055,10 @@
       "meanTauUs": 16.712390895734888,
       "collectiveUs": 6567.969622023811,
       "tpsPerUser": {
-        "bottomUp": 123.92277436508724,
-        "specFloor": 123.92277436508724,
-        "optimistic": 291.62872134178446,
-        "pessimistic": 47.2332643593722
+        "bottomUp": 122.67430362976296,
+        "specFloor": 122.67430362976296,
+        "optimistic": 284.80760413980823,
+        "pessimistic": 47.050753721109245
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3157,10 +3157,10 @@
       "meanTauUs": 8.740444330849389,
       "collectiveUs": 3434.99462202381,
       "tpsPerUser": {
-        "bottomUp": 227.06831481382716,
-        "specFloor": 227.06831481382716,
-        "optimistic": 484.18963767314835,
-        "pessimistic": 90.82256608520025
+        "bottomUp": 222.91148147371553,
+        "specFloor": 222.91148147371553,
+        "optimistic": 465.67266958194165,
+        "pessimistic": 90.15015650744128
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3259,10 +3259,10 @@
       "meanTauUs": 14.82799879589242,
       "collectiveUs": 5827.403526785721,
       "tpsPerUser": {
-        "bottomUp": 138.82951215543568,
-        "specFloor": 138.82951215543568,
-        "optimistic": 329.4739190780679,
-        "pessimistic": 64.70423197261485
+        "bottomUp": 137.26451442070692,
+        "specFloor": 137.26451442070692,
+        "optimistic": 320.7938980308735,
+        "pessimistic": 64.36222310966183
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3361,10 +3361,10 @@
       "meanTauUs": 8.40673925390767,
       "collectiveUs": 3303.848526785714,
       "tpsPerUser": {
-        "bottomUp": 235.26532912291785,
-        "specFloor": 235.26532912291785,
-        "optimistic": 465.5149425271484,
-        "pessimistic": 118.59611310765744
+        "bottomUp": 230.80590797381598,
+        "specFloor": 230.80590797381598,
+        "optimistic": 448.37350633200606,
+        "pessimistic": 117.4521681419152
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3380,14 +3380,14 @@
       "ackDrain": "phase",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 1080.0107499594296,
-        "specFloor": 1038.6719141127694,
-        "optimistic": 1434.0513110097643,
-        "pessimistic": 672.0970569814529
+        "bottomUp": 958.3324033109701,
+        "specFloor": 925.6426745649153,
+        "optimistic": 1287.020661668805,
+        "pessimistic": 636.9406411998445
       },
       "meetsTarget": {
-        "bottomUp": true,
-        "specFloor": true,
+        "bottomUp": false,
+        "specFloor": false,
         "optimistic": true,
         "pessimistic": false
       },
@@ -3395,18 +3395,142 @@
       "mustHold": [
         {
           "param": "ucieHopUs",
-          "atMost": 0.03244579315185547,
+          "atMost": 0.023543453216552733,
           "nominal": 0.025
         },
         {
           "param": "fecUs",
-          "atMost": 0.09725292205810546,
+          "atMost": 0.04125995635986328,
           "nominal": 0.05
         },
         {
           "param": "macUs",
-          "atMost": 0.08725296020507811,
+          "atMost": 0.031259994506835934,
           "nominal": 0.04
+        },
+        {
+          "param": "phyUs",
+          "atMost": 0.011260032653808594,
+          "nominal": 0.02
+        }
+      ],
+      "failsAcrossRange": [
+        "controlScale",
+        "cableM"
+      ],
+      "tornado": [
+        {
+          "param": "ucieHopUs",
+          "nominal": 0.025,
+          "low": {
+            "value": 0.015,
+            "tpsPerUser": 1103.5073894489487
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 773.8612732121865
+          },
+          "swing": 329.6461162367623,
+          "verdict": "straddles",
+          "breakEven": 0.023543453216552733
+        },
+        {
+          "param": "fecUs",
+          "nominal": 0.05,
+          "low": {
+            "value": 0,
+            "tpsPerUser": 1078.6862580087372
+          },
+          "high": {
+            "value": 0.12,
+            "tpsPerUser": 867.1332678527899
+          },
+          "swing": 211.55299015594733,
+          "verdict": "straddles",
+          "breakEven": 0.04125995635986328
+        },
+        {
+          "param": "macUs",
+          "nominal": 0.04,
+          "low": {
+            "value": 0.02,
+            "tpsPerUser": 1026.6016935060316
+          },
+          "high": {
+            "value": 0.1,
+            "tpsPerUser": 879.0843451309302
+          },
+          "swing": 147.5173483751014,
+          "verdict": "straddles",
+          "breakEven": 0.031259994506835934
+        },
+        {
+          "param": "phyUs",
+          "nominal": 0.02,
+          "low": {
+            "value": 0.01,
+            "tpsPerUser": 1010.3402059067931
+          },
+          "high": {
+            "value": 0.05,
+            "tpsPerUser": 916.9993839413502
+          },
+          "swing": 93.34082196544296,
+          "verdict": "straddles",
+          "breakEven": 0.011260032653808594
+        },
+        {
+          "param": "controlScale",
+          "nominal": 1,
+          "low": {
+            "value": 1,
+            "tpsPerUser": 958.3324033109701
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 941.1091416273737
+          },
+          "swing": 17.223261683596434,
+          "verdict": "fails across range"
+        },
+        {
+          "param": "cableM",
+          "nominal": 1,
+          "low": {
+            "value": 0.5,
+            "tpsPerUser": 961.9456480232494
+          },
+          "high": {
+            "value": 2,
+            "tpsPerUser": 951.1867387688859
+          },
+          "swing": 10.758909254363516,
+          "verdict": "fails across range"
+        }
+      ]
+    },
+    {
+      "topology": "fullMesh",
+      "ackDrain": "deferred",
+      "bestAlgorithm": "oneShot",
+      "tpsPerUser": {
+        "bottomUp": 1198.8127510959634,
+        "specFloor": 1043.806730487713,
+        "optimistic": 1413.4718631279495,
+        "pessimistic": 839.9144737274341
+      },
+      "meetsTarget": {
+        "bottomUp": true,
+        "specFloor": true,
+        "optimistic": true,
+        "pessimistic": false
+      },
+      "maxTauUs": 1.1551269459706959,
+      "mustHold": [
+        {
+          "param": "ucieHopUs",
+          "atMost": 0.049395146369934084,
+          "nominal": 0.025
         }
       ],
       "failsAcrossRange": [],
@@ -3416,136 +3540,28 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 1209.6745635987047
+            "tpsPerUser": 1294.8545230390278
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 826.3803047758032
+            "tpsPerUser": 995.8953975071008
           },
-          "swing": 383.2942588229015,
+          "swing": 298.95912553192693,
           "verdict": "straddles",
-          "breakEven": 0.03244579315185547
+          "breakEven": 0.049395146369934084
         },
         {
           "param": "fecUs",
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 1179.9038173097988
+            "tpsPerUser": 1257.919185791346
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 965.5653241856743
+            "tpsPerUser": 1124.6469834130671
           },
-          "swing": 214.3384931241245,
-          "verdict": "straddles",
-          "breakEven": 0.09725292205810546
-        },
-        {
-          "param": "macUs",
-          "nominal": 0.04,
-          "low": {
-            "value": 0.02,
-            "tpsPerUser": 1117.8671153352263
-          },
-          "high": {
-            "value": 0.1,
-            "tpsPerUser": 980.4068536804016
-          },
-          "swing": 137.46026165482476,
-          "verdict": "straddles",
-          "breakEven": 0.08725296020507811
-        },
-        {
-          "param": "phyUs",
-          "nominal": 0.02,
-          "low": {
-            "value": 0.01,
-            "tpsPerUser": 1098.6129126208955
-          },
-          "high": {
-            "value": 0.05,
-            "tpsPerUser": 1027.8012956579466
-          },
-          "swing": 70.81161696294885,
-          "verdict": "passes across range"
-        },
-        {
-          "param": "controlScale",
-          "nominal": 1,
-          "low": {
-            "value": 1,
-            "tpsPerUser": 1080.0107499594296
-          },
-          "high": {
-            "value": 2,
-            "tpsPerUser": 1058.1859976274895
-          },
-          "swing": 21.82475233194009,
-          "verdict": "passes across range"
-        },
-        {
-          "param": "cableM",
-          "nominal": 1,
-          "low": {
-            "value": 0.5,
-            "tpsPerUser": 1084.6019809199097
-          },
-          "high": {
-            "value": 2,
-            "tpsPerUser": 1070.9439199723736
-          },
-          "swing": 13.658060947536114,
-          "verdict": "passes across range"
-        }
-      ]
-    },
-    {
-      "topology": "fullMesh",
-      "ackDrain": "deferred",
-      "bestAlgorithm": "oneShot",
-      "tpsPerUser": {
-        "bottomUp": 1324.6963799109371,
-        "specFloor": 1138.2976418008896,
-        "optimistic": 1491.0349048759288,
-        "pessimistic": 931.9361811191276
-      },
-      "meetsTarget": {
-        "bottomUp": true,
-        "specFloor": true,
-        "optimistic": true,
-        "pessimistic": false
-      },
-      "maxTauUs": 1.1551269459706959,
-      "mustHold": [],
-      "failsAcrossRange": [],
-      "tornado": [
-        {
-          "param": "ucieHopUs",
-          "nominal": 0.025,
-          "low": {
-            "value": 0.015,
-            "tpsPerUser": 1443.78757726536
-          },
-          "high": {
-            "value": 0.05,
-            "tpsPerUser": 1081.5550832246295
-          },
-          "swing": 362.23249404073044,
-          "verdict": "passes across range"
-        },
-        {
-          "param": "fecUs",
-          "nominal": 0.05,
-          "low": {
-            "value": 0,
-            "tpsPerUser": 1397.7476616965378
-          },
-          "high": {
-            "value": 0.12,
-            "tpsPerUser": 1235.323250721257
-          },
-          "swing": 162.4244109752808,
+          "swing": 133.27220237827896,
           "verdict": "passes across range"
         },
         {
@@ -3553,13 +3569,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 1343.4675688186294
+            "tpsPerUser": 1221.7760145656628
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 1247.4027231773896
+            "tpsPerUser": 1134.6501675474713
           },
-          "swing": 96.0648456412398,
+          "swing": 87.12584701819151,
           "verdict": "passes across range"
         },
         {
@@ -3567,13 +3583,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 1335.0817686351345
+            "tpsPerUser": 1210.1854606800005
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 1277.8616810635333
+            "tpsPerUser": 1165.762501663765
           },
-          "swing": 57.2200875716012,
+          "swing": 44.42295901623538,
           "verdict": "passes across range"
         },
         {
@@ -3581,13 +3597,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 1324.6963799109371
+            "tpsPerUser": 1198.8127510959634
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 1292.44309080425
+            "tpsPerUser": 1171.9820785120496
           },
-          "swing": 32.253289106687134,
+          "swing": 26.830672583913838,
           "verdict": "passes across range"
         },
         {
@@ -3595,13 +3611,13 @@
           "nominal": 1,
           "low": {
             "value": 0.5,
-            "tpsPerUser": 1327.3893938148308
+            "tpsPerUser": 1201.6358422467958
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 1318.2819826068294
+            "tpsPerUser": 1193.2061776519643
           },
-          "swing": 9.107411208001395,
+          "swing": 8.429664594831593,
           "verdict": "passes across range"
         }
       ]
@@ -3611,10 +3627,10 @@
       "ackDrain": "phase",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 774.753300626628,
-        "specFloor": 774.753300626628,
-        "optimistic": 1209.832421268322,
-        "pessimistic": 429.7758712996037
+        "bottomUp": 728.4073903834454,
+        "specFloor": 728.4073903834454,
+        "optimistic": 1103.638752766339,
+        "pessimistic": 415.12398649941935
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3639,13 +3655,13 @@
           "nominal": 0.2,
           "low": {
             "value": 0.1,
-            "tpsPerUser": 910.3193806474223
+            "tpsPerUser": 822.3155932018543
           },
           "high": {
             "value": 0.5,
-            "tpsPerUser": 567.8354871865181
+            "tpsPerUser": 542.5352758140124
           },
-          "swing": 342.48389346090426,
+          "swing": 279.78031738784193,
           "verdict": "fails across range"
         },
         {
@@ -3653,13 +3669,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 910.3193806474223
+            "tpsPerUser": 822.3155932018543
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 662.1527934965388
+            "tpsPerUser": 628.0025905856037
           },
-          "swing": 248.16658715088352,
+          "swing": 194.31300261625063,
           "verdict": "fails across range"
         },
         {
@@ -3667,13 +3683,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 797.4808223883724
+            "tpsPerUser": 748.4619186701767
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 723.225060569688
+            "tpsPerUser": 682.6776795781766
           },
-          "swing": 74.25576181868439,
+          "swing": 65.78423909200012,
           "verdict": "fails across range"
         },
         {
@@ -3681,13 +3697,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 794.0431207753118
+            "tpsPerUser": 745.4330378314431
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 722.125183054078
+            "tpsPerUser": 681.6975898692664
           },
-          "swing": 71.91793772123378,
+          "swing": 63.73544796217675,
           "verdict": "fails across range"
         },
         {
@@ -3695,13 +3711,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 794.0431207753118
+            "tpsPerUser": 745.4330378314431
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 722.125183054078
+            "tpsPerUser": 681.6975898692664
           },
-          "swing": 71.91793772123378,
+          "swing": 63.73544796217675,
           "verdict": "fails across range"
         },
         {
@@ -3709,13 +3725,13 @@
           "nominal": 2,
           "low": {
             "value": 1,
-            "tpsPerUser": 784.2796175054865
+            "tpsPerUser": 736.8218748756451
           },
           "high": {
             "value": 5,
-            "tpsPerUser": 747.5140769757987
+            "tpsPerUser": 704.2788578455624
           },
-          "swing": 36.76554052968777,
+          "swing": 32.54301703008275,
           "verdict": "fails across range"
         },
         {
@@ -3723,13 +3739,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 774.753300626628
+            "tpsPerUser": 728.4073903834454
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 763.4577430282798
+            "tpsPerUser": 718.4141018396941
           },
-          "swing": 11.295557598348182,
+          "swing": 9.993288543751305,
           "verdict": "fails across range"
         }
       ]
@@ -3739,14 +3755,14 @@
       "ackDrain": "deferred",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 1065.416628537012,
-        "specFloor": 1026.299154617162,
-        "optimistic": 1416.751359901806,
-        "pessimistic": 646.1628054837804
+        "bottomUp": 946.823980008896,
+        "specFloor": 915.8034728055812,
+        "optimistic": 1273.2899608943142,
+        "pessimistic": 613.6014859785398
       },
       "meetsTarget": {
-        "bottomUp": true,
-        "specFloor": true,
+        "bottomUp": false,
+        "specFloor": false,
         "optimistic": true,
         "pessimistic": false
       },
@@ -3754,122 +3770,127 @@
       "mustHold": [
         {
           "param": "switchUs",
-          "atMost": 0.27832603454589844,
+          "atMost": 0.16099929809570312,
           "nominal": 0.2
         },
         {
           "param": "fecUs",
-          "atMost": 0.08916309356689453,
+          "atMost": 0.03049964904785156,
           "nominal": 0.05
         },
         {
           "param": "ucieHopUs",
-          "atMost": 0.04169166564941405,
+          "atMost": 0.015252676010131836,
           "nominal": 0.025
         }
       ],
-      "failsAcrossRange": [],
+      "failsAcrossRange": [
+        "macUs",
+        "phyUs",
+        "cableM",
+        "controlScale"
+      ],
       "tornado": [
         {
           "param": "switchUs",
           "nominal": 0.2,
           "low": {
             "value": 0.1,
-            "tpsPerUser": 1162.506890035634
+            "tpsPerUser": 1022.7327730386252
           },
           "high": {
             "value": 0.5,
-            "tpsPerUser": 826.9876850851346
+            "tpsPerUser": 774.3938800449481
           },
-          "swing": 335.51920495049933,
+          "swing": 248.33889299367706,
           "verdict": "straddles",
-          "breakEven": 0.27832603454589844
+          "breakEven": 0.16099929809570312
         },
         {
           "param": "fecUs",
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 1162.506890035634
+            "tpsPerUser": 1022.7327730386252
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 953.8835866857061
+            "tpsPerUser": 857.7002256185636
           },
-          "swing": 208.62330334992782,
+          "swing": 165.03254742006152,
           "verdict": "straddles",
-          "breakEven": 0.08916309356689453
+          "breakEven": 0.03049964904785156
         },
         {
           "param": "ucieHopUs",
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 1108.8746890540165
+            "tpsPerUser": 1019.0126717793005
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 970.3443784092449
+            "tpsPerUser": 870.9856668375553
           },
-          "swing": 138.5303106447716,
+          "swing": 148.0270049417452,
           "verdict": "straddles",
-          "breakEven": 0.04169166564941405
+          "breakEven": 0.015252676010131836
         },
         {
           "param": "macUs",
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 1083.5152356889362
+            "tpsPerUser": 961.0907048703809
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 1014.575435989447
+            "tpsPerUser": 906.4568121478644
           },
-          "swing": 68.93979969948919,
-          "verdict": "passes across range"
+          "swing": 54.63389272251652,
+          "verdict": "fails across range"
         },
         {
           "param": "phyUs",
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 1083.5152356889362
+            "tpsPerUser": 961.0907048703809
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 1014.575435989447
+            "tpsPerUser": 906.4568121478644
           },
-          "swing": 68.93979969948919,
-          "verdict": "passes across range"
+          "swing": 54.63389272251652,
+          "verdict": "fails across range"
         },
         {
           "param": "cableM",
           "nominal": 2,
           "low": {
             "value": 1,
-            "tpsPerUser": 1074.389717602336
+            "tpsPerUser": 953.9040016273117
           },
           "high": {
             "value": 5,
-            "tpsPerUser": 1039.3746772821853
+            "tpsPerUser": 926.2007680824471
           },
-          "swing": 35.015040320150774,
-          "verdict": "passes across range"
+          "swing": 27.703233544864588,
+          "verdict": "fails across range"
         },
         {
           "param": "controlScale",
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 1065.416628537012
+            "tpsPerUser": 946.823980008896
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 1044.1719229375108
+            "tpsPerUser": 930.0082667595865
           },
-          "swing": 21.24470559950123,
-          "verdict": "passes across range"
+          "swing": 16.81571324930951,
+          "verdict": "fails across range"
         }
       ]
     },
@@ -3878,10 +3899,10 @@
       "ackDrain": "phase",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 451.3174171398707,
-        "specFloor": 451.3174171398707,
-        "optimistic": 807.5778915076654,
-        "pessimistic": 210.91679207646848
+        "bottomUp": 435.18749972132565,
+        "specFloor": 435.18749972132565,
+        "optimistic": 757.3489434800606,
+        "pessimistic": 207.32560738291372
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -3907,13 +3928,13 @@
           "nominal": 0.2,
           "low": {
             "value": 0.1,
-            "tpsPerUser": 572.9360646929902
+            "tpsPerUser": 547.1895983381127
           },
           "high": {
             "value": 0.5,
-            "tpsPerUser": 275.72854415080224
+            "tpsPerUser": 269.62316598299776
           },
-          "swing": 297.2075205421879,
+          "swing": 277.5664323551149,
           "verdict": "fails across range"
         },
         {
@@ -3921,13 +3942,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 525.7138611574771
+            "tpsPerUser": 503.9560247492317
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 376.687638424406
+            "tpsPerUser": 365.3843465074183
           },
-          "swing": 149.02622273307117,
+          "swing": 138.5716782418134,
           "verdict": "fails across range"
         },
         {
@@ -3935,13 +3956,13 @@
           "nominal": 5,
           "low": {
             "value": 2,
-            "tpsPerUser": 461.1054234168704
+            "tpsPerUser": 444.2813202910032
           },
           "high": {
             "value": 20,
-            "tpsPerUser": 408.0124756851692
+            "tpsPerUser": 394.78409372459737
           },
-          "swing": 53.0929477317012,
+          "swing": 49.49722656640586,
           "verdict": "fails across range"
         },
         {
@@ -3949,13 +3970,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 464.4631252714445
+            "tpsPerUser": 447.39764286469693
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 415.9956225326165
+            "tpsPerUser": 402.2532425782752
           },
-          "swing": 48.46750273882799,
+          "swing": 45.14440028642173,
           "verdict": "fails across range"
         },
         {
@@ -3963,13 +3984,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 458.9365070591702
+            "tpsPerUser": 442.2674430578205
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 433.33236787384277
+            "tpsPerUser": 418.4411852039264
           },
-          "swing": 25.604139185327426,
+          "swing": 23.826257853894106,
           "verdict": "fails across range"
         },
         {
@@ -3977,13 +3998,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 457.79592019344494
+            "tpsPerUser": 441.2081105490049
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 432.93727020133
+            "tpsPerUser": 418.07276395875925
           },
-          "swing": 24.85864999211492,
+          "swing": 23.13534659024566,
           "verdict": "fails across range"
         },
         {
@@ -3991,13 +4012,13 @@
           "nominal": 2,
           "low": {
             "value": 1,
-            "tpsPerUser": 454.5335851851537
+            "tpsPerUser": 438.1771251167391
           },
           "high": {
             "value": 5,
-            "tpsPerUser": 441.936318501989
+            "tpsPerUser": 426.4584877399377
           },
-          "swing": 12.597266683164719,
+          "swing": 11.718637376801382,
           "verdict": "fails across range"
         },
         {
@@ -4005,13 +4026,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 451.3174171398707
+            "tpsPerUser": 435.18749972132565
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 447.4608898291246
+            "tpsPerUser": 431.6006126801167
           },
-          "swing": 3.8565273107461167,
+          "swing": 3.5868870412089677,
           "verdict": "fails across range"
         }
       ]
@@ -4021,10 +4042,10 @@
       "ackDrain": "deferred",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 696.1176166966206,
-        "specFloor": 696.1176166966206,
-        "optimistic": 1118.5980677316604,
-        "pessimistic": 363.00228586857145
+        "bottomUp": 658.4737088453624,
+        "specFloor": 658.4737088453624,
+        "optimistic": 1027.2181316467866,
+        "pessimistic": 352.493933092631
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -4050,13 +4071,13 @@
           "nominal": 0.2,
           "low": {
             "value": 0.1,
-            "tpsPerUser": 832.3838267178094
+            "tpsPerUser": 779.1235288781485
           },
           "high": {
             "value": 0.5,
-            "tpsPerUser": 466.84276148585496
+            "tpsPerUser": 449.60520901406187
           },
-          "swing": 365.5410652319544,
+          "swing": 329.5183198640866,
           "verdict": "fails across range"
         },
         {
@@ -4064,13 +4085,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 781.3972145002059
+            "tpsPerUser": 734.2771873474226
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 603.8534852660861
+            "tpsPerUser": 575.3225122451005
           },
-          "swing": 177.54372923411984,
+          "swing": 158.95467510232208,
           "verdict": "fails across range"
         },
         {
@@ -4078,13 +4099,13 @@
           "nominal": 5,
           "low": {
             "value": 2,
-            "tpsPerUser": 707.7031403041129
+            "tpsPerUser": 668.8307715222849
           },
           "high": {
             "value": 20,
-            "tpsPerUser": 643.4493624894684
+            "tpsPerUser": 611.1541054084113
           },
-          "swing": 64.25377781464454,
+          "swing": 57.67666611387358,
           "verdict": "fails across range"
         },
         {
@@ -4092,13 +4113,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 714.4112214346952
+            "tpsPerUser": 674.8190570649563
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 654.235815780388
+            "tpsPerUser": 620.8767885869958
           },
-          "swing": 60.17540565430727,
+          "swing": 53.94226847796051,
           "verdict": "fails across range"
         },
         {
@@ -4106,13 +4127,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 711.6511566921456
+            "tpsPerUser": 672.3559096326939
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 653.3356364634386
+            "tpsPerUser": 620.0660110327844
           },
-          "swing": 58.31552022870699,
+          "swing": 52.28989859990941,
           "verdict": "fails across range"
         },
         {
@@ -4120,13 +4141,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 703.7986869440599
+            "tpsPerUser": 665.3424049672805
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 674.0484638395324
+            "tpsPerUser": 638.692970841173
           },
-          "swing": 29.75022310452755,
+          "swing": 26.649434126107508,
           "verdict": "fails across range"
         },
         {
@@ -4134,13 +4155,13 @@
           "nominal": 2,
           "low": {
             "value": 1,
-            "tpsPerUser": 699.9370795462354
+            "tpsPerUser": 661.8902375936817
           },
           "high": {
             "value": 5,
-            "tpsPerUser": 684.9053072491556
+            "tpsPerUser": 648.4325197512464
           },
-          "swing": 15.031772297079783,
+          "swing": 13.457717842435272,
           "verdict": "fails across range"
         },
         {
@@ -4148,13 +4169,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 696.1176166966206
+            "tpsPerUser": 658.4737088453624
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 686.9851269209713
+            "tpsPerUser": 650.2964255925765
           },
-          "swing": 9.132489775649333,
+          "swing": 8.177283252785855,
           "verdict": "fails across range"
         }
       ]
@@ -4164,10 +4185,10 @@
       "ackDrain": "phase",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 499.7802783059098,
-        "specFloor": 499.7802783059098,
-        "optimistic": 944.5954726378088,
-        "pessimistic": 217.84280661955347
+        "bottomUp": 480.07590348763125,
+        "specFloor": 480.07590348763125,
+        "optimistic": 850.1834004495781,
+        "pessimistic": 214.01403799298444
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -4192,13 +4213,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 653.2632988460945
+            "tpsPerUser": 620.0008527236903
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 376.030991454955
+            "tpsPerUser": 364.7664840592578
           },
-          "swing": 277.2323073911395,
+          "swing": 255.2343686644325,
           "verdict": "fails across range"
         },
         {
@@ -4206,13 +4227,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0.03,
-            "tpsPerUser": 542.2701557072654
+            "tpsPerUser": 519.1504360280977
           },
           "high": {
             "value": 0.2,
-            "tpsPerUser": 314.7891790612117
+            "tpsPerUser": 306.85634196238243
           },
-          "swing": 227.4809766460537,
+          "swing": 212.29409406571529,
           "verdict": "fails across range"
         },
         {
@@ -4220,13 +4241,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 530.4637723929889
+            "tpsPerUser": 508.31926926086413
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 429.60697148246805
+            "tpsPerUser": 414.9664045039155
           },
-          "swing": 100.8568009105208,
+          "swing": 93.35286475694863,
           "verdict": "fails across range"
         },
         {
@@ -4234,13 +4255,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 524.435749920355
+            "tpsPerUser": 502.78140098928276
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 438.0041725822701
+            "tpsPerUser": 422.79580654844335
           },
-          "swing": 86.43157733808488,
+          "swing": 79.9855944408394,
           "verdict": "fails across range"
         },
         {
@@ -4248,13 +4269,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 507.73708217823093
+            "tpsPerUser": 487.4130590067614
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 477.33898261229115
+            "tpsPerUser": 459.3325466912082
           },
-          "swing": 30.398099565939788,
+          "swing": 28.080512315553165,
           "verdict": "fails across range"
         },
         {
@@ -4262,13 +4283,13 @@
           "nominal": 1.5,
           "low": {
             "value": 0.5,
-            "tpsPerUser": 511.8112543164792
+            "tpsPerUser": 491.1663864881547
           },
           "high": {
             "value": 3,
-            "tpsPerUser": 482.75822408979184
+            "tpsPerUser": 464.34849649766704
           },
-          "swing": 29.053030226687383,
+          "swing": 26.817889990487686,
           "verdict": "fails across range"
         },
         {
@@ -4276,13 +4297,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 499.7802783059098
+            "tpsPerUser": 480.07590348763125
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 495.05538356967406
+            "tpsPerUser": 475.7146068178578
           },
-          "swing": 4.72489473623574,
+          "swing": 4.361296669773424,
           "verdict": "fails across range"
         }
       ]
@@ -4292,10 +4313,10 @@
       "ackDrain": "deferred",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 764.9882192021823,
-        "specFloor": 764.9882192021823,
-        "optimistic": 1241.4118880573578,
-        "pessimistic": 376.28891939204567
+        "bottomUp": 719.769150524841,
+        "specFloor": 719.769150524841,
+        "optimistic": 1129.6911706770334,
+        "pessimistic": 365.0091853218379
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -4320,13 +4341,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 961.9726555936754
+            "tpsPerUser": 864.2346544599886
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 611.0797286078972
+            "tpsPerUser": 581.8783270642168
           },
-          "swing": 350.8929269857782,
+          "swing": 282.3563273957718,
           "verdict": "fails across range"
         },
         {
@@ -4334,13 +4355,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0.03,
-            "tpsPerUser": 813.4586160409212
+            "tpsPerUser": 762.5185488111057
           },
           "high": {
             "value": 0.2,
-            "tpsPerUser": 527.6669854437308
+            "tpsPerUser": 505.7505498401812
           },
-          "swing": 285.7916305971904,
+          "swing": 256.7679989709245,
           "verdict": "fails across range"
         },
         {
@@ -4348,13 +4369,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 812.3812932626645
+            "tpsPerUser": 761.571850155976
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 658.3350063867218
+            "tpsPerUser": 624.5674279014678
           },
-          "swing": 154.04628687594266,
+          "swing": 137.0044222545082,
           "verdict": "fails across range"
         },
         {
@@ -4362,13 +4383,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 793.4026744554617
+            "tpsPerUser": 744.8685776934149
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 690.4591176933748
+            "tpsPerUser": 653.408424625583
           },
-          "swing": 102.94355676208693,
+          "swing": 91.46015306783181,
           "verdict": "fails across range"
         },
         {
@@ -4376,13 +4397,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 774.2744686607396
+            "tpsPerUser": 727.9841169520676
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 738.41954724538
+            "tpsPerUser": 696.2002502590757
           },
-          "swing": 35.85492141535951,
+          "swing": 31.783866692991865,
           "verdict": "fails across range"
         },
         {
@@ -4390,13 +4411,13 @@
           "nominal": 1.5,
           "low": {
             "value": 0.5,
-            "tpsPerUser": 778.955345297194
+            "tpsPerUser": 732.1205327291959
           },
           "high": {
             "value": 3,
-            "tpsPerUser": 744.8871838493684
+            "tpsPerUser": 701.9465748978874
           },
-          "swing": 34.06816144782556,
+          "swing": 30.173957831308485,
           "verdict": "fails across range"
         },
         {
@@ -4404,13 +4425,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 764.9882192021823
+            "tpsPerUser": 719.769150524841
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 753.9735841373667
+            "tpsPerUser": 710.0098910967134
           },
-          "swing": 11.014635064815593,
+          "swing": 9.75925942812762,
           "verdict": "fails across range"
         }
       ]
@@ -4420,10 +4441,10 @@
       "ackDrain": "phase",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 227.6821963913497,
-        "specFloor": 227.6821963913497,
-        "optimistic": 503.037305408317,
-        "pessimistic": 87.64776018565483
+        "bottomUp": 223.50306341699135,
+        "specFloor": 223.50306341699135,
+        "optimistic": 483.0803978081748,
+        "pessimistic": 87.0213765419395
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -4448,13 +4469,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 318.68985991298416
+            "tpsPerUser": 310.56174488523345
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 162.65391503020768
+            "tpsPerUser": 160.5098407723902
           },
-          "swing": 156.03594488277648,
+          "swing": 150.05190411284326,
           "verdict": "fails across range"
         },
         {
@@ -4462,13 +4483,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0.03,
-            "tpsPerUser": 254.98840610806758
+            "tpsPerUser": 249.75825869529035
           },
           "high": {
             "value": 0.2,
-            "tpsPerUser": 126.26841460843745
+            "tpsPerUser": 124.97248098810374
           },
-          "swing": 128.7199914996301,
+          "swing": 124.78577770718661,
           "verdict": "fails across range"
         },
         {
@@ -4476,13 +4497,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 241.47363042909222
+            "tpsPerUser": 236.7780976553858
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 194.37740291229446
+            "tpsPerUser": 191.3232750204153
           },
-          "swing": 47.09622751679777,
+          "swing": 45.4548226349705,
           "verdict": "fails across range"
         },
         {
@@ -4490,13 +4511,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 242.7106625087189
+            "tpsPerUser": 237.96737003544143
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 197.1618965129401
+            "tpsPerUser": 194.02034705174884
           },
-          "swing": 45.54876599577881,
+          "swing": 43.94702298369259,
           "verdict": "fails across range"
         },
         {
@@ -4504,13 +4525,13 @@
           "nominal": 1.5,
           "low": {
             "value": 0.5,
-            "tpsPerUser": 234.37520501149214
+            "tpsPerUser": 229.94914696369497
           },
           "high": {
             "value": 3,
-            "tpsPerUser": 218.32998399636554
+            "tpsPerUser": 214.48422228689336
           },
-          "swing": 16.0452210151266,
+          "swing": 15.464924676801616,
           "verdict": "fails across range"
         },
         {
@@ -4518,13 +4539,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 229.3193537984902
+            "tpsPerUser": 225.0804637829345
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 222.9080391982484
+            "tpsPerUser": 218.90078685133943
           },
-          "swing": 6.411314600241809,
+          "swing": 6.179676931595054,
           "verdict": "fails across range"
         },
         {
@@ -4532,13 +4553,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 227.6821963913497
+            "tpsPerUser": 223.50306341699135
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 226.69652269741474
+            "tpsPerUser": 222.55316646713513
           },
-          "swing": 0.985673693934956,
+          "swing": 0.9498969498562246,
           "verdict": "fails across range"
         }
       ]
@@ -4548,10 +4569,10 @@
       "ackDrain": "deferred",
       "bestAlgorithm": "oneShot",
       "tpsPerUser": {
-        "bottomUp": 399.4133680782017,
-        "specFloor": 399.4133680782017,
-        "optimistic": 779.0452203040064,
-        "pessimistic": 164.8041035750815
+        "bottomUp": 386.7280345641493,
+        "specFloor": 386.7280345641493,
+        "optimistic": 732.1999245886843,
+        "pessimistic": 162.60335134139854
       },
       "meetsTarget": {
         "bottomUp": false,
@@ -4576,13 +4597,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0,
-            "tpsPerUser": 532.8922876462906
+            "tpsPerUser": 510.5488311420756
           },
           "high": {
             "value": 0.12,
-            "tpsPerUser": 295.71451985606996
+            "tpsPerUser": 288.70322987520007
           },
-          "swing": 237.17776779022063,
+          "swing": 221.84560126687552,
           "verdict": "fails across range"
         },
         {
@@ -4590,13 +4611,13 @@
           "nominal": 0.05,
           "low": {
             "value": 0.03,
-            "tpsPerUser": 440.8195685671671
+            "tpsPerUser": 425.4184993024429
           },
           "high": {
             "value": 0.2,
-            "tpsPerUser": 234.33215193307495
+            "tpsPerUser": 229.90770445927456
           },
-          "swing": 206.48741663409214,
+          "swing": 195.51079484316836,
           "verdict": "fails across range"
         },
         {
@@ -4604,13 +4625,13 @@
           "nominal": 0.025,
           "low": {
             "value": 0.015,
-            "tpsPerUser": 425.6583382186139
+            "tpsPerUser": 411.28116184433924
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 346.06909900993486
+            "tpsPerUser": 336.50534436375534
           },
-          "swing": 79.58923920867903,
+          "swing": 74.7758174805839,
           "verdict": "fails across range"
         },
         {
@@ -4618,13 +4639,13 @@
           "nominal": 0.02,
           "low": {
             "value": 0.01,
-            "tpsPerUser": 420.4776245236723
+            "tpsPerUser": 406.4425196337194
           },
           "high": {
             "value": 0.05,
-            "tpsPerUser": 347.2289938447286
+            "tpsPerUser": 337.60191516603186
           },
-          "swing": 73.2486306789437,
+          "swing": 68.84060446768757,
           "verdict": "fails across range"
         },
         {
@@ -4632,13 +4653,13 @@
           "nominal": 1.5,
           "low": {
             "value": 0.5,
-            "tpsPerUser": 409.67490978175215
+            "tpsPerUser": 396.3402724656313
           },
           "high": {
             "value": 3,
-            "tpsPerUser": 384.95001951316146
+            "tpsPerUser": 373.1531942342838
           },
-          "swing": 24.724890268590684,
+          "swing": 23.187078231347527,
           "verdict": "fails across range"
         },
         {
@@ -4646,13 +4667,13 @@
           "nominal": 0.04,
           "low": {
             "value": 0.02,
-            "tpsPerUser": 401.9302564634419
+            "tpsPerUser": 389.0871172737925
           },
           "high": {
             "value": 0.1,
-            "tpsPerUser": 392.04834460127734
+            "tpsPerUser": 379.81936104869595
           },
-          "swing": 9.881911862164543,
+          "swing": 9.267756225096548,
           "verdict": "fails across range"
         },
         {
@@ -4660,13 +4681,13 @@
           "nominal": 1,
           "low": {
             "value": 1,
-            "tpsPerUser": 399.4133680782017
+            "tpsPerUser": 386.7280345641493
           },
           "high": {
             "value": 2,
-            "tpsPerUser": 396.3899067430416
+            "tpsPerUser": 383.8928916107339
           },
-          "swing": 3.023461335160107,
+          "swing": 2.8351429534154136,
           "verdict": "fails across range"
         }
       ]

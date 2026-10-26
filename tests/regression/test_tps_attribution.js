@@ -190,11 +190,19 @@ assert.strictEqual(publishedTile, 16384, 'the published kvTile is the smallest o
 const small = couplings.find(c => c.name === 'kvTile=32768 x kvCache off');
 assert(small, 'kvTile=32768 x kvCache off coupling');
 assert.strictEqual(couplings.find(c => c.name === 'kvTile=16384 x kvCache off'), undefined, 'the published tile is not paired with itself');
-// Alone, each move is within the budget; together they do not fit the H local tile: the interaction the pair exists to expose.
-assert(small.a.feasible && small.a.withinBudget, 'kvTile 32768 alone is feasible');
-near(small.a.tpsPerUser, 1029.518718, 'kvTile 32768 alone TPS');
+// The pair exists to expose an interaction: each move alone fits the budget, together they do not fit the H local
+// tile. That held at the ADR-0026 point (kvTile 32768 alone 1029.52, within budget; bf16 alone 976.33, below).
+// Under ADR-0028 it no longer holds, and the change is in the data, not in the question: the published point is
+// 1043.96 (raw 818.71 us, budget 854.70 us), kvTile 32768 alone costs 88.17 TPS/usr (955.79, raw 894.24 us) and
+// bf16 alone costs 146.60 (897.37, raw 952.45 us) -- BOTH are already past the budget on their own, so
+// `breaksOnlyTogether` is false for a different reason than before: there is nothing left to break. The pair still
+// ends infeasible together ('H local tile'), which is what makes it informative: the two moves cannot be combined
+// at any price, and each is individually unaffordable.
+assert(small.a.feasible && !small.a.withinBudget, 'kvTile 32768 alone is feasible but past the budget (955.79 TPS/usr, raw 894.24 us)');
+near(small.a.tpsPerUser, 955.786936, 'kvTile 32768 alone TPS');
 near(small.b.tpsPerUser, td.sensitivity.kvTile16384.bf16.tpsPerUser, 'kvCache off at the published tile is the published bf16 replay');
-assert(small.b.feasible && !small.b.withinBudget, 'kvCache off alone is feasible but below the budget (976.33)');
+assert(small.b.feasible && !small.b.withinBudget, 'kvCache off alone is feasible but below the budget (897.37)');
+assert.strictEqual(small.breaksOnlyTogether, false, 'neither move is within budget alone, so the interaction is not "breaks only together"');
 assert.strictEqual(small.both.feasible, false, 'kvTile 32768 and kvCache off together do not fit the H local tile');
 assert(small.both.reasons.includes('H local tile'));
 const big = couplings.find(c => c.name === 'kvTile=65536 x kvCache off');

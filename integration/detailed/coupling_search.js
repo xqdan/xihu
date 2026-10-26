@@ -120,7 +120,19 @@ function context() {
     commCoreAreaMm2: comm.evaluation.areaMm2,
     controlUs: Object.fromEntries(comm.controlPath.classes.map(k => [k.name, k.controlUs]))};
   const mvSpace = read(MV.SPACE_FILE);
-  return {space, spec, contract, prov, winners: W, x, opt, model, signalOpt,
+  // ADR-0028 rule `laneSpan`: the coupling grid must be able to express both ends of the question it
+  // asks -- the compute winner's lanes and the published lanes. It was a hand-written list and went stale
+  // twice (written at winner = published = 512; by 2026-10 the winner was 576 and the published 1024, so
+  // the grid held neither). Derived here from the legal matrix_vector options, inclusive at both ends.
+  const legalLanes = Object.keys(mvSpace.dimensions.vectorLanes.options).map(Number).sort((a, b) => a - b);
+  const publishedLanes = spec.tpsDesign.hardware.x.vectorLanes;
+  const lo = Math.min(x.vectorLanes, publishedLanes), hi = Math.max(x.vectorLanes, publishedLanes);
+  const laneSpan = {rule: 'laneSpan', from: x.vectorLanes, to: publishedLanes,
+    values: legalLanes.filter(v => v >= lo && v <= hi)};
+  if (!laneSpan.values.includes(x.vectorLanes) || !laneSpan.values.includes(publishedLanes)) {
+    throw new Error(`${SPACE_FILE}: laneSpan [${lo}, ${hi}] does not contain ${x.vectorLanes} and ${publishedLanes} in the legal options`);
+  }
+  return {space, spec, contract, prov, winners: W, x, opt, model, signalOpt, laneSpan,
     controlUs: model.controlUs,
     target: C.target,
     entries: {sram: CONTRACT.entry(C, 'B-SRAM-CAP'), mc: CONTRACT.entry(C, 'B-MEM-BW'), tau, area, compute: CONTRACT.entry(C, 'B-SERIAL-CMP')},
@@ -155,7 +167,11 @@ function slowestCollective(ctx, x, opt) {
   const key = JSON.stringify([x, opt]);
   if (ctx.protocols.has(key)) return ctx.protocols.get(key);
   const {tauUs, ...rest} = opt;
-  const classes = COMM.withProtocol({opt: rest}, () => COMM.protocolClasses(x, ctx.signalOpt).classes);
+  const {classes, unmapped} = COMM.withProtocol({opt: rest}, () => COMM.protocolClasses(x, ctx.signalOpt));
+  // A row the model rejects on its limits has no schedule, hence no slowest collective: B-TAU is not
+  // evaluable there (null, like tpsPerUser when the replay cannot run) and the row is infeasible for the
+  // reasons the replay reports, not for B-TAU.
+  if (unmapped) { const none = {name: null, latencyUs: null, unmapped}; ctx.protocols.set(key, none); return none; }
   const slowest = classes.map(k => ({name: k.name, latencyUs: k.protocolUs + (ctx.controlUs[k.name] || 0)}))
     .reduce((a, k) => (k.latencyUs > a.latencyUs ? k : a));
   ctx.protocols.set(key, slowest);
@@ -207,12 +223,12 @@ function evaluate(ctx, x, opt) {
     'B-SRAM-CAP': {sharedMiB: x.sharedMiB, min: E.sram.min, holds: x.sharedMiB >= E.sram.min - EPS},
     'B-MEM-BW': {mcGBs: x.mcGBs, min: E.mc.min, holds: x.mcGBs >= E.mc.min - EPS},
     'B-TAU': {slowest: slow.name, latencyUs: slow.latencyUs, tauUs: opt.tauUs, max: E.tau.max,
-      holds: slow.latencyUs <= E.tau.max + EPS && opt.tauUs <= E.tau.max + EPS},
+      holds: slow.latencyUs === null ? null : slow.latencyUs <= E.tau.max + EPS && opt.tauUs <= E.tau.max + EPS},
     'B-AREA': {dieAreaMm2: sys.dieAreaMm2, max: E.area.max, diePowerW: sys.diePowerW, cardPowerW: sys.cardPowerW, limits: ctx.limits,
       holds: sys.dieAreaMm2 <= ctx.limits.dieAreaMm2 + EPS && sys.diePowerW <= ctx.limits.diePowerW + EPS && sys.cardPowerW <= ctx.limits.cardPowerW + EPS}
   };
   if (sys.feasible && !clauses['B-SERIAL-CMP'].holds) violations.add('belowContractTarget');
-  for (const id of ['B-SRAM-CAP', 'B-MEM-BW', 'B-TAU']) if (!clauses[id].holds) violations.add(`clause:${id}`);
+  for (const id of ['B-SRAM-CAP', 'B-MEM-BW', 'B-TAU']) if (clauses[id].holds === false) violations.add(`clause:${id}`);
   if (sys.dieAreaMm2 > ctx.limits.dieAreaMm2 + EPS) violations.add('dieArea');
   if (sys.diePowerW > ctx.limits.diePowerW + EPS) violations.add('diePower');
   if (sys.cardPowerW > ctx.limits.cardPowerW + EPS) violations.add('cardPower');
@@ -236,9 +252,17 @@ function steps(field, value) {
 
 // Every row the space asks for, as a change against the composed point. The same joint point
 // reached from two couplings is one row, listed under both.
+// A field is either a literal list or a derived rule (ADR-0028): the rule is resolved here so the space
+// file can state why the grid reaches where it does instead of freezing numbers that go stale.
+function valuesOf(ctx, f, v) {
+  if (!v || !v.derive) return v;
+  if (v.derive === 'laneSpan') return ctx.laneSpan.values;
+  throw new Error(`${SPACE_FILE}: ${f} asks for unknown derived rule ${v.derive}`);
+}
+
 function grid(ctx) {
   const C = ctx.space.couplings, out = [{coupling: 'composed', change: {}}];
-  const product = fields => Object.entries(fields).reduce((acc, [f, vs]) => acc.flatMap(c => vs.map(v => ({...c, [f]: v}))), [{}]);
+  const product = fields => Object.entries(fields).reduce((acc, [f, vs]) => acc.flatMap(c => (valuesOf(ctx, f, vs) || []).map(v => ({...c, [f]: v}))), [{}]);
   for (const name of ['sramDepthMc', 'tauOverlapCompute']) for (const change of product(C[name].fields)) out.push({coupling: name, change});
   const groups = C.areaReallocation.groups, groupOf = {};
   const down = [], up = [];
@@ -330,7 +354,7 @@ function search(ctx = context()) {
       const s = replay(ctx, r.x, {...r.opt, tauUs});
       return {tauUs, tpsPerUser: s.tpsPerUser, meetsTarget: s.tpsPerUser !== null && s.tpsPerUser >= ctx.target.tpsPerUser - EPS};
     });
-    r.tauHeadroomUs = ctx.entries.tau.max - r.clauses['B-TAU'].latencyUs;
+    r.tauHeadroomUs = r.clauses['B-TAU'].latencyUs === null ? null : ctx.entries.tau.max - r.clauses['B-TAU'].latencyUs;
   }
   const order = [...all].sort((a, b) => (better(a, b) ? -1 : better(b, a) ? 1 : 0));
   return {ctx, all, order, best: order[0], composed: all.find(r => r.optionId === 'composed'),
@@ -404,7 +428,8 @@ function candidates(result = search()) {
   for (const e of result.all) if (!e.feasible) for (const v of e.violations) byCause[v] = (byCause[v] || 0) + 1;
   return {
     status: 'MODEL (joint replay of the five domain winners and a grid on three couplings; the candidate set behind out/detailed/coupling_design.json, not FROZEN)',
-    designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(ctx.space.couplings)},
+    designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(ctx.space.couplings),
+      derived: {laneSpan: ctx.laneSpan}},
     requirements: {contractEntries: ctx.space.requirements.contractEntries, targetTpsPerUser: ctx.target.tpsPerUser,
       limits: ctx.limits, package: ctx.pkg, tauUs: ctx.opt.tauUs},
     contract: ctx.prov,
