@@ -250,7 +250,7 @@ const pair = (a, b, why, at = []) => ({a, b, why, at});
 // ---- dimensions --------------------------------------------------------------------------------
 
 const MEM = DIMENSION_OWNER.sram, COMM = DIMENSION_OWNER.comm, SW = DIMENSION_OWNER.software;
-const KV_TILES = [16384, 32768, 65536];
+const KV_TILES = [8192, 16384, 32768, 65536];
 // headTile follows the tuning search's list (k3_rdma_final_tuning_search.js EXT.headTile), where 96 is the top.
 const HEAD_TILES = [48, 96];
 const HMIB = [2, 4, 8], BANKS = [32, 64], SLICES = [8, 16, 32];

@@ -73,13 +73,23 @@ process.on('exit', () => {
   }
 
   // 3. The reduced search: serial reference against one job and against worker threads.
-  // A.BASE does not survive the SF4 / liquid basis, so it is the seed that has to be repaired.
-  const seedsAll = [A.BASE, S.PRIOR_SEEDS[0], S.PUBLISHED_SEEDS[0]];
+  // A seed has to need repair, or the repair path is not tested. A.BASE used to be that seed (it did not survive the
+  // SF4 / liquid basis). Under the ADR-0028 core definition the engine shapes are fixed and A.BASE snaps onto a
+  // feasible point of the reduced space (584.86 TPS/usr), so it no longer needs repair. REPAIR_SEED is A.BASE with
+  // sharedSlices 32: in the reduced space (sharedSlices {16, 32}) that is infeasible on die power and exactly one
+  // step (sharedSlices back to 16) from feasible, so the repair path is exercised by construction instead of by
+  // the accident of where the basis happens to put A.BASE.
+  const REPAIR_SEED = {...A.BASE, sharedSlices: 32};
+  const seedsAll = [A.BASE, REPAIR_SEED, S.PRIOR_SEEDS[0], S.PUBLISHED_SEEDS[0]];
   const anchor = S.PUBLISHED_SEEDS[0];
   // Eight knobs take two values (the one nearest the anchor in S.EXT and its upper neighbour, or the
   // lower one at the top); the others are fixed at the anchor. Every candidate of a search costs a
   // full model evaluation when it is feasible, and the reference runs them one after another.
-  const VARIED = new Set(['nL', 'nH', 'lEngines', 'hEngines', 'hRows', 'sharedMiB', 'kvTile', 'depth']);
+  // The set was nL, nH, lEngines, hEngines, hRows, sharedMiB, kvTile, depth. Under ADR-0028 the core shape and
+  // count are definitions (S.CORES, one value each in S.EXT), so the first five cannot vary; the space has to stay
+  // as large as before (2^8 = 256 combinations, 128 feasible) for initial = 14 and the offspring/polish loops to
+  // stop mid-batch, so they are replaced by knobs that remain free: hMiB, tmaEngines, headTile, windowFraction.
+  const VARIED = new Set(['sharedMiB', 'kvTile', 'depth', 'sharedSlices', 'hMiB', 'tmaEngines', 'headTile', 'windowFraction']);
   const space = {};
   for (const [k, values] of Object.entries(S.EXT)) {
     const nearest = values.reduce((p, q) => (Math.abs(p - anchor[k]) <= Math.abs(q - anchor[k]) ? p : q));
@@ -88,8 +98,9 @@ process.on('exit', () => {
   }
   const options = {initial: 14, generations: 2, offspring: 6, polish: 2, seed: 20260929};
 
-  const baseOnly = serialSearch(space, [A.BASE], {initial: 0, generations: 0, offspring: 0, polish: 0});
-  assert(baseOnly.attempts > 1, 'A.BASE must need repair in the reduced space, or the repair path is not tested');
+  const repairOnly = serialSearch(space, [REPAIR_SEED], {initial: 0, generations: 0, offspring: 0, polish: 0});
+  assert(repairOnly.attempts > 1, 'the repair seed must need repair in the reduced space, or the repair path is not tested');
+  assert(repairOnly.rows.length >= 1, 'and the repair must find a feasible point');
 
   const reference = serialSearch(space, seedsAll, options);
   assert(reference.rows.length > options.initial, 'the reduced search must produce rows');

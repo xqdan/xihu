@@ -74,25 +74,26 @@ assert(!('overlapDepth' in O.OPT),'prefetch depth is searched as x.depth');
 // thresholds that ARE consumed (partialThreshold*) stay.
 assert(!('reduceStartThreshold' in O.OPT),'reduceStartThreshold is not consumed by any model path');
 assert.equal(mm0.plan.c.depth,b.x.depth);assert.deepStrictEqual(d.search.space.depth,[1,2,3,4]);
-// x.depth must reach the simulator. It used to show at the published point (depth 1 was slower). With HBM3E the
-// published point is collective-bound with room in the shared window, and depth 1..4 all give the same raw, so
-// the check moves to a point where the window is tight and the lookahead decides whether a layer's weights are
-// resident in time: kvTile 32768 (depth 1: 755.0 us, depth 2: 821.9 us) and sharedMiB 8 (depth 1: 779.2, depth 2: 879.9).
+// x.depth must reach the simulator. At the published point it does NOT change raw: depth 1..4 all give 818.71 us
+// (ADR-0028 point; under ADR-0026 depth 1 cost 2.89 us). The shared window has room and the point is
+// collective-bound, so the prefetch lookahead is inert there. The knob still has to reach the simulator, so the
+// check moves to points where the window is tight, and the SIGN there is not "deeper is faster":
+//   sharedMiB 8: depth 1 833.21 us, depth 2 932.51 us, depth 3/4 931.03 us   (deeper is SLOWER)
+//   sharedMiB 6: depth 1 1032.28 us, depth 2 1131.98 us, depth 3 1070.32 us   (not monotone)
+// A deeper lookahead holds more layers' weights resident and pushes the shared window past what it can keep, so
+// the next layer's demand fetch misses. That is a property of a tight window, not of the knob being broken, and it
+// is why the search keeps depth as a dimension even though the published point is flat in it.
 {
   const tight = {...b.x, sharedMiB: 8};
   const r1 = O.evaluate({...tight, depth: 1}), r2 = O.evaluate({...tight, depth: 2});
   assert(r1.feasible && r2.feasible && r1.rawUs !== r2.rawUs, 'x.depth must reach the simulator: it changes raw where the shared window is tight');
+  assert(r2.rawUs > r1.rawUs, `at sharedMiB 8 a deeper lookahead is slower (depth 1 ${r1.rawUs.toFixed(2)} us, depth 2 ${r2.rawUs.toFixed(2)} us): it crowds the shared window`);
   assert.equal(O.mapped({...tight, depth: 1}).plan.c.depth, 1);
   assert.equal(O.mapped({...tight, depth: 3}).plan.c.depth, 3);
-  // At the published point depth saturates at 2, not at 1: depth 1 leaves one more layer of lookahead
-  // un-prefetched and costs 2.89 us (753.63 vs 750.74), depth 2..4 are identical. Before the point moved
-  // every depth 1..4 gave the same raw, so the old form of this check ("inert") no longer holds; what
-  // still holds, and is what the check is for, is that the knob reaches the simulator and that the
-  // published x is not leaving lookahead on the table.
+  // At the published point the knob is inert. State it as an invariant so a future point where it starts to matter
+  // is noticed, instead of the old "depth 1 must cost more" form which only held while the point was window-tight.
   const flat = [1, 2, 3, 4].map(depth => O.evaluate({...b.x, depth}).rawUs);
-  assert(flat[1] === flat[3] && flat[2] === flat[3], `depth 2..4 are equivalent at the published point: ${flat.join(', ')}`);
-  assert(flat[0] > flat[1] + 1e-9, `depth 1 must cost more than depth 2: ${flat.join(', ')}`);
-  assert(b.x.depth >= 2, `the published depth ${b.x.depth} must be at or past saturation`);
+  assert(flat.every(v => v === flat[0]), `depth 1..4 are identical at the published point: ${flat.join(', ')}`);
 }
 // Attention and small-op mapping (2026-09-25).
 assert.equal(O.OPT.pvMerge,'layer');assert.equal(O.OPT.softmaxFusion,true);assert.equal(O.OPT.epilogueFusion,true);
@@ -126,16 +127,22 @@ assert.equal(O.OPT.kvCache,'fp8');assert.equal(mm0.plan.kvBytesPerToken,512+512/
  const saved=O.OPT.kvCache;O.OPT.kvCache='bf16';const r=O.evaluate(b.x),bfRaw=r.feasible?r.rawUs:null,tile=[32768,16384,8192,4096].find(t=>O.evaluate({...b.x,kvTile:t}).feasible),rc=O.evaluate({...b.x,kvTile:tile});O.OPT.kvCache=saved;const fc=O.evaluate({...b.x,kvTile:tile});
  assert(!r.feasible||r.rawUs>b.rawUs,'FP8 KV must not lose to BF16 KV at the published point');
  assert(tile&&rc.rawUs>fc.rawUs&&rc.readBytes>fc.readBytes,'FP8 KV must shorten raw and cut DMA bytes at a common KV tile');
- // FP8 and softmaxFusion interact: the in-kernel FP8 dequant runs on the same H
- // vector lanes as the online softmax and is taken out of the budget the softmax
- // may hide under QK (k3_architecture_search.js, qkDequant). So switching
- // softmaxFusion off must move raw further under fp8 than under bf16. The
- // per-mechanism ablations time each mechanism with all others held at their
- // published values, so they cannot see this and it is asserted here.
+ // FP8 and softmaxFusion are DOCUMENTED as coupled: the in-kernel FP8 dequant runs on the same H vector lanes as
+ // the online softmax and is taken out of the budget the softmax may hide under QK (k3_architecture_search.js,
+ // qkDequant). The coupling is only present when the dequant is the slowest term of a QK kernel. At the published
+ // point it is NOT: QK is limited by matrix/vector in all 48 ops, and the softmax ablation moves raw by exactly the
+ // same amount under fp8 and bf16 (15.141 us both; the two differ by 1e-13, floating-point noise). This assertion
+ // used to be "fp8 delta > bf16 delta", which passed at the ADR-0026 point only because that 1e-13 happened to fall
+ // on the right side of a strict inequality -- the mechanism was never exercised. It is stated here as what holds:
+ // the softmax ablation costs the same under both formats at the published point, so the coupling the mechanism
+ // table describes is latent, not demonstrated. It is exercised only at 128 lanes, where it points the OTHER way
+ // (fp8 41.3 us < bf16 97.8 us), so the "understates the joint effect" wording in the baseline is unsupported there too.
  const smRaw=cache=>{const p=O.OPT.kvCache;O.OPT.kvCache=cache;const s=O.OPT.softmaxFusion;O.OPT.softmaxFusion=false;const q=O.evaluate(b.x);O.OPT.softmaxFusion=s;O.OPT.kvCache=p;return q.feasible?q.rawUs:null;};
  if(bfRaw!==null){const smFp=smRaw('fp8'),smBf=smRaw('bf16');
   assert(smFp!==null&&smBf!==null,'softmax ablation must stay feasible for both KV formats');
-  assert(smFp-b.rawUs>smBf-bfRaw,'FP8 dequant must erode the softmax hiding budget: the softmax ablation has to move raw further under fp8 than under bf16');}}
+  assert(Math.abs((smFp-b.rawUs)-(smBf-bfRaw))<1e-6,'the softmax ablation costs the same under fp8 and bf16 at the published point: the FP8 dequant is not on the QK critical path, so the documented coupling is latent here');
+  const qkLimiters=new Set(mm0.plan.ops.filter(o=>/^QK/.test(o.name)).map(o=>o.mapping.limiter));
+  assert.deepStrictEqual([...qkLimiters],['matrix/vector'],'QK is matrix/vector limited at the published point; if the dequant ever becomes its limiter, restore the strict fp8 > bf16 coupling check');}}
 // TMA fills pinned for a later op are cancelled rather than deadlocking the head op
 // (large FP8 KV tile with a half window used to deadlock); the published point needs none.
 assert.equal(b.tmaCancels,0);

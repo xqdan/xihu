@@ -55,7 +55,7 @@
       "fittedPoint": 1,
       "detailedHoldout": 1,
       "uncorroborated": 16,
-      "heldOutMaxAbsResidualPct": 26.86464640958984,
+      "heldOutMaxAbsResidualPct": 13.684628094068628,
       "note": "Stage A and Stage B are the same formula on the same calibration, so their TPS difference is 0 by construction; corroboration is the comparison with the K3 detailed simulator, where one exists."
     },
     "pendingModelRun": 18,
@@ -81,9 +81,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 105.96006099167487,
-      "rawLatencyUsPerToken": 8066.254838868084,
-      "e2eLatencyUsPerToken": 9437.518161475658,
+      "tpsPerUser": 126.43863680277279,
+      "rawLatencyUsPerToken": 6759.807573962323,
+      "e2eLatencyUsPerToken": 7908.974861535917,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP8#/model/K3/tp8/MC320",
       "blocker": null,
@@ -97,17 +97,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 105.96006099167487,
+          "tpsPerUser": 126.43863680277279,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 105.96006099167487,
+          "tpsPerUser": 126.43863680277279,
           "bound": "memory"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 105.96006099167487,
+          "tpsPerUser": 126.43863680277279,
           "bound": "memory"
         }
       ],
@@ -129,9 +129,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 381.45621957002953,
-      "rawLatencyUsPerToken": 2240.6263441300234,
-      "e2eLatencyUsPerToken": 2621.532822632127,
+      "tpsPerUser": 455.17909248998205,
+      "rawLatencyUsPerToken": 1877.724326100645,
+      "e2eLatencyUsPerToken": 2196.9374615377546,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP8#/model/K3/tp8/MC640",
       "blocker": null,
@@ -145,18 +145,18 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 381.45621957002953,
+          "tpsPerUser": 455.17909248998205,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 381.45621957002953,
-          "bound": "memory"
+          "tpsPerUser": 444.55887732920917,
+          "bound": "compute"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 381.45621957002953,
-          "bound": "memory"
+          "tpsPerUser": 403.3354498366299,
+          "bound": "compute"
         }
       ],
       "tpsPerUserShapeRange": null,
@@ -177,9 +177,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 211.92012198334973,
-      "rawLatencyUsPerToken": 4033.127419434042,
-      "e2eLatencyUsPerToken": 4718.759080737829,
+      "tpsPerUser": 252.87727360554558,
+      "rawLatencyUsPerToken": 3379.9037869811614,
+      "e2eLatencyUsPerToken": 3954.4874307679584,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP16#/model/K3/tp16/MC320",
       "blocker": null,
@@ -193,17 +193,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 211.92012198334973,
+          "tpsPerUser": 252.87727360554558,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 211.92012198334973,
+          "tpsPerUser": 252.87727360554558,
           "bound": "memory"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 211.92012198334973,
+          "tpsPerUser": 252.87727360554558,
           "bound": "memory"
         }
       ],
@@ -225,9 +225,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 762.9124391400591,
-      "rawLatencyUsPerToken": 1120.3131720650117,
-      "e2eLatencyUsPerToken": 1310.7664113160636,
+      "tpsPerUser": 754.4729066923534,
+      "rawLatencyUsPerToken": 1132.8449930003526,
+      "e2eLatencyUsPerToken": 1325.4286418104125,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP16#/model/K3/tp16/MC640",
       "blocker": null,
@@ -236,22 +236,22 @@
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
       "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
-      "boundingOperatorId": "dense_projection",
-      "boundingResource": "memory_bandwidth",
+      "boundingOperatorId": "attention",
+      "boundingResource": "compute",
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 762.9124391400591,
-          "bound": "memory"
+          "tpsPerUser": 754.4729066923534,
+          "bound": "compute"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 748.9092886494489,
-          "bound": "collective"
+          "tpsPerUser": 672.7835511082005,
+          "bound": "compute"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 638.9040700593666,
+          "tpsPerUser": 582.6598759824449,
           "bound": "collective"
         }
       ],
@@ -273,9 +273,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 423.84024396669946,
-      "rawLatencyUsPerToken": 2016.563709717021,
-      "e2eLatencyUsPerToken": 2359.3795403689146,
+      "tpsPerUser": 505.75454721109116,
+      "rawLatencyUsPerToken": 1689.9518934905807,
+      "e2eLatencyUsPerToken": 1977.2437153839792,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP32#/model/K3/tp32/MC320",
       "blocker": null,
@@ -289,25 +289,25 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 423.84024396669946,
+          "tpsPerUser": 505.75454721109116,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 423.84024396669946,
+          "tpsPerUser": 505.75454721109116,
           "bound": "memory"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 423.84024396669946,
+          "tpsPerUser": 505.75454721109116,
           "bound": "memory"
         }
       ],
       "tpsPerUserShapeRange": null,
       "corroboration": {
         "kind": "DETAILED_HOLDOUT",
-        "detailedTpsPerUser": 579.5285360078923,
-        "planningMinusDetailedPct": -26.86464640958984,
+        "detailedTpsPerUser": 585.9379807368206,
+        "planningMinusDetailedPct": -13.684628094068628,
         "source": "out/workload/planning_operator_workload.json#/calibration/validation/holdout",
         "note": "not fitted: the residual is the held-out error of the K3 factors"
       }
@@ -321,9 +321,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1157.6934609230066,
-      "rawLatencyUsPerToken": 738.2790726134174,
-      "e2eLatencyUsPerToken": 863.7865149576983,
+      "tpsPerUser": 1059.4350518316464,
+      "rawLatencyUsPerToken": 806.7515353802681,
+      "e2eLatencyUsPerToken": 943.8992963949137,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP32#/model/K3/tp32/MC640",
       "blocker": null,
@@ -337,25 +337,25 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1157.6934609230066,
+          "tpsPerUser": 1059.4350518316464,
           "bound": "collective"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 975.876322705848,
+          "tpsPerUser": 905.1143333751635,
           "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 797.0509021245019,
+          "tpsPerUser": 749.2108208076296,
           "bound": "collective"
         }
       ],
       "tpsPerUserShapeRange": null,
       "corroboration": {
         "kind": "FITTED_POINT",
-        "detailedTpsPerUser": 1138.4842104608174,
-        "planningMinusDetailedPct": 1.6872654258783149,
+        "detailedTpsPerUser": 1043.9636082178201,
+        "planningMinusDetailedPct": 1.4819907027447066,
         "source": "out/workload/planning_operator_workload.json#/calibration/validation/holdout",
         "note": "the calibration point itself: the residual is not evidence"
       }
@@ -369,9 +369,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 344.6545651997741,
-      "rawLatencyUsPerToken": 2479.876783890675,
-      "e2eLatencyUsPerToken": 2901.4558371520898,
+      "tpsPerUser": 411.2648953187717,
+      "rawLatencyUsPerToken": 2078.2246781320237,
+      "e2eLatencyUsPerToken": 2431.5228734144675,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP8#/model/GLM-5.2/tp8/MC320",
       "blocker": null,
@@ -385,17 +385,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 344.6545651997741,
+          "tpsPerUser": 411.2648953187717,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 344.6545651997741,
+          "tpsPerUser": 411.2648953187717,
           "bound": "memory"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 344.6545651997741,
+          "tpsPerUser": 411.2648953187717,
           "bound": "memory"
         }
       ],
@@ -417,9 +417,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1240.7564347191865,
-      "rawLatencyUsPerToken": 688.8546621918542,
-      "e2eLatencyUsPerToken": 805.9599547644694,
+      "tpsPerUser": 1480.5536231475776,
+      "rawLatencyUsPerToken": 577.2846328144512,
+      "e2eLatencyUsPerToken": 675.4230203929079,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP8#/model/GLM-5.2/tp8/MC640",
       "blocker": null,
@@ -433,17 +433,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1240.7564347191865,
+          "tpsPerUser": 1480.5536231475776,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1240.7564347191865,
-          "bound": "memory"
+          "tpsPerUser": 1295.429125715257,
+          "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 1004.7004711320352,
+          "tpsPerUser": 1034.3936168661514,
           "bound": "collective"
         }
       ],
@@ -465,9 +465,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 689.3091303995482,
-      "rawLatencyUsPerToken": 1239.9383919453376,
-      "e2eLatencyUsPerToken": 1450.7279185760449,
+      "tpsPerUser": 822.5297906375434,
+      "rawLatencyUsPerToken": 1039.1123390660118,
+      "e2eLatencyUsPerToken": 1215.7614367072338,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP16#/model/GLM-5.2/tp16/MC320",
       "blocker": null,
@@ -481,17 +481,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 689.3091303995482,
+          "tpsPerUser": 822.5297906375434,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 689.3091303995482,
+          "tpsPerUser": 822.5297906375434,
           "bound": "memory"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 689.3091303995482,
+          "tpsPerUser": 822.5297906375434,
           "bound": "memory"
         }
       ],
@@ -513,9 +513,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1765.675712306842,
-      "rawLatencyUsPerToken": 484.06445687820815,
-      "e2eLatencyUsPerToken": 566.3554145475035,
+      "tpsPerUser": 1798.878331590163,
+      "rawLatencyUsPerToken": 475.1298849351978,
+      "e2eLatencyUsPerToken": 555.9019653741814,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP16#/model/GLM-5.2/tp16/MC640",
       "blocker": null,
@@ -529,17 +529,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1765.675712306842,
+          "tpsPerUser": 1798.878331590163,
           "bound": "collective"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1423.044092450425,
+          "tpsPerUser": 1444.5325529267632,
           "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 1114.1764400831157,
+          "tpsPerUser": 1127.3061600333892,
           "bound": "collective"
         }
       ],
@@ -561,9 +561,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1378.6182607990963,
-      "rawLatencyUsPerToken": 619.9691959726688,
-      "e2eLatencyUsPerToken": 725.3639592880224,
+      "tpsPerUser": 1645.0595812750869,
+      "rawLatencyUsPerToken": 519.5561695330059,
+      "e2eLatencyUsPerToken": 607.8807183536169,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP32#/model/GLM-5.2/tp32/MC320",
       "blocker": null,
@@ -577,17 +577,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1378.6182607990963,
+          "tpsPerUser": 1645.0595812750869,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1378.6182607990963,
-          "bound": "memory"
+          "tpsPerUser": 1532.7415541842327,
+          "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 1178.3766306558362,
+          "tpsPerUser": 1180.3160410531423,
           "bound": "collective"
         }
       ],
@@ -609,9 +609,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1932.52917652606,
-      "rawLatencyUsPerToken": 442.27060842479824,
-      "e2eLatencyUsPerToken": 517.4566118570139,
+      "tpsPerUser": 1937.7508689746003,
+      "rawLatencyUsPerToken": 441.0788137863857,
+      "e2eLatencyUsPerToken": 516.0622121300712,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP32#/model/GLM-5.2/tp32/MC640",
       "blocker": null,
@@ -625,17 +625,17 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1932.52917652606,
+          "tpsPerUser": 1937.7508689746003,
           "bound": "collective"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1529.4726819579594,
+          "tpsPerUser": 1532.7415541842327,
           "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 1178.3766306558362,
+          "tpsPerUser": 1180.3160410531423,
           "bound": "collective"
         }
       ],
@@ -657,9 +657,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 356.6655350011596,
-      "rawLatencyUsPerToken": 2396.3651399568953,
-      "e2eLatencyUsPerToken": 2803.7472137495674,
+      "tpsPerUser": 425.5971883936668,
+      "rawLatencyUsPerToken": 2008.2389593003556,
+      "e2eLatencyUsPerToken": 2349.639582381416,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP8#/model/DeepSeek-V4-Pro/tp8/MC320",
       "blocker": null,
@@ -673,23 +673,23 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 356.6655350011596,
+          "tpsPerUser": 425.5971883936668,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 356.6655350011596,
+          "tpsPerUser": 425.5971883936668,
           "bound": "memory"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 356.6655350011596,
+          "tpsPerUser": 425.5971883936668,
           "bound": "memory"
         }
       ],
       "tpsPerUserShapeRange": {
-        "min": 356.6655350011596,
-        "max": 383.0504052294958
+        "min": 425.5971883936668,
+        "max": 457.0813815195184
       },
       "corroboration": {
         "kind": "UNCORROBORATED",
@@ -708,9 +708,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1283.9959260041742,
-      "rawLatencyUsPerToken": 665.6569833213599,
-      "e2eLatencyUsPerToken": 778.8186704859911,
+      "tpsPerUser": 1240.5681401644176,
+      "rawLatencyUsPerToken": 688.9592171757512,
+      "e2eLatencyUsPerToken": 806.0822840956288,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP8#/model/DeepSeek-V4-Pro/tp8/MC640",
       "blocker": null,
@@ -719,28 +719,28 @@
       "physicalProfile": "P1",
       "evidenceKind": "CALIBRATED_PLANNING_TOKEN_TIME",
       "latencyScope": "planning token time: max(memory lane incl. expert re-reads, FLOP + per-layer fixed + exposed TMA + collectives x tau) x 1.17 margin; every factor calibrated on the K3 detailed timing breakdown; not event-timed",
-      "boundingOperatorId": "dense_projection",
-      "boundingResource": "memory_bandwidth",
+      "boundingOperatorId": "collective_reduce",
+      "boundingResource": "collective_latency",
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1283.9959260041742,
-          "bound": "memory"
+          "tpsPerUser": 1240.5681401644176,
+          "bound": "collective"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1119.3825565724617,
+          "tpsPerUser": 1074.1371800800366,
           "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 933.0319695575088,
+          "tpsPerUser": 901.3842506684211,
           "bound": "collective"
         }
       ],
       "tpsPerUserShapeRange": {
-        "min": 1283.9959260041742,
-        "max": 1329.270102442992
+        "min": 1240.5681401644176,
+        "max": 1257.8876284683658
       },
       "corroboration": {
         "kind": "UNCORROBORATED",
@@ -759,9 +759,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 713.3310700023192,
-      "rawLatencyUsPerToken": 1198.1825699784476,
-      "e2eLatencyUsPerToken": 1401.8736068747837,
+      "tpsPerUser": 851.1943767873336,
+      "rawLatencyUsPerToken": 1004.1194796501778,
+      "e2eLatencyUsPerToken": 1174.819791190708,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP16#/model/DeepSeek-V4-Pro/tp16/MC320",
       "blocker": null,
@@ -775,23 +775,23 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 713.3310700023192,
+          "tpsPerUser": 851.1943767873336,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 713.3310700023192,
+          "tpsPerUser": 851.1943767873336,
           "bound": "memory"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 713.3310700023192,
+          "tpsPerUser": 851.1943767873336,
           "bound": "memory"
         }
       ],
       "tpsPerUserShapeRange": {
-        "min": 713.3310700023192,
-        "max": 766.1008104589916
+        "min": 851.1943767873336,
+        "max": 914.1627630390368
       },
       "corroboration": {
         "kind": "UNCORROBORATED",
@@ -810,9 +810,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1673.8269890668937,
-      "rawLatencyUsPerToken": 510.62676147749517,
-      "e2eLatencyUsPerToken": 597.4333109286694,
+      "tpsPerUser": 1614.8685226099744,
+      "rawLatencyUsPerToken": 529.2696233371832,
+      "e2eLatencyUsPerToken": 619.2454593045044,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP16#/model/DeepSeek-V4-Pro/tp16/MC640",
       "blocker": null,
@@ -826,23 +826,23 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1673.8269890668937,
+          "tpsPerUser": 1614.8685226099744,
           "bound": "collective"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1384.407234012825,
+          "tpsPerUser": 1343.8278055262747,
           "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 1110.178794149561,
+          "tpsPerUser": 1083.9309884053087,
           "bound": "collective"
         }
       ],
       "tpsPerUserShapeRange": {
-        "min": 1673.8269890668937,
-        "max": 1696.7744601528618
+        "min": 1614.8685226099744,
+        "max": 1629.470995055284
       },
       "corroboration": {
         "kind": "UNCORROBORATED",
@@ -861,9 +861,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1426.6621400046383,
-      "rawLatencyUsPerToken": 599.0912849892238,
-      "e2eLatencyUsPerToken": 700.9368034373919,
+      "tpsPerUser": 1702.3887535746671,
+      "rawLatencyUsPerToken": 502.0597398250889,
+      "e2eLatencyUsPerToken": 587.409895595354,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC320-TP32#/model/DeepSeek-V4-Pro/tp32/MC320",
       "blocker": null,
@@ -877,23 +877,23 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1426.6621400046383,
+          "tpsPerUser": 1702.3887535746671,
           "bound": "memory"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1426.6621400046383,
-          "bound": "memory"
+          "tpsPerUser": 1536.7485439886643,
+          "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 1226.6230212948205,
+          "tpsPerUser": 1206.0550521048779,
           "bound": "collective"
         }
       ],
       "tpsPerUserShapeRange": {
-        "min": 1426.6621400046383,
-        "max": 1532.2016209179833
+        "min": 1702.3887535746671,
+        "max": 1828.3255260780736
       },
       "corroboration": {
         "kind": "UNCORROBORATED",
@@ -912,9 +912,9 @@
       "metric": "decode_tps_per_user",
       "unit": "tokens/s/user",
       "status": "PLANNING_ESTIMATE",
-      "tpsPerUser": 1953.4153486707435,
-      "rawLatencyUsPerToken": 437.5417932916622,
-      "e2eLatencyUsPerToken": 511.92389815124477,
+      "tpsPerUser": 1901.7660005860655,
+      "rawLatencyUsPerToken": 449.42482641789917,
+      "e2eLatencyUsPerToken": 525.827046908942,
       "source": "out/detailed/detailed_architecture_run.json",
       "sourceSelector": "P1-compact-MC640-TP32#/model/DeepSeek-V4-Pro/tp32/MC640",
       "blocker": null,
@@ -928,23 +928,23 @@
       "tpsPerUserTauSensitivity": [
         {
           "tauUs": 1.15,
-          "tpsPerUser": 1953.4153486707435,
+          "tpsPerUser": 1901.7660005860655,
           "bound": "collective"
         },
         {
           "tauUs": 1.5,
-          "tpsPerUser": 1570.298992626659,
+          "tpsPerUser": 1536.7485439886643,
           "bound": "collective"
         },
         {
           "tauUs": 2,
-          "tpsPerUser": 1226.6230212948205,
+          "tpsPerUser": 1206.0550521048779,
           "bound": "collective"
         }
       ],
       "tpsPerUserShapeRange": {
-        "min": 1953.4153486707435,
-        "max": 1968.9535309978642
+        "min": 1901.7660005860655,
+        "max": 1911.8544518827398
       },
       "corroboration": {
         "kind": "UNCORROBORATED",

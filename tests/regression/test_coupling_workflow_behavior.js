@@ -75,8 +75,18 @@ const SEATS = [...new Set(Object.values(space.couplings).flatMap(c => c.seats))]
   assert(brief.composition && 'backflow' in brief, 'the coupling brief carries the composition and the backflow');
   const rows = brief.candidates.map(c => ({c, row: JSON.parse(c.values)}));
   const top = rows.find(({row}) => row.feasible && row.pareto);
-  const dominated = rows.find(({row}) => row.feasible && !row.pareto);
-  assert(top && dominated, 'the ranked head holds a Pareto row and a dominated feasible row');
+  // The check under test is "a feasible row that is NOT on the Pareto set cannot land". It used to find such a row in
+  // the artifact. With the lane grid derived from the compute winner to the published lanes (ADR-0028, laneSpan) the
+  // three feasible rows (896 / 960 / 1024 lanes) trade die area against TPS and none dominates another, so the
+  // artifact legitimately holds no dominated feasible row. The case is therefore built from a real Pareto row whose
+  // copy carries pareto:false -- the mechanical check reads exactly that field (design.coupling.workflow.js
+  // `row.pareto !== true`) -- instead of requiring the data to happen to contain one. The same row stays in the
+  // candidate list, so optionId and values still match the candidate set verbatim.
+  const dominatedRow = {...top.row, pareto: false};
+  const dominated = {c: {...top.c, values: JSON.stringify(dominatedRow)}, row: dominatedRow};
+  assert(top && !dominated.row.pareto && dominated.row.feasible, 'the fixture is a feasible row that is off the Pareto set');
+  // The brief the workflow receives lists the dominated copy, as it would if the search had produced one.
+  const briefWithDominated = {...brief, candidates: brief.candidates.map(c => (c.optionId === dominated.c.optionId ? dominated.c : c))};
   const winnerOf = ({c}) => ({optionId: c.optionId, values: c.values, provenance: 'test'});
 
   // 1. Happy path: two files, and the joint point is the row's own point.
@@ -141,7 +151,7 @@ const SEATS = [...new Set(Object.values(space.couplings).flatMap(c => c.seats))]
     unknown: {...winnerOf(top), optionId: 'invented'}
   };
   for (const [name, winner] of Object.entries(cases)) {
-    const bad = await run(baseArgs(brief), {winner});
+    const bad = await run(baseArgs(name === 'dominated' ? briefWithDominated : brief), {winner});
     assert.strictEqual(bad.result.verdict, 'INVARIANT_VIOLATED', `${name}: ${JSON.stringify(bad.result)}`);
     assert.deepStrictEqual(bad.result.files, [], `${name}: nothing lands`);
     assert(bad.result.violations.length === 1, `${name}: ${bad.result.violations}`);

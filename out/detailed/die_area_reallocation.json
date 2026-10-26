@@ -7,7 +7,7 @@
   },
   "inputs": {
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
-    "baselineSha256": "7b814b46b346b41ce01a415a7a2b540c65822708e512bd4da7b7b1ddb63a1d39",
+    "baselineSha256": "94d2ffeae018248feb518a293f5bd363b0a17e87d0f0df6138aa0cdac79e91d4",
     "goalTpsPerUser": 1000,
     "pessimisticPoints": {
       "compute": {
@@ -38,33 +38,33 @@
   "published": {
     "feasible": true,
     "nominal": {
-      "tps": 1138.4842104608174,
-      "dieAreaMm2": 361.6787333884665,
-      "diePowerW": 292.4751360000001,
-      "cardPowerW": 3047.8970880000006,
-      "packageAreaMm2": 4493.429867107732
+      "tps": 1043.9636082178201,
+      "dieAreaMm2": 372.53485439686995,
+      "diePowerW": 295.0863360000001,
+      "cardPowerW": 3068.7866880000006,
+      "packageAreaMm2": 4580.27883517496
     },
     "compute": {
-      "tps": 941.5128132476201,
-      "dieAreaMm2": 361.6787333884665,
-      "diePowerW": 292.4751360000001,
-      "cardPowerW": 3047.8970880000006,
-      "packageAreaMm2": 4493.429867107732
+      "tps": 837.0841637145422,
+      "dieAreaMm2": 372.53485439686995,
+      "diePowerW": 295.0863360000001,
+      "cardPowerW": 3068.7866880000006,
+      "packageAreaMm2": 4580.27883517496
     },
     "allUnmeasured": {
-      "tps": 926.5200864481925,
-      "dieAreaMm2": 361.6787333884665,
-      "diePowerW": 292.4751360000001,
-      "cardPowerW": 3011.0330880000006,
-      "packageAreaMm2": 4493.429867107732
+      "tps": 825.275908141776,
+      "dieAreaMm2": 372.53485439686995,
+      "diePowerW": 295.0863360000001,
+      "cardPowerW": 3031.9226880000006,
+      "packageAreaMm2": 4580.27883517496
     }
   },
   "envelope": {
     "published": {
-      "dieAreaMm2": 361.6787333884665,
-      "diePowerW": 292.4751360000001,
-      "cardPowerW": 3047.8970880000006,
-      "packageAreaMm2": 4493.429867107732
+      "dieAreaMm2": 372.53485439686995,
+      "diePowerW": 295.0863360000001,
+      "cardPowerW": 3068.7866880000006,
+      "packageAreaMm2": 4580.27883517496
     },
     "limits": {
       "dieAreaMm2": 400,
@@ -73,16 +73,16 @@
       "packageAreaMm2": 5248
     },
     "headroom": {
-      "dieAreaMm2": 38.321266611533474,
-      "diePowerW": 7.524863999999923,
-      "cardPowerW": 152.10291199999938,
-      "packageAreaMm2": 754.5701328922678
+      "dieAreaMm2": 27.465145603130054,
+      "diePowerW": 4.913663999999926,
+      "cardPowerW": 131.2133119999994,
+      "packageAreaMm2": 667.7211648250404
     },
     "headroomFraction": {
-      "dieArea": 0.0958031665288337,
-      "diePower": 0.025082879999999697,
-      "cardPower": 0.04753215999999982,
-      "packageArea": 0.14378241861514252
+      "dieArea": 0.06866286400782518,
+      "diePower": 0.016378879999999763,
+      "cardPower": 0.041004159999999845,
+      "packageArea": 0.12723345366330796
     }
   },
   "marginals": [
@@ -92,12 +92,12 @@
       "to": 768,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1134.392902186717,
-      "dNominalTps": -4.091308274100356,
-      "computeTps": 920.7810476185987,
-      "dComputeTps": -20.731765629021425,
+      "nominalTps": 1031.7712055771503,
+      "dNominalTps": -12.192402640669798,
+      "computeTps": 819.2247455107359,
+      "dComputeTps": -17.859418203806285,
       "dDieAreaMm2": -5.885848739495827,
-      "dDiePowerW": -3.9936000000000718
+      "dDiePowerW": -3.993600000000015
     },
     {
       "field": "reduceLanes",
@@ -105,19 +105,19 @@
       "to": 1024,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1096.8904310255489,
-      "dNominalTps": -41.593779435268516,
-      "computeTps": 912.8854949895419,
-      "dComputeTps": -28.627318258078162,
+      "nominalTps": 1008.8832205801089,
+      "dNominalTps": -35.08038763771128,
+      "computeTps": 814.3785331179615,
+      "dComputeTps": -22.705630596580704,
       "dDieAreaMm2": -10.463731092436944,
-      "dDiePowerW": -8.192000000000064
+      "dDiePowerW": -8.192000000000007
     },
     {
       "field": "reduceLanes",
       "from": 2048,
       "to": 3072,
       "feasible": false,
-      "reason": "die power after shared-port scaling",
+      "reason": "die power",
       "nominalTps": null,
       "dNominalTps": null,
       "computeTps": null,
@@ -131,12 +131,12 @@
       "to": 3,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1138.4842104608174,
-      "dNominalTps": 0,
-      "computeTps": 940.5596083869898,
-      "dComputeTps": -0.9532048606303078,
+      "nominalTps": 1043.02595089471,
+      "dNominalTps": -0.9376573231102157,
+      "computeTps": 836.4812030400071,
+      "dComputeTps": -0.6029606745350975,
       "dDieAreaMm2": -5.3647058823529505,
-      "dDiePowerW": -0.9600000000000364
+      "dDiePowerW": -0.9599999999999795
     },
     {
       "field": "rdmaLanes",
@@ -144,32 +144,32 @@
       "to": 12,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1138.0851535279114,
-      "dNominalTps": -0.3990569329059781,
-      "computeTps": 941.180354681727,
-      "dComputeTps": -0.33245856589314826,
+      "nominalTps": 1043.628052846723,
+      "dNominalTps": -0.3355553710971435,
+      "computeTps": 836.8213546629421,
+      "dComputeTps": -0.26280905160012935,
       "dDieAreaMm2": -1.400000000000034,
       "dDiePowerW": -1.6800000000000068
     },
     {
       "field": "hRows",
-      "from": 48,
-      "to": 40,
+      "from": 128,
+      "to": 96,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1102.3046885061824,
-      "dNominalTps": -36.17952195463499,
-      "computeTps": 905.3987244423893,
-      "dComputeTps": -36.114088805230836,
-      "dDieAreaMm2": -19.619495798319292,
-      "dDiePowerW": -23.592960000000005
+      "nominalTps": 1043.9636082178201,
+      "dNominalTps": 0,
+      "computeTps": 837.0841637145422,
+      "dComputeTps": 0,
+      "dDieAreaMm2": -26.159327731092503,
+      "dDiePowerW": -31.457280000000026
     },
     {
-      "field": "hRows",
-      "from": 48,
-      "to": 56,
+      "field": "hEngines",
+      "from": 1,
+      "to": 2,
       "feasible": false,
-      "reason": "die power, card power",
+      "reason": "die area, die power, card power, package area",
       "nominalTps": null,
       "dNominalTps": null,
       "computeTps": null,
@@ -178,56 +178,43 @@
       "dDiePowerW": null
     },
     {
-      "field": "hEngines",
-      "from": 6,
-      "to": 5,
-      "feasible": true,
-      "reason": null,
-      "nominalTps": 1102.3046885061824,
-      "dNominalTps": -36.17952195463499,
-      "computeTps": 902.8365183745283,
-      "dComputeTps": -38.67629487309182,
-      "dDieAreaMm2": -19.619495798319292,
-      "dDiePowerW": -23.592960000000005
-    },
-    {
       "field": "sharedSlices",
       "from": 16,
       "to": 12,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1134.2195829540253,
-      "dNominalTps": -4.264627506792067,
-      "computeTps": 938.6041555362044,
-      "dComputeTps": -2.9086577114156853,
-      "dDieAreaMm2": -5.213881008403405,
-      "dDiePowerW": -1.8368640000000482
+      "nominalTps": 1034.7466267141106,
+      "dNominalTps": -9.216981503709576,
+      "computeTps": 831.1897412821994,
+      "dComputeTps": -5.894422432342822,
+      "dDieAreaMm2": -5.213881008403462,
+      "dDiePowerW": -1.8368639999999914
     },
     {
       "field": "lCols",
-      "from": 256,
-      "to": 128,
+      "from": 512,
+      "to": 256,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1086.486662691063,
-      "dNominalTps": -51.99754776975442,
-      "computeTps": 884.294121490897,
-      "dComputeTps": -57.21869175672305,
-      "dDieAreaMm2": -6.539831932773097,
-      "dDiePowerW": -7.864320000000021
+      "nominalTps": 1032.0566764357511,
+      "dNominalTps": -11.906931782069023,
+      "computeTps": 837.0841637145422,
+      "dComputeTps": 0,
+      "dDieAreaMm2": -13.079663865546308,
+      "dDiePowerW": -15.728640000000041
     },
     {
       "field": "nocLanes",
-      "from": 2,
+      "from": 4,
       "to": 3,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1153.5339236085142,
-      "dNominalTps": 15.04971314769682,
-      "computeTps": 953.7310760561905,
-      "dComputeTps": 12.218262808570444,
-      "dDieAreaMm2": 7.06301848739497,
-      "dDiePowerW": 2.995200000000011
+      "nominalTps": 1043.3786118504968,
+      "dNominalTps": -0.584996367323356,
+      "computeTps": 834.7410602161045,
+      "dComputeTps": -2.3431034984376993,
+      "dDieAreaMm2": -7.06301848739497,
+      "dDiePowerW": -2.9951999999999543
     },
     {
       "field": "lBanks",
@@ -235,43 +222,51 @@
       "to": 32,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1121.7348426115166,
-      "dNominalTps": -16.749367849300825,
-      "computeTps": 932.6489333598631,
-      "dComputeTps": -8.86387988775698,
-      "dDieAreaMm2": -6.539831932773097,
+      "nominalTps": 985.884830233966,
+      "dNominalTps": -58.07877798385414,
+      "computeTps": 830.0820204895531,
+      "dComputeTps": -7.00214322498914,
+      "dDieAreaMm2": -6.539831932773154,
       "dDiePowerW": -6.7584000000000515
     },
     {
       "field": "hBanks",
-      "from": 64,
-      "to": 32,
+      "from": 32,
+      "to": 64,
       "feasible": true,
       "reason": null,
-      "nominalTps": 1131.1304243181216,
-      "dNominalTps": -7.353786142695753,
-      "computeTps": 929.99537012011,
-      "dComputeTps": -11.517443127510091,
-      "dDieAreaMm2": -3.269915966386577,
-      "dDiePowerW": -3.3792000000000257
+      "nominalTps": 1044.5499793641711,
+      "dNominalTps": 0.5863711463509844,
+      "computeTps": 846.2469530778609,
+      "dComputeTps": 9.162789363318666,
+      "dDieAreaMm2": 3.2699159663865203,
+      "dDiePowerW": 3.3792000000000257
     }
   ],
   "proposals": [
     {
       "floor": "nominalWithin1Percent",
-      "nominalFloorTps": 1127.0993683562092,
+      "nominalFloorTps": 1033.523972135642,
       "changed": {
         "reduceLanes": {
           "from": 2048,
-          "to": 3072
+          "to": 4096
         },
-        "nocLanes": {
-          "from": 2,
-          "to": 4
+        "hRows": {
+          "from": 128,
+          "to": 64
         },
-        "lBanks": {
-          "from": 64,
-          "to": 32
+        "hEngines": {
+          "from": 1,
+          "to": 2
+        },
+        "lCols": {
+          "from": 512,
+          "to": 256
+        },
+        "hBanks": {
+          "from": 32,
+          "to": 64
         }
       },
       "x": {
@@ -280,14 +275,14 @@
         "lRows": 1,
         "lCols": 256,
         "lEngines": 8,
-        "hRows": 48,
-        "hCols": 128,
-        "hEngines": 6,
+        "hRows": 64,
+        "hCols": 256,
+        "hEngines": 2,
         "ghz": 1,
         "vectorLanes": 1024,
         "lMiB": 1,
         "hMiB": 4,
-        "lBanks": 32,
+        "lBanks": 64,
         "hBanks": 64,
         "bankBytes": 64,
         "sharedMiB": 16,
@@ -296,7 +291,7 @@
         "tmaBytes": 512,
         "nocBytes": 256,
         "nocLanes": 4,
-        "reduceLanes": 3072,
+        "reduceLanes": 4096,
         "ucieLanes": 128,
         "ucieGbps": 64,
         "mcGBs": 1152,
@@ -305,30 +300,30 @@
         "kvTile": 16384,
         "headTile": 96,
         "depth": 4,
-        "windowFraction": 0.75
+        "windowFraction": 1
       },
       "result": {
         "feasible": true,
         "nominal": {
-          "tps": 1148.395540926423,
-          "dieAreaMm2": 379.7286695229203,
-          "diePowerW": 299.89913600000006,
-          "cardPowerW": 3107.2890880000004,
-          "packageAreaMm2": 4637.8293561833625
+          "tps": 1134.1780139522568,
+          "dieAreaMm2": 383.6525686825842,
+          "diePowerW": 299.1208960000001,
+          "cardPowerW": 3101.0631680000006,
+          "packageAreaMm2": 4669.220549460673
         },
         "compute": {
-          "tps": 958.4074651171798,
-          "dieAreaMm2": 379.7286695229203,
-          "diePowerW": 299.89913600000006,
-          "cardPowerW": 3107.2890880000004,
-          "packageAreaMm2": 4637.8293561833625
+          "tps": 941.5389141334656,
+          "dieAreaMm2": 383.6525686825842,
+          "diePowerW": 299.1208960000001,
+          "cardPowerW": 3101.0631680000006,
+          "packageAreaMm2": 4669.220549460673
         },
         "allUnmeasured": {
-          "tps": 946.6361893259159,
-          "dieAreaMm2": 379.7286695229203,
-          "diePowerW": 299.89913600000006,
-          "cardPowerW": 3070.4250880000004,
-          "packageAreaMm2": 4637.8293561833625
+          "tps": 926.6243788319507,
+          "dieAreaMm2": 383.6525686825842,
+          "diePowerW": 299.1208960000001,
+          "cardPowerW": 3064.1991680000006,
+          "packageAreaMm2": 4669.220549460673
         }
       },
       "path": [
@@ -336,39 +331,58 @@
           "step": 1,
           "move": [
             {
-              "field": "nocLanes",
-              "to": 4
+              "field": "hRows",
+              "to": 64
+            },
+            {
+              "field": "hEngines",
+              "to": 2
             }
           ],
-          "nominalTps": 1154.361337315765,
-          "computeTps": 957.4667180971798,
-          "allUnmeasuredTps": 941.5979387098444,
-          "dieAreaMm2": 375.80477036325647,
-          "diePowerW": 298.46553600000004,
-          "cardPowerW": 3095.8202880000003
+          "nominalTps": 1126.334280805301,
+          "computeTps": 916.0198123756247,
+          "allUnmeasuredTps": 901.8983423993891,
+          "dieAreaMm2": 372.53485439686995,
+          "diePowerW": 295.0863360000001,
+          "cardPowerW": 3068.7866880000006
         },
         {
           "step": 2,
           "move": [
             {
               "field": "reduceLanes",
-              "to": 3072
+              "to": 4096
             },
             {
-              "field": "lBanks",
-              "to": 32
+              "field": "lCols",
+              "to": 256
             }
           ],
-          "nominalTps": 1148.395540926423,
-          "computeTps": 958.4074651171798,
-          "allUnmeasuredTps": 946.6361893259159,
-          "dieAreaMm2": 379.7286695229203,
-          "diePowerW": 299.89913600000006,
-          "cardPowerW": 3107.2890880000004
+          "nominalTps": 1133.4867312783244,
+          "computeTps": 930.2101945178474,
+          "allUnmeasuredTps": 915.6512913251661,
+          "dieAreaMm2": 380.3826527161976,
+          "diePowerW": 295.7416960000001,
+          "cardPowerW": 3074.029568000001
+        },
+        {
+          "step": 3,
+          "move": [
+            {
+              "field": "hBanks",
+              "to": 64
+            }
+          ],
+          "nominalTps": 1134.1780139522568,
+          "computeTps": 941.5389141334656,
+          "allUnmeasuredTps": 926.6243788319507,
+          "dieAreaMm2": 383.6525686825842,
+          "diePowerW": 299.1208960000001,
+          "cardPowerW": 3101.0631680000006
         }
       ],
       "holdOut": {
-        "allUnmeasuredGainTps": 20.116102877723392,
+        "allUnmeasuredGainTps": 101.34847069017474,
         "note": "tuned on the compute point, scored on the point that also moves mcUtil, prediction and launch scale"
       }
     },
@@ -378,15 +392,23 @@
       "changed": {
         "reduceLanes": {
           "from": 2048,
-          "to": 3072
+          "to": 4096
         },
-        "nocLanes": {
-          "from": 2,
-          "to": 4
+        "hRows": {
+          "from": 128,
+          "to": 64
         },
-        "lBanks": {
-          "from": 64,
-          "to": 32
+        "hEngines": {
+          "from": 1,
+          "to": 2
+        },
+        "lCols": {
+          "from": 512,
+          "to": 256
+        },
+        "hBanks": {
+          "from": 32,
+          "to": 64
         }
       },
       "x": {
@@ -395,14 +417,14 @@
         "lRows": 1,
         "lCols": 256,
         "lEngines": 8,
-        "hRows": 48,
-        "hCols": 128,
-        "hEngines": 6,
+        "hRows": 64,
+        "hCols": 256,
+        "hEngines": 2,
         "ghz": 1,
         "vectorLanes": 1024,
         "lMiB": 1,
         "hMiB": 4,
-        "lBanks": 32,
+        "lBanks": 64,
         "hBanks": 64,
         "bankBytes": 64,
         "sharedMiB": 16,
@@ -411,7 +433,7 @@
         "tmaBytes": 512,
         "nocBytes": 256,
         "nocLanes": 4,
-        "reduceLanes": 3072,
+        "reduceLanes": 4096,
         "ucieLanes": 128,
         "ucieGbps": 64,
         "mcGBs": 1152,
@@ -420,30 +442,30 @@
         "kvTile": 16384,
         "headTile": 96,
         "depth": 4,
-        "windowFraction": 0.75
+        "windowFraction": 1
       },
       "result": {
         "feasible": true,
         "nominal": {
-          "tps": 1148.395540926423,
-          "dieAreaMm2": 379.7286695229203,
-          "diePowerW": 299.89913600000006,
-          "cardPowerW": 3107.2890880000004,
-          "packageAreaMm2": 4637.8293561833625
+          "tps": 1134.1780139522568,
+          "dieAreaMm2": 383.6525686825842,
+          "diePowerW": 299.1208960000001,
+          "cardPowerW": 3101.0631680000006,
+          "packageAreaMm2": 4669.220549460673
         },
         "compute": {
-          "tps": 958.4074651171798,
-          "dieAreaMm2": 379.7286695229203,
-          "diePowerW": 299.89913600000006,
-          "cardPowerW": 3107.2890880000004,
-          "packageAreaMm2": 4637.8293561833625
+          "tps": 941.5389141334656,
+          "dieAreaMm2": 383.6525686825842,
+          "diePowerW": 299.1208960000001,
+          "cardPowerW": 3101.0631680000006,
+          "packageAreaMm2": 4669.220549460673
         },
         "allUnmeasured": {
-          "tps": 946.6361893259159,
-          "dieAreaMm2": 379.7286695229203,
-          "diePowerW": 299.89913600000006,
-          "cardPowerW": 3070.4250880000004,
-          "packageAreaMm2": 4637.8293561833625
+          "tps": 926.6243788319507,
+          "dieAreaMm2": 383.6525686825842,
+          "diePowerW": 299.1208960000001,
+          "cardPowerW": 3064.1991680000006,
+          "packageAreaMm2": 4669.220549460673
         }
       },
       "path": [
@@ -451,39 +473,58 @@
           "step": 1,
           "move": [
             {
-              "field": "nocLanes",
-              "to": 4
+              "field": "hRows",
+              "to": 64
+            },
+            {
+              "field": "hEngines",
+              "to": 2
             }
           ],
-          "nominalTps": 1154.361337315765,
-          "computeTps": 957.4667180971798,
-          "allUnmeasuredTps": 941.5979387098444,
-          "dieAreaMm2": 375.80477036325647,
-          "diePowerW": 298.46553600000004,
-          "cardPowerW": 3095.8202880000003
+          "nominalTps": 1126.334280805301,
+          "computeTps": 916.0198123756247,
+          "allUnmeasuredTps": 901.8983423993891,
+          "dieAreaMm2": 372.53485439686995,
+          "diePowerW": 295.0863360000001,
+          "cardPowerW": 3068.7866880000006
         },
         {
           "step": 2,
           "move": [
             {
               "field": "reduceLanes",
-              "to": 3072
+              "to": 4096
             },
             {
-              "field": "lBanks",
-              "to": 32
+              "field": "lCols",
+              "to": 256
             }
           ],
-          "nominalTps": 1148.395540926423,
-          "computeTps": 958.4074651171798,
-          "allUnmeasuredTps": 946.6361893259159,
-          "dieAreaMm2": 379.7286695229203,
-          "diePowerW": 299.89913600000006,
-          "cardPowerW": 3107.2890880000004
+          "nominalTps": 1133.4867312783244,
+          "computeTps": 930.2101945178474,
+          "allUnmeasuredTps": 915.6512913251661,
+          "dieAreaMm2": 380.3826527161976,
+          "diePowerW": 295.7416960000001,
+          "cardPowerW": 3074.029568000001
+        },
+        {
+          "step": 3,
+          "move": [
+            {
+              "field": "hBanks",
+              "to": 64
+            }
+          ],
+          "nominalTps": 1134.1780139522568,
+          "computeTps": 941.5389141334656,
+          "allUnmeasuredTps": 926.6243788319507,
+          "dieAreaMm2": 383.6525686825842,
+          "diePowerW": 299.1208960000001,
+          "cardPowerW": 3101.0631680000006
         }
       ],
       "holdOut": {
-        "allUnmeasuredGainTps": 20.116102877723392,
+        "allUnmeasuredGainTps": 101.34847069017474,
         "note": "tuned on the compute point, scored on the point that also moves mcUtil, prediction and launch scale"
       }
     }

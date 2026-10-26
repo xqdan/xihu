@@ -192,11 +192,11 @@ Die 面积与卡功耗按 `B-AREA` 的上限（400 mm²、3200 W）；路线必�
 | `route` | `mcX` | 单颗提升带宽（第 5 节路线 1） |
 | `eccOverhead` | `0` | 不额外扣 ECC 开销 |
 
-- K3 回放 1138.48 TPS/usr（发布值 1138.48），raw 750.74 µs。
-- Die 侧 1612.8 GB/s，卡级容量 256 GB（余量 206.8 GB），MC 功耗 628.10 W，卡功耗 3025.98 W。
+- K3 回放 1043.96 TPS/usr（发布值 1043.96），raw 818.71 µs。
+- Die 侧 1612.8 GB/s，卡级容量 256 GB（余量 206.8 GB），MC 功耗 628.10 W，卡功耗 3046.87 W。
 - **容量不是绑定约束**：49.198 GB/rank 只需 4 颗 16 GB cube，而搜索选了 16 颗；性能由**带宽**决定，不由容量决定。
-- 卡功耗 3025.98 W 比发布点 3047.90 W 低 21.92 W，因为两个域的口径不同：本域按
-  `8 × Die 287.74 + MC 628.10 + 固定 80 = 3010.01 W`，**不**计入 `O.chargeSharedPortCost()` 那笔
+- 卡功耗 3046.87 W 比发布点 3068.79 W 低 21.92 W，因为两个域的口径不同：本域按
+  `8 × Die 292.35 + MC 628.10 + 固定 80 = 3046.87 W`，**不**计入 `O.chargeSharedPortCost()` 那笔
   21.915648 W 的共享端口功耗（HW-09 计入，得 3031.92 W）。两个数相差的正好是这一项，不是模型不一致；
   也因此 3200 W 上限在本域是更松的检查，差距正是 21.915648 W。
 
@@ -204,11 +204,11 @@ Die 面积与卡功耗按 `B-AREA` 的上限（400 mm²、3200 W）；路线必�
 
 | 档位 GB/s | 分类 | Die 侧 GB/s | MC 功耗 W | 卡功耗 W | TPS/usr | 结果 |
 | ---: | --- | ---: | ---: | ---: | ---: | --- |
-| 320 | `REFERENCE` | 448 | 255.36 | 2653.25 | 579.53 | `belowContractBandwidth, belowContractTarget, routeContradiction:mcX-at-reference-tier` |
-| 400 | `GRID` | 560 | 291.20 | 2689.09 | 704.01 | `belowContractBandwidth, belowContractTarget` |
-| 480 | `DEFAULT_SEARCH_CAP` | 672 | 327.04 | 2724.93 | 820.91 | `belowContractBandwidth, belowContractTarget` |
-| 560 | `AGGRESSIVE` | 784 | 362.88 | 2760.77 | 926.66 | `belowContractBandwidth, belowContractTarget` |
-| 1152 | `STRETCH_AGGRESSIVE` | 1612.8 | 628.10 | 3025.98 | 1138.48 | **选中** |
+| 320 | `REFERENCE` | 448 | 255.36 | 2674.14 | 585.94 | `belowContractBandwidth, belowContractTarget, routeContradiction:mcX-at-reference-tier` |
+| 400 | `GRID` | 560 | 291.20 | 2709.98 | 720.17 | `belowContractBandwidth, belowContractTarget` |
+| 480 | `DEFAULT_SEARCH_CAP` | 672 | 327.04 | 2745.82 | 852.24 | `belowContractBandwidth, belowContractTarget` |
+| 560 | `AGGRESSIVE` | 784 | 362.88 | 2781.66 | 975.56 | `belowContractBandwidth, belowContractTarget` |
+| 1152 | `STRETCH_AGGRESSIVE` | 1612.8 | 628.10 | 3046.87 | 1043.96 | **选中** |
 
 这张表就是 B-002 的量化：320→560 全部低于 1000 TPS/usr，只有 1152 档（原 640 的槽位）达标。
 `belowContractBandwidth` 是直接对条目的判断（档位低于 `B-MEM-BW` 的 1152 GB/s），`belowContractTarget` 是回放对合同目标的判断。**两者在这张表上重合只是因为此处的 `B-MEM-BW` 固定在发布点；它不再是“从同一回放在 1000 TPS/usr 处反推”的值**：反推（`S-BW` 拆分，其余轴固定）只要 639.65 GB/s，560 档的 978.18 离目标差 2%，而 1152 档超出目标 12.5%。所以“只有 1152 达标”读作“在网格 {320,400,480,560,1152} 里只有它达标”，不是“需要 1152”。
@@ -218,12 +218,12 @@ Die 面积与卡功耗按 `B-AREA` 的上限（400 mm²、3200 W）；路线必�
 
 | cube 数 | 卡级容量 GB | 已占用 mm² | 预留 mm² | 结果 |
 | ---: | ---: | ---: | ---: | --- |
-| 8 | 128 | 3631.2 | 1616.8 | `cubesNotSpec`（每 die 1 颗，die 侧 806.4 GB/s，1003.40 TPS/usr；**回放达标**，只因 memory 域锁定 16 栈而被排除，ADR-0026 第 6 条） |
-| 16 | 256 | 4431.2 | 816.8 | **选中** |
-| 24 | 384 | 5231.2 | 16.8 | `cubesAboveReplayModel, packageArea, cardPower` |
-| 32 | 512 | 6031.2 | -783.2 | `cubesAboveReplayModel, packageArea, cardPower` |
+| 8 | 128 | 3718.1 | 1529.9 | `cubesNotSpec`（每 die 1 颗，die 侧 806.4 GB/s，1000.71 TPS/usr；**回放达标，但只高 0.71**，只因 memory 域锁定 16 栈而被排除，ADR-0026 第 6 条；这是它**唯一**的违规——ADR-0028 之前它还同时低于合同目标） |
+| 16 | 256 | 4518.1 | 729.9 | **选中** |
+| 24 | 384 | 5318.1 | -70.1 | `cubesAboveReplayModel, cubesNotSpec, packageArea, cardPower` |
+| 32 | 512 | 6118.1 | -870.1 | `cubesAboveReplayModel, cubesNotSpec, packageArea, cardPower` |
 
-第 5 节路线 2（"增加 MC 数量到 32 颗/卡"）在这里量化：32 颗超出封装窗口 812.5 mm²，MC 功耗也使卡功耗超限。"封装不支持"不是定性判断。
+第 5 节路线 2（"增加 MC 数量到 32 颗/卡"）在这里量化：32 颗超出封装窗口 870.1 mm²，MC 功耗也使卡功耗超限；24 颗在 ADR-0028 之前还装得下（余量 16.8 mm²），现在 Die 变大后也装不下了（缺口 70.1 mm²）。"封装不支持"不是定性判断。
 
 cube 数会改变 die 侧带宽（每 die 的 cube 数 × 单 cube 带宽）和 MC 功耗，两者按 cube 数 / 规格 cube 数线性缩放后再进细化重放。
 重放模型只描述每 die 至多 2 颗 cube，所以 24、32 颗不给 TPS/usr（`cubesAboveReplayModel`）：那是"未建模"，不是"达标"。
@@ -236,24 +236,24 @@ cube 数会改变 die 侧带宽（每 die 的 cube 数 × 单 cube 带宽）和 
 
 | 维度 | 选项 | 结果 | 该选项的组合 | Die 侧 GB/s | 容量 GB | MC 功耗 W | TPS/usr |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: |
-| `mcGBs` | `320` | `infeasible: belowContractBandwidth, belowContractTarget, routeContradiction:mcX-at-reference-tier` | 320 / 16 / 16 / mcX / 0 | 448 | 256 | 255.36 | 579.53 |
-| `mcGBs` | `400` | `infeasible: belowContractBandwidth, belowContractTarget` | 400 / 16 / 16 / mcX / 0 | 560 | 256 | 291.20 | 704.01 |
-| `mcGBs` | `480` | `infeasible: belowContractBandwidth, belowContractTarget` | 480 / 16 / 16 / mcX / 0 | 672 | 256 | 327.04 | 820.91 |
-| `mcGBs` | `560` | `infeasible: belowContractBandwidth, belowContractTarget` | 560 / 16 / 16 / mcX / 0 | 784 | 256 | 362.88 | 926.66 |
-| `mcGBs` | `1152` | **选中** | 1152 / 16 / 16 / mcX / 0 | 1612.8 | 256 | 628.10 | 1138.48 |
-| `cubesPerCard` | `8` | `infeasible: cubesNotSpec, belowContractTarget` | 1152 / 8 / 16 / mcX / 0 | 806.4 | 128 | 314.05 | 947.18 |
-| `cubesPerCard` | `16` | **选中** | 1152 / 16 / 16 / mcX / 0 | 1612.8 | 256 | 628.10 | 1138.48 |
-| `cubesPerCard` | `24` | `infeasible: cubesAboveReplayModel, cubesNotSpec, cardPower` | 1152 / 24 / 16 / mcX / 0 | 2419.2 | 384 | 942.14 | — |
+| `mcGBs` | `320` | `infeasible: belowContractBandwidth, belowContractTarget, routeContradiction:mcX-at-reference-tier` | 320 / 16 / 16 / mcX / 0 | 448 | 256 | 255.36 | 585.94 |
+| `mcGBs` | `400` | `infeasible: belowContractBandwidth, belowContractTarget` | 400 / 16 / 16 / mcX / 0 | 560 | 256 | 291.20 | 720.17 |
+| `mcGBs` | `480` | `infeasible: belowContractBandwidth, belowContractTarget` | 480 / 16 / 16 / mcX / 0 | 672 | 256 | 327.04 | 852.24 |
+| `mcGBs` | `560` | `infeasible: belowContractBandwidth, belowContractTarget` | 560 / 16 / 16 / mcX / 0 | 784 | 256 | 362.88 | 975.56 |
+| `mcGBs` | `1152` | **选中** | 1152 / 16 / 16 / mcX / 0 | 1612.8 | 256 | 628.10 | 1043.96 |
+| `cubesPerCard` | `8` | `infeasible: cubesNotSpec` | 1152 / 8 / 16 / mcX / 0 | 806.4 | 128 | 314.05 | 1000.71 |
+| `cubesPerCard` | `16` | **选中** | 1152 / 16 / 16 / mcX / 0 | 1612.8 | 256 | 628.10 | 1043.96 |
+| `cubesPerCard` | `24` | `infeasible: cubesAboveReplayModel, cubesNotSpec, packageArea, cardPower` | 1152 / 24 / 16 / mcX / 0 | 2419.2 | 384 | 942.14 | — |
 | `cubesPerCard` | `32` | `infeasible: cubesAboveReplayModel, cubesNotSpec, packageArea, cardPower` | 1152 / 32 / 16 / mcX / 0 | 3225.6 | 512 | 1256.19 | — |
-| `capacityGBPerCube` | `8` | `capacity margin` | 1152 / 16 / 8 / mcX / 0 | 1612.8 | 128 | 628.10 | 1138.48 |
-| `capacityGBPerCube` | `16` | **选中** | 1152 / 16 / 16 / mcX / 0 | 1612.8 | 256 | 628.10 | 1138.48 |
-| `route` | `mcX` | **选中** | 1152 / 16 / 16 / mcX / 0 | 1612.8 | 256 | 628.10 | 1138.48 |
-| `route` | `moreCubes` | `infeasible: routeContradiction:moreCubes-below-the-grid-max` | 1152 / 16 / 16 / moreCubes / 0 | 1612.8 | 256 | 628.10 | 1138.48 |
-| `route` | `dualDataPlane` | `infeasible: routeNotScored:dualDataPlane` | 1152 / 16 / 16 / dualDataPlane / 0 | 1612.8 | 256 | 628.10 | 1138.48 |
-| `route` | `fewerBytesPerToken` | `infeasible: conditional:fewerBytesPerToken` | 1152 / 16 / 16 / fewerBytesPerToken / 0 | 1612.8 | 256 | 628.10 | 1150.72 |
-| `route` | `nearMemoryCompute` | `infeasible: routeNotScored:nearMemoryCompute` | 1152 / 16 / 16 / nearMemoryCompute / 0 | 1612.8 | 256 | 628.10 | 1138.48 |
-| `eccOverhead` | `0` | **选中** | 1152 / 16 / 16 / mcX / 0 | 1612.8 | 256 | 628.10 | 1138.48 |
-| `eccOverhead` | `0.0625` | `capacity margin` | 1152 / 16 / 16 / mcX / 0.0625 | 1612.8 | 240 | 628.10 | 1138.48 |
+| `capacityGBPerCube` | `8` | `capacity margin` | 1152 / 16 / 8 / mcX / 0 | 1612.8 | 128 | 628.10 | 1043.96 |
+| `capacityGBPerCube` | `16` | **选中** | 1152 / 16 / 16 / mcX / 0 | 1612.8 | 256 | 628.10 | 1043.96 |
+| `route` | `mcX` | **选中** | 1152 / 16 / 16 / mcX / 0 | 1612.8 | 256 | 628.10 | 1043.96 |
+| `route` | `moreCubes` | `infeasible: routeContradiction:moreCubes-below-the-grid-max` | 1152 / 16 / 16 / moreCubes / 0 | 1612.8 | 256 | 628.10 | 1043.96 |
+| `route` | `dualDataPlane` | `infeasible: routeNotScored:dualDataPlane` | 1152 / 16 / 16 / dualDataPlane / 0 | 1612.8 | 256 | 628.10 | 1043.96 |
+| `route` | `fewerBytesPerToken` | `infeasible: conditional:fewerBytesPerToken` | 1152 / 16 / 16 / fewerBytesPerToken / 0 | 1612.8 | 256 | 628.10 | 1056.92 |
+| `route` | `nearMemoryCompute` | `infeasible: routeNotScored:nearMemoryCompute` | 1152 / 16 / 16 / nearMemoryCompute / 0 | 1612.8 | 256 | 628.10 | 1043.96 |
+| `eccOverhead` | `0` | **选中** | 1152 / 16 / 16 / mcX / 0 | 1612.8 | 256 | 628.10 | 1043.96 |
+| `eccOverhead` | `0.0625` | `capacity margin` | 1152 / 16 / 16 / mcX / 0.0625 | 1612.8 | 240 | 628.10 | 1043.96 |
 
 **未被建模的路线**（`routeNotScored:*`，不是"落选"，是"没被计入价格"）：
 
@@ -271,10 +271,10 @@ cube 数会改变 die 侧带宽（每 die 的 cube 数 × 单 cube 带宽）和 
 
 | 备选 | MC 档位 | 风险档 | TPS/usr | MC 功耗 W | 与基线相比 |
 | --- | ---: | --- | ---: | ---: | --- |
-| 基线（BF16 稠密） | 1152 | `STRETCH_AGGRESSIVE` | 1138.48 | 628.10 | — |
-| `fewerBytesPerToken`（FP8 稠密，重调） | 400 | `GRID` | 1062.97 | 291.20 | TPS −6.6%，MC 功耗 −336.90 W，档位从 1152 降到 400 |
+| 基线（BF16 稠密） | 1152 | `STRETCH_AGGRESSIVE` | 1043.96 | 628.10 | — |
+| `fewerBytesPerToken`（FP8 稠密，重调） | 400 | `GRID` | 1032.04 | 291.20 | TPS −1.1%，MC 功耗 −336.90 W，档位从 1152 降到 400 |
 
-含义：如果 FP8 稠密签核通过，MC 档位可以从"超出栅格上限的 1152"降到栅格内的 400 并仍满足 1000 TPS/usr（1080.89），同时省下约 337 W MC 功耗；这是把"精度决定未关闭"的代价写成数字，**不改变本文的基线选择**。
+含义：如果 FP8 稠密签核通过，MC 档位可以从"超出栅格上限的 1152"降到栅格内的 400 并仍满足 1000 TPS/usr（1032.04），同时省下约 337 W MC 功耗；ADR-0028 之前这条路线要付 6.6% 的 TPS，现在只付 1.1%——发布点被集合通信约束、带宽有富余，所以少读字节几乎不亏；这是把"精度决定未关闭"的代价写成数字，**不改变本文的基线选择**。
 限制：(1) 细化重放把 FP8 施加给所有稠密矩阵，含路由器和 LM head（约占每 rank 字节的 1%），规划口径下这两项仍是 BF16，所以这个数字略偏乐观；(2) 压缩和更多 SRAM 复用没有被建模；(3) 已发布的软件旋钮是为 BF16 调的，沿用它们 FP8 曲线随 MC 档位非单调（深预取会冲掉共享窗口），所以这里必须重调，直接复用发布旋钮会低估这条路线。
 
 ## 6. MC 控制器功能

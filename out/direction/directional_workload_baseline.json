@@ -15,7 +15,7 @@
       "status": "CALIBRATED_DIRECTIONAL_BASELINE",
       "confidence": "E1",
       "globalFlopsPerToken": 5486567416831.996,
-      "globalMemoryBytesPerToken": 157589100339.19702,
+      "globalMemoryBytesPerToken": 157589100339.1971,
       "tpScaling": {
         "compute": "globalFlopsPerToken / tp",
         "memory": "globalMemoryBytesPerToken / tp",
@@ -29,10 +29,10 @@
       "softwareOverheadUsPerToken": 0,
       "calibration": {
         "observedTp": 32,
-        "observedReadBytesPerRank": 4924659385.599907,
-        "observedRawLatencyUs": 1474.8209994774356,
-        "observedE2eLatencyUs": 1725.5405693885996,
-        "observedTpsPerUser": 579.5285360078923,
+        "observedReadBytesPerRank": 4924659385.59991,
+        "observedRawLatencyUs": 1458.6882618977238,
+        "observedE2eLatencyUs": 1706.6652664203368,
+        "observedTpsPerUser": 585.9379807368206,
         "source": "out/rdma/k3_rdma_final_tuning_results.json (MC320 replay of search.best)",
         "flopDerivation": "sum of operator FLOP in O.mapped(search.best.x).plan x TP32: L 0.208400T, H 5.258102T (absorbed-MLA QK/PV over the full context), V 0.020066T"
       },

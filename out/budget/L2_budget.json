@@ -6,7 +6,7 @@
     "layer": "L1",
     "splitId": "S-CMP",
     "path": "out/requirements/budget_frontier.json",
-    "sha256": "b5f412e4ff763557e250bce6fa0c11a40aa928c255c2c277d18d1c70a856690e"
+    "sha256": "165c1e55275da0030c653d365f4575355e7f06bf9e0268c387656ee8959cb9e3"
   },
   "target": {
     "tpsPerUser": 1000,
@@ -27,7 +27,7 @@
       "id": "L2-SRAM-SHARED",
       "quantity": "shared SRAM window per die",
       "layer": "L2",
-      "min": 16,
+      "min": 14,
       "max": null,
       "depth": 4,
       "refines": "B-SRAM-CAP",
@@ -52,7 +52,7 @@
         },
         {
           "sharedMiB": 14,
-          "holds": false
+          "holds": true
         },
         {
           "sharedMiB": 16,
@@ -60,7 +60,7 @@
         },
         {
           "sharedMiB": 20,
-          "holds": true
+          "holds": false
         },
         {
           "sharedMiB": 24,
@@ -94,15 +94,15 @@
       "missesFloor": [
         {
           "morphologyId": "P1-compact-L1H4S8-MC640-TP32",
-          "shortfallMiB": 8
+          "shortfallMiB": 6
         },
         {
           "morphologyId": "P1-compact-L1H4S12-MC640-TP32",
-          "shortfallMiB": 4
+          "shortfallMiB": 2
         },
         {
           "morphologyId": "P1-compact-L1H4S8-MC320-TP32",
-          "shortfallMiB": 8
+          "shortfallMiB": 6
         }
       ]
     }
@@ -121,7 +121,7 @@
       "id": "B-SERIAL-CMP",
       "layer": "L1",
       "quantity": "computeScale",
-      "min": 0.6608414806234413,
+      "min": 0.8822369885861744,
       "max": null,
       "set": "derived",
       "relationship": "INHERITED"
@@ -151,7 +151,6 @@
       "P1-compact-MC640-TP8",
       "P1-compact-MC640-TP16",
       "P1-compact-MC640-TP32",
-      "P1-compact-N12x4-MC640-TP32",
       "P1-compact-L1H4S20-MC640-TP32",
       "P1-compact-L1H4S24-MC640-TP32",
       "P1-compact-L1H4S32-MC640-TP32",
@@ -160,7 +159,7 @@
       "P1-compact-L1H2S16-MC640-TP32",
       "P1-compact-L1H8S16-MC640-TP32"
     ],
-    "bestByContract": "P1-compact-N12x4-MC640-TP32",
+    "bestByContract": "P1-compact-L1H2S16-MC640-TP32",
     "paretoCandidates": [
       "P1-compact-N4x4-MC640-TP32",
       "P1-compact-N12x4-MC640-TP32",
@@ -196,54 +195,54 @@
         },
         "hardware": {
           "peakByCore": {
-            "L": 131072000000000,
-            "H": 2359296000000000,
+            "L": 262144000000000,
+            "H": 2097152000000000,
             "V": 131072000000000,
-            "INDEXER": 2359296000000000,
+            "INDEXER": 2097152000000000,
             "REDUCE": 131072000000000
           },
-          "tfPerDie": 311.296,
+          "tfPerDie": 294.91200000000003,
           "vectorTopPerDie": 16.384,
           "cubes": 16,
           "memoryBytesPerSecond": 12902400000000
         },
         "physical": {
-          "dieAreaMm2": 325.550239679872,
-          "diePowerW": 269.687616,
-          "cardPowerW": 2865.596928,
-          "packageAreaMm2": 4204.401917438976,
+          "dieAreaMm2": 329.86652875550226,
+          "diePowerW": 264.43449599999997,
+          "cardPowerW": 2823.5719679999997,
+          "packageAreaMm2": 4238.932230044017,
           "basis": "SF4",
           "cooling": "liquid",
           "feasible": true,
           "reasons": [],
           "limits": {
             "dieAreaMm2": {
-              "value": 325.550239679872,
+              "value": 329.86652875550226,
               "max": 400,
               "satisfied": true
             },
             "diePowerW": {
-              "value": 269.687616,
+              "value": 264.43449599999997,
               "max": 300,
               "satisfied": true
             },
             "cardPowerW": {
-              "value": 2865.596928,
+              "value": 2823.5719679999997,
               "max": 3200,
               "satisfied": true
             },
             "packageAreaMm2": {
-              "value": 4204.401917438976,
+              "value": 4238.932230044017,
               "max": 5248,
               "satisfied": true
             }
           }
         },
-        "minTpsPerUser": 1073.5127562007688,
+        "minTpsPerUser": 1008.3574473157959,
         "misses": [
           {
             "id": "B-SERIAL-CMP",
-            "shortfall": 0.09903845680630152
+            "shortfall": 0.26192792557207056
           }
         ]
       },
@@ -270,54 +269,60 @@
         },
         "hardware": {
           "peakByCore": {
-            "L": 393216000000000,
-            "H": 2359296000000000,
+            "L": 786432000000000,
+            "H": 2097152000000000,
             "V": 262144000000000,
-            "INDEXER": 2359296000000000,
+            "INDEXER": 2097152000000000,
             "REDUCE": 262144000000000
           },
-          "tfPerDie": 344.06399999999996,
+          "tfPerDie": 360.448,
           "vectorTopPerDie": 32.768,
           "cubes": 16,
           "memoryBytesPerSecond": 12902400000000
         },
         "physical": {
-          "dieAreaMm2": 397.80722709706106,
-          "diePowerW": 315.26265600000005,
-          "cardPowerW": 3230.1972480000004,
-          "packageAreaMm2": 4782.457816776488,
+          "dieAreaMm2": 415.2031800382375,
+          "diePowerW": 325.73817600000007,
+          "cardPowerW": 3314.0014080000005,
+          "packageAreaMm2": 4921.6254403059,
           "basis": "SF4",
           "cooling": "liquid",
           "feasible": false,
           "reasons": [
+            "die area after shared-port scaling",
             "die power after shared-port scaling",
             "card power after shared-port scaling"
           ],
           "limits": {
             "dieAreaMm2": {
-              "value": 397.80722709706106,
+              "value": 415.2031800382375,
               "max": 400,
-              "satisfied": true
+              "satisfied": false
             },
             "diePowerW": {
-              "value": 315.26265600000005,
+              "value": 325.73817600000007,
               "max": 300,
               "satisfied": false
             },
             "cardPowerW": {
-              "value": 3230.1972480000004,
+              "value": 3314.0014080000005,
               "max": 3200,
               "satisfied": false
             },
             "packageAreaMm2": {
-              "value": 4782.457816776488,
+              "value": 4921.6254403059,
               "max": 5248,
               "satisfied": true
             }
           }
         },
-        "minTpsPerUser": 1188.8193092396773,
-        "misses": []
+        "minTpsPerUser": 1077.6919048845155,
+        "misses": [
+          {
+            "id": "B-AREA",
+            "shortfall": 15.20318003823752
+          }
+        ]
       },
       {
         "morphologyId": "P1-compact-N16x4-MC640-TP32",
@@ -342,58 +347,59 @@
         },
         "hardware": {
           "peakByCore": {
-            "L": 524288000000000,
-            "H": 2359296000000000,
+            "L": 1048576000000000,
+            "H": 2097152000000000,
             "V": 327680000000000,
-            "INDEXER": 2359296000000000,
+            "INDEXER": 2097152000000000,
             "REDUCE": 327680000000000
           },
-          "tfPerDie": 360.448,
+          "tfPerDie": 393.216,
           "vectorTopPerDie": 40.96,
           "cubes": 16,
           "memoryBytesPerSecond": 12902400000000
         },
         "physical": {
-          "dieAreaMm2": 439.03678971321864,
-          "diePowerW": 339.048576,
-          "cardPowerW": 3420.484608,
-          "packageAreaMm2": 5112.294317705749,
+          "dieAreaMm2": 468.0736434947312,
+          "diePowerW": 358.38681600000007,
+          "cardPowerW": 3575.1905280000005,
+          "packageAreaMm2": 5344.589147957849,
           "basis": "SF4",
           "cooling": "liquid",
           "feasible": false,
           "reasons": [
             "die area after shared-port scaling",
             "die power after shared-port scaling",
-            "card power after shared-port scaling"
+            "card power after shared-port scaling",
+            "package area after shared-port scaling"
           ],
           "limits": {
             "dieAreaMm2": {
-              "value": 439.03678971321864,
+              "value": 468.0736434947312,
               "max": 400,
               "satisfied": false
             },
             "diePowerW": {
-              "value": 339.048576,
+              "value": 358.38681600000007,
               "max": 300,
               "satisfied": false
             },
             "cardPowerW": {
-              "value": 3420.484608,
+              "value": 3575.1905280000005,
               "max": 3200,
               "satisfied": false
             },
             "packageAreaMm2": {
-              "value": 5112.294317705749,
+              "value": 5344.589147957849,
               "max": 5248,
-              "satisfied": true
+              "satisfied": false
             }
           }
         },
-        "minTpsPerUser": 1205.034773143811,
+        "minTpsPerUser": 1087.0770624730576,
         "misses": [
           {
             "id": "B-AREA",
-            "shortfall": 39.03678971321864
+            "shortfall": 68.07364349473119
           }
         ]
       },
@@ -420,22 +426,22 @@
         },
         "hardware": {
           "peakByCore": {
-            "L": 262144000000000,
-            "H": 4718592000000000,
+            "L": 524288000000000,
+            "H": 4194304000000000,
             "V": 262144000000000,
-            "INDEXER": 4718592000000000,
+            "INDEXER": 4194304000000000,
             "REDUCE": 262144000000000
           },
-          "tfPerDie": 622.592,
+          "tfPerDie": 589.8240000000001,
           "vectorTopPerDie": 32.768,
           "cubes": 16,
           "memoryBytesPerSecond": 12902400000000
         },
         "physical": {
-          "dieAreaMm2": 520.8664561220043,
-          "diePowerW": 450.0360960000001,
-          "cardPowerW": 4308.384768000001,
-          "packageAreaMm2": 5766.931648976034,
+          "dieAreaMm2": 515.372997298475,
+          "diePowerW": 433.5394560000001,
+          "cardPowerW": 4176.411648000001,
+          "packageAreaMm2": 5722.983978387799,
           "basis": "SF4",
           "cooling": "liquid",
           "feasible": false,
@@ -447,32 +453,32 @@
           ],
           "limits": {
             "dieAreaMm2": {
-              "value": 520.8664561220043,
+              "value": 515.372997298475,
               "max": 400,
               "satisfied": false
             },
             "diePowerW": {
-              "value": 450.0360960000001,
+              "value": 433.5394560000001,
               "max": 300,
               "satisfied": false
             },
             "cardPowerW": {
-              "value": 4308.384768000001,
+              "value": 4176.411648000001,
               "max": 3200,
               "satisfied": false
             },
             "packageAreaMm2": {
-              "value": 5766.931648976034,
+              "value": 5722.983978387799,
               "max": 5248,
               "satisfied": false
             }
           }
         },
-        "minTpsPerUser": 1300.2818976124345,
+        "minTpsPerUser": 1259.4827330882244,
         "misses": [
           {
             "id": "B-AREA",
-            "shortfall": 120.86645612200425
+            "shortfall": 115.37299729847496
           }
         ]
       },
@@ -499,22 +505,22 @@
         },
         "hardware": {
           "peakByCore": {
-            "L": 262144000000000,
-            "H": 7077888000000000,
+            "L": 524288000000000,
+            "H": 6291456000000000,
             "V": 327680000000000,
-            "INDEXER": 7077888000000000,
+            "INDEXER": 6291456000000000,
             "REDUCE": 327680000000000
           },
-          "tfPerDie": 917.504,
+          "tfPerDie": 851.9680000000001,
           "vectorTopPerDie": 40.96,
           "cubes": 16,
           "memoryBytesPerSecond": 12902400000000
         },
         "physical": {
-          "dieAreaMm2": 685.1552477631052,
-          "diePowerW": 608.595456,
-          "cardPowerW": 5576.859648,
-          "packageAreaMm2": 7081.241982104842,
+          "dieAreaMm2": 668.4132780152061,
+          "diePowerW": 573.9893760000001,
+          "cardPowerW": 5300.011008000001,
+          "packageAreaMm2": 6947.3062241216485,
           "basis": "SF4",
           "cooling": "liquid",
           "feasible": false,
@@ -526,32 +532,32 @@
           ],
           "limits": {
             "dieAreaMm2": {
-              "value": 685.1552477631052,
+              "value": 668.4132780152061,
               "max": 400,
               "satisfied": false
             },
             "diePowerW": {
-              "value": 608.595456,
+              "value": 573.9893760000001,
               "max": 300,
               "satisfied": false
             },
             "cardPowerW": {
-              "value": 5576.859648,
+              "value": 5300.011008000001,
               "max": 3200,
               "satisfied": false
             },
             "packageAreaMm2": {
-              "value": 7081.241982104842,
+              "value": 6947.3062241216485,
               "max": 5248,
               "satisfied": false
             }
           }
         },
-        "minTpsPerUser": 1356.0061010996928,
+        "minTpsPerUser": 1344.1577161862406,
         "misses": [
           {
             "id": "B-AREA",
-            "shortfall": 285.1552477631052
+            "shortfall": 268.41327801520606
           }
         ]
       },
@@ -578,22 +584,22 @@
         },
         "hardware": {
           "peakByCore": {
-            "L": 262144000000000,
-            "H": 9437184000000000,
+            "L": 524288000000000,
+            "H": 8388608000000000,
             "V": 393216000000000,
-            "INDEXER": 9437184000000000,
+            "INDEXER": 8388608000000000,
             "REDUCE": 393216000000000
           },
-          "tfPerDie": 1212.416,
+          "tfPerDie": 1114.112,
           "vectorTopPerDie": 49.152,
           "cubes": 16,
           "memoryBytesPerSecond": 12902400000000
         },
         "physical": {
-          "dieAreaMm2": 844.3429704966428,
-          "diePowerW": 766.1564159999999,
-          "cardPowerW": 6837.347328,
-          "packageAreaMm2": 8354.743763973143,
+          "dieAreaMm2": 811.2514209168111,
+          "diePowerW": 712.4424960000001,
+          "cardPowerW": 6407.6359680000005,
+          "packageAreaMm2": 8090.011367334489,
           "basis": "SF4",
           "cooling": "liquid",
           "feasible": false,
@@ -605,32 +611,32 @@
           ],
           "limits": {
             "dieAreaMm2": {
-              "value": 844.3429704966428,
+              "value": 811.2514209168111,
               "max": 400,
               "satisfied": false
             },
             "diePowerW": {
-              "value": 766.1564159999999,
+              "value": 712.4424960000001,
               "max": 300,
               "satisfied": false
             },
             "cardPowerW": {
-              "value": 6837.347328,
+              "value": 6407.6359680000005,
               "max": 3200,
               "satisfied": false
             },
             "packageAreaMm2": {
-              "value": 8354.743763973143,
+              "value": 8090.011367334489,
               "max": 5248,
               "satisfied": false
             }
           }
         },
-        "minTpsPerUser": 1385.7201055045912,
+        "minTpsPerUser": 1390.9438902972513,
         "misses": [
           {
             "id": "B-AREA",
-            "shortfall": 444.3429704966428
+            "shortfall": 411.25142091681107
           }
         ]
       },
@@ -657,54 +663,54 @@
         },
         "hardware": {
           "peakByCore": {
-            "L": 262144000000000,
-            "H": 2359296000000000,
+            "L": 524288000000000,
+            "H": 2097152000000000,
             "V": 196608000000000,
-            "INDEXER": 2359296000000000,
+            "INDEXER": 2097152000000000,
             "REDUCE": 196608000000000
           },
-          "tfPerDie": 327.67999999999995,
+          "tfPerDie": 327.68,
           "vectorTopPerDie": 24.576,
           "cubes": 16,
           "memoryBytesPerSecond": 12902400000000
         },
         "physical": {
-          "dieAreaMm2": 353.7573426099329,
-          "diePowerW": 291.75513600000005,
-          "cardPowerW": 3042.1370880000004,
-          "packageAreaMm2": 4430.058740879463,
+          "dieAreaMm2": 364.61346361833625,
+          "diePowerW": 294.36633600000005,
+          "cardPowerW": 3063.0266880000004,
+          "packageAreaMm2": 4516.907708946689,
           "basis": "SF4",
           "cooling": "liquid",
           "feasible": true,
           "reasons": [],
           "limits": {
             "dieAreaMm2": {
-              "value": 353.7573426099329,
+              "value": 364.61346361833625,
               "max": 400,
               "satisfied": true
             },
             "diePowerW": {
-              "value": 291.75513600000005,
+              "value": 294.36633600000005,
               "max": 300,
               "satisfied": true
             },
             "cardPowerW": {
-              "value": 3042.1370880000004,
+              "value": 3063.0266880000004,
               "max": 3200,
               "satisfied": true
             },
             "packageAreaMm2": {
-              "value": 4430.058740879463,
+              "value": 4516.907708946689,
               "max": 5248,
               "satisfied": true
             }
           }
         },
-        "minTpsPerUser": 1157.6934609230066,
+        "minTpsPerUser": 1059.4350518316464,
         "misses": [
           {
             "id": "B-SRAM-CAP",
-            "shortfall": 8
+            "shortfall": 6
           }
         ]
       },
@@ -731,50 +737,50 @@
         },
         "hardware": {
           "peakByCore": {
-            "L": 262144000000000,
-            "H": 2359296000000000,
+            "L": 524288000000000,
+            "H": 2097152000000000,
             "V": 196608000000000,
-            "INDEXER": 2359296000000000,
+            "INDEXER": 2097152000000000,
             "REDUCE": 196608000000000
           },
-          "tfPerDie": 327.67999999999995,
+          "tfPerDie": 327.68,
           "vectorTopPerDie": 24.576,
           "cubes": 16,
           "memoryBytesPerSecond": 12902400000000
         },
         "physical": {
-          "dieAreaMm2": 353.7573426099329,
-          "diePowerW": 291.75513600000005,
-          "cardPowerW": 3042.1370880000004,
-          "packageAreaMm2": 4430.058740879463,
+          "dieAreaMm2": 364.61346361833625,
+          "diePowerW": 294.36633600000005,
+          "cardPowerW": 3063.0266880000004,
+          "packageAreaMm2": 4516.907708946689,
           "basis": "SF4",
           "cooling": "liquid",
           "feasible": true,
           "reasons": [],
           "limits": {
             "dieAreaMm2": {
-              "value": 353.7573426099329,
+              "value": 364.61346361833625,
               "max": 400,
               "satisfied": true
             },
             "diePowerW": {
-              "value": 291.75513600000005,
+              "value": 294.36633600000005,
               "max": 300,
               "satisfied": true
             },
             "cardPowerW": {
-              "value": 3042.1370880000004,
+              "value": 3063.0266880000004,
               "max": 3200,
               "satisfied": true
             },
             "packageAreaMm2": {
-              "value": 4430.058740879463,
+              "value": 4516.907708946689,
               "max": 5248,
               "satisfied": true
             }
           }
         },
-        "minTpsPerUser": 1157.6934609230066,
+        "minTpsPerUser": 1059.4350518316464,
         "misses": []
       },
       {
@@ -800,50 +806,50 @@
         },
         "hardware": {
           "peakByCore": {
-            "L": 262144000000000,
-            "H": 2359296000000000,
+            "L": 524288000000000,
+            "H": 2097152000000000,
             "V": 196608000000000,
-            "INDEXER": 2359296000000000,
+            "INDEXER": 2097152000000000,
             "REDUCE": 196608000000000
           },
-          "tfPerDie": 327.67999999999995,
+          "tfPerDie": 327.68,
           "vectorTopPerDie": 24.576,
           "cubes": 16,
           "memoryBytesPerSecond": 3584000000000
         },
         "physical": {
-          "dieAreaMm2": 353.7573426099329,
-          "diePowerW": 291.75513600000005,
-          "cardPowerW": 2669.4010880000005,
-          "packageAreaMm2": 4430.058740879463,
+          "dieAreaMm2": 364.61346361833625,
+          "diePowerW": 294.36633600000005,
+          "cardPowerW": 2690.2906880000005,
+          "packageAreaMm2": 4516.907708946689,
           "basis": "SF4",
           "cooling": "liquid",
           "feasible": true,
           "reasons": [],
           "limits": {
             "dieAreaMm2": {
-              "value": 353.7573426099329,
+              "value": 364.61346361833625,
               "max": 400,
               "satisfied": true
             },
             "diePowerW": {
-              "value": 291.75513600000005,
+              "value": 294.36633600000005,
               "max": 300,
               "satisfied": true
             },
             "cardPowerW": {
-              "value": 2669.4010880000005,
+              "value": 2690.2906880000005,
               "max": 3200,
               "satisfied": true
             },
             "packageAreaMm2": {
-              "value": 4430.058740879463,
+              "value": 4516.907708946689,
               "max": 5248,
               "satisfied": true
             }
           }
         },
-        "minTpsPerUser": 423.84024396669946,
+        "minTpsPerUser": 505.75454721109116,
         "misses": [
           {
             "id": "B-MEM-BW",
@@ -851,7 +857,7 @@
           },
           {
             "id": "B-SRAM-CAP",
-            "shortfall": 8
+            "shortfall": 6
           }
         ]
       }

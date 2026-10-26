@@ -11,7 +11,7 @@
       "expUnit"
     ],
     "candidates": 52,
-    "feasible": 21,
+    "feasible": 15,
     "constraints": [
       "every H-core kernel of the required models hides its vector work (kernel bound >= core MACs:lanes)",
       "K3 detailed replay at the published point with only vectorLanes (and, for native input, the unpack) changed reaches the contract target of requirements.contractEntry",
@@ -45,7 +45,7 @@
     "path": "out/requirements/budget_frontier.json",
     "splitId": "S-CMP",
     "origin": "frontier split",
-    "sha256": "b5f412e4ff763557e250bce6fa0c11a40aa928c255c2c277d18d1c70a856690e",
+    "sha256": "165c1e55275da0030c653d365f4575355e7f06bf9e0268c387656ee8959cb9e3",
     "target": {
       "tpsPerUser": 1000,
       "architectureGate": 1050,
@@ -54,7 +54,7 @@
     },
     "point": {
       "tauUs": 1.15,
-      "computeScale": 0.6608414806234413,
+      "computeScale": 0.8822369885861744,
       "mcGBs": 1152
     }
   },
@@ -63,7 +63,7 @@
     "quantity": "computeScale",
     "owner": "compute",
     "ownerAgent": "compute-expert",
-    "min": 0.6608414806234413,
+    "min": 0.8822369885861744,
     "source": "out/requirements/budget_frontier.json#B-SERIAL-CMP"
   },
   "assumptions": {
@@ -76,7 +76,7 @@
       "kdaOpsPerStateElement": 2,
       "kdaMatrixFlopsPerStateElement": 7,
       "evidence": "ASSUMPTION (O-006): indexer ReLU + weighted FMA across index heads; threshold/radix top-k select over the scored context; KDA per-channel decay + delta update; KDA matrix FLOPs as k3_operator_sram_sim (7 x B x heads x 128 x 128). Softmax ops per score belong to the expUnit dimension",
-      "softmaxOpsPerScore": 18
+      "softmaxOpsPerScore": 8
     },
     "tp": 32,
     "context": 1048576
@@ -86,24 +86,24 @@
       "nL": 8,
       "nH": 4,
       "lRows": 1,
-      "lCols": 256,
+      "lCols": 512,
       "lEngines": 8,
-      "hRows": 48,
-      "hCols": 128,
-      "hEngines": 6,
+      "hRows": 128,
+      "hCols": 256,
+      "hEngines": 1,
       "ghz": 1,
       "vectorLanes": 1024,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 64,
-      "hBanks": 64,
+      "hBanks": 32,
       "bankBytes": 64,
       "sharedMiB": 16,
       "sharedSlices": 16,
       "tmaEngines": 4,
       "tmaBytes": 512,
       "nocBytes": 256,
-      "nocLanes": 2,
+      "nocLanes": 4,
       "reduceLanes": 2048,
       "ucieLanes": 128,
       "ucieGbps": 64,
@@ -113,21 +113,21 @@
       "kvTile": 16384,
       "headTile": 96,
       "depth": 4,
-      "windowFraction": 0.75
+      "windowFraction": 1
     },
-    "lMacsPerCore": 2048,
-    "hMacsPerCore": 36864,
+    "lMacsPerCore": 4096,
+    "hMacsPerCore": 32768,
     "publishedLanesPerCore": 1024,
     "publishedRatio": {
       "die": 13.333333333333334,
-      "lCore": 2,
-      "hCore": 36
+      "lCore": 4,
+      "hCore": 32
     }
   },
   "design": {
     "vectorLanes": {
-      "option": "832",
-      "lanes": 832
+      "option": "576",
+      "lanes": 576
     },
     "lowPrecisionInput": {
       "option": "vectorUnpack",
@@ -136,16 +136,16 @@
       "evidence": "P1 published point: BF16-only tensor engines; every sub-BF16 operand is dequantized on the vector lanes at TECH.unpackParamsPerLaneCycle"
     },
     "expUnit": {
-      "option": "polynomial",
-      "softmaxOpsPerScore": 18,
-      "vectorAreaOverhead": 0,
-      "evidence": "ASSUMPTION (O-006): exp as a range reduction plus polynomial on the ALU lanes, 18 ops per score; no SFU area"
+      "option": "sfu",
+      "softmaxOpsPerScore": 8,
+      "vectorAreaOverhead": 0.1,
+      "evidence": "ASSUMPTION (O-006): an exp/reciprocal special-function unit shared by the lanes; softmax costs max, sub, exp, sum, rescale = 8 ops per score (k3_operator_sram_sim: 8 x B x nh x len); the SFU costs 10% of the vector area (TECH.vectorLaneArea is taken as ALU only)"
     }
   },
   "ratio": {
-    "die": 16.41025641025641,
-    "lCore": 2.4615384615384617,
-    "hCore": 44.30769230769231
+    "die": 23.703703703703702,
+    "lCore": 7.111111111111111,
+    "hCore": 56.888888888888886
   },
   "ruled": {
     "lanesPerCoreClass": {
@@ -167,9 +167,9 @@
       "kernel": "GEMV B=1",
       "core": "L",
       "maxCoreRatio": 3.0769230769230766,
-      "minLanesPerCore": 665.6,
-      "coreRatio": 2.4615384615384617,
-      "hidden": true,
+      "minLanesPerCore": 1331.2,
+      "coreRatio": 7.111111111111111,
+      "hidden": false,
       "required": false,
       "basis": "per parameter"
     },
@@ -178,9 +178,9 @@
       "kernel": "GEMV B=2",
       "core": "L",
       "maxCoreRatio": 6.153846153846153,
-      "minLanesPerCore": 332.8,
-      "coreRatio": 2.4615384615384617,
-      "hidden": true,
+      "minLanesPerCore": 665.6,
+      "coreRatio": 7.111111111111111,
+      "hidden": false,
       "required": false,
       "basis": "per parameter"
     },
@@ -189,8 +189,8 @@
       "kernel": "GEMV B=4",
       "core": "L",
       "maxCoreRatio": 12.307692307692307,
-      "minLanesPerCore": 166.4,
-      "coreRatio": 2.4615384615384617,
+      "minLanesPerCore": 332.8,
+      "coreRatio": 7.111111111111111,
       "hidden": true,
       "required": false,
       "basis": "per parameter"
@@ -200,8 +200,8 @@
       "kernel": "GEMV B=8",
       "core": "L",
       "maxCoreRatio": 24.615384615384613,
-      "minLanesPerCore": 83.2,
-      "coreRatio": 2.4615384615384617,
+      "minLanesPerCore": 166.4,
+      "coreRatio": 7.111111111111111,
       "hidden": true,
       "required": false,
       "basis": "per parameter"
@@ -211,8 +211,8 @@
       "kernel": "GEMV B=16",
       "core": "L",
       "maxCoreRatio": 49.230769230769226,
-      "minLanesPerCore": 41.6,
-      "coreRatio": 2.4615384615384617,
+      "minLanesPerCore": 83.2,
+      "coreRatio": 7.111111111111111,
       "hidden": true,
       "required": false,
       "basis": "per parameter"
@@ -221,9 +221,9 @@
       "model": "Kimi K3",
       "kernel": "MLA",
       "core": "H",
-      "maxCoreRatio": 53.91222274657858,
-      "minLanesPerCore": 683.7781512605042,
-      "coreRatio": 44.30769230769231,
+      "maxCoreRatio": 133.14685314685312,
+      "minLanesPerCore": 246.10420168067233,
+      "coreRatio": 56.888888888888886,
       "hidden": true,
       "required": true,
       "basis": "per (head, token); 96 heads, 512 tokens per core"
@@ -232,9 +232,9 @@
       "model": "Kimi K3",
       "kernel": "KDA state update",
       "core": "H",
-      "maxCoreRatio": 90.46153846153845,
-      "minLanesPerCore": 407.5102040816327,
-      "coreRatio": 44.30769230769231,
+      "maxCoreRatio": 241.23076923076923,
+      "minLanesPerCore": 135.83673469387756,
+      "coreRatio": 56.888888888888886,
       "hidden": true,
       "required": true,
       "basis": "per head; B=1 fill 1/hRows"
@@ -243,9 +243,9 @@
       "model": "GLM-5.2",
       "kernel": "MLA",
       "core": "H",
-      "maxCoreRatio": 4766.205997392438,
-      "minLanesPerCore": 7.734453781512605,
-      "coreRatio": 44.30769230769231,
+      "maxCoreRatio": 22055.384615384613,
+      "minLanesPerCore": 1.4857142857142858,
+      "coreRatio": 56.888888888888886,
       "hidden": true,
       "required": true,
       "basis": "per (head, token); 64 heads, 2 tokens per core"
@@ -254,9 +254,9 @@
       "model": "GLM-5.2",
       "kernel": "DSA indexer",
       "core": "H",
-      "maxCoreRatio": 44.46650124069479,
-      "minLanesPerCore": 829.0285714285715,
-      "coreRatio": 44.30769230769231,
+      "maxCoreRatio": 118.57733664185277,
+      "minLanesPerCore": 276.34285714285716,
+      "coreRatio": 56.888888888888886,
       "hidden": true,
       "required": true,
       "basis": "per (index head, token); 32 index heads, 1024 tokens per core"
@@ -265,9 +265,9 @@
       "model": "DeepSeek-V4-Pro",
       "kernel": "MLA",
       "core": "H",
-      "maxCoreRatio": 4055.8579881656806,
-      "minLanesPerCore": 9.0890756302521,
-      "coreRatio": 44.30769230769231,
+      "maxCoreRatio": 13886.723646723647,
+      "minLanesPerCore": 2.3596638655462185,
+      "coreRatio": 56.888888888888886,
       "hidden": true,
       "required": true,
       "basis": "per (head, token); 128 heads, 2 tokens per core"
@@ -276,38 +276,38 @@
       "model": "DeepSeek-V4-Pro",
       "kernel": "DSA indexer",
       "core": "H",
-      "maxCoreRatio": 54.05731523378582,
-      "minLanesPerCore": 681.9428571428572,
-      "coreRatio": 44.30769230769231,
+      "maxCoreRatio": 72.07642031171443,
+      "minLanesPerCore": 454.62857142857143,
+      "coreRatio": 56.888888888888886,
       "hidden": true,
       "required": true,
       "basis": "per (index head, token); 64 index heads, 1024 tokens per core"
     }
   ],
   "binding": {
-    "model": "GLM-5.2",
+    "model": "DeepSeek-V4-Pro",
     "kernel": "DSA indexer",
-    "maxCoreRatio": 44.46650124069479,
-    "minLanesPerCore": 829.0285714285715
+    "maxCoreRatio": 72.07642031171443,
+    "minLanesPerCore": 454.62857142857143
   },
   "evaluation": {
     "k3System": {
-      "publishedTpsPerUser": 1138.4842104608174,
-      "tpsPerUser": 1109.1027425704046,
-      "rawLatencyUs": 770.6236959797251,
+      "publishedTpsPerUser": 1043.9636082178201,
+      "tpsPerUser": 1009.9013714026814,
+      "rawLatencyUs": 846.3211150151582,
       "contractTargetTpsPerUser": 1000
     },
-    "areaMm2": 357.2643468338447,
+    "areaMm2": 363.55893506913884,
     "area": {
-      "die": 349.48848666577743,
+      "die": 354.458758934685,
       "sharedPorts": 7.775860168067228,
       "matrixOverhead": 0,
-      "vectorOverhead": 0
+      "vectorOverhead": 1.3243159663865547
     },
-    "diePowerW": 289.47993600000007,
+    "diePowerW": 288.09753600000005,
     "dieAreaLimitMm2": 400,
-    "packagePlacedMm2": 4458.1147746707575,
-    "packageReserveMm2": 131.78602532924288
+    "packagePlacedMm2": 4508.471480553111,
+    "packageReserveMm2": 81.42931944688917
   },
   "regenerate": "node integration/pipelines/generate_matrix_vector_design.js (npm run aicore:search); enforced by tests/regression/test_matrix_vector_design.js"
 }

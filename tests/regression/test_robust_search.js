@@ -133,15 +133,23 @@ assert.deepStrictEqual(refusedBy.sort(), [R.TAU_REASON, 'joint pessimistic (allU
 const source = fs.readFileSync(path.join(root, 'integration/detailed/robust_model.js'), 'utf8');
 assert(!/\.tps\b|tpsPerUser/.test(source.replace(/\/\*[\s\S]*?\*\//, '')), 'robust_model.js gates on feasibility only');
 // How far the pessimistic point falls is REPORTED here, not gated -- and it is below the 1000 TPS/usr
-// target. That is the project's open AC-1 (PRODUCT_REQUIREMENTS.md): the pessimistic point was 921.63 /
-// 906.51 TPS/usr before ADR-0026 and is 947.09 / 935.44 after it. The constraint makes the point
-// survivable (feasible), it does not make it sufficient. This test pins the direction, so a change that
-// quietly closes AC-1 or quietly widens the gap is seen, and it states the target is still missed.
+// target. That is the project's open AC-1 (PRODUCT_REQUIREMENTS.md). The history is now three points, and
+// the third one is a REGRESSION, not an improvement:
+//   921.63 / 906.51 before ADR-0026  ->  947.09 / 935.44 after it  ->  837.08 / 825.28 under ADR-0028.
+// ADR-0028 (L 1x512x8, H 128x256x1, 8 L + 4 H cores, 327.68 TFLOPS) moves the nominal point from 1138.48
+// to 1043.96 and the pessimistic replays fall further than the nominal one, because the shorter L-core body
+// and the 0.75 H-core row fill both remove slack the pessimistic parameters then eat. The constraint still
+// makes the point survivable (feasible); it does not make it sufficient. The test pins the current values
+// so a future change that silently widens the gap again is seen, and it states the target is still missed.
 const PESSIMISTIC_BEFORE_ADR_0026 = {compute: 921.63, allUnmeasured: 906.51};
+const PESSIMISTIC_UNDER_ADR_0028 = {compute: 837.08, allUnmeasured: 825.28};
 for (const name of R.REQUIRED) {
   const q = T.replayJoint(T.JOINT_PESSIMISTIC[name], spec.tpsDesign.hardware.x);
   assert(q.feasible !== false, `${name}: the published point is feasible under the replay`);
-  assert(q.tps > PESSIMISTIC_BEFORE_ADR_0026[name], `${name}: ${q.tps.toFixed(2)} TPS/usr must improve on the ${PESSIMISTIC_BEFORE_ADR_0026[name]} it was before ADR-0026`);
+  assert(Math.abs(q.tps - PESSIMISTIC_UNDER_ADR_0028[name]) < 0.01,
+    `${name}: ${q.tps.toFixed(2)} TPS/usr no longer matches the ADR-0028 value ${PESSIMISTIC_UNDER_ADR_0028[name]}; if the point moved on purpose, record the new history here`);
+  assert(q.tps < PESSIMISTIC_BEFORE_ADR_0026[name],
+    `${name}: ${q.tps.toFixed(2)} TPS/usr vs ${PESSIMISTIC_BEFORE_ADR_0026[name]} before ADR-0026 -- ADR-0028 widened the AC-1 gap; this assertion fails if someone makes it look closed by changing the reference numbers`);
   assert(q.tps < results.target, `${name}: ${q.tps.toFixed(2)} TPS/usr is at or above the ${results.target} target; AC-1 would be closed, and that is a finding to write up, not a number to absorb silently`);
 }
 

@@ -98,6 +98,8 @@ function controlBudget(x, rawBudgetUs, opt = {}) {
 function protocolClasses(x, opt) {
   return withProtocol({opt}, () => {
     const m = O.mapped(x), classes = {};
+    // The model rejects a point on its limits before it builds a schedule: no plan, so no collectives to time.
+    if (!m.plan) return {classes: [], unmapped: m.reasons || [m.reason], wireBytesPerToken: null, p: null};
     for (const o of m.plan.ops.filter(q => q.unit === 'COMM')) {
       const k = classes[o.name] || (classes[o.name] = {name: o.name, count: 0, protocolUs: o.duration - o.timing.tauFloor,
         requests: o.memory.requests, phases: o.memory.phases, activeNICs: o.memory.activeNICs, reduce: o.timing.tpReduce > 0});

@@ -59,11 +59,11 @@ const published = S.evaluate(ctx, {vectorLanes: String(pubHw.x.vectorLanes), low
 close(published.areaMm2, pubDie.estimatedAreaMm2, 'published die area (port charge included)');
 close(published.diePowerW, pubDie.estimatedPowerW, 'published die power (port charge included)');
 close(published.area.sharedPorts, pubDie.sharedPortScalingCost.areaMm2PerDie, 'the port charge is its own term');
-// ... and the package arithmetic matches the physical design document: 96.471 mm2 left
-// (5248 x (1 - 0.1254) - 8 x 364.033 - 16 x 100; it was 67.172 before ADR-0026).
+// ... and the package arithmetic matches the physical design document: 9.622 mm2 left
+// (5248 x (1 - 0.1254) - 8 x 372.535 - 16 x 100; it was 96.471 at the ADR-0026 point and 67.172 before it).
 const pk = ctx.pkg;
 close(pk.keepOutFraction, JSON.parse(fs.readFileSync('teams/hardware/inputs/physical_design_space.json', 'utf8')).dimensions.reserveFraction.options['0.1254'].reserve, 'the keep-out is the physical domain\'s observed value');
-assert(Math.abs(published.packageReserveMm2 - 96.471) < 1e-3, `published point leaves ${published.packageReserveMm2} mm2 (09_PACKAGE_POWER_RAS.md: 96.471)`);
+assert(Math.abs(published.packageReserveMm2 - 9.622) < 1e-3, `published point leaves ${published.packageReserveMm2} mm2 (09_PACKAGE_POWER_RAS.md: 9.622)`);
 
 const publishedTps = spec.tpsDesign.point.tpsPerUser;
 const winPick = hasDesign ? Object.fromEntries(Object.entries(stored.design).map(([d, v]) => [d, v.option])) : null;
@@ -108,8 +108,21 @@ if (hasDesign) {
 const x = stored.hardware.publishedX, m = O.mapped(x);
 const gemvB1 = an.kernels.find(k => k.kernel === 'GEMV B=1').maxCoreRatio['vectorUnpack/sfu'];
 const pRatio = stored.hardware.publishedRatio;
-assert.strictEqual(m.plan.ops.filter(o => o.unit === 'L').every(o => o.mapping.limiter === 'unpack'), pRatio.lCore > gemvB1,
-  'B=1 GEMV bound must match the L-op limiter of the detailed model');
+// The B=1 GEMV bound models ONE limiter -- the unpack rate -- so it predicts the ops whose weights are packed
+// (the routed experts, MXFP4). It used to be asserted over EVERY L op, which held only because the L core was
+// narrow enough (MACs:lanes 2, under the 3.077 bound) that SRAM read limited all of them. ADR-0028 widens the
+// L core to 1x512x8 (MACs:lanes 4, over the bound): the routed-expert GEMVs are unpack-limited as the bound says
+// (184 ops, 40.4 us) while the dense GEMVs (shared, latent, attention output, linear, LM head: 1025 ops,
+// 140.9 us) are limited by local SRAM read, which this bound does not model. That second class is a known gap in
+// the analytic bound, recorded in OPEN_ISSUES.md, not something to hide by weakening the first claim.
+const lOps = m.plan.ops.filter(o => o.unit === 'L');
+const expertOps = lOps.filter(o => o.name.startsWith('Expert '));
+assert(expertOps.length > 0, 'the plan has routed-expert GEMVs');
+assert.strictEqual(expertOps.every(o => o.mapping.limiter === 'unpack'), pRatio.lCore > gemvB1,
+  'B=1 GEMV bound must match the routed-expert limiter of the detailed model');
+const denseOps = lOps.filter(o => !o.name.startsWith('Expert '));
+assert(denseOps.every(o => o.mapping.limiter === 'local SRAM read'),
+  'every dense L op is limited by local SRAM read, which the unpack bound does not model');
 const mla = an.kernels.find(k => k.model === 'Kimi K3' && k.kernel === 'MLA').maxCoreRatio['vectorUnpack/sfu'];
 const qk = m.plan.ops.filter(o => o.name.startsWith('QK'));
 assert(qk.length && qk.every(o => (o.mapping.limiter !== 'unpack') === (pRatio.hCore <= mla)), 'K3 MLA bound must match the QK limiter');

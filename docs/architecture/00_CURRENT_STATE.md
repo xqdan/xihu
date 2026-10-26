@@ -57,8 +57,8 @@ K3 preset 来自
 | Shared SRAM | 16 MiB，16 slices（`sharedSramMiB`） | `MODEL` |
 | 总数据 SRAM | 40 MiB/Die（24 local + 16 shared，`physicalDataSramMiB`） | 推导值 |
 | BF16 Dense peak | 327.7 TF/Die（`bf16DenseTflops`） | 推导值 |
-| 面积 | 361.68 mm²/Die（`estimatedAreaMm2`，含共享 SRAM 端口放大成本） | `MODEL` |
-| 功耗 | Die 292.5 W，卡 3047.9 W | `MODEL` |
+| 面积 | 372.53 mm²/Die（`estimatedAreaMm2`，含共享 SRAM 端口放大成本） | `MODEL` |
+| 功耗 | Die 295.1 W，卡 3068.8 W | `MODEL` |
 
 利用率、面积和功耗系数尚未由 memory compiler、标准单元、PHY 宏和综合/布线结果回标。
 共享 SRAM 读写端口的放大（`localWriteRatio`、`tmaPortWriteScale`、`sharedReadScale`）按 bank 面积
@@ -70,20 +70,20 @@ K3 preset 来自
 
 ```text
 raw = compute − tmaHidden + comm + wait − overlap
-    = 463.12 − 142.37 + 451.95 + 12.46 − 34.41 = 750.74 µs
-e2e = raw × 1.17 = 878.36 µs
-TPS/usr = 1e6 / e2e = 1138.48
+    = 499.27 − 118.46 + 451.95 + 11.96 − 26.01 = 818.71 µs
+e2e = raw × 1.17 = 957.89 µs
+TPS/usr = 1e6 / e2e = 1043.96
 ```
 
 ```mermaid
 flowchart LR
-  C["compute 463.12"] --> M1["− tmaHidden 142.37"]
+  C["compute 499.27"] --> M1["− tmaHidden 118.46"]
   M1 --> P1["+ comm 451.95<br/>393 × τ 1.15"]
-  P1 --> P2["+ DMA wait 12.46"]
-  P2 --> M2["− overlap 34.41"]
-  M2 --> RAW["raw 750.74 µs"]
-  RAW -->|"× 1.17"| E2E["e2e 878.36 µs"]
-  E2E --> TPS["1138.48 TPS/usr"]
+  P1 --> P2["+ DMA wait 11.96"]
+  P2 --> M2["− overlap 26.01"]
+  M2 --> RAW["raw 818.71 µs"]
+  RAW -->|"× 1.17"| E2E["e2e 957.89 µs"]
+  E2E --> TPS["1043.96 TPS/usr"]
 ```
 
 | 项 | 含义 |
@@ -94,14 +94,14 @@ flowchart LR
 | wait | 算子等待 MC→shared SRAM 的 DMA（KV 跨层预取与 DMA 抢占后的剩余） |
 | overlap | shared 专家与 `Wdown + Router all-gather` 并行（`OPT.commOverlap`） |
 
-- 离 854.70 µs 预算余 103.97 µs；τ 升到约 1.41 µs 时跌破 1000（每次集合通信余量 0.264 µs）。
-- MC 320 GB/s 参考点为 579.53 TPS/usr：计算与通信时间相同，差别来自 DMA 等待（619.40 µs，对发布点的 12.46 µs）。
+- 离 854.70 µs 预算余 35.99 µs；τ 升到约 1.24 µs 时跌破 1000（每次集合通信余量 0.092 µs，改前 0.264 µs）。
+- MC 320 GB/s 参考点为 585.94 TPS/usr：计算与通信时间相同，差别来自 DMA 等待（578.22 µs，对发布点的 11.96 µs）。
 - 每项机制的单独回退、敏感度与证据等级见 [`21_TPS_DESIGN_BASELINE.md`](21_TPS_DESIGN_BASELINE.md) 第 4–6 节。
-- **联合悲观点仍低于 1000**：`compute` 941.51、`allUnmeasured` 926.52 TPS/usr，两条重放都可行——`search:final` 现在要求发布点在两条联合悲观重放下可行（ADR-0026），但没有要求它们的水平；AC-1 仍未通过。三项探索研究（Die 面积/功耗再分配、MTP 验证、FP8 稠密条件路线）见同一文档 §6.1.1、§6.4、§6.5 与 `OPEN_ISSUES.md` 的 O-020；它们都是 `EXPLORATORY`，不改变基线。
+- **联合悲观点仍低于 1000**：`compute` 837.08、`allUnmeasured` 825.28 TPS/usr，两条重放都可行——`search:final` 现在要求发布点在两条联合悲观重放下可行（ADR-0026），但没有要求它们的水平；AC-1 仍未通过。三项探索研究（Die 面积/功耗再分配、MTP 验证、FP8 稠密条件路线）见同一文档 §6.1.1、§6.4、§6.5 与 `OPEN_ISSUES.md` 的 O-020；它们都是 `EXPLORATORY`，不改变基线。
 - 这是 `MODEL` 等级；超过 1050 的架构闸门，但闸门还要求可制造 MC 路线与详细 tile 模型，仍为未通过。
 
 集合通信按参考页口径计 393 次（`OPT.countBasis='reference-393'`，B-007）；这是计数对齐，不是优化，
-回退到 `repo-510` 为 966.75 TPS/usr。393 次在 τ 下的解析天花板见
+回退到 `repo-510` 为 897.69 TPS/usr。393 次在 τ 下的解析天花板见
 `k3_mc_baseline.json#tauBasis.ceilingTpsByCount`。构成与依赖见
 [`COLLECTIVE_SCHEDULE.md`](../../teams/software/docs/COLLECTIVE_SCHEDULE.md)。
 
@@ -126,15 +126,15 @@ raw = max(访存道, 串行道)，e2e = raw × 1.17，TPS/usr = 1e6 / e2e
 | fixedPerLayerUs | 0.2247 μs |
 | kTmaExposedUsPerGB | 9.484 μs/GB |
 
-规划回放 1157.69（详细模型 1138.48，高 1.7%）；MC320 未参与拟合，规划 423.84，详细模型 579.53（0.73）。留出点 320/400/480/560 的最大残差 26.9%。
+规划回放 1059.44（详细模型 1043.96，高 1.5%）；MC320 未参与拟合，规划 505.75，详细模型 585.94（0.86）。留出点 320/400/480/560 的残差为 −13.7 / −12.2 / −11.0 / −9.3%（改前最大 26.9%）：**比改前好，但 320/400/480 三档仍超出 10% 的门**，只有 560 在门内。
 数值存于 `out/workload/planning_operator_workload.json#/calibration`。
 
 | 模型 | dtype 口径 | TP32 / MC640 | τ = 1.5 / 2.0 μs | 瓶颈 | 状态 |
 | --- | --- | ---: | ---: | --- | --- |
-| K3 | dense BF16、routed MXFP4、KV FP8 656 B | 1157.7 | 975.9 / 797.1 | 集合通信 | `PLANNING_ESTIMATE` |
+| K3 | dense BF16、routed MXFP4、KV FP8 656 B | 1059.4 | 975.9 / 797.1 | 集合通信 | `PLANNING_ESTIMATE` |
 | K3-FP8-dense（对照，不排名） | dense/shared FP8、router/LM head BF16 | UNVERIFIED（没有任何产物保留它；`planning_operator_workload.json#comparisons` 只存算子字节，不存 TPS） | — | — | 对照 |
-| DeepSeek-V4-Pro | dense FP8、router/LM head BF16、routed FP4；expert hidden 取总参数反解的一解（另一解没有产物保留，UNVERIFIED） | 1953.4 | 1570.3 / 1226.6 | 集合通信（305 × 1.15 μs，含 q all-gather，ADR-0024） | `PLANNING_ESTIMATE` |
-| GLM-5.2 | dense FP8、router/LM head BF16、routed FP8（公开 config，含 MTP 总参数 753.3B 对公布 753B） | 1932.5 | 1529.5 / 1178.4 | 集合通信（333 × 1.15 μs，含 q all-gather，ADR-0024） | `PLANNING_ESTIMATE` |
+| DeepSeek-V4-Pro | dense FP8、router/LM head BF16、routed FP4；expert hidden 取总参数反解的一解（另一解没有产物保留，UNVERIFIED） | 1901.8 | 1570.3 / 1226.6 | 集合通信（305 × 1.15 μs，含 q all-gather，ADR-0024） | `PLANNING_ESTIMATE` |
+| GLM-5.2 | dense FP8、router/LM head BF16、routed FP8（公开 config，含 MTP 总参数 753.3B 对公布 753B） | 1937.8 | 1529.5 / 1178.4 | 集合通信（333 × 1.15 μs，含 q all-gather，ADR-0024） | `PLANNING_ESTIMATE` |
 
 - **D-Gate：** `PASS`（范围 `PLANNING_COMPARISON_ONLY_NOT_ARCHITECTURE_FREEZE`）。
 - **正式候选：** 只有三个模型都 ≥ 1000 的槽位才能入选（ADR-0008），为 `P1-compact-MC640-TP32`；

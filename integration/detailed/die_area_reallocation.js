@@ -36,10 +36,10 @@ const MOVES = {
   reduceLanes: [1024, 2048, 3072, 4096],
   tmaEngines: [1, 2, 3, 4],
   rdmaLanes: [8, 12, 16],
-  hRows: [40, 48, 56, 64],
-  hEngines: [4, 5, 6],
+  hRows: [64, 96, 128],
+  hEngines: [1, 2],
   sharedSlices: [8, 12, 16],
-  lCols: [128, 256],
+  lCols: [256, 512],
   nocLanes: [2, 3, 4],
   lBanks: [32, 64],
   hBanks: [32, 64]
