@@ -3,9 +3,12 @@
  *
  * The design space is HW-02's input, teams/hardware/inputs/matrix_vector_design_space.json:
  * vector lanes per core, where low-precision operands are turned into tensor
- * operands (vector unpack or native FP8/MXFP4 tensor input) and how the softmax
- * exp is computed (SFU or polynomial), with the vector op counts and area
- * ASSUMPTIONs. search() enumerates the product and scores every candidate on
+ * operands (vector unpack, native FP8/MXFP4 tensor input, or a decode stage on
+ * the tensor operand path with the block scale applied on the partial sum) and
+ * how the softmax exp is computed (SFU or polynomial), with the vector op counts
+ * and area ASSUMPTIONs. The two native premises replay identically (no vector
+ * work for sub-BF16 operands) and differ only in the matrix-area overhead they
+ * charge. search() enumerates the product and scores every candidate on
  *
  *  1. kernel bounds -- per fused kernel, the largest core MACs:lanes ratio at
  *     which its vector work still hides under its matrix work:
@@ -397,18 +400,26 @@ function analysis(result = search()) {
       const q = ctx.kernels(c.native, c.softmaxOps).find(v => v.model === k.model && v.kernel === k.kernel);
       return [`${c.premise}/${c.exp}`, q ? q.maxCoreRatio : null];
     }))}));
-  // Largest matrix-area overhead at which the best native candidate still ties
-  // the best vector-unpack candidate on area (the matrix area does not depend
-  // on the lanes, so the native ranking does not change with the overhead).
-  const nat = perOption.lowPrecisionInput.nativeTensor, vec = perOption.lowPrecisionInput.vectorUnpack;
+  // Largest matrix-area overhead at which the best candidate of a native premise
+  // still ties the best vector-unpack candidate on area (the matrix area does not
+  // depend on the lanes, so the native ranking does not change with the overhead).
+  // One figure per native premise: nativeTensor (multi-format MAC) and
+  // inlineDequant (decode on the operand path) replay identically and differ only
+  // in what they charge for that, so each has its own break-even against the
+  // vector-unpack route. nativeBreakEvenMatrixOverhead keeps the nativeTensor
+  // figure under its old name.
+  const vec = perOption.lowPrecisionInput.vectorUnpack;
   // A break-even only decides between two premises that can both be built: when either
   // best candidate is infeasible the areas are not comparable and the answer is null.
-  const breakEven = nat.feasible && vec.feasible
+  const breakEvenOf = nat => (nat.feasible && vec.feasible
     ? (vec.areaMm2 - (nat.areaMm2 - nat.area.matrixOverhead)) / nat.system.matrixAreaMm2
-    : null;
+    : null);
+  const breakEvenMatrixOverhead = Object.fromEntries(Object.entries(D.lowPrecisionInput.options)
+    .filter(([, o]) => o.native).map(([n]) => [n, breakEvenOf(perOption.lowPrecisionInput[n])]));
   const k3 = search(ctx, {...ctx.space.requirements, models: ['Kimi K3']});
   return {sweep, kernels, unpackAttribution: unpackAttribution(ctx.x),
-    nativeBreakEvenMatrixOverhead: breakEven,
+    nativeBreakEvenMatrixOverhead: breakEvenMatrixOverhead.nativeTensor,
+    breakEvenMatrixOverhead,
     k3Only: {...summary(k3.best), counts: k3.counts,
       bestPerPremise: Object.fromEntries(Object.entries(k3.perOption.lowPrecisionInput).map(([n, e]) => [n, summary(e)]))}};
 }

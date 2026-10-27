@@ -58,7 +58,7 @@
       }
     },
     "lowPrecisionInput": {
-      "question": "Where FP8/MXFP4 weights, FP8 KV and FP8 index keys are turned into tensor operands",
+      "question": "Where FP8/MXFP4 weights, FP8 KV and FP8 index keys are turned into tensor operands (vector lanes; a multi-format MAC array; or a decode stage on the tensor operand path)",
       "options": {
         "vectorUnpack": {
           "native": false,
@@ -69,6 +69,12 @@
           "native": true,
           "matrixAreaOverhead": 0.08,
           "evidence": "ASSUMPTION (O-012): the tensor engines accept FP8 E4M3 and MXFP4 with block scales directly, so no dequant runs on the vector lanes; the multi-format MAC array costs 8% of the matrix area (multi-precision MAC designs are commonly quoted at 5-15% over a single-format MAC; knowledge, not evidence for this array). The document reports the break-even overhead"
+        },
+        "inlineDequant": {
+          "native": true,
+          "matrixAreaOverhead": 0.03,
+          "evidence": "ASSUMPTION (placeholder, HW-02 AI-Core owner to sign off; O-012): a decode stage on the tensor operand path between local SRAM and the BF16 MAC array. Each sub-BF16 element is widened (FP4 E2M1 / FP8 E4M3 -> BF16 mantissa and exponent) right before the MAC; the block scale is not multiplied per element but applied once per block on the partial sum -- as an exponent add for MXFP4 (E8M0 shared scale, 32 weights along K) and as one FP32 multiply per 128 latent dims for FP8 KV (QK: per K block on the accumulator; PV: per output column). Local SRAM keeps the packed bytes; the MAC array stays single-format BF16. The replay is the nativeTensor one (unpack and KV dequant leave the vector lanes); only the area differs. 3% = decoder (about 40 gates per weight-side element, one per MAC on a weight-streaming GEMV) plus one scale adder/multiplier per block against about 1500-2500 gates per BF16 MAC; a derivation, not a macro. The break-even in the document says how far it may be wrong before the premise flips",
+          "requires": "Tile IR operand descriptor carries the block size and the scale pointer (MXFP4: 32 along K; FP8 KV: 128 along K for QK, 128 along N for PV); docs/architecture/contracts/ change"
         }
       }
     },
@@ -95,9 +101,9 @@
       "reason": "A.physical() and mappedPlan() have a single vectorLanes, so a per-class split cannot be replayed on the detailed model yet. L cores need about 4:1 for B=1 GEMV unpack and H cores 44-100:1, so a split would save area; revisit after the model is extended"
     },
     "tmaDecode": {
-      "chosen": "decode in the tensor engine or on the vector lanes",
+      "chosen": "decode in the tensor engine, on its operand path (inlineDequant) or on the vector lanes",
       "alternatives": ["decoder in the TMA shared-to-local path"],
-      "reason": "not modeled: decoding in TMA writes BF16 into local SRAM, 2-4x the bytes of FP8/MXFP4, and the TMA/local write-port model (O-007) does not charge it yet"
+      "reason": "not modeled: decoding in TMA writes BF16 into local SRAM, 2-4x the bytes of FP8/MXFP4, and the TMA/local write-port model (O-007) does not charge it yet. This objection is to decoding BEFORE local SRAM; inlineDequant decodes after it, so local SRAM keeps the packed bytes and is not affected"
     },
     "batch": {
       "chosen": "B=1 decode",
