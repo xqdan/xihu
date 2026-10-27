@@ -130,7 +130,7 @@ sequenceDiagram
 - 故障绕行和降频。
 
 当前 launch 时间模型为每个非 COMM、未融合的算子 0.015 µs × `launchScale` 0.45，合计 **11.17 µs/token**
-（`launchScale` 是未回标的假设，B-003；关掉 `launchBatching` 时 TPS 从 1124.70 降到 1108.48）。
+（`launchScale` 是未回标的假设，B-003；关掉 `launchBatching` 时 TPS 从 1043.96 降到 1029.97）。
 0.45 要成立，硬件侧必须满足：
 
 - 常规 tile command 无 host doorbell；
@@ -158,7 +158,7 @@ sequenceDiagram
 | Comm Core | 触发到 doorbell 时延、WQE 数、commit 计数、ACK 合并、slot 冻结 | 每 Die | 控制路径（`comm_core_design.json`） |
 | Launch | descriptor 数、doorbell、launch stall | 每 Die | `launch` |
 | 重叠 | shared 专家与集合通信重叠时长 | 每层 | `commOverlap` |
-| 物理 | Core/Die 温度、频率、功率 | 每 Die | 功耗 290.48 W |
+| 物理 | Core/Die 温度、频率、功率 | 每 Die | 功耗 295.09 W |
 | 时间戳 | 每 operator / tile 起止 | 每 tile | 全部 |
 
 ### 5.2 时间账重建

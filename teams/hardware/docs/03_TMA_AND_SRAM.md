@@ -130,7 +130,7 @@ pie title "Shared SRAM bank class 初始份额（建议）"
 | `sharedReadScale` | 1.18 | shared 读放大 |
 | `sharedReadPerWrite` | 0.18 | 每次写附带的读 |
 
-代价：每 Die 7.78 mm²（SF4）、2.74 W，每卡 21.92 W；全部关掉 TPS 只从 1124.70 降到 1124.69。
+代价：每 Die 7.78 mm²（SF4）、2.74 W，每卡 21.92 W；全部关掉 TPS 只从 1043.96 降到 1043.96（`sharedPortScaling` 单独回退 −0.0046 TPS/usr）。
 `localWriteRatio` 从 1.70 降到 1 已由 ADR-0023 回收（每 Die 8.37 mm²、2.95 W，TPS 不变）；其余三项是否继续回收走 ADR-0005 变更流程。
 
 ## 4. TMA
@@ -189,7 +189,7 @@ sequenceDiagram
 ```
 
 发布点装载共 135.45 µs，其中 108.07 µs 被集合通信或前一 kernel 掩盖，暴露 27.37 µs。
-单独关掉 `tmaLane`，TPS 从 1124.70 跌到 974.25，是所有机制里影响最大的一项。
+单独关掉 `tmaLane`，TPS 从 1043.96 跌到 871.12，是所有机制里影响最大的一项。
 
 ```mermaid
 pie title "TMA 通道装载 135.45 µs 的去向"

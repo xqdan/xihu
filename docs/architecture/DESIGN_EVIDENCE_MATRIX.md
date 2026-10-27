@@ -48,11 +48,11 @@
 | 排序 | 参数 | 当前等级 | 归口测量计划 | 责任 |
 | ---: | --- | --- | --- | --- |
 | 1 | `A.TECH.mcUtil` 0.70（盈亏点 0.63） | `ASSUMPTION` | #5 | HW-04 |
-| 2 | τ = 1.15 µs（盈亏点 1.35） | `BLOCKER` | #13 | Comm Core / PHY |
+| 2 | τ = 1.15 µs（盈亏点 1.2416） | `BLOCKER` | #13 | Comm Core / PHY |
 | 3 | MC 1152 GB/s（MC640 槽位） | `BLOCKER` | #14 | Memory MC |
 | 4 | 软件机制 10 项 | `MODEL`（无 trace） | #2 | SW-01/02/03 |
-| 5 | `unpackParamsPerLaneCycle` 2（盈亏点 0.82） | `ASSUMPTION` | #3 | HW-02 |
-| 6 | `layoutImbalance` 1.15（上界 1.42，超了不可行） | `ASSUMPTION` | #6 | HW-03 |
+| 5 | `unpackParamsPerLaneCycle` 2（盈亏点 0.84） | `ASSUMPTION` | #3 | HW-02 |
+| 6 | `layoutImbalance` 1.15（上界 1.311，超了不可行） | `ASSUMPTION` | #6 | HW-03 |
 | 7 | `launchScale` 0.45 | `ASSUMPTION` | #2 | SW-01 |
 | 8 | 专家预测命中率 0.8 | `ASSUMPTION` | #4 | SW-06 / HW-02 |
 | 9 | `matrixUtil` 0.65 / `vectorUtil` 0.35 | `ASSUMPTION` | #1 | HW-02 |

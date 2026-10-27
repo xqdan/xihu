@@ -59,7 +59,7 @@
 
 搜索结果本身不构成边界。以下边界由物理量决定，搜索空间必须显式排除越界点：
 
-1. **`layoutImbalance` 上界 1.42**：超过则 H local tile **放不下**，是 `infeasible` 而非变慢
+1. **`layoutImbalance` 上界 1.311**：超过则 H local tile **放不下**，是 `infeasible` 而非变慢
    （`DESIGN_TARGETS_AND_MARGINS.md` §2.1）。
 2. **Die 面积 ≤ 400 mm²、Die 功耗 ≤ 300 W、卡功耗 ≤ 3200 W**：搜索已按此过滤。
 3. **主域频率固定 1.0 GHz，不参与搜索**（NFR-05）。任何"降频换面积"的方案直接不合法。

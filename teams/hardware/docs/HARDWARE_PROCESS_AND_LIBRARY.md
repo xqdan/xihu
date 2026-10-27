@@ -26,7 +26,7 @@
 | SRAM 折算 | ×1.248（按 HD bitcell） | 同上 | `ASSUMPTION` |
 | PHY 折算 | ×1 | UCIe PHY 为硬 IP，不缩放 | 合理 |
 | 矩阵密度 | 3.2 TF/mm²（N4 口径 @1 GHz，原 1.6） | 公开数据 | `ASSUMPTION` |
-| 备选口径 | `N4-ref`（292.888 mm²，封装余量 646.796 mm²） | `physical_design_space.json` | `optionHeldOut:process=N4-ref` |
+| 备选口径 | `N4-ref`（299.544 mm²，封装余量 593.548 mm²） | `physical_design_space.json` | `optionHeldOut:process=N4-ref` |
 
 ## 2. 影响面（这一节有依据）
 
@@ -34,9 +34,9 @@
 
 | 影响 | 机制 | 当前状况 |
 | --- | --- | --- |
-| Die 面积 | 矩阵密度直接决定 | 3.2 时 364.033 mm²（余 35.967）；**1.6 时 494.830 mm² 且封装同时超**（`09_PACKAGE_POWER_RAS.md` §3） |
-| 封装可行性 | 裸片面积合计 | `N4-ref` 有 646.796 mm² 封装余量，SF4 只有 77.636 |
-| 功耗 | 漏电与动态功耗随节点 | Die 290.478 W / 300 W 上限 |
+| Die 面积 | 矩阵密度直接决定 | 3.2 时 372.535 mm²（余 27.465）；**1.6 时 503.331 mm² 且封装同时超**（`09_PACKAGE_POWER_RAS.md` §3） |
+| 封装可行性 | 裸片面积合计 | `N4-ref` 有 593.548 mm² 封装余量，SF4 只有 9.622 |
+| 功耗 | 漏电与动态功耗随节点 | Die 295.086 W / 300 W 上限 |
 | 频率 | 1.0 GHz 固定（NFR-05） | 未做时序分析，见 `HARDWARE_14_TIMING_SIGNOFF.md` |
 | 成本 | 大裸片 + 16 颗 MC 的 KGD 良率 | 未建模（`HARDWARE_13_DFT.md` §1-4/10） |
 
@@ -64,7 +64,7 @@
 
 若 `N4-ref`（当前 `optionHeldOut`）转为选中：
 
-1. 面积从 364.033 → 292.888 mm²，封装余量从 77.636 → 646.796 mm²；
+1. 面积从 372.535 → 299.544 mm²，封装余量从 9.622 → 593.548 mm²；
 2. **功耗模型需要重做**：`k3_physical_basis.js` 的功耗分量与节点绑定；
 3. **频率上限需重验**：NFR-05 的 1.0 GHz 在新节点下未必是同一难度；
 4. **全部文档数字重算**：`npm run physical:search && npm run search:final && npm run baseline:sync`，

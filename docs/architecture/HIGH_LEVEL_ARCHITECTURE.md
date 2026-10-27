@@ -427,7 +427,7 @@ Router、token packing、expert 选择和融合必须在 operator DAG 中显式�
 - `spec/package/CLOCK_RESET_POWER_DOMAIN_SPEC.md`
 - `spec/package/RAS_AND_SECURITY_SPEC.md`
 
-**当前风险**：发布点的 Die 功耗 290.48 W 和卡功耗 3031.92 W（液冷上限 300 W / 3200 W）（`teams/hardware/inputs/k3_mc_baseline.json`）是模型结果，不是物理签核结果。必须纳入高速 PHY、ECC、VRM、BMC、冷却、PVT 和老化余量。
+**当前风险**：发布点的 Die 功耗 295.09 W 和卡功耗 3068.79 W（液冷上限 300 W / 3200 W）（`teams/hardware/inputs/k3_mc_baseline.json`）是模型结果，不是物理签核结果。必须纳入高速 PHY、ECC、VRM、BMC、冷却、PVT 和老化余量。
 
 ### M10：性能模型、验证与签核
 

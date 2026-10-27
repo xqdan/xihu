@@ -23,13 +23,13 @@ npm test            # 37 个测试文件，全部应输出 PASS；约半分钟
 
 | 文件 | 看什么 |
 |---|---|
-| [`out/rdma/k3_rdma_final_tuning_report.html`](../out/rdma/k3_rdma_final_tuning_report.html) | K3 发布点（1124.70 TPS/usr）：时间账、开了哪些优化、硬件规格 |
+| [`out/rdma/k3_rdma_final_tuning_report.html`](../out/rdma/k3_rdma_final_tuning_report.html) | K3 发布点（1043.96 TPS/usr）：时间账、开了哪些优化、硬件规格 |
 | [`out/dashboard/architecture_global_dashboard.html`](../out/dashboard/architecture_global_dashboard.html) | 三个模型的规划估算、Gate 状态、未关闭的阻塞项 |
 
 ### 1.3 按这个顺序读文档
 
 1. [`00_CURRENT_STATE.md`](architecture/00_CURRENT_STATE.md)：现在的基线、证据等级、阻塞项。
-2. [`21_TPS_DESIGN_BASELINE.md`](architecture/21_TPS_DESIGN_BASELINE.md)：1124.70 这个数是怎么一项项算出来的，每个软件机制关掉会掉到多少。
+2. [`21_TPS_DESIGN_BASELINE.md`](architecture/21_TPS_DESIGN_BASELINE.md)：1043.96 这个数是怎么一项项算出来的，每个软件机制关掉会掉到多少。
 3. [`OPEN_ISSUES.md`](architecture/OPEN_ISSUES.md)：`B-*` 阻塞项和 `O-*` 未决问题，大部分工作都从这里领。
 4. [`AGENTS.md`](../AGENTS.md)：团队划分和目录规则。
 5. 你所在团队的 README：[hardware](../teams/hardware/README.md) · [software](../teams/software/README.md) · [model](../teams/model/README.md) · [council](../teams/council/README.md) · [vv](../teams/vv/README.md)。
@@ -41,7 +41,7 @@ npm test            # 37 个测试文件，全部应输出 PASS；约半分钟
 
 | 口径 | 说明 |
 |---|---|
-| **目标 1000 vs 门槛 1050** | 1000 TPS/usr 是目标（ADR-0009）；1050 是架构冻结门槛。两者的 raw 预算不同：1000 对应 854.70 µs，1050 对应 814.00 µs。仓库里现成的余量（如 raw 余量 94.76 µs、τ 盈亏点约 1.39 µs）大多是按 1000 算的，不能当作 1050 的余量。 |
+| **目标 1000 vs 门槛 1050** | 1000 TPS/usr 是目标（ADR-0009）；1050 是架构冻结门槛。两者的 raw 预算不同：1000 对应 854.70 µs，1050 对应 814.00 µs。仓库里现成的余量（如 raw 余量 35.99 µs、τ 盈亏点 1.24 µs）都是按 1000 算的，不能当作 1050 的余量。 |
 | **raw 与 e2e** | `TPS/usr = 1e6 / (raw × 1.17)`。raw 是模型算出的单 token 时间，1.17 是工程余量系数（engineeringMargin）。 |
 | **peak 与 sustained** | MC 档位（320/480 GB/s/颗，以及 MC640 槽位的 1152 GB/s/颗）是名义值；模型内部乘以 0.7 得到 sustained。ADR-0019 规定 480 是可制造默认上限，MC640 是 STRETCH 档（槽位名保留 640，数值是 1152，ADR-0026），发布点用的是它。 |
 | **detailed 与 planning** | 详细模型（`integration/detailed/`）产生发布点；规划模型（`integration/planning/token_time.js`）只在 K3 MC640 这一点上与之对齐，用来估算其他模型和配置。两者的数字不能混着用。 |
@@ -76,7 +76,7 @@ const withOpt = (patch, fn) => { const saved = {...O.OPT}; Object.assign(O.OPT, 
 
 show('published', O.evaluate(x));
 show('mcGBs=480', O.evaluate({...x, mcGBs: 480}));                  // 改硬件变量：换到可制造默认档
-show('tauUs=1.3', withOpt({tauUs: 1.3}, () => O.evaluate(x)));      // 改集合通信单次成本
+show('kvPrefetch=layer', withOpt({kvPrefetch: 'layer'}, () => O.evaluate(x))); // 改调度策略：KV 只预取一层
 show('tmaLane=off', withOpt({tmaLane: false}, () => O.evaluate(x))); // 关掉一个软件机制
 EOF
 ```
@@ -84,15 +84,15 @@ EOF
 应得到：
 
 ```text
-published        1124.70 TPS/usr, raw 759.94 µs
-mcGBs=480        852.32 TPS/usr, raw 1002.79 µs
-tauUs=1.3        1043.45 TPS/usr, raw 819.11 µs
-tmaLane=off      974.25 TPS/usr, raw 877.29 µs
+published        1043.96 TPS/usr, raw 818.71 µs
+mcGBs=480        852.24 TPS/usr, raw 1002.89 µs
+kvPrefetch=layer 948.14 TPS/usr, raw 901.45 µs
+tmaLane=off      871.12 TPS/usr, raw 981.15 µs
 ```
 
 - 硬件变量在 `x` 里（`nL`、`nH`、`ghz`、`lMiB`、`sharedMiB`、`mcGBs`、`kvTile`、`depth` 等），用 `{...x, key: value}` 改。
 - 软件开关在 `O.OPT` 里，用上面的 `withOpt` 临时改，结束后自动恢复。
-- 这是**只换一个变量、其余不变**的回放，不是在新约束下重新搜索。例如 852.32 是 MC480 下的回放值，不是 MC480 下能达到的最优值；要得到后者需要重新跑搜索。
+- 这是**只换一个变量、其余不变**的回放，不是在新约束下重新搜索。例如 852.24 是 MC480 下的回放值，不是 MC480 下能达到的最优值；要得到后者需要重新跑搜索。
 - 仓库已经算好的单项回退和敏感性表，在 `k3_mc_baseline.json#tpsDesign`（由 [`k3_tps_design_baseline.js`](../integration/detailed/k3_tps_design_baseline.js) 生成），先查那里，不必自己重算。
 
 ## 5. 按专业领域上手
@@ -153,24 +153,24 @@ const f = r => r.feasible === false ? 'infeasible' : `${r.tps.toFixed(2)} TPS/us
 ```js
 const A = require('./integration/detailed/k3_architecture_search.js');
 const withTech = (patch, fn) => { const s = {...A.TECH}; Object.assign(A.TECH, patch); try { return fn(); } finally { Object.assign(A.TECH, s); } };
-console.log('mcUtil=0.6     ', f(withTech({mcUtil: 0.6}, () => O.evaluate(x))));       // 1122.15
-console.log('matrixUtil=0.55', f(withTech({matrixUtil: 0.55}, () => O.evaluate(x))));  // 1090.18
-console.log('sharedMiB=12   ', f(O.evaluate({...x, sharedMiB: 12})));                   // 1124.59
+console.log('mcUtil=0.6     ', f(withTech({mcUtil: 0.6}, () => O.evaluate(x))));       // 1041.77
+console.log('matrixUtil=0.55', f(withTech({matrixUtil: 0.55}, () => O.evaluate(x))));  // 996.99
+console.log('sharedMiB=12   ', f(O.evaluate({...x, sharedMiB: 12})));                   // 1043.96
 for (const s of [16, 24]) { const r = O.evaluate({...x, sharedMiB: s}), p = r.p;
   console.log(`sharedMiB=${s}`, r.tps.toFixed(2), 'TPS/usr, die', p.dieArea.toFixed(2), 'mm²,', p.diePower.toFixed(2), 'W'); }
-// sharedMiB=16 1124.70 TPS/usr, die 364.03 mm², 290.48 W
-// sharedMiB=24 1124.70 TPS/usr, die 371.95 mm², 291.20 W
+// sharedMiB=16 1043.96 TPS/usr, die 372.53 mm², 295.09 W
+// sharedMiB=24 1043.96 TPS/usr, die 380.46 mm², 295.81 W
 ```
 
 从这组结果可以读出三点：
 
-- sustained 效率从 0.7 降到 0.6，TPS 只从 1124.70 变到 1122.15：发布点被集合通信约束，访存有富余（降到 0.4 仍是 1112.8，到 0.3 才掉到 874.6）。这是瓶颈位置的结果，不是 0.7 有了来源——它至今没有来源（O-001）。换一个被内存约束的点，同样的实验会得到完全不同的答案，所以先看这个点的瓶颈在哪。
-- shared SRAM 从 16 MiB 减到 12 MiB 只损失约 0.11 TPS/usr（1124.59），加到 24 MiB 则只增加面积、TPS 不变。窗口压力小同样是瓶颈在集合通信的结果。评估一个单元时，两个方向都要试。
+- sustained 效率从 0.7 降到 0.6，TPS 只从 1043.96 变到 1041.77（−2.19）；矩阵利用率从 0.65 降到 0.55 却掉到 996.99。这个点的瓶颈是集合通信与矩阵，不是访存带宽：`mcUtil` 在 0.4 到 0.75 之间都能守住预算，`matrixUtil` 的盈亏点是 0.5557。这是瓶颈位置的结果，不是 0.7 有了来源——它至今没有来源（O-001）。换一个被内存约束的点，同样的实验会得到完全不同的答案，所以先看这个点的瓶颈在哪。
+- shared SRAM 从 16 MiB 减到 12 MiB，TPS 与 raw 都不变（1043.96 / 818.71 µs），只省 3.96 mm² 和 0.36 W；加到 24 MiB 同样 TPS 不变，却要多 7.92 mm² 和 0.72 W（`out/attribution/sram_card.json` 的 `sharedMiB` 档）。窗口压力小同样是瓶颈在集合通信与矩阵的结果。评估一个单元时，两个方向都要试。
 - `hMiB` 这类变量在发布点附近可能完全不敏感。不敏感本身也是结论，应写进设计文档。
 
 **可以接的活。**
 
-- B-002：MC 档位和 sustained 效率。这是缺口最大的一项，MC480 回放只有 852.32。
+- B-002：MC 档位和 sustained 效率。这是缺口最大的一项，MC480 回放只有 852.24。
 - B-004/B-005：卡内与 TP32 拓扑，τ 的物理推导以它们为前提。
 - B-006：频率、面积和功耗系数的回标，需要 SF4 PDK 和 MAC 宏的数据。
 - O-001 到 O-008、O-015：各单元的可实现性问题，如 O-007 TMA 独立端口、O-015 液冷供电。
@@ -222,14 +222,9 @@ const diff = (patch) => { const saved = {...O.OPT}, a = O.evaluate(x);
   console.log(JSON.stringify(patch), f(b));
   for (const k in a.services) { const d = b.services[k] - a.services[k]; if (Math.abs(d) > 0.01) console.log('  ', k.padEnd(16), d.toFixed(2)); }
   console.log('   waitUs'.padEnd(19), (b.waitUs - a.waitUs).toFixed(2)); };
-diff({tmaLane: false});
-// {"tmaLane":false} 974.25 TPS/usr, raw 877.29 µs
-//    localTma         135.45    fill 不再提前发到每域的 TMA lane 上，进了关键路径
-//    commOverlap      -12.99
-//    tmaHidden        108.07    原来被掩盖的部分不再被掩盖
-//    waitUs           22.27
-diff({kvPrefetch: 'layer'});       // 1027.05：主要体现为 waitUs +60.90
-diff({countBasis: 'repo-510'});    // 956.61：集合通信次数口径变化，不能记为性能收益
+diff({tmaLane: false});            // 871.12：raw +162.45，fill 不再提前发到每域的 TMA lane 上
+diff({kvPrefetch: 'layer'});       // 948.14：KV 只预取一层，waitUs 上升
+diff({countBasis: 'repo-510'});    // 897.69：集合通信次数口径变化，不能记为性能收益
 ```
 
 **新增或修改一个机制**必须同时满足四条（`21_TPS_DESIGN_BASELINE.md` 第 8 节第 3 条）：
@@ -303,7 +298,7 @@ for (const o of require('./out/workload/tps_observation_matrix.json').observatio
 
 读这张表时注意三点：
 
-- K3 TP32/MC640 的规划值是 1142.6，详细模型是 1124.70，差 1.6%：这是标定点，但规划模型没有 DMA 等待项，所以拟合不到零残差（−11.92 µs）。其余槽位都是外推。
+- K3 TP32/MC640 的规划值是 1059.4，详细模型是 1043.96，差 1.5%：这是标定点，但规划模型没有 DMA 等待项，所以拟合不到零残差（−11.96 µs）。其余槽位都是外推。
 - GLM 和 DS 的数字高，不代表它们已经达标，它们的部署布局里仍有 ASSUMPTION（O-016、O-017）。
 - 冻结门槛是否要求所有可比模型都达标，目前还没有定论。
 
@@ -367,7 +362,7 @@ npm test
 
 ## 8. 常见误区
 
-- **把 1124.70 当成"已经达标"。** 它是 MC640 槽位（STRETCH 档，1152 GB/s，非供应商数据）上的 `MODEL` 结果；在可制造默认档 MC480 上回放只有 852.32。当前候选没有达到 1050 冻结门槛。
+- **把 1043.96 当成"已经达标"。** 它是 MC640 槽位（STRETCH 档，1152 GB/s，非供应商数据）上的 `MODEL` 结果；在可制造默认档 MC480 上回放只有 852.24。当前候选没有达到 1050 冻结门槛，联合悲观点也只有 837.08 / 825.28。
 - **引用 1000 口径的余量讨论 1050。** 见第 2 节。
 - **把单项回退值当成独立的余量。** 四个软件机制单独关掉都会跌破 1050，但它们共享同一份余量，不能各自按全额余量计算。
 - **给某个机制加经验折扣来"提高"TPS。** `GAIN` 全为 1 是规则；折扣必须来自事件/资源模型或实测。

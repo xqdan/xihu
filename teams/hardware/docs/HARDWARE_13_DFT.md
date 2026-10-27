@@ -35,7 +35,7 @@ DFT 连框架都没有依据：它是纯实现阶段产物。**本文的价值�
 
 | 冲突 | 内容 | 缓解方向 |
 | --- | --- | --- |
-| DFT 功耗 vs 热上限 | `09_PACKAGE_POWER_RAS.md` §4.2 明确列出 **DFT 是尚未计入 168.08 W 余量的项目之一**。Scan shift 与 MBIST 同时动作的功耗经常显著高于功能模式 | 分组测试、降低 shift 频率、限制并行 MBIST 组数；**必须在功耗预算里占一行**，见 `HARDWARE_POWER_BUDGET.md` |
+| DFT 功耗 vs 热上限 | `09_PACKAGE_POWER_RAS.md` §4.2 明确列出 **DFT 是尚未计入 131.21 W 余量的项目之一**。Scan shift 与 MBIST 同时动作的功耗经常显著高于功能模式 | 分组测试、降低 shift 频率、限制并行 MBIST 组数；**必须在功耗预算里占一行**，见 `HARDWARE_POWER_BUDGET.md` |
 | 测试模式频率 vs 固定主频 | 主域固定 1.0 GHz（`HARDWARE_12_CLOCK_RESET_POWER.md` §1），但测试通常需要降频 | 测试模式允许独立时钟，**不属于"降频换算力"** |
 | 复位域 vs 测试复位 | `HARDWARE_12_CLOCK_RESET_POWER.md` §3 的复位顺序是为功能模式定的 | 需定义测试复位入口，且不得绕过 R-4（epoch/mailbox 确定性清零） |
 | 面积余量 | Die 余量 35.967 mm²（8.7%），DFT 逻辑要吃掉一部分 | 计入余量；若超，走变更评审 |

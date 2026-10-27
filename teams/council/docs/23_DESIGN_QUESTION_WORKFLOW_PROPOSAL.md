@@ -4,7 +4,7 @@
 状态：`PROPOSAL`，未实现；不改动 22 号文档已落地的任何机制
 
 > **数字的时点。** 本文写于 2026-10-08。正文里引用的"当前值"（例如联合悲观点、盈亏点）会随基线变化；
-> ADR-0026（HBM3E）之后，联合悲观点是 947.09 / 935.44，τ 盈亏点约 1.39 µs，卡功耗上限 3200 W。
+> ADR-0026（HBM3E）之后是 947.09 / 935.44、τ 盈亏点约 1.39 µs；ADR-0028 之后是 837.08（计算）/ 825.28（全部未测量）、τ 盈亏点 1.2416 µs，卡功耗上限 3200 W。
 > 需要当前值时以 `21_TPS_DESIGN_BASELINE.md` 和 `out/governance/gate_status.json` 为准；本文的机制判断不受这些数字影响。
 
 前置文档：[`22_AGENT_WORKFLOW_REFACTOR_PLAN.md`](22_AGENT_WORKFLOW_REFACTOR_PLAN.md)、
@@ -35,7 +35,7 @@
 | 粗架构 | `direction` 只比 P1 × MC320/640 × TP8/16/32 共 6 点 | 比的是档位，不是形态 |
 | 细架构 | C 组四域，可行条件是"保持已发布 TPS 不变" | 只回答"同 TPS 下谁最省"；**片上 SRAM 不在任何一个 C 组设计空间里** |
 | 维度 → TPS/usr | 内核已有（`k3_tps_design_baseline.js`、`die_area_reallocation.js`），无 workflow 消费 | 需要一格把它变成每个维度的"灵敏度卡" |
-| 收敛 | `converge` 不看联合悲观点 | 21 号 §6.1.1：设计指标应是联合悲观点 ≥ 1000（当前 935.44） |
+| 收敛 | `converge` 不看联合悲观点 | 21 号 §6.1.1：设计指标应是联合悲观点 ≥ 1000（当前 825.28） |
 | 层间串联 | 各 stage brief 无生成者；ledger 未经 `args` 传递；C 组 winner 无人消费 | 链是断的 |
 
 ## 1. 原则
@@ -245,7 +245,7 @@ flowchart TB
 
 - **策略实例**：本维度域专家（解释哪些参数是承重的、哪些是富余的、先拿哪个实测）∥ `software-expert`（判断哪些收益依赖软件机制成立）→ `integrator` → `invariant-checker`。`joint` 维度由 `architect` 代替域专家。
 - **产出**：`out/attribution/<dimension>_card.json`（灵敏度卡），字段：`parameters[]{name, value, evidence, dTps, dRawUs, dTpsPerMm2, dTpsPerW, breakEven, criticalShare, measurementNeeded}`、`jointPessimistic`、`loadBearing[]`、`slack[]`。
-- **回流**：某参数的盈亏点落在其物理可信区间内（由专家依策略判断，比如 τ 盈亏点约 1.39 µs 而通路估计 ≥ 1.3 µs）→ 标成 `loadBearing`，交给 L5。
+- **回流**：某参数的盈亏点落在其物理可信区间内（由专家依策略判断，比如 τ 盈亏点约 1.2416 µs 而通路估计 ≥ 1.3 µs）→ 标成 `loadBearing`，交给 L5。
 
 #### P1 实现状态（`sram` / `comm` / `joint` 已实现，与上文的出入）
 
@@ -264,7 +264,7 @@ flowchart TB
 11. **引用核对**：返回值里的 `文件:行号` 在落盘前由 `integration/pipelines/check_citations.js` 机械核对（文件存在、不越界、所引行有文字——空行、表格边框、代码围栏、单独的括号都不算），不过即不落盘（`run_workflow.js` 退出码 7）。`attribution` 另核对专家 `plausibleRange` 里的卡外数字（带小数点或至少三位）必须出现在其 `rangeEvidence` 所引的某一行上，同样退出码 7；出处只有 ADR / blocker 编号的计为 unchecked。行内容是否支持论断仍由 `invariant-checker` 判断。
 12. **第二次真实运行后的修改**（`sram`，INVARIANT_VIOLATED，五条违规都是引用偏了几行或理由里写了卡外数字）：
     - **卡外数字在 workflow 内机械比对**：审读的 `reason` 只许出现卡里的数或本行 `plausibleRange` 里的数，`note` / `softwareDependence` 与合并结果只许出现卡里的数或任一专家 `plausibleRange` 里的数。不合规的回到同一个 agent 修正一次（`repair:<agentId>`），仍不合规即记入 `mechanicalChecks.looseNumbers`，检点者说 OK 也不落盘。规则与 `check_citations.js` 的 `numberTokens` 相同，单测核对两份实现一致。
-    - **`breakEvenBy`**：每个有数值盈亏点的行注明盈亏点由什么决定——越过一点后仍可行的是 `budget`，越过即不可行的是 `feasibility`（带不可行原因）。`layoutImbalance` 的 1.42 是 H local tile 放不下（`feasibility`），不是 raw 预算；它的 `measurementNeeded` 分写容量（宏形状不均衡）与时间（逐 bank 直方图）两个角色。
+    - **`breakEvenBy`**：每个有数值盈亏点的行注明盈亏点由什么决定——越过一点后仍可行的是 `budget`，越过即不可行的是 `feasibility`（带不可行原因）。`layoutImbalance` 的 1.311 是 H local tile 放不下（`feasibility`），不是 raw 预算；它的 `measurementNeeded` 分写容量（宏形状不均衡）与时间（逐 bank 直方图）两个角色。
     - **`headTile` 行**（映射变量，48 / 96）。发布点上 bf16 KV 不可行是 H local tile 放不下（KV slab 字节翻倍），`headTile=48 x kvCache off`、`hMiB=8 x kvCache off` 两对都能让 bf16 可行；`teams/software/docs/TUNING_CONTRACT.md` §2 第 4 条原先把原因写成 dequant 代价，已改正。
 
 ### L5-a `design.integrate`（合并 D 组五格）
@@ -304,7 +304,7 @@ flowchart TB
 2. **进 Q-Gate，不另起一个门**。原来的大合取改写成 `checks` 对象，三条与旧判据并列；`failedChecks` 列出不成立的键，`pass` 等价于它为空。决策字面量不变。卡缺失时前两条失败而不是跳过（fail closed）。
 3. **D-Gate 仍不读卡**。原 L4 第 8 条"任何 Gate 都不读卡"相应收窄成"只有 Q-Gate 读卡"：`tests/regression/test_tps_attribution.js` 断言 `out/governance/` 下只有 `gate_status.json` 引用 `out/attribution`，且其 `directionGate` 不引用。
 4. **收敛格不重判**。`run_workflow.js converge` 从 `out/governance/gate_status.json#quantificationGate` 原样取这三条注入 `args.convergeCriteria`（缺文件即报错，要先 `npm run model:planning`）；收敛格缺这一项不启动。`gate-keeper` 只把它们照抄成 complete / blocked，`architect` 必须引用，任一条为 false 时判 `ARCH_FREEZE` 被脚本记为路线矛盾 → `BLOCKED_CONFIG`、不落盘；判 `D_GATE_PROPOSAL` 并把不成立的判据列进 `openItems` 是允许的。run record 与提案都带上 `convergeCriteria`。
-5. **当前值**：联合悲观 935.44 TPS/usr < 1000（不成立）；承重参数 5 行全部有 owner / 证据 / 回标计划（成立）；观测矩阵不完整（不成立）。所以当前即便 agent 想冻结，收敛格也只能给提案或回流。
+5. **当前值**：联合悲观 825.28 TPS/usr < 1000（不成立）；承重参数 5 行全部有 owner / 证据 / 回标计划（成立）；观测矩阵不完整（不成立）。所以当前即便 agent 想冻结，收敛格也只能给提案或回流。
 6. **再生成链**：`stage_b.js` 的 `inputHashes` 含 `evaluate_gates.js`，改了判据就要重跑 `npm run model:planning`；判据读卡，所以 `attribution:cards` 要先于它。
 
 ### 横切（不进主链）

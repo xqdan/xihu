@@ -1,6 +1,6 @@
 # 当前设计状态与已知结论
 
-版本：2026-09-26。
+版本：2026-10-27（核定义 ADR-0028；耦合点与 `inlineDequant` 按 `bc88b4b` / `3475d83`）。
 
 ## 0. 单芯片前提与唯一硬件规格
 
@@ -9,7 +9,7 @@
 
 硬件规格只有一份：P1，权威值在
 [`teams/hardware/inputs/k3_mc_baseline.json`](../../teams/hardware/inputs/k3_mc_baseline.json)
-（ADR-0021）。封装面积 = 8 × Die 面积 + 16 × 100 mm²（MC 规划值）= 4512.26 mm²，在 5,248 mm² 窗口内。
+（ADR-0021）。封装面积 = 8 × Die 面积 + 16 × 100 mm²（MC 规划值）= 4580.28 mm²，在 5,248 mm² 窗口内（扣掉 658.10 mm² 观测 keep-out 后只剩 9.62 mm²）。
 
 ```mermaid
 flowchart LR
@@ -52,8 +52,8 @@ K3 preset 来自
 | --- | ---: | --- |
 | 工艺/频率 | 三星 SF4 级面积口径（`physicalBasis`），1.0 GHz 固定，不参与搜索 | `ASSUMPTION`（B-006） |
 | 散热/功耗上限 | 液冷：Die 300 W、卡 3200 W（`physicalBasis.limits`；ADR-0005 取 2800 W，ADR-0026 提到 3200 W） | `ASSUMPTION`（O-015） |
-| L Core | 8 个，每 Core 8×(1×256) engine，local 1 MiB（`lCores`、`lCore`） | `MODEL` |
-| H Core | 4 个，每 Core 6×(48×128) engine，local 4 MiB（`hCores`、`hCore`） | `MODEL` |
+| L Core | 8 个，每 Core 8×(1×512) engine（8.19 TFLOPS），local 1 MiB（`lCores`、`lCore`；ADR-0028） | `MODEL` |
+| H Core | 4 个，每 Core 1×(128×256) engine（65.54 TFLOPS），local 4 MiB（`hCores`、`hCore`；ADR-0028） | `MODEL` |
 | Shared SRAM | 16 MiB，16 slices（`sharedSramMiB`） | `MODEL` |
 | 总数据 SRAM | 40 MiB/Die（24 local + 16 shared，`physicalDataSramMiB`） | 推导值 |
 | BF16 Dense peak | 327.7 TF/Die（`bf16DenseTflops`） | 推导值 |
@@ -121,10 +121,10 @@ raw = max(访存道, 串行道)，e2e = raw × 1.17，TPS/usr = 1e6 / e2e
 | 系数 | 值 |
 | --- | ---: |
 | expertReread | 0.20 |
-| kMemory | 1.4537 |
-| kFlop | 1.1845 |
-| fixedPerLayerUs | 0.2247 μs |
-| kTmaExposedUsPerGB | 9.484 μs/GB |
+| kMemory | 1.2182 |
+| kFlop | 1.6667 |
+| fixedPerLayerUs | 0.3087 μs |
+| kTmaExposedUsPerGB | 6.018 μs/GB |
 
 规划回放 1059.44（详细模型 1043.96，高 1.5%）；MC320 未参与拟合，规划 505.75，详细模型 585.94（0.86）。留出点 320/400/480/560 的残差为 −13.7 / −12.2 / −11.0 / −9.3%（改前最大 26.9%）：**比改前好，但 320/400/480 三档仍超出 10% 的门**，只有 560 在门内。
 数值存于 `out/workload/planning_operator_workload.json#/calibration`。
@@ -138,8 +138,8 @@ raw = max(访存道, 串行道)，e2e = raw × 1.17，TPS/usr = 1e6 / e2e
 
 - **D-Gate：** `PASS`（范围 `PLANNING_COMPARISON_ONLY_NOT_ARCHITECTURE_FREEZE`）。
 - **正式候选：** 只有三个模型都 ≥ 1000 的槽位才能入选（ADR-0008），为 `P1-compact-MC640-TP32`；
-  它是 τ 条件候选（K3 规划模型 τ ≤ 1.42 μs，详细模型约 1.39 μs）。
-- **非正式参考：** `P1-compact-MC320-TP32`（K3 500.3，未达目标）。
+  它是 τ 条件候选（K3 规划模型 τ ≤ 约 1.27 μs，详细模型 1.24 μs）。
+- **非正式参考：** `P1-compact-MC320-TP32`（K3 505.8，未达目标）。
 - **Stage B：** `PLANNING_QUANTIFICATION`，状态 `PERFORMANCE_MISS_OUTSIDE_SELECTED_CANDIDATES_NOT_VALIDATED`，
   18 个可比槽位中 9 个未达 1000。
 - **Q-Gate：** 阻塞（无事件时序回放）。

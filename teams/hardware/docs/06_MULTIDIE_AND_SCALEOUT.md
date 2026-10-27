@@ -121,7 +121,7 @@ sequenceDiagram
 GLM-5.2、DeepSeek-V4-Pro 在同一口径下为每 token 333 次、305 次（含 ADR-0024 的 q all-gather）（[`teams/model/docs/deployment/`](../../model/docs/deployment/README.md)），
 多一类 indexer top-k 合并（[07](07_COLLECTIVE_RDMA.md) 第 2.2 节）。
 
-> `repo-510` 计数口径只作对照（切回得 956.61 TPS/usr，是口径差而非优化，ADR-0004）；
+> `repo-510` 计数口径只作对照（切回得 897.69 TPS/usr，是口径差而非优化，ADR-0004）；
 > FFN/MoE 为 TP-only，没有 all-to-all（ADR-0020）。
 
 ## 6. 必须决定的跨卡拓扑
@@ -161,7 +161,7 @@ flowchart TB
 - 布线、连接器、交换芯片和光模块功耗；
 - collective route 的可证明无死锁性。
 
-**τ 预算约束**：τ 盈亏点约 1.39 µs（21 号文档第 6 节），即每次集合通信最多有 0.24 µs 的余量。
+**τ 预算约束**：τ 盈亏点约 1.2416 µs（21 号文档第 6 节），即每次集合通信最多有 0.092 µs 的余量。
 torus 每多一跳若增加约 0.1 µs，就会吃掉一半余量。跨卡拓扑选择必须给出 τ 的物理推导（B-008）。
 
 ### 6.1 链路级 τ 推导（HW-CH-01，2026-10-10，`MODEL`）

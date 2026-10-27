@@ -12,7 +12,7 @@
 ### 1.1 硬件规格
 
 硬件规格只有一份 P1（ADR-0021），权威值在 `teams/hardware/inputs/k3_mc_baseline.json`（`computeDieCandidate`、`package`、`card`），
-由 Final Tuning 搜索经 `npm run baseline:sync` 写入：8 L + 4 H/Die，1.0 GHz，40 MiB 数据 SRAM/Die，364.03 mm²/Die（SF4），
+由 Final Tuning 搜索经 `npm run baseline:sync` 写入：8 L + 4 H/Die，1.0 GHz，40 MiB 数据 SRAM/Die，372.53 mm²/Die（SF4），
 设计说明见 `docs/architecture/21_TPS_DESIGN_BASELINE.md`。详细 tile、transaction 和 PPA 模型完成前，性能结论必须标为
 `MODEL / NOT SILICON-PROVEN`。
 
@@ -22,14 +22,14 @@
 |---|---:|
 | Reticle 数量 | 7 |
 | Reticle placement window | 82 × 64 mm = 5,248 mm² |
-| Compute Die | 8 × 364.03 mm² = 2,922.73 mm²（单 Die 上限 400 mm²） |
+| Compute Die | 8 × 372.53 mm² = 2,980.28 mm²（单 Die 上限 400 mm²） |
 | Memory Cube | 16 × 100 mm²规划面积 = 1,600 mm² |
-| 裸 Die 总面积 | 4,522.73 mm²（window 余 735.74 mm²，推导值；其中 keep-out 观测值 658.29 mm²，未占用 77.45 mm²） |
+| 裸 Die 总面积 | 4,580.28 mm²（window 余 667.72 mm²，推导值；其中 keep-out 观测值 658.10 mm²，未占用 9.62 mm²） |
 | Data SRAM | 40 MiB/Die，320 MiB/package |
 | MC 容量 | 16 GB/MC primary，256 GB/package |
-| MC payload | 320 GB/s/MC baseline，640 GB/s/MC stretch（发布点） |
-| Package MC raw payload | 5.12 TB/s baseline，10.24 TB/s stretch |
-| 功耗 | Die 283.3 W（上限 300 W），卡 2,744.9 W（上限 2,800 W）；液冷，ASSUMPTION（O-015） |
+| MC payload | 320 GB/s/MC baseline，1152 GB/s/MC stretch（发布点，ADR-0026） |
+| Package MC raw payload | 5.12 TB/s baseline，18.43 TB/s stretch |
+| 功耗 | Die 295.09 W（上限 300 W），卡 3068.79 W（上限 3,200 W）；液冷，ASSUMPTION（O-015） |
 | Scale-out payload target | 800 GB/s/package |
 | workload | K3 Decode，B=1，Context=1M，TP32，PP=1 |
 | 性能目标 | 1,000 TPS/usr |
@@ -104,10 +104,10 @@ K3逐层模型清单、dtype/layout、KV/state、TP shard、operator DAG和KPI�
 | 指标 | 目标 / 验收 |
 |---|---|
 | Reticle几何 | 7个reticle，每个26 × 33 mm、858 mm²；理论总面积6,006 mm²，placement window按5,248 mm²管理 |
-| Compute Die | 8个唯一坐标，每个 364.03 mm²（上限 400 mm²）；重叠面积为0 |
+| Compute Die | 8个唯一坐标，每个 372.53 mm²（上限 400 mm²）；重叠面积为0 |
 | MC | 16个唯一坐标；每个按100 mm²规划面积；每个Compute Die绑定2个local MC |
-| 面积守恒 | 8 × Die 面积 + 1,600 ≤ 5,248 mm²（当前 4,522.73 mm²）；`areaConservation` 检查 |
-| Occupancy | bare die占placement window 4,512.26/5,248 = 85.98%；余量 735.74 mm²（keep-out 658.29 + 未占用 77.45）不能被重复计算 |
+| 面积守恒 | 8 × Die 面积 + 1,600 ≤ 5,248 mm²（当前 4,580.28 mm²）；`areaConservation` 检查 |
+| Occupancy | bare die占placement window 4,580.28/5,248 = 87.28%；余量 667.72 mm²（keep-out 658.10 + 未占用 9.62）不能被重复计算 |
 | 坐标模型 | die、MC、边界、scale-out、host、clock、management和keep-out均有机器可读坐标 |
 | 接口清单 | 所有die-to-die、MC、scale-out、clock/reset、debug、power接口有owner、方向、位宽、速率和时钟域 |
 | 布线保留 | window 余量必须分解到RDL、edge keep-out、PHY beachfront、VRM/thermal和管理区域 |
@@ -131,7 +131,7 @@ L/H Core、Tensor/Vector能力、command queue、执行资源和kernel cycle模�
 |---|---|
 | Core数量 | 8 L + 4 H/Die；96 L/H Core/package |
 | 频率 | 1.0 GHz 固定（ADR-0005）；必须同时报告占空比、stall和有效issue rate |
-| 面积预算 | 按 `k3_physical_basis.js` 面积项分解，总和 = `estimatedAreaMm2`（364.03 mm²），上限 400 mm² |
+| 面积预算 | 按 `k3_physical_basis.js` 面积项分解，总和 = `estimatedAreaMm2`（372.53 mm²），上限 400 mm² |
 | 能力矩阵 | BF16/FP16/FP8/INT8支持状态、累加精度、tile shape和对齐约束100%有表格 |
 | 队列 | 每种command queue的深度、credit、backpressure和completion事件必须为整数且可模拟 |
 | Kernel模型 | Attention、Linear Attention、MoE、GEMM、Vector post-op至少各有一个cycle模型 |
@@ -180,17 +180,17 @@ L/H Core、Tensor/Vector能力、command queue、执行资源和kernel cycle模�
 |---|---|
 | MC实例 | 16 MC/package，2 MC/Compute Die；home mapping覆盖率100% |
 | 容量 | primary 16 GB/MC、256 GB/package；prototype 8 GB/MC、128 GB/package必须可区分 |
-| 单MC payload | baseline 320 GB/s；stretch 640 GB/s；必须报告raw、sustained和有效payload三种数值 |
-| Package payload | 5.12 TB/s baseline、10.24 TB/s stretch；不得把raw带宽直接当可用带宽 |
+| 单MC payload | baseline 320 GB/s；stretch 1152 GB/s（MC640 槽位，ADR-0026 改为 HBM3E）；必须报告raw、sustained和有效payload三种数值 |
+| Package payload | 5.12 TB/s baseline、18.43 TB/s stretch；不得把raw带宽直接当可用带宽 |
 | Sustained效率 | 在A1 workload下输出读写比例、queue occupancy、P50/P95/P99 latency；有效payload目标≥raw的90% |
 | 地址映射 | layer/tensor/tile到MC、bank、channel的映射可逆；热点MC占比P99≤1.25×平均值为TARGET |
 | 队列 | queue depth、最大inflight transaction、retry、timeout和credit必须进入transaction模型 |
 | 320路径 | 320 GB/s baseline若无法达到≥1,050 TPS/usr，必须输出byte-reduction、复用、压缩或替代MC路线的定量证据并保留BLOCKER |
-| 640路径 | 640 GB/s只作为stretch对照，不得替代可制造baseline的签核证据 |
+| Stretch 路径 | 1152 GB/s（MC640 槽位）只作为stretch对照，不得替代可制造baseline的签核证据 |
 
 ### 退出条件
 
-- 320/640 GB/s回放结果可复现；
+- MC320 / MC640 槽位（320 / 1152 GB/s）回放结果可复现；
 - MC demand、sustained payload和端到端TPS在同一模型中闭合；
 - MC供应商/IP数据、功耗和热约束有明确证据等级。
 
@@ -331,9 +331,9 @@ Die/package面积、功耗、热、供电、DVFS、故障预算和降级模式�
 
 | 指标 | 目标 / 验收 |
 |---|---|
-| Die面积 | 364.03 mm²/Die，上限 400 mm²；面积项按 `k3_physical_basis.js` 分解并与 `estimatedAreaMm2` 守恒 |
-| Package面积 | Compute 2,922.73 + MC 1,600 = 4,522.73 ≤ 5,248 mm² |
-| 功耗 | Die 283.3 W（上限 300 W）、卡 2,744.9 W（上限 2,800 W）；MC、PHY、RDL、VRM和管理功耗单列 |
+| Die面积 | 372.53 mm²/Die，上限 400 mm²；面积项按 `k3_physical_basis.js` 分解并与 `estimatedAreaMm2` 守恒 |
+| Package面积 | Compute 2,980.28 + MC 1,600 = 4,580.28 ≤ 5,248 mm² |
+| 功耗 | Die 295.09 W（上限 300 W）、卡 3068.79 W（上限 3,200 W）；MC、PHY、RDL、VRM和管理功耗单列 |
 | 散热 | 液冷冷板（ASSUMPTION，O-015）；不得把 Die 功耗之和当成卡总功耗 |
 | 功耗剖面 | Core、SRAM/TMA、NoC、MC、Die-to-Die、RDMA、clock、management逐项报告平均、P95和峰值 |
 | 热点 | 每个Die/MC/PHY hotspot有位置和温度模型；热点不得用package平均温度替代 |
@@ -444,11 +444,11 @@ A2 ─────┼── A5 ──┤
 | A1 | 93层DAG、KV/state、LSE m/l/O | indexer、index cache、MTP字段 | sparse attention/indexer、expert dispatch字段 | 三个`model_id`均能生成合法manifest和Tile IR |
 | A3 | L/H Core、Tensor/Vector | sparse index、MTP draft/verify | expert GEMM、FP8/FP4 dequant | 每类新增执行类型有cycle/resource模型 |
 | A4 | 40 MiB/Die、TMA、ECC | index cache、MTP branch buffer | expert staging、sparse state | buffer class、容量、eviction、epoch可追踪 |
-| A5 | 16 MC、320/640 GB/s | index miss和长上下文state | expert weight、dispatch/combine | bytes按state/index/expert/dispatch分类，raw不等于sustained |
+| A5 | 16 MC、320 / 1152 GB/s（MC320 / MC640 槽位） | index miss和长上下文state | expert weight、dispatch/combine | bytes按state/index/expert/dispatch分类，raw不等于sustained |
 | A6–A8 | NoC、4×2 package fabric、TP32 RDMA | indexer/MTP QoS和rollback | all-to-all、expert home、combine | 无deadlock、lost ACK、duplicate merge和stale epoch |
 | A9 | Tile IR、persistent decode | candidate token、accept mask | expert id/capacity、overflow | 不依赖host逐token/逐expert启动 |
 | A10 | MC320/640发布点回归 | index hit、MTP acceptance | expert load balance、overflow | `3 × 3 × 2`结果矩阵，P50/P95/P99齐全 |
-| A11 | 364.03 mm²、Die 300 W、卡 2,800 W 上限 | index miss峰值、MTP重叠 | expert热点、dequant峰值 | 三模型最坏值不得静默超预算 |
+| A11 | 372.53 mm²、Die 300 W、卡 3,200 W 上限 | index miss峰值、MTP重叠 | expert热点、dequant峰值 | 三模型最坏值不得静默超预算 |
 | A12–A13 | K3 golden trace和报告 | model-specific fault/report | model-specific fault/report | 每个关键数字带model/profile/schema/seed/evidence |
 
 ### 多模型G4门槛

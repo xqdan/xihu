@@ -81,7 +81,7 @@
 | PHY 域 | 部分（lane 级） | 带宽下降，需重新训练 | `OPEN` |
 | MC | 否（Decode 期间） | — | 决策框架 |
 
-**与功耗预算的关系**：`09_PACKAGE_POWER_RAS.md` §4.2 列出卡功耗余量 168.08 W（上限 3200 W，无散热证据，O-015），并明确列出
+**与功耗预算的关系**：`09_PACKAGE_POWER_RAS.md` §4.2 列出卡功耗余量 131.21 W（上限 3200 W，无散热证据，O-015），并明确列出
 "尚未可靠计入"的 8 项（SerDes/光模块、ECC、DFT、clock tree、VRM 损耗、BMC/主机接口、SRAM compiler 差异、PVT guardband、老化与漏电）。
 本文的 clock tree、gating、CDC 逻辑都落在 clock tree 与 ECC/DFT 这两项里——**它们是余量的消耗方，不是余量的来源**。
 卡功耗的逐项分配见 [`HARDWARE_POWER_BUDGET.md`](HARDWARE_POWER_BUDGET.md)。

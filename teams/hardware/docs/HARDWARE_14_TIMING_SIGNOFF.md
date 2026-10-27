@@ -22,7 +22,7 @@
 | --- | --- | --- |
 | AI Core 矩阵阵列 | `matrixUtil` 0.65 的假设隐含了算力利用率，与流水线深度耦合 | `ASSUMPTION`（B-006） |
 | AI Core 向量 | `vectorUtil` 0.35（原 0.3，含 dequant），**向量单元是面积再分配的对象** | `ASSUMPTION` |
-| TMA / 本地 SRAM | `layoutImbalance` ≤ 1.42 是**容量**约束，非时序 | 见 `DESIGN_TARGETS_AND_MARGINS.md` §2.1 |
+| TMA / 本地 SRAM | `layoutImbalance` ≤ 1.311 是**容量**约束，非时序 | 见 `DESIGN_TARGETS_AND_MARGINS.md` §2.1 |
 | NoC | 4096-bit link 是否可布线（O-003） | `OPEN` |
 | Reduce 引擎 | 4096 lane（`09_PACKAGE_POWER_RAS.md` §4.1 指出其功耗占比 12% 偏大） | `MODEL` |
 | Comm Core 控制路径 | 搜索选中 0.042 µs/次，raw 预算内上限 0.620 µs/次（O-018） | `ASSUMPTION`，待 RTL/周期模型 |
@@ -58,8 +58,8 @@ O-018 记录了两个只差 2–8 ns 余量的方案（`descriptorExpand`、`sha
 
 ## 4. 与功耗的联合签核
 
-时序与功耗在本设计里耦合得很紧：卡功耗余量 168.08 W（5.3%），**Die 功耗余量只有 9.52 W（3.2%）**——时序与 IR-drop 耦合的是 Die 功耗，所以更紧的是后者。
-`die_area_reallocation.js` 的方案会把卡功耗余量压到 92.7 W、Die 功耗余量压到 0.1 W（该方案在观测 keep-out 下还装不下封装，见 21 号文档 §6.5）。同样的物理事实会同时影响：
+时序与功耗在本设计里耦合得很紧：卡功耗余量 131.21 W（4.1%），**Die 功耗余量只有 4.914 W（1.6%）**——时序与 IR-drop 耦合的是 Die 功耗，所以更紧的是后者。
+`die_area_reallocation.js` 的方案会把卡功耗余量压到 98.9 W、Die 功耗余量压到 0.9 W（该方案在观测 keep-out 下还装不下封装，见 21 号文档 §6.5）。同样的物理事实会同时影响：
 电压降（时序）与动态功耗（热）。**两者不得分开签核**。
 
 ## 5. 未闭合项

@@ -5,7 +5,7 @@
 | Owner | SW-05 Collective/Comm-Compute Overlap |
 | 共签 | HW Collective/RDMA（[`07_COLLECTIVE_RDMA.md`](../../hardware/docs/07_COLLECTIVE_RDMA.md)）、SW-06 Scheduler |
 | Evidence class | `MODEL`；τ 的物理推导为 `BLOCKER`（B-008） |
-| 载荷条件 | K3，B=1，context 1M，TP32，PP1，8 Die/卡（一张卡 = 一个 TP rank），P1 发布点 1124.70 TPS/usr |
+| 载荷条件 | K3，B=1，context 1M，TP32，PP1，8 Die/卡（一张卡 = 一个 TP rank），P1 发布点 1043.96 TPS/usr |
 | 权威来源 | 次数与计费：[`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md) 第 2.2、4.2、4.3 节；口径：[ADR-0004](../../council/adr/ADR-0004-collective-tau-basis-and-count-basis.md)；FFN/MoE 并行方式：[ADR-0020](../../council/adr/ADR-0020-tp-only-ffn-moe.md) |
 
 本文说明每 token 393 次集合通信是什么、排在 DAG 的哪里、怎样计费、哪些能与计算重叠，以及 GLM-5.2 / DeepSeek-V4-Pro 的对应安排。
@@ -23,10 +23,10 @@ pie title "每 token 集合通信 451.95 µs（393 × 1.15 µs）"
 ```
 
 1. **通信时间 = 次数 × τ。** 五类集合通信的协议模型时间都低于 τ（0.48–1.03 µs），全部按 τ = 1.15 µs 下限计费，
-   所以 comm = 393 × 1.15 = 451.95 µs，占 raw 759.94 µs 的 58%。
+   所以 comm = 393 × 1.15 = 451.95 µs，占 raw 818.71 µs 的 55%。
 2. **B=1 下每次集合通信都在依赖主链上。** 唯一的重叠是 shared 专家与 `Wdown + Router all-gather` 并行（`commOverlap`，26.27 µs）。
-3. **次数是口径，不是优化。** reference-393 相对 repo-510 少的 117 次是计数对齐（ADR-0004）；回退到 repo-510 为 956.61 TPS/usr。
-4. **τ 是最大的单一风险。** τ 升到约 1.39 µs（每次余量 0.241 µs）TPS/usr 就跌破 1000（21 号文档第 6 节）。
+3. **次数是口径，不是优化。** reference-393 相对 repo-510 少的 117 次是计数对齐（ADR-0004）；回退到 repo-510 为 897.69 TPS/usr。
+4. **τ 是最大的单一风险。** τ 升到约 1.2416 µs（每次余量 0.0916 µs）TPS/usr 就跌破 1000（21 号文档第 6 节）。
 
 ## 1. 393 次的构成
 
@@ -204,13 +204,14 @@ stateDiagram-v2
 ```mermaid
 xychart-beta
   title "TPS/usr vs 每次集合通信的计费时间（示意：仅 comm 随 τ 变化）"
-  x-axis ["1.00", "1.15（发布点）", "1.25", "1.39（盈亏点）", "1.50"]
+  x-axis ["1.00", "1.15（发布点）", "1.24（盈亏点）", "1.25", "1.50"]
   y-axis "TPS/usr" 800 --> 1300
-  line [1219, 1125, 1069, 1001, 952]
+  line [1125, 1044, 1001, 996, 894]
 ```
 
-曲线按 `TPS = 1e6 / ((759.94 + 393 × (τ − 1.15)) × 1.17)` 推导，只让 comm 随 τ 变化、其余项固定，
-与 21 号文档第 6 节的盈亏点 1.39 µs 一致；其他点是推导值，不是模拟器输出。与真实重放有出入：τ = 1.5 µs 时公式给 952，模型重放给 924（τ 变大会改变掩盖），以重放为准（`10_COMM_CORE.md` §7.4）。
+曲线按 `TPS = 1e6 / ((818.71 + 393 × (τ − 1.15)) × 1.17)` 推导，只让 comm 随 τ 变化、其余项固定，
+与 21 号文档第 6 节的盈亏点 1.2416 µs 一致；其他点是推导值，不是模拟器输出。与真实重放有出入：τ = 1.5 µs 时公式给 894，
+旧 raw 预算（759.94 µs）下的重放给 924；ADR-0028 之后的重放尚未重跑（τ 变大会改变掩盖），以重放为准（`10_COMM_CORE.md` §7.4）。
 
 | 杠杆 | 状态 |
 | --- | --- |

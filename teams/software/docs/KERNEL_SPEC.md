@@ -5,7 +5,7 @@
 | Owner | SW-03 Kernel Optimization |
 | 共签 | SW-04 Fusion（融合边界）、HW AI Core（[`02_AI_CORE.md`](../../hardware/docs/02_AI_CORE.md)） |
 | Evidence class | `MODEL`（逐算子时长来自 `A.mappedPlan`，未经 kernel 实测或 RTL 回标，B-003） |
-| 载荷条件 | K3，B=1，context 1M，TP32，PP1，8 Die/卡，P1 发布点 1124.70 TPS/usr |
+| 载荷条件 | K3，B=1，context 1M，TP32，PP1，8 Die/卡，P1 发布点 1043.96 TPS/usr |
 | 数据来源 | `F.mapped(best.x).plan.ops`（`integration/detailed/k3_rdma_final_tuning_model.js`），`best.x` 取自 `out/rdma/k3_rdma_final_tuning_results.json#search.best.x` |
 | 上游 | 时间账与机制回退见 [`21_TPS_DESIGN_BASELINE.md`](../../../docs/architecture/21_TPS_DESIGN_BASELINE.md) 第 2、4、5 节；精度口径见 [`PRECISION_POLICY.md`](PRECISION_POLICY.md) |
 

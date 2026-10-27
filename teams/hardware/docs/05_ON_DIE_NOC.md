@@ -120,10 +120,10 @@ flowchart LR
 
 ### 5.1 平均流量（由发布点时间账推导）
 
-| 流量 | 每 token 每 Die | 平均带宽（÷ raw 759.94 µs） | 占 7.99 TB/s |
+| 流量 | 每 token 每 Die | 平均带宽（÷ raw 818.71 µs） | 占 7.99 TB/s |
 | --- | ---: | ---: | ---: |
-| DMA 落地（MC → Shared） | 4.97 GB ÷ 8 = 0.62 GB | 0.82 TB/s | 10% |
-| TMA 通道（Shared → Local） | 约同上 | 约 0.82 TB/s | 约 10% |
+| DMA 落地（MC → Shared） | 4.97 GB ÷ 8 = 0.62 GB | 0.76 TB/s | 9% |
+| TMA 通道（Shared → Local） | 约同上 | 约 0.76 TB/s | 约 9% |
 | 集合通信 workspace | 393 次 × 最大 1.3 MB（LSE 24 次）/ 0.28 MB | < 0.2 TB/s | < 3% |
 
 ```mermaid
@@ -131,10 +131,10 @@ xychart-beta
   title "每 Die 平均 NoC 负载 vs 有效截面（TB/s）"
   x-axis ["DMA 落地", "TMA 通道", "集合通信", "有效截面"]
   y-axis "TB/s" 0 --> 8
-  bar [0.82, 0.82, 0.2, 7.99]
+  bar [0.76, 0.76, 0.2, 7.99]
 ```
 
-平均负载只占约 23%；DMA 忙时 474.57 µs，占 token 的 62%，峰值出现在 KV 窗口预取与 routed expert 未命中取数叠加时（忙时平均 1.31 TB/s，仍低于截面 7.99 TB/s）。
+平均负载只占约 22%；DMA 忙时 469.43 µs，占 token 的 57%，峰值出现在 KV 窗口预取与 routed expert 未命中取数叠加时（忙时平均 1.32 TB/s，仍低于截面 7.99 TB/s）。
 DMA 的峰值带宽取 `min(MC、NoC、远端、Shared 写)`，当前由 MC（1.61 TB/s/Die，UCIe 端口封顶后）决定，约为 NoC 有效截面 7.99 TB/s 的 20%，NoC 不是瓶颈。
 
 ### 5.2 跳数与时延
