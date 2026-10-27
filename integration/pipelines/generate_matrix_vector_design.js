@@ -35,6 +35,6 @@ console.log(JSON.stringify({
       + `TPS ${f(v.tpsPerUser, 2)}, area ${f(v.areaMm2, 2)} mm2, power ${f(v.diePowerW, 1)} W`]))])),
   sweep: an.sweep.map(r => Object.entries(r).map(([k, v]) => `${k} ${typeof v === 'number' ? f(v, 2) : v}`).join(', ')),
   kernels: an.kernels.map(k => `${k.model} ${k.kernel} ${k.core}: ${Object.entries(k.maxCoreRatio).map(([c, v]) => `${c} ${f(v)}`).join(', ')}`),
-  unpackAttribution: an.unpackAttribution, nativeBreakEvenMatrixOverhead: an.nativeBreakEvenMatrixOverhead,
+  unpackAttribution: an.unpackAttribution, nativeBreakEvenMatrixOverhead: an.nativeBreakEvenMatrixOverhead, breakEvenMatrixOverhead: an.breakEvenMatrixOverhead,
   k3Only: an.k3Only
 }, null, 2));

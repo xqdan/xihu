@@ -265,10 +265,18 @@ function grid(ctx) {
   const product = fields => Object.entries(fields).reduce((acc, [f, vs]) => acc.flatMap(c => (valuesOf(ctx, f, vs) || []).map(v => ({...c, [f]: v}))), [{}]);
   for (const name of ['sramDepthMc', 'tauOverlapCompute']) for (const change of product(C[name].fields)) out.push({coupling: name, change});
   const groups = C.areaReallocation.groups, groupOf = {};
+  // Held fields (areaReallocation.held) carry a decision the grid may not overturn: they stay at
+  // the composed value and take no step. The composed value must be the held one, otherwise the
+  // space and the winners disagree about the decision and the run stops rather than guessing.
+  const held = C.areaReallocation.held || {};
+  for (const [f, h] of Object.entries(held)) {
+    if (ctx.x[f] !== h.at) throw new Error(`${SPACE_FILE}: ${f} is held at ${h.at} but the composed point has ${ctx.x[f]}; the hold and the domain winners disagree`);
+  }
   const down = [], up = [];
   for (const [g, fields] of Object.entries(groups)) {
     for (const f of fields) {
       groupOf[f] = g;
+      if (held[f]) continue;
       const s = steps(f, ctx.x[f]), i = s.indexOf(ctx.x[f]);
       if (i > 0) down.push([f, s[i - 1]]);
       if (i < s.length - 1) up.push([f, s[i + 1]]);
@@ -429,7 +437,7 @@ function candidates(result = search()) {
   return {
     status: 'MODEL (joint replay of the five domain winners and a grid on three couplings; the candidate set behind out/detailed/coupling_design.json, not FROZEN)',
     designSpace: {file: SPACE_FILE, sha256: ctx.sha256, dimensions: Object.keys(ctx.space.couplings),
-      derived: {laneSpan: ctx.laneSpan}},
+      derived: {laneSpan: ctx.laneSpan}, held: ctx.space.couplings.areaReallocation.held || {}},
     requirements: {contractEntries: ctx.space.requirements.contractEntries, targetTpsPerUser: ctx.target.tpsPerUser,
       limits: ctx.limits, package: ctx.pkg, tauUs: ctx.opt.tauUs},
     contract: ctx.prov,

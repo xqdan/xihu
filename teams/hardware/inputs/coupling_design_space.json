@@ -50,8 +50,14 @@
         "matrix": ["hRows", "hEngines", "lCols"],
         "io": ["reduceLanes", "tmaEngines", "rdmaLanes"]
       },
-      "moves": "from the composed point: every single one-step move of every field, and every pair of one step down in one group with one step up in another. The steps are die_area_reallocation.js MOVES with the composed value inserted when the list does not carry it",
-      "evidence": "the step lists are die_area_reallocation.js MOVES (the same grid the area exploration climbs); the groups are doc 23's three area owners"
+      "moves": "from the composed point: every single one-step move of every field, and every pair of one step down in one group with one step up in another. The steps are die_area_reallocation.js MOVES with the composed value inserted when the list does not carry it. Fields in `held` do not move",
+      "held": {
+        "hRows": {
+          "at": 128,
+          "reason": "ADR-0028 decision 7 (user, 2026-10-26): the H core keeps 128 rows (64T) because it also serves prefill, whose M dimension is the sequence length and is not bounded by headTile <= 96. The replay models decode B=1 only, where rows 97-128 never fill (fill 0.75), so a decode-only search will always find hRows=96 'free' (0.0 TPS for -26.2 mm2 / -31.5 W) and elect it as the joint point. That is the model not seeing prefill, not a design finding (OPEN_ISSUES.md O-024); holding the field keeps the decision out of the grid instead of letting the grid overturn it"
+        }
+      },
+      "evidence": "the step lists are die_area_reallocation.js MOVES (the same grid the area exploration climbs); the groups are doc 23's three area owners; held fields carry the decision that fixes them"
     }
   },
   "fieldOwners": {

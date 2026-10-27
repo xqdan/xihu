@@ -9,7 +9,7 @@
     "baseline": "teams/hardware/inputs/k3_mc_baseline.json",
     "baselineSha256": "94d2ffeae018248feb518a293f5bd363b0a17e87d0f0df6138aa0cdac79e91d4",
     "coupling": "out/detailed/coupling_candidates.json",
-    "couplingSha256": "5bd388d6827ce06cc2586e819603bfa11c72cc919a02155032ad1947c04cac11",
+    "couplingSha256": "a7b1ac50f4669a93af8911e77b7a24f472e95e0ca773c4ffc9beafbcf43e46fb",
     "sources": {
       "integration/detailed/contention_delta.js": "07617be32639d7fd8338d04d1a858df203d559156c46a6b302f9689134875084",
       "integration/detailed/k3_operator_sram_sim.js": "49580d74ff1f93c70ad8185d99cca679bc3d28ab2a61b889c6c8c3ef45343355",
@@ -19,15 +19,15 @@
       "integration/detailed/k3_physical_basis.js": "99ae6825a2f05ea19be4a8f40dc387f56e2aedeef50b372282cb5ef6cbb603c5",
       "integration/detailed/k3_sram_memory_rdma_model.js": "b8636ec93b54d6bf7f88a049efbb12e378572a52bcae9a655f61a4d6a7d017a1",
       "integration/detailed/k3_rdma_final_tuning_model.js": "36dee594dc340272de22f6a50e677ea9182a37c9667d9013a39f84d18823ba12",
-      "integration/detailed/coupling_search.js": "5b73f60d5668a248dd42d8b8e908cb302ba11de461ea788dd706fd90702f604e",
-      "integration/detailed/matrix_vector_search.js": "45b3126aeff9f8d49cbc638448452ed64c5e7f128c755b27997385fe4f7c121f",
+      "integration/detailed/coupling_search.js": "315dd0370a60733dcc3a46e2de84cf0b8a8e60f179400c55d0db293ba7be5c95",
+      "integration/detailed/matrix_vector_search.js": "7736c973d37f4623249005467324e8bdd1e0a9c0f05f5399caf16d8dbe4751d6",
       "integration/detailed/comm_core_search.js": "f4e6029f5c54af7cb37030c5a2af56834229d3de0ce14e20cc970ef687a54932"
     }
   },
   "summary": {
-    "points": 4,
-    "feasible": 4,
-    "maxAbsRawDeltaUs": 0.000005433944807009539,
+    "points": 9,
+    "feasible": 9,
+    "maxAbsRawDeltaUs": 0.000005433944920696376,
     "maxPeakForegroundLoad": 1.0019174592391304,
     "zeroDelta": false
   },
@@ -117,27 +117,462 @@
       ]
     },
     {
+      "point": "joint tauOverlapCompute:vectorLanes=640|commOverlap=true",
+      "feasible": true,
+      "none": {
+        "rawUs": 853.2172704806195,
+        "computeUs": 623.8444844985014,
+        "tmaHiddenUs": 193.93338680273524,
+        "commUs": 451.94999999999703,
+        "waitUs": 12.105416920690661,
+        "overlapUs": 40.74924413581803,
+        "contentionUs": 0,
+        "tpsPerUser": 1001.7388117558844
+      },
+      "proportional": {
+        "rawUs": 853.2172704806195,
+        "computeUs": 623.8444844985014,
+        "tmaHiddenUs": 193.93338680273524,
+        "commUs": 451.94999999999703,
+        "waitUs": 12.105416920690661,
+        "overlapUs": 40.74924413581803,
+        "contentionUs": 0,
+        "tpsPerUser": 1001.7388117558844
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 40.74924413581803,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.6772696822161836,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.6782459616545893,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.46881166387959855,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.476516705616835,
+        "write": 1.4743913809092026,
+        "fabric": 2.1330527310788554
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 6.1081654294803815,
+          "write": 6.956521739130435,
+          "fabric": 4.424504445713352,
+          "clippedUs": 0.0010970703125
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 6.956521739130435,
+          "fabric": 1.705685618729097,
+          "clippedUs": 0.7352333333333323
+        }
+      ],
+      "rank": 1,
+      "chosen": true,
+      "pareto": true
+    },
+    {
+      "point": "joint tauOverlapCompute:vectorLanes=704|commOverlap=true",
+      "feasible": true,
+      "none": {
+        "rawUs": 853.1406898469538,
+        "computeUs": 623.7635719173293,
+        "tmaHiddenUs": 193.92903644339347,
+        "commUs": 451.94999999999703,
+        "waitUs": 12.10557373887248,
+        "overlapUs": 40.749419365834434,
+        "contentionUs": 0,
+        "tpsPerUser": 1001.8287310316671
+      },
+      "proportional": {
+        "rawUs": 853.1406898469538,
+        "computeUs": 623.7635719173293,
+        "tmaHiddenUs": 193.92903644339347,
+        "commUs": 451.94999999999703,
+        "waitUs": 12.10557373887248,
+        "overlapUs": 40.749419365834434,
+        "contentionUs": 0,
+        "tpsPerUser": 1001.8287310316671
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 40.749419365834434,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.7449025324577295,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.7458788118961354,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.515634406354515,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.3424575114553612,
+        "write": 1.340700371227667,
+        "fabric": 1.9393585603992227
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 6.1081654294803815,
+          "write": 6.956521739130435,
+          "fabric": 4.424504445713352,
+          "clippedUs": 0.0010970703125
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 6.956521739130435,
+          "fabric": 1.705685618729097,
+          "clippedUs": 0.7352333333333323
+        }
+      ],
+      "rank": 2,
+      "chosen": false,
+      "pareto": true
+    },
+    {
+      "point": "joint tauOverlapCompute:vectorLanes=768|commOverlap=true",
+      "feasible": true,
+      "none": {
+        "rawUs": 853.0768726522393,
+        "computeUs": 623.6961447663587,
+        "tmaHiddenUs": 193.9254111439452,
+        "commUs": 451.94999999999703,
+        "waitUs": 12.10570442069066,
+        "overlapUs": 40.74956539084656,
+        "contentionUs": 0,
+        "tpsPerUser": 1001.9036760937691
+      },
+      "proportional": {
+        "rawUs": 853.0768726522393,
+        "computeUs": 623.6961447663587,
+        "tmaHiddenUs": 193.9254111439452,
+        "commUs": 451.94999999999703,
+        "waitUs": 12.10570442069066,
+        "overlapUs": 40.74956539084656,
+        "contentionUs": 0,
+        "tpsPerUser": 1001.9036760937691
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 40.74956539084656,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.8125353826992754,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.8135116621376811,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.5624571488294313,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.2307156356415638,
+        "write": 1.2292386778725208,
+        "fabric": 1.7779132189557365
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 6.1081654294803815,
+          "write": 6.956521739130435,
+          "fabric": 4.424504445713352,
+          "clippedUs": 0.0010970703125
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 6.956521739130435,
+          "fabric": 1.705685618729097,
+          "clippedUs": 0.7352333333333323
+        }
+      ],
+      "rank": 3,
+      "chosen": false,
+      "pareto": true
+    },
+    {
+      "point": "joint tauOverlapCompute:vectorLanes=832|commOverlap=true",
+      "feasible": true,
+      "none": {
+        "rawUs": 853.0228734874798,
+        "computeUs": 623.6390910232255,
+        "tmaHiddenUs": 193.9223435828641,
+        "commUs": 451.94999999999703,
+        "waitUs": 12.105814997613738,
+        "overlapUs": 40.74968895048157,
+        "contentionUs": 0,
+        "tpsPerUser": 1001.9670999049705
+      },
+      "proportional": {
+        "rawUs": 853.0228734874798,
+        "computeUs": 623.6390910232255,
+        "tmaHiddenUs": 193.9223435828641,
+        "commUs": 451.94999999999703,
+        "waitUs": 12.105814997613738,
+        "overlapUs": 40.74968895048157,
+        "contentionUs": 0,
+        "tpsPerUser": 1001.9670999049705
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 40.74968895048157,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.8801682329408211,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.881144512379227,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.6092798913043476,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 1.1361464349364172,
+        "write": 1.134887621668147,
+        "fabric": 1.6412818054099867
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 6.1081654294803815,
+          "write": 6.956521739130435,
+          "fabric": 4.424504445713352,
+          "clippedUs": 0.0010970703125
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 6.956521739130435,
+          "fabric": 1.705685618729097,
+          "clippedUs": 0.7352333333333323
+        }
+      ],
+      "rank": 4,
+      "chosen": false,
+      "pareto": true
+    },
+    {
+      "point": "joint areaReallocation:sharedSlices=12",
+      "feasible": true,
+      "none": {
+        "rawUs": 853.2136137339162,
+        "computeUs": 581.8730646107306,
+        "tmaHiddenUs": 161.2973611789421,
+        "commUs": 451.94999999999703,
+        "waitUs": 11.847083804826536,
+        "overlapUs": 31.159173502697808,
+        "contentionUs": 0,
+        "tpsPerUser": 1001.7431050595055
+      },
+      "proportional": {
+        "rawUs": 853.2136137339162,
+        "computeUs": 581.8730646107306,
+        "tmaHiddenUs": 161.2973611789421,
+        "commUs": 451.94999999999703,
+        "waitUs": 11.847083804826536,
+        "overlapUs": 31.159173502697808,
+        "contentionUs": 0,
+        "tpsPerUser": 1001.7431050595055
+      },
+      "delta": {
+        "rawUs": 0,
+        "tpsPerUser": 0,
+        "overlapUs": 0,
+        "waitUs": 0
+      },
+      "contentionUs": 0,
+      "overlapGainUs": 31.159173502697808,
+      "peakForegroundLoad": {
+        "read": {
+          "load": 0.27115885416666663,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "write": {
+          "load": 0.27180970712560376,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        },
+        "fabric": {
+          "load": 0.23460057831661088,
+          "layer": 1,
+          "ops": [
+            "Shared SiLU x up",
+            "Wdown + Router all-gather"
+          ]
+        }
+      },
+      "headroom": {
+        "read": 3.6878751500600244,
+        "write": 3.679044470394496,
+        "fabric": 4.262564087333263
+      },
+      "layers": [],
+      "overCap": [
+        {
+          "name": "KV append source",
+          "unit": "V",
+          "count": 24,
+          "read": 4.072110286320253,
+          "write": 4.637681159420289,
+          "fabric": 3.6870870380944605,
+          "clippedUs": 0.0006699869791666664
+        },
+        {
+          "name": "Dispatch local pack",
+          "unit": "V",
+          "count": 92,
+          "read": 0,
+          "write": 4.637681159420289,
+          "fabric": 1.4214046822742474,
+          "clippedUs": 0.449011111111111
+        }
+      ],
+      "rank": 5,
+      "chosen": false,
+      "pareto": true
+    },
+    {
       "point": "joint tauOverlapCompute:vectorLanes=896|commOverlap=true",
       "feasible": true,
       "none": {
-        "rawUs": 854.6426773532239,
-        "computeUs": 628.5709262763646,
-        "tmaHiddenUs": 197.23436384222921,
+        "rawUs": 852.9765884891128,
+        "computeUs": 623.5901878148256,
+        "tmaHiddenUs": 193.9197142448,
         "commUs": 451.94999999999703,
         "waitUs": 12.105909777833517,
         "overlapUs": 40.749794858730226,
         "contentionUs": 0,
-        "tpsPerUser": 1000.0680721302276
+        "tpsPerUser": 1002.0214695631871
       },
       "proportional": {
-        "rawUs": 854.6426773532239,
-        "computeUs": 628.5709262763646,
-        "tmaHiddenUs": 197.23436384222921,
+        "rawUs": 852.9765884891128,
+        "computeUs": 623.5901878148256,
+        "tmaHiddenUs": 193.9197142448,
         "commUs": 451.94999999999703,
         "waitUs": 12.105909777833517,
         "overlapUs": 40.749794858730226,
         "contentionUs": 0,
-        "tpsPerUser": 1000.0680721302276
+        "tpsPerUser": 1002.0214695631871
       },
       "delta": {
         "rawUs": 0,
@@ -199,36 +634,36 @@
           "clippedUs": 0.7352333333333323
         }
       ],
-      "rank": 1,
-      "chosen": true,
+      "rank": 6,
+      "chosen": false,
       "pareto": true
     },
     {
       "point": "joint tauOverlapCompute:vectorLanes=960|commOverlap=true",
       "feasible": true,
       "none": {
-        "rawUs": 854.2626902352997,
-        "computeUs": 627.512863495751,
-        "tmaHiddenUs": 196.55634216672001,
+        "rawUs": 852.9360768002914,
+        "computeUs": 623.5478050342152,
+        "tmaHiddenUs": 193.91789714018807,
         "commUs": 451.94999999999703,
         "waitUs": 12.105991920690661,
         "overlapUs": 40.74982301441202,
         "contentionUs": 0,
-        "tpsPerUser": 1000.5129153720085
+        "tpsPerUser": 1002.0690623231505
       },
       "proportional": {
-        "rawUs": 854.2626956692445,
-        "computeUs": 627.512863495751,
-        "tmaHiddenUs": 196.55634216672001,
+        "rawUs": 852.9360822342363,
+        "computeUs": 623.5478050342152,
+        "tmaHiddenUs": 193.91789714018796,
         "commUs": 451.94999999999703,
         "waitUs": 12.105991920690661,
         "overlapUs": 40.74982844835438,
         "contentionUs": 0.000010867885051395368,
-        "tpsPerUser": 1000.5129090077695
+        "tpsPerUser": 1002.0690559390988
       },
       "delta": {
-        "rawUs": 0.000005433944807009539,
-        "tpsPerUser": -0.000006364238970490987,
+        "rawUs": 0.000005433944920696376,
+        "tpsPerUser": -0.000006384051744134922,
         "overlapUs": 0.0000054339423556371,
         "waitUs": 0
       },
@@ -293,7 +728,7 @@
         },
         {
           "layer": 6,
-          "durationDeltaUs": 5.9064610979930876e-8,
+          "durationDeltaUs": 5.906459676907616e-8,
           "contentionUs": 1.1812918527740179e-7
         },
         {
@@ -328,12 +763,12 @@
         },
         {
           "layer": 13,
-          "durationDeltaUs": 5.90645896636488e-8,
+          "durationDeltaUs": 5.906457545279409e-8,
           "contentionUs": 1.1812918522300863e-7
         },
         {
           "layer": 14,
-          "durationDeltaUs": 5.906454703108466e-8,
+          "durationDeltaUs": 5.906457545279409e-8,
           "contentionUs": 1.1812918533179496e-7
         },
         {
@@ -353,7 +788,7 @@
         },
         {
           "layer": 18,
-          "durationDeltaUs": 5.906454703108466e-8,
+          "durationDeltaUs": 5.906457545279409e-8,
           "contentionUs": 1.1812918533179496e-7
         },
         {
@@ -373,7 +808,7 @@
         },
         {
           "layer": 22,
-          "durationDeltaUs": 5.906454703108466e-8,
+          "durationDeltaUs": 5.906457545279409e-8,
           "contentionUs": 1.1812918533179496e-7
         },
         {
@@ -393,7 +828,7 @@
         },
         {
           "layer": 26,
-          "durationDeltaUs": 5.906454703108466e-8,
+          "durationDeltaUs": 5.906457545279409e-8,
           "contentionUs": 1.1812918533179496e-7
         },
         {
@@ -403,7 +838,7 @@
         },
         {
           "layer": 28,
-          "durationDeltaUs": 5.906463229621295e-8,
+          "durationDeltaUs": 5.906460387450352e-8,
           "contentionUs": 1.1812918511422228e-7
         },
         {
@@ -543,7 +978,7 @@
         },
         {
           "layer": 56,
-          "durationDeltaUs": 5.906457545279409e-8,
+          "durationDeltaUs": 5.906463229621295e-8,
           "contentionUs": 1.1812918554936766e-7
         },
         {
@@ -783,7 +1218,7 @@
           "clippedUs": 0.00032857142857142514
         }
       ],
-      "rank": 2,
+      "rank": 7,
       "chosen": false,
       "pareto": true
     },
@@ -791,28 +1226,28 @@
       "point": "joint tauOverlapCompute:vectorLanes=1024|commOverlap=true",
       "feasible": true,
       "none": {
-        "rawUs": 853.9287249798007,
-        "computeUs": 626.5870585627179,
-        "tmaHiddenUs": 195.96475148472433,
+        "rawUs": 852.8992611517145,
+        "computeUs": 623.5107201011806,
+        "tmaHiddenUs": 193.91787685126783,
         "commUs": 451.94999999999703,
         "waitUs": 12.10606379569066,
         "overlapUs": 40.74964589387665,
         "contentionUs": 0,
-        "tpsPerUser": 1000.9042086282698
+        "tpsPerUser": 1002.1123169302638
       },
       "proportional": {
-        "rawUs": 853.9287300741235,
-        "computeUs": 626.5870585627179,
-        "tmaHiddenUs": 195.96475148472422,
+        "rawUs": 852.8992662460373,
+        "computeUs": 623.5107201011806,
+        "tmaHiddenUs": 193.91787685126772,
         "commUs": 451.94999999999703,
         "waitUs": 12.10606379569066,
         "overlapUs": 40.749650988197544,
         "contentionUs": 0.000010188642237206243,
-        "tpsPerUser": 1000.9042026571284
+        "tpsPerUser": 1002.1123109446993
       },
       "delta": {
         "rawUs": 0.000005094322773402382,
-        "tpsPerUser": -0.000005971141376903688,
+        "tpsPerUser": -0.000005985564484944916,
         "overlapUs": 0.00000509432089756956,
         "waitUs": 0
       },
@@ -857,12 +1292,12 @@
         },
         {
           "layer": 2,
-          "durationDeltaUs": 5.537305725056285e-8,
+          "durationDeltaUs": 5.537306080327653e-8,
           "contentionUs": 1.1074611118056631e-7
         },
         {
           "layer": 3,
-          "durationDeltaUs": 5.5373050145135494e-8,
+          "durationDeltaUs": 5.537305369784917e-8,
           "contentionUs": 1.1074611118056631e-7
         },
         {
@@ -877,7 +1312,7 @@
         },
         {
           "layer": 6,
-          "durationDeltaUs": 5.5373050145135494e-8,
+          "durationDeltaUs": 5.537305725056285e-8,
           "contentionUs": 1.1074611118056631e-7
         },
         {
@@ -912,7 +1347,7 @@
         },
         {
           "layer": 13,
-          "durationDeltaUs": 5.5373050145135494e-8,
+          "durationDeltaUs": 5.537303593428078e-8,
           "contentionUs": 1.1074611118056631e-7
         },
         {
@@ -1367,7 +1802,7 @@
           "clippedUs": 0.0017455357142857216
         }
       ],
-      "rank": 3,
+      "rank": 8,
       "chosen": false,
       "pareto": true
     }

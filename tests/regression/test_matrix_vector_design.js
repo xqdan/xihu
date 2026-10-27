@@ -126,15 +126,24 @@ assert(denseOps.every(o => o.mapping.limiter === 'local SRAM read'),
 const mla = an.kernels.find(k => k.model === 'Kimi K3' && k.kernel === 'MLA').maxCoreRatio['vectorUnpack/sfu'];
 const qk = m.plan.ops.filter(o => o.name.startsWith('QK'));
 assert(qk.length && qk.every(o => (o.mapping.limiter !== 'unpack') === (pRatio.hCore <= mla)), 'K3 MLA bound must match the QK limiter');
+const nativePremises = Object.entries(space.dimensions.lowPrecisionInput.options).filter(([, o]) => o.native).map(([n]) => n);
+assert(nativePremises.includes('nativeTensor') && nativePremises.includes('inlineDequant'), 'both native premises are in the space');
 const p1 = an.sweep.find(r => r.vectorLanes === x.vectorLanes);
 close(p1['vectorUnpack/sfu'], publishedTps, 'sweep replays the published point');
 for (const r of an.sweep) {
   if (r['vectorUnpack/sfu'] !== null && r['vectorUnpack/polynomial'] !== null) assert(r['vectorUnpack/polynomial'] <= r['vectorUnpack/sfu'] + 1e-9, 'polynomial exp cannot raise TPS');
-  if (r['vectorUnpack/sfu'] !== null && r['nativeTensor/sfu'] !== null) assert(r['nativeTensor/sfu'] >= r['vectorUnpack/sfu'] - 1e-6, 'native input cannot lower TPS');
+  for (const n of nativePremises) {
+    if (r['vectorUnpack/sfu'] !== null && r[`${n}/sfu`] !== null) assert(r[`${n}/sfu`] >= r['vectorUnpack/sfu'] - 1e-6, `${n}: native input cannot lower TPS`);
+  }
+  // The two native premises are one replay: they differ only in the area they charge.
+  if (r['nativeTensor/sfu'] !== null || r['inlineDequant/sfu'] !== null) close(r['inlineDequant/sfu'], r['nativeTensor/sfu'], `sweep ${r.vectorLanes}: native premises replay alike`);
 }
 for (const k of an.kernels) {
   const b = k.maxCoreRatio;
-  if (b['nativeTensor/sfu'] !== null) assert(b['nativeTensor/sfu'] >= b['vectorUnpack/sfu'] - 1e-9, `${k.model} ${k.kernel}: native cannot lower the bound`);
+  for (const n of nativePremises) {
+    if (b[`${n}/sfu`] !== null) assert(b[`${n}/sfu`] >= b['vectorUnpack/sfu'] - 1e-9, `${k.model} ${k.kernel}: ${n} cannot lower the bound`);
+  }
+  assert.strictEqual(b['inlineDequant/sfu'], b['nativeTensor/sfu'], `${k.model} ${k.kernel}: native premises share the bound`);
   assert(b['vectorUnpack/polynomial'] <= b['vectorUnpack/sfu'] + 1e-9, `${k.model} ${k.kernel}: polynomial exp cannot raise the bound`);
 }
 
@@ -149,18 +158,33 @@ for (const [d, opts] of Object.entries(alt)) {
     assert(v.lostOn && v.lostOn !== 'tie', `${d}.${n} must lose on a criterion`);
   }
 }
-const overhead = space.dimensions.lowPrecisionInput.options.nativeTensor.matrixAreaOverhead;
+const overheadOf = n => space.dimensions.lowPrecisionInput.options[n].matrixAreaOverhead;
 if (hasDesign) {
   const again = S.evaluate(S.context(), winPick);
   assert(again.feasible && Math.abs(again.areaMm2 - stored.evaluation.areaMm2) < 1e-12);
   assert(an.k3Only.lanes <= stored.design.vectorLanes.lanes || !an.k3Only.feasible, 'K3 alone cannot need more lanes than three models');
-  if (an.nativeBreakEvenMatrixOverhead === null) {
-    // One premise has no feasible candidate, so area cannot decide between them.
-    const nat = result.perOption.lowPrecisionInput.nativeTensor, vec = result.perOption.lowPrecisionInput.vectorUnpack;
-    assert(!(nat.feasible && vec.feasible), 'no break-even only when a premise is unbuildable');
-    assert.strictEqual(stored.design.lowPrecisionInput.option, nat.feasible ? 'nativeTensor' : 'vectorUnpack', 'the buildable premise wins');
+  assert.strictEqual(an.nativeBreakEvenMatrixOverhead, an.breakEvenMatrixOverhead.nativeTensor, 'the old name is the nativeTensor figure');
+  assert.deepStrictEqual(Object.keys(an.breakEvenMatrixOverhead).sort(), [...nativePremises].sort(), 'one break-even per native premise');
+  const vec = result.perOption.lowPrecisionInput.vectorUnpack, winner = stored.design.lowPrecisionInput.option;
+  // The break-even of a native premise is the largest matrix-area overhead at which it still
+  // ties vectorUnpack on area. A native premise under its break-even beats vectorUnpack; the
+  // winner is then the cheapest of those (the search's own area ranking), never vectorUnpack.
+  const under = [], evaluable = [];
+  for (const n of nativePremises) {
+    const be = an.breakEvenMatrixOverhead[n], nat = result.perOption.lowPrecisionInput[n];
+    if (be === null) { assert(!(nat.feasible && vec.feasible), `${n}: no break-even only when a premise is unbuildable`); continue; }
+    evaluable.push(n);
+    if (overheadOf(n) < be) under.push(n);
+    else assert.notStrictEqual(winner, n, `${n} is over its break-even and cannot win`);
+  }
+  if (evaluable.length) {
+    // vectorUnpack is feasible here (a break-even exists); a null break-even means that native premise is not.
+    assert.strictEqual(winner === 'vectorUnpack', under.length === 0, 'vectorUnpack wins exactly when no buildable native premise is under its break-even');
+    if (under.length) assert(under.includes(winner), `the winner ${winner} must be a native premise under its break-even (${under.join(', ')})`);
   } else {
-    assert.strictEqual(stored.design.lowPrecisionInput.option === 'nativeTensor', overhead < an.nativeBreakEvenMatrixOverhead, 'break-even decides the premise');
+    // Neither native premise can be priced against vectorUnpack: the buildable one wins.
+    const feasibleNative = nativePremises.filter(n => result.perOption.lowPrecisionInput[n].feasible);
+    assert.strictEqual(feasibleNative.includes(winner), feasibleNative.length > 0, 'the buildable premise wins');
   }
 }
 // The package arithmetic of every candidate, from the repository's own numbers.
@@ -217,14 +241,15 @@ assert.strictEqual(candStored.candidateSetSha256, (() => {
 // 7. The document quotes the outcome, the comparison and the analysis.
 const doc = fs.readFileSync('teams/hardware/docs/02_AI_CORE.md', 'utf8');
 const f1 = v => (v === null ? '—' : v.toFixed(1)), f2 = v => (v === null ? '—' : v.toFixed(2));
-const combos = ['vectorUnpack/sfu', 'vectorUnpack/polynomial', 'nativeTensor/sfu', 'nativeTensor/polynomial'];
+const combos = Object.keys(space.dimensions.lowPrecisionInput.options).flatMap(p => Object.keys(space.dimensions.expUnit.options).map(e => `${p}/${e}`));
 const u = an.unpackAttribution, k3 = an.k3Only, bind = subject.binding;
 const ratio = hasDesign ? stored.ratio : stored.closest.ratio;
 const outcome = hasDesign ? [
   ...Object.entries(stored.design).map(([d, v]) => [`design ${d}`, `| ${d} | \`${v.option}\` |`]),
   ['K3 TPS', `K3 回放 ${f2(stored.evaluation.k3System.tpsPerUser)} TPS/usr（发布值 ${f2(stored.evaluation.k3System.publishedTpsPerUser)}）`],
   ['raw', `raw ${f2(stored.evaluation.k3System.rawLatencyUs)} µs`],
-  ['area', `面积 ${f2(stored.evaluation.areaMm2)} mm²（Die ${f2(stored.evaluation.area.die)} mm² + 共享端口 ${f2(stored.evaluation.area.sharedPorts)} mm² + SFU ${f2(stored.evaluation.area.vectorOverhead)} mm²）`],
+  ['area', `面积 ${f2(stored.evaluation.areaMm2)} mm²（Die ${f2(stored.evaluation.area.die)} mm² + 共享端口 ${f2(stored.evaluation.area.sharedPorts)} mm²`
+    + `${stored.evaluation.area.matrixOverhead > 0 ? ` + 矩阵解码 ${f2(stored.evaluation.area.matrixOverhead)} mm²` : ''} + SFU ${f2(stored.evaluation.area.vectorOverhead)} mm²）`],
   ['power', `功耗 ${f1(stored.evaluation.diePowerW)} W`],
 ] : [
   ['no design', '没有可行方案'],
@@ -241,11 +266,12 @@ const must = [
   ['published point', `发布点 ${f2(published.areaMm2)} mm²（${f2(published.diePowerW)} W）`], ['published reserve', `还剩 ${f2(published.packageReserveMm2 + 1e-9)} mm²`],
   ...outcome,
   ['die ratio', `**${f1(ratio.die)}:1**`], ['L ratio', `**${f1(ratio.lCore)}:1**`], ['H ratio', `**${f1(ratio.hCore)}:1**`],
-  ['binding', `${bind.model} DSA indexer`], ['binding bound', `上限 ${f1(bind.maxCoreRatio)}:1`], ['binding lanes', `至少 ${f1(bind.minLanesPerCore)} lane`],
+  ['binding', `${bind.model} ${bind.kernel}`], ['binding bound', `上限 ${f1(bind.maxCoreRatio)}:1`], ['binding lanes', `至少 ${f1(bind.minLanesPerCore)} lane`],
   ...Object.entries(alt).flatMap(([d, opts]) => Object.entries(opts).map(([n, v]) => [`alt ${d}.${n}`,
     `| ${d} | \`${n}\` | ${v.chosen ? '**选中**' : `\`${v.lostOn}\``} | ${v.pick.vectorLanes} / ${v.pick.lowPrecisionInput} / ${v.pick.expUnit} | `
     + `${f1(v.hCoreRatio)}:1 | ${f2(v.tpsPerUser)} | ${f2(v.areaMm2)} mm² | ${f1(v.diePowerW)} W | ${f2(v.packageReserveMm2)} mm² |`])),
   ['break-even', an.nativeBreakEvenMatrixOverhead === null ? '盈亏平衡点不适用' : `**${(an.nativeBreakEvenMatrixOverhead * 100).toFixed(1)}%**`],
+  ['break-even inlineDequant', an.breakEvenMatrixOverhead.inlineDequant === null ? '随路解码的盈亏平衡点不适用' : `随路解码的盈亏平衡点是 **${(an.breakEvenMatrixOverhead.inlineDequant * 100).toFixed(1)}%**`],
   ...an.kernels.map(k => {
     const w = subject.kernels.find(q => q.model === k.model && q.kernel === k.kernel);
     return [`bound ${k.model} ${k.kernel}`, `| ${k.core} | ${combos.map(c => f1(k.maxCoreRatio[c])).join(' | ')} | ${w ? f1(w.minLanesPerCore) : '—'} |`];
@@ -254,7 +280,7 @@ const must = [
   ...an.sweep.filter(r => r.reasons).map(r => [`sweep ${r.vectorLanes} reason`, r.reasons[0]]),
   ['unpack total', f2(u.routedMxfp4Us + u.denseBf16Us + u.kvDequantUs)], ['unpack MXFP4', f2(u.routedMxfp4Us)], ['unpack BF16', f2(u.denseBf16Us)],
   ['k3Only', `${k3.counts.candidates} 个组合、${k3.counts.feasible} 个可行，${k3.feasible ? '最优为' : '最接近的是'} ${k3.pick.vectorLanes} / ${k3.pick.lowPrecisionInput} / ${k3.pick.expUnit}`],
-  ['k3Only area', `面积 ${f2(k3.areaMm2)} mm²`], ['k3Only binding', `${k3.binding.model} KDA state update（上限 ${f1(k3.binding.maxCoreRatio)}:1，至少 ${f1(k3.binding.minLanesPerCore)} lane）`],
+  ['k3Only area', `面积 ${f2(k3.areaMm2)} mm²`], ['k3Only binding', `${k3.binding.model} ${k3.binding.kernel}（上限 ${f1(k3.binding.maxCoreRatio)}:1，至少 ${f1(k3.binding.minLanesPerCore)} lane）`],
   ['k3Only native', `原生输入${k3.bestPerPremise.nativeTensor.feasible ? '的最优' : '最接近'}为 ${k3.bestPerPremise.nativeTensor.lanes} lane（${f1(k3.bestPerPremise.nativeTensor.dieRatio)}:1），面积 ${f2(k3.bestPerPremise.nativeTensor.areaMm2)} mm²`]
 ];
 const missing = must.filter(([, v]) => !doc.includes(v));

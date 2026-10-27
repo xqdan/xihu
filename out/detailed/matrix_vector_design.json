@@ -4,14 +4,14 @@
   "document": "teams/hardware/docs/02_AI_CORE.md#25-matrixvector-配比hw-02-决策",
   "designSpace": {
     "file": "teams/hardware/inputs/matrix_vector_design_space.json",
-    "sha256": "3d160226761c063b1396212a2de87558ca7db23daf5816b39828632b8ecd6296",
+    "sha256": "ed0c52e99c15653436ccba60153e1248a2504d634528c7519a0de234698cbca0",
     "dimensions": [
       "vectorLanes",
       "lowPrecisionInput",
       "expUnit"
     ],
-    "candidates": 52,
-    "feasible": 15,
+    "candidates": 78,
+    "feasible": 26,
     "constraints": [
       "every H-core kernel of the required models hides its vector work (kernel bound >= core MACs:lanes)",
       "K3 detailed replay at the published point with only vectorLanes (and, for native input, the unpack) changed reaches the contract target of requirements.contractEntry",
@@ -126,14 +126,15 @@
   },
   "design": {
     "vectorLanes": {
-      "option": "576",
-      "lanes": 576
+      "option": "384",
+      "lanes": 384
     },
     "lowPrecisionInput": {
-      "option": "vectorUnpack",
-      "native": false,
-      "matrixAreaOverhead": 0,
-      "evidence": "P1 published point: BF16-only tensor engines; every sub-BF16 operand is dequantized on the vector lanes at TECH.unpackParamsPerLaneCycle"
+      "option": "inlineDequant",
+      "native": true,
+      "matrixAreaOverhead": 0.03,
+      "evidence": "ASSUMPTION (placeholder, HW-02 AI-Core owner to sign off; O-012): a decode stage on the tensor operand path between local SRAM and the BF16 MAC array. Each sub-BF16 element is widened (FP4 E2M1 / FP8 E4M3 -> BF16 mantissa and exponent) right before the MAC; the block scale is not multiplied per element but applied once per block on the partial sum -- as an exponent add for MXFP4 (E8M0 shared scale, 32 weights along K) and as one FP32 multiply per 128 latent dims for FP8 KV (QK: per K block on the accumulator; PV: per output column). Local SRAM keeps the packed bytes; the MAC array stays single-format BF16. The replay is the nativeTensor one (unpack and KV dequant leave the vector lanes); only the area differs. 3% = decoder (about 40 gates per weight-side element, one per MAC on a weight-streaming GEMV) plus one scale adder/multiplier per block against about 1500-2500 gates per BF16 MAC; a derivation, not a macro. The break-even in the document says how far it may be wrong before the premise flips",
+      "requires": "Tile IR operand descriptor carries the block size and the scale pointer (MXFP4: 32 along K; FP8 KV: 128 along K for QK, 128 along N for PV); docs/architecture/contracts/ change"
     },
     "expUnit": {
       "option": "sfu",
@@ -143,9 +144,9 @@
     }
   },
   "ratio": {
-    "die": 23.703703703703702,
-    "lCore": 7.111111111111111,
-    "hCore": 56.888888888888886
+    "die": 35.55555555555556,
+    "lCore": 10.666666666666666,
+    "hCore": 85.33333333333333
   },
   "ruled": {
     "lanesPerCoreClass": {
@@ -153,8 +154,8 @@
       "reason": "A.physical() and mappedPlan() have a single vectorLanes, so a per-class split cannot be replayed on the detailed model yet. L cores need about 4:1 for B=1 GEMV unpack and H cores 44-100:1, so a split would save area; revisit after the model is extended"
     },
     "tmaDecode": {
-      "chosen": "decode in the tensor engine or on the vector lanes",
-      "reason": "not modeled: decoding in TMA writes BF16 into local SRAM, 2-4x the bytes of FP8/MXFP4, and the TMA/local write-port model (O-007) does not charge it yet"
+      "chosen": "decode in the tensor engine, on its operand path (inlineDequant) or on the vector lanes",
+      "reason": "not modeled: decoding in TMA writes BF16 into local SRAM, 2-4x the bytes of FP8/MXFP4, and the TMA/local write-port model (O-007) does not charge it yet. This objection is to decoding BEFORE local SRAM; inlineDequant decodes after it, so local SRAM keeps the packed bytes and is not affected"
     },
     "batch": {
       "chosen": "B=1 decode",
@@ -163,67 +164,12 @@
   },
   "kernels": [
     {
-      "model": "all",
-      "kernel": "GEMV B=1",
-      "core": "L",
-      "maxCoreRatio": 3.0769230769230766,
-      "minLanesPerCore": 1331.2,
-      "coreRatio": 7.111111111111111,
-      "hidden": false,
-      "required": false,
-      "basis": "per parameter"
-    },
-    {
-      "model": "all",
-      "kernel": "GEMV B=2",
-      "core": "L",
-      "maxCoreRatio": 6.153846153846153,
-      "minLanesPerCore": 665.6,
-      "coreRatio": 7.111111111111111,
-      "hidden": false,
-      "required": false,
-      "basis": "per parameter"
-    },
-    {
-      "model": "all",
-      "kernel": "GEMV B=4",
-      "core": "L",
-      "maxCoreRatio": 12.307692307692307,
-      "minLanesPerCore": 332.8,
-      "coreRatio": 7.111111111111111,
-      "hidden": true,
-      "required": false,
-      "basis": "per parameter"
-    },
-    {
-      "model": "all",
-      "kernel": "GEMV B=8",
-      "core": "L",
-      "maxCoreRatio": 24.615384615384613,
-      "minLanesPerCore": 166.4,
-      "coreRatio": 7.111111111111111,
-      "hidden": true,
-      "required": false,
-      "basis": "per parameter"
-    },
-    {
-      "model": "all",
-      "kernel": "GEMV B=16",
-      "core": "L",
-      "maxCoreRatio": 49.230769230769226,
-      "minLanesPerCore": 83.2,
-      "coreRatio": 7.111111111111111,
-      "hidden": true,
-      "required": false,
-      "basis": "per parameter"
-    },
-    {
       "model": "Kimi K3",
       "kernel": "MLA",
       "core": "H",
-      "maxCoreRatio": 133.14685314685312,
-      "minLanesPerCore": 246.10420168067233,
-      "coreRatio": 56.888888888888886,
+      "maxCoreRatio": 195.28205128205127,
+      "minLanesPerCore": 167.7983193277311,
+      "coreRatio": 85.33333333333333,
       "hidden": true,
       "required": true,
       "basis": "per (head, token); 96 heads, 512 tokens per core"
@@ -234,7 +180,7 @@
       "core": "H",
       "maxCoreRatio": 241.23076923076923,
       "minLanesPerCore": 135.83673469387756,
-      "coreRatio": 56.888888888888886,
+      "coreRatio": 85.33333333333333,
       "hidden": true,
       "required": true,
       "basis": "per head; B=1 fill 1/hRows"
@@ -243,9 +189,9 @@
       "model": "GLM-5.2",
       "kernel": "MLA",
       "core": "H",
-      "maxCoreRatio": 22055.384615384613,
-      "minLanesPerCore": 1.4857142857142858,
-      "coreRatio": 56.888888888888886,
+      "maxCoreRatio": 37494.153846153844,
+      "minLanesPerCore": 0.8739495798319328,
+      "coreRatio": 85.33333333333333,
       "hidden": true,
       "required": true,
       "basis": "per (head, token); 64 heads, 2 tokens per core"
@@ -254,9 +200,9 @@
       "model": "GLM-5.2",
       "kernel": "DSA indexer",
       "core": "H",
-      "maxCoreRatio": 118.57733664185277,
-      "minLanesPerCore": 276.34285714285716,
-      "coreRatio": 56.888888888888886,
+      "maxCoreRatio": 168.04102564102564,
+      "minLanesPerCore": 195,
+      "coreRatio": 85.33333333333333,
       "hidden": true,
       "required": true,
       "basis": "per (index head, token); 32 index heads, 1024 tokens per core"
@@ -265,9 +211,9 @@
       "model": "DeepSeek-V4-Pro",
       "kernel": "MLA",
       "core": "H",
-      "maxCoreRatio": 13886.723646723647,
-      "minLanesPerCore": 2.3596638655462185,
-      "coreRatio": 56.888888888888886,
+      "maxCoreRatio": 18747.076923076922,
+      "minLanesPerCore": 1.7478991596638656,
+      "coreRatio": 85.33333333333333,
       "hidden": true,
       "required": true,
       "basis": "per (head, token); 128 heads, 2 tokens per core"
@@ -276,9 +222,9 @@
       "model": "DeepSeek-V4-Pro",
       "kernel": "DSA indexer",
       "core": "H",
-      "maxCoreRatio": 72.07642031171443,
-      "minLanesPerCore": 454.62857142857143,
-      "coreRatio": 56.888888888888886,
+      "maxCoreRatio": 87.78262533486414,
+      "minLanesPerCore": 373.28571428571433,
+      "coreRatio": 85.33333333333333,
       "hidden": true,
       "required": true,
       "basis": "per (index head, token); 64 index heads, 1024 tokens per core"
@@ -287,27 +233,27 @@
   "binding": {
     "model": "DeepSeek-V4-Pro",
     "kernel": "DSA indexer",
-    "maxCoreRatio": 72.07642031171443,
-    "minLanesPerCore": 454.62857142857143
+    "maxCoreRatio": 87.78262533486414,
+    "minLanesPerCore": 373.28571428571433
   },
   "evaluation": {
     "k3System": {
       "publishedTpsPerUser": 1043.9636082178201,
-      "tpsPerUser": 1009.9013714026814,
-      "rawLatencyUs": 846.3211150151582,
+      "tpsPerUser": 1015.3417677416014,
+      "rawLatencyUs": 841.7863638190951,
       "contractTargetTpsPerUser": 1000
     },
-    "areaMm2": 363.55893506913884,
+    "areaMm2": 362.62700901871864,
     "area": {
-      "die": 354.458758934685,
+      "die": 350.0443723800632,
       "sharedPorts": 7.775860168067228,
-      "matrixOverhead": 0,
-      "vectorOverhead": 1.3243159663865547
+      "matrixOverhead": 3.9238991596638653,
+      "vectorOverhead": 0.8828773109243697
     },
-    "diePowerW": 288.09753600000005,
+    "diePowerW": 285.10233600000004,
     "dieAreaLimitMm2": 400,
-    "packagePlacedMm2": 4508.471480553111,
-    "packageReserveMm2": 81.42931944688917
+    "packagePlacedMm2": 4501.016072149749,
+    "packageReserveMm2": 88.88472785025169
   },
   "regenerate": "node integration/pipelines/generate_matrix_vector_design.js (npm run aicore:search); enforced by tests/regression/test_matrix_vector_design.js"
 }

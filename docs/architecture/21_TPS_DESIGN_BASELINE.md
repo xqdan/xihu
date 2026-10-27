@@ -240,8 +240,8 @@ PHY shoreline 占用 24.21 mm，预算 53.48 mm。
 与 routed 路径无数据依赖的 shared 专家（gate/up、SiLU×up、down）被排在 `Wdown + Router all-gather` 之后，与其并行执行。
 重叠量的上限是 shared 专家的计算时间，发布点为 26.01 µs。其他算子一律不与集合通信重叠。
 重叠期间两方都按映射时长计时，不互相让带宽。按需求比例分配 shared SRAM 读写口和 fabric 复算后（ARCH-CH-01，
-`out/detailed/contention_delta.json`，MODEL），发布点的前台总需求峰值是上限的 0.31（fabric），差值为 0；
-8 个可行联合点峰值 0.88，差值同样为 0。
+`out/detailed/contention_delta.json`，MODEL），发布点的前台总需求峰值是上限的 0.62（fabric；读 0.41、写 0.35），差值为 0；
+8 个可行联合点（随路解码的计算赢家进入耦合、`hRows` 按 ADR-0028 决策 7 钉在 128 之后，`npm run coupling:search`）峰值最高 1.00（960 / 1024 lane 的两行顶到读写口上限），差值同样为 0（最大 |Δraw| 5.4e-6 µs）。
 
 ### 4.4 独立 TMA 通道（`tmaLane`）
 
