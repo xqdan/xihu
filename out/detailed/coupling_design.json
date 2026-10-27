@@ -4,15 +4,15 @@
   "document": "teams/council/docs/23_DESIGN_QUESTION_WORKFLOW_PROPOSAL.md#l3-designcoupling--跨域联合",
   "designSpace": {
     "file": "teams/hardware/inputs/coupling_design_space.json",
-    "sha256": "d643cc6d4f5668e450ee1d8456c0e3d655d8fa617b3d7c5ac7d4cf52c56f7a7e",
+    "sha256": "518b8c109a335453a80bd792220222177ff47842f2c2037f6b5694b9e6d2d3ac",
     "couplings": [
       "sramDepthMc",
       "tauOverlapCompute",
       "areaReallocation"
     ],
-    "candidates": 82,
-    "feasible": 3,
-    "pareto": 3,
+    "candidates": 83,
+    "feasible": 8,
+    "pareto": 8,
     "constraints": [
       "every contract entry holds at the row: B-SRAM-CAP on sharedMiB, B-MEM-BW on mcGBs, B-TAU on the slowest collective (protocol + the comm winner's control path), B-SERIAL-CMP through the contract target, B-AREA on die area (shared-port charge, option overheads and the comm core included) and its die / card power limits",
       "the K3 detailed replay at the row is feasible and reaches the contract target",
@@ -68,10 +68,10 @@
   "winners": {
     "compute": {
       "design": "out/detailed/matrix_vector_design.json",
-      "designSha256": "770ca22dff8b44091a4e8c71573921661878cd74924cea25278856cbcdeb936a",
+      "designSha256": "72494bb4d88f9eba66a53cf58b995ca9a6938b03cd4104a538310975bcd0e478",
       "candidates": "out/detailed/matrix_vector_candidates.json",
-      "candidateSetSha256": "750e787daedc0d6a4ad47fdbb0fc2cefe83746667a3302c2c62bb50a8163d151",
-      "optionId": "vectorLanes=576|lowPrecisionInput=vectorUnpack|expUnit=sfu",
+      "candidateSetSha256": "59b2dd6c2221bfc8895b8437090e396e215d5c6c3b3acb8646d797d280bcf0c5",
+      "optionId": "vectorLanes=384|lowPrecisionInput=inlineDequant|expUnit=sfu",
       "landed": null
     },
     "sram": {
@@ -110,8 +110,8 @@
   "composition": {
     "domainAlone": {
       "compute": {
-        "optionId": "vectorLanes=576|lowPrecisionInput=vectorUnpack|expUnit=sfu",
-        "tpsPerUser": 1009.9013714026814
+        "optionId": "vectorLanes=384|lowPrecisionInput=inlineDequant|expUnit=sfu",
+        "tpsPerUser": 1015.3417677416014
       },
       "sram": {
         "optionId": "sharedMiB=16|lBanks=64|hBanks=16|sharedSlices=8|tmaEngines=2|sharedPortScaling=off",
@@ -135,21 +135,21 @@
       "violations": [
         "belowContractTarget"
       ],
-      "tpsPerUser": 937.581351108179,
-      "dieAreaMm2": 328.3501809345961,
-      "diePowerW": 277.44768,
-      "cardPowerW": 2927.67744
+      "tpsPerUser": 982.8918520884642,
+      "dieAreaMm2": 327.4182548841759,
+      "diePowerW": 274.45248,
+      "cardPowerW": 2903.71584
     },
     "targetTpsPerUser": 1000,
     "note": "each domain alone replays with the other domains at the published point; the composed point is all five winners at once"
   },
   "jointPoint": {
-    "optionId": "tauOverlapCompute:vectorLanes=896|commOverlap=true",
+    "optionId": "tauOverlapCompute:vectorLanes=640|commOverlap=true",
     "couplings": [
       "tauOverlapCompute"
     ],
     "change": {
-      "vectorLanes": 896,
+      "vectorLanes": 640,
       "commOverlap": true
     },
     "departsFrom": {
@@ -167,7 +167,7 @@
       "hCols": 256,
       "hEngines": 1,
       "ghz": 1,
-      "vectorLanes": 896,
+      "vectorLanes": 640,
       "lMiB": 1,
       "hMiB": 4,
       "lBanks": 64,
@@ -199,9 +199,9 @@
       "tauUs": 1.15
     },
     "model": {
-      "native": false,
+      "native": true,
       "softmaxOpsPerScore": 8,
-      "matrixAreaOverhead": 0,
+      "matrixAreaOverhead": 0.03,
       "vectorAreaOverhead": 0.1,
       "commCoreAreaMm2": 0.10388586545729403,
       "controlUs": {
@@ -216,34 +216,34 @@
   "evaluation": {
     "feasible": true,
     "violations": [],
-    "tpsPerUser": 1000.0680721302276,
-    "rawLatencyUs": 854.6426773532239,
-    "dieAreaMm2": 336.44322295140284,
+    "tpsPerUser": 1001.7388117558844,
+    "rawLatencyUs": 853.2172704806195,
+    "dieAreaMm2": 333.89268849762124,
     "area": {
-      "die": 334.279290027122,
-      "matrixOverhead": 0,
-      "vectorOverhead": 2.0600470588235296,
+      "die": 328.39344128762616,
+      "matrixOverhead": 3.9238991596638653,
+      "vectorOverhead": 1.4714621848739495,
       "commCore": 0.10388586545729403
     },
-    "diePowerW": 282.43968,
-    "cardPowerW": 2967.61344,
-    "packageReserveMm2": 298.3550163887776,
+    "diePowerW": 278.44608,
+    "cardPowerW": 2935.66464,
+    "packageReserveMm2": 318.75929201903,
     "shorelineMm": 24.21333333333333,
-    "edgeBudgetMm": 51.19325769876963,
+    "edgeBudgetMm": 50.740561483836466,
     "kernel": {
       "hidden": true,
-      "hCoreRatio": 36.57142857142857,
+      "hCoreRatio": 51.2,
       "binding": {
         "model": "DeepSeek-V4-Pro",
         "kernel": "DSA indexer",
-        "maxCoreRatio": 72.07642031171443,
-        "minLanesPerCore": 454.62857142857143
+        "maxCoreRatio": 87.78262533486414,
+        "minLanesPerCore": 373.28571428571433
       }
     },
     "clauses": {
       "B-SERIAL-CMP": {
         "through": "contract target",
-        "tpsPerUser": 1000.0680721302276,
+        "tpsPerUser": 1001.7388117558844,
         "target": 1000,
         "holds": true
       },
@@ -259,16 +259,16 @@
       },
       "B-TAU": {
         "slowest": "LSE merge / output reduce-scatter",
-        "latencyUs": 1.0893982044740973,
+        "latencyUs": 1.0921328983516483,
         "tauUs": 1.15,
         "max": 1.15,
         "holds": true
       },
       "B-AREA": {
-        "dieAreaMm2": 336.44322295140284,
+        "dieAreaMm2": 333.89268849762124,
         "max": 400,
-        "diePowerW": 282.43968,
-        "cardPowerW": 2967.61344,
+        "diePowerW": 278.44608,
+        "cardPowerW": 2935.66464,
         "limits": {
           "dieAreaMm2": 400,
           "diePowerW": 300,
